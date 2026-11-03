@@ -1,0 +1,7 @@
+.next
+pnpm-lock.yaml
+pnpm-workspace.yaml
+playwright-report
+test-results
+docs
+*.md
