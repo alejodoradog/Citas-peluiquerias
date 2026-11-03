@@ -8,7 +8,7 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 
 ## Comandos
 - pnpm dev | pnpm test | pnpm test:e2e | pnpm lint | pnpm typecheck
-- supabase start | supabase db reset | supabase test db
+- pnpm supabase start | pnpm supabase db reset | pnpm supabase test db | pnpm db:types
 
 ## Reglas que no se rompen
 - Toda tabla de negocio tiene barbershop_id y política RLS. Sin excepción.
@@ -17,7 +17,7 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 - Dinero en pesos enteros (integer).
 - Código en inglés; textos de interfaz en español de Colombia en src/ui/textos.ts.
 - Reglas de negocio en src/modulos/*/dominio, puras y con pruebas.
-- Nunca leer ni escribir .env*; nunca tocar el proyecto de producción.
+- Nunca leer ni escribir .env* (excepción: .env.example, sin valores); nunca tocar el proyecto de producción.
 
 ## Forma de trabajo
 - Empieza en modo plan; espera aprobación antes de editar.
