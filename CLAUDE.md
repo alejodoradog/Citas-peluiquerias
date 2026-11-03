@@ -19,6 +19,12 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 - Reglas de negocio en src/modulos/*/dominio, puras y con pruebas.
 - Nunca leer ni escribir .env* (excepción: .env.example, sin valores); nunca tocar el proyecto de producción.
 
+## Configuración de Claude Code
+- Reglas por carpeta en .claude/rules; skills `nueva-migracion`, `nueva-pantalla` y `cerrar-tarea`.
+- Subagentes `revisor-spec` y `revisor-seguridad`, solo lectura: pásales la lista de archivos cambiados.
+- Hooks en .claude/hooks: formateo y lint tras editar; typecheck y pruebas afectadas al terminar; bloqueo de .env* y de comandos remotos de Supabase y Vercel.
+- MCP en .mcp.json: Supabase local (requiere Docker encendido), Playwright y GitHub (token en `GITHUB_PERSONAL_ACCESS_TOKEN`).
+
 ## Forma de trabajo
 - Empieza en modo plan; espera aprobación antes de editar.
 - Una tarea por rama; termina con lint, typecheck y pruebas en verde.
