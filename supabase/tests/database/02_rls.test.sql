@@ -8,7 +8,8 @@ set local search_path = public, extensions;
 
 select plan(104);
 
--- Fixtures ----------------------------------------------------------------------
+-- Fixtures: the database may also hold the local seed, so counts below look
+-- only at these rows. ----------------------------------------------------------------------
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner-a@example.com'),
@@ -177,7 +178,7 @@ set local role anon;
 set local request.jwt.claims to '';
 
 select is(
-  (select count(id) from public.barbershops),
+  (select count(id) from public.barbershops where id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')),
   3::bigint,
   'anon reads barbershop profiles'
 );
@@ -219,7 +220,7 @@ select throws_ok(
 );
 
 select is(
-  (select count(id) from public.time_blocks),
+  (select count(id) from public.time_blocks where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')),
   2::bigint,
   'anon reads blocked time for availability'
 );
@@ -517,12 +518,14 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000000ad", "role": "authenticated"}';
 
-select is((select count(id) from public.barbershops), 3::bigint, 'super admin sees every barbershop');
-select is((select count(id) from public.profiles), 4::bigint, 'super admin sees every profile');
+select is((select count(id) from public.barbershops where id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 3::bigint, 'super admin sees every barbershop');
+select is((select count(id) from public.profiles where id in (
+  '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b',
+  '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-0000000000ad')), 4::bigint, 'super admin sees every profile');
 -- A and B, plus the customer owner A created above.
-select is((select count(id) from public.customers), 3::bigint, 'super admin sees every customer');
-select is((select count(id) from public.notifications), 2::bigint, 'super admin sees the message queue');
-select is((select count(id) from public.subscription_payments), 2::bigint, 'super admin sees every payment');
+select is((select count(id) from public.customers where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 3::bigint, 'super admin sees every customer');
+select is((select count(id) from public.notifications where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 2::bigint, 'super admin sees the message queue');
+select is((select count(id) from public.subscription_payments where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 2::bigint, 'super admin sees every payment');
 
 select throws_ok(
   'select link_token_hash from public.barbers',
