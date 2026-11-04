@@ -249,7 +249,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.4 Registro e ingreso con correo y contraseña, recuperación por correo, rol super admin.
 - [x] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
 - [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
-- [ ] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
+- [x] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
