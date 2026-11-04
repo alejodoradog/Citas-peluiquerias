@@ -94,22 +94,22 @@ Todo se prepara en una tarde; ninguna cuenta cuesta dinero al inicio salvo tu su
 
 **Cuentas**
 
-- [ ] Plan de Claude con Claude Code (Pro sirve para empezar; Max si vas a trabajar muchas horas al día).
+- [x] Plan de Claude con Claude Code (Pro sirve para empezar; Max si vas a trabajar muchas horas al día).
 - [ ] GitHub: repositorio privado `barberias`.
 - [ ] Supabase: dos proyectos, `barberias-dev` y `barberias-prod` (prod se crea en la fase 7).
-- [ ] Vercel: conectado al repositorio de GitHub.
+- [x] Vercel: conectado al repositorio de GitHub.
 - [ ] Resend: para correos (con tu dominio cuando lo compres).
 - [ ] Sentry: plan gratis, para errores.
 - [ ] Meta Business: cuenta + número dedicado (para la fase 5).
 
 **Herramientas en tu computador (Windows)**
 
-- [ ] Git for Windows (Claude Code lo usa como terminal).
-- [ ] Node.js LTS y pnpm.
-- [ ] Docker Desktop (para correr Supabase en tu computador).
-- [ ] Supabase CLI.
+- [x] Git for Windows (Claude Code lo usa como terminal).
+- [x] Node.js LTS y pnpm.
+- [x] Docker Desktop (para correr Supabase en tu computador).
+- [x] Supabase CLI.
 - [ ] Antigravity IDE como editor. Claude Code corre en su terminal integrada con el comando `claude`; si la extensión de Claude Code aparece en su tienda de extensiones, también sirve. Deja apagado o solo en modo lectura el agente propio de Antigravity en este proyecto, para que dos agentes no editen los mismos archivos.
-- [ ] Claude Code. En PowerShell: `irm https://claude.ai/install.ps1 | iex`, luego abre una terminal nueva y verifica con `claude --version` ([guía oficial](https://code.claude.com/docs/en/quickstart.md)).
+- [x] Claude Code. En PowerShell: `irm https://claude.ai/install.ps1 | iex`, luego abre una terminal nueva y verifica con `claude --version` ([guía oficial](https://code.claude.com/docs/en/quickstart.md)).
 
 **Primer arranque**
 
@@ -228,11 +228,11 @@ Son 7 fases; cada una termina con algo que puedes abrir en tu celular y probar. 
 
 ### Fase 0 · Fundaciones (2 a 3 días)
 
-- [ ] 0.1 Crear proyecto Next.js + TypeScript estricto + Tailwind + pnpm, con ESLint, Prettier, Vitest y Playwright configurados.
-- [ ] 0.2 Inicializar Supabase local, cliente de Supabase para servidor y navegador, tipos generados.
-- [ ] 0.3 Utilidad de fechas en `America/Bogota` con pruebas (cambio de día, medianoche, festivos).
-- [ ] 0.4 GitHub Actions: lint, typecheck, pruebas en cada pull request; despliegue de vista previa en Vercel.
-- [ ] 0.5 `CLAUDE.md`, reglas, skills `nueva-migracion`, `nueva-pantalla`, `cerrar-tarea`, subagentes y hooks.
+- [x] 0.1 Crear proyecto Next.js + TypeScript estricto + Tailwind + pnpm, con ESLint, Prettier, Vitest y Playwright configurados.
+- [x] 0.2 Inicializar Supabase local, cliente de Supabase para servidor y navegador, tipos generados.
+- [x] 0.3 Utilidad de fechas en `America/Bogota` con pruebas (cambio de día, medianoche, festivos).
+- [x] 0.4 GitHub Actions: lint, typecheck, pruebas en cada pull request; despliegue de vista previa en Vercel.
+- [x] 0.5 `CLAUDE.md`, reglas, skills `nueva-migracion`, `nueva-pantalla`, `cerrar-tarea`, subagentes y hooks.
 
 **Lista cuando:** un pull request de prueba pasa todos los chequeos y se ve publicado en una URL de Vercel.
 
@@ -345,9 +345,9 @@ Las migraciones llegan a producción solo desde GitHub Actions al hacer merge a 
 El objetivo de esta semana es cerrar la fase 0 y arrancar la 1; todo lo demás puede esperar.
 
 - [ ] Crear las cuentas y preparar tu computador (sección Preparación del entorno).
-- [ ] Exportar la especificación del MVP a Markdown y guardarla como `docs/spec.md`.
+- [x] Exportar la especificación del MVP a Markdown y guardarla como `docs/spec.md`.
 - [ ] Elegir un nombre provisional para el repositorio y el producto (se puede cambiar después).
-- [ ] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
+- [x] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
 - [ ] Traer aquí el plan que proponga Claude Code para la fase 1 (el modelo de datos) antes de aprobarlo: es la decisión más difícil de cambiar después.
 - [ ] En paralelo, empezar el diseño de las 3 pantallas clave (reserva, agenda, registro); lo trabajamos juntos aquí.
 - [ ] Crear la cuenta de Meta Business y conseguir el número dedicado, para no frenar la fase 5.
