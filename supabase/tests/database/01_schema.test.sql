@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(66);
+select plan(63);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -435,16 +435,7 @@ select lives_ok(
   'a valid payment is recorded'
 );
 
--- 10. Without policies, anonymous and signed-in users see nothing ---------------
-
-set local role anon;
-select is_empty('select id from public.barbershops', 'anon cannot read barbershops yet');
-select is_empty('select id from public.appointments', 'anon cannot read appointments yet');
-reset role;
-
-set local role authenticated;
-select is_empty('select id from public.customers', 'authenticated cannot read customers yet');
-reset role;
+-- Access by role is tested in 02_rls.test.sql.
 
 select * from finish();
 rollback;
