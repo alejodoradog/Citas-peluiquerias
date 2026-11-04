@@ -243,7 +243,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 ### Fase 1 · Base de datos, seguridad y acceso (semana 1)
 
-- [ ] 1.1 Migraciones de las 11 tablas de la spec, con `barbershop_id`, índices y llaves foráneas.
+- [ ] 1.1 Migraciones de las tablas de la spec (11, más `barbershop_hours` y `holiday_openings`; ver `docs/decisiones/0001-modelo-de-datos.md`), con `barbershop_id`, índices y llaves foráneas.
 - [ ] 1.2 Políticas RLS: el dueño solo ve su barbería; el super admin ve todo; el público solo lee lo necesario para reservar.
 - [ ] 1.3 Constraint de exclusión en `appointments` para que dos citas activas del mismo barbero no se crucen.
 - [ ] 1.4 Registro e ingreso con correo y contraseña, recuperación por correo, rol super admin.
