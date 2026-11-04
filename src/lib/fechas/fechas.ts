@@ -16,6 +16,7 @@ const timeFormatter = new Intl.DateTimeFormat(LOCALE, {
 
 // Calendar dates ("2026-11-03") and times ("14:30") in Colombia are plain text
 // so a day can never shift with the server's time zone.
+export type BogotaDate = string;
 function parseDateToUtcMs(date: string): number {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
   const ms = match

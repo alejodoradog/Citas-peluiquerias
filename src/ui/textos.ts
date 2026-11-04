@@ -1,3 +1,11 @@
+import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
+import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
+import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
+
+// Error copy lives with each module and is keyed by the codes its actions
+// return (decision 0005), plus "invalid" for anything a schema did not name.
+
 export const textos = {
   inicio: {
     titulo: "Barberías",
@@ -7,15 +15,26 @@ export const textos = {
   },
   agenda: {
     errores: {
-      horaTomada: "Esa hora ya la tomaron. Elige otra, por favor.",
-      desconocido: "No pudimos guardar la cita. Intenta de nuevo.",
-    },
+      slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
+      unknown: "No pudimos guardar la cita. Intenta de nuevo.",
+    } satisfies Record<AppointmentWriteError, string>,
+  },
+  barberias: {
+    errores: {
+      owner_name_required: "Escribe tu nombre.",
+      owner_name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
+      barbershop_name_required: "Escribe el nombre de tu barbería.",
+      barbershop_name_too_long:
+        "El nombre es muy largo. Usa máximo 100 caracteres.",
+      phone_invalid:
+        "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+    } satisfies Record<BarbershopErrorCode, string>,
   },
   cuentas: {
     marca: "Barberías",
     registro: {
       titulo: "Crea la cuenta de tu barbería",
-      bajada: "Tienes 20 días gratis para probar todo. No pedimos tarjeta.",
+      bajada: `Tienes ${TRIAL_DAYS} días gratis para probar todo. No pedimos tarjeta.`,
       campos: {
         ownerName: "Tu nombre",
         barbershopName: "Nombre de la barbería",
@@ -80,13 +99,6 @@ export const textos = {
     },
     salir: "Cerrar sesión",
     errores: {
-      owner_name_required: "Escribe tu nombre.",
-      owner_name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
-      barbershop_name_required: "Escribe el nombre de tu barbería.",
-      barbershop_name_too_long:
-        "El nombre es muy largo. Usa máximo 100 caracteres.",
-      phone_invalid:
-        "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
       password_required: "Escribe tu contraseña.",
       password_too_short: "La contraseña debe tener mínimo 8 caracteres.",
@@ -100,7 +112,8 @@ export const textos = {
       same_password: "Usa una contraseña distinta a la anterior.",
       link_expired: "Ese link venció o ya se usó. Pide uno nuevo.",
       unknown: "No pudimos completar la acción. Intenta de nuevo.",
-    },
+      invalid: "Revisa este dato.",
+    } satisfies Record<AccountErrorCode | "invalid", string>,
   },
   panel: {
     cargando: "Cargando tu barbería…",
@@ -122,5 +135,3 @@ export const textos = {
     reintentar: "Intentar de nuevo",
   },
 } as const;
-
-export type ErrorCode = keyof typeof textos.cuentas.errores;

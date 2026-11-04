@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { confirmRecovery } from "@/modulos/cuentas/acciones/auth";
+import { routes } from "@/lib/routes";
+import { confirmPasswordRecovery } from "@/modulos/cuentas/acciones/account";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { FormAlert, SubmitButton } from "@/ui/form";
 import { textos } from "@/ui/textos";
@@ -32,7 +33,7 @@ async function ConfirmForm({
       <div className="flex flex-col gap-6">
         <FormAlert>{textos.cuentas.errores.link_expired}</FormAlert>
         <p className="text-base">
-          <TextLink href="/recuperar-clave">
+          <TextLink href={routes.recoverPassword}>
             {textos.cuentas.nuevaClave.pedirOtro}
           </TextLink>
         </p>
@@ -41,8 +42,8 @@ async function ConfirmForm({
   }
 
   return (
-    <form action={confirmRecovery}>
-      <input type="hidden" name="token_hash" value={tokenHash} />
+    <form action={confirmPasswordRecovery}>
+      <input type="hidden" name="tokenHash" value={tokenHash} />
       <input
         type="hidden"
         name="next"

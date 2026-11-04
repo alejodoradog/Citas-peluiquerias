@@ -1,4 +1,5 @@
-// Turns Supabase Auth error codes into errors the app understands.
+// Turns Supabase Auth error codes into errors the app understands. Shared by
+// every module that signs people up or in.
 // Codes: node_modules/@supabase/auth-js/dist/module/lib/error-codes.d.ts.
 
 export type AccountError =

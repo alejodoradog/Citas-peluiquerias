@@ -69,7 +69,9 @@ test("the signup form explains what to fix", async ({ page }) => {
   await register(page, { email: uniqueEmail("celular"), phone: "123" });
 
   await expect(page).toHaveURL(/\/registro$/);
-  await expect(page.getByText(t.errores.phone_invalid)).toBeVisible();
+  await expect(
+    page.getByText(textos.barberias.errores.phone_invalid),
+  ).toBeVisible();
   await expect(page.getByLabel(t.registro.campos.ownerName)).toHaveValue(
     "Carlos Pérez",
   );

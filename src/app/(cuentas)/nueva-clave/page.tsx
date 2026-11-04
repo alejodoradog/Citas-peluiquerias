@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { hasRecentRecoverySession } from "@/lib/auth/access";
+import { hasRecentRecoverySession } from "@/modulos/cuentas/datos/access";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { FormAlert } from "@/ui/form";
 import { textos } from "@/ui/textos";
+import { routes } from "@/lib/routes";
 import { NewPasswordForm } from "./new-password-form";
 
 const t = textos.cuentas.nuevaClave;
@@ -28,7 +29,7 @@ async function NewPasswordOrExpired() {
       <div className="flex flex-col gap-6">
         <FormAlert>{t.sinSesion}</FormAlert>
         <p className="text-base">
-          <TextLink href="/recuperar-clave">{t.pedirOtro}</TextLink>
+          <TextLink href={routes.recoverPassword}>{t.pedirOtro}</TextLink>
         </p>
       </div>
     );

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { requireOwner } from "@/lib/auth/access";
+import { requireOwner } from "@/modulos/cuentas/guards";
 import { formatBogotaDate, startOfBogotaDay } from "@/lib/fechas/fechas";
 import { AppShell } from "@/ui/app-shell";
 import { textos } from "@/ui/textos";
@@ -20,14 +20,14 @@ export default function PanelPage() {
 }
 
 async function OwnerHome() {
-  const { ownerName, barbershop } = await requireOwner();
+  const { name, barbershop } = await requireOwner();
   const trialEnd = formatBogotaDate(startOfBogotaDay(barbershop.expiresOn));
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-[2rem] leading-[1.1] font-extrabold tracking-tight text-balance">
-          {t.saludo(ownerName)}
+          {t.saludo(name)}
         </h1>
         <p className="text-brand-strong mt-2 text-xl font-semibold">
           {barbershop.name}

@@ -86,7 +86,7 @@ barberias/
 - **Dinero:** pesos enteros (`integer`), nunca decimales.
 - **Commits** en formato convencional (`feat:`, `fix:`, `chore:`), ramas `fase-N/tarea-corta`.
 
-Nota: la especificación nombra las tablas en español; en el código se usan sus equivalentes en inglés (`barbershops`, `barbers`, `appointments`…), con el glosario en `docs/spec.md`.
+Nota: la especificación nombra las tablas en español; en el código se usan sus equivalentes en inglés (`barbershops`, `barbers`, `appointments`…), con el glosario en `docs/decisiones/0001-modelo-de-datos.md`.
 
 ## Preparación del entorno
 
@@ -95,8 +95,8 @@ Todo se prepara en una tarde; ninguna cuenta cuesta dinero al inicio salvo tu su
 **Cuentas**
 
 - [x] Plan de Claude con Claude Code (Pro sirve para empezar; Max si vas a trabajar muchas horas al día).
-- [ ] GitHub: repositorio privado `barberias`.
-- [ ] Supabase: dos proyectos, `barberias-dev` y `barberias-prod` (prod se crea en la fase 7).
+- [x] GitHub: repositorio `Citas-peluiquerias` (el nombre `barberias` queda pendiente).
+- [ ] Supabase: dos proyectos, `barberias-dev` y `barberias-prod` (prod se crea en la fase 7). `barberias-dev` ya existe; falta conectarlo a Vercel (`docs/operacion/configurar-barberias-dev.md`).
 - [x] Vercel: conectado al repositorio de GitHub.
 - [ ] Resend: para correos (con tu dominio cuando lo compres).
 - [ ] Sentry: plan gratis, para errores.
@@ -249,15 +249,16 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.4 Registro e ingreso con correo y contraseña, recuperación por correo, rol super admin.
 - [x] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
 - [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
+- [ ] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
-- [ ] 2.1 Asistente de registro en 3 pasos (barbería → servicios → barberos y horarios) con prueba de 20 días.
+- [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, enviar por WhatsApp (`wa.me`), desactivar y regenerar.
-- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, datos de abono.
+- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento.
 - [ ] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
 
 **Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos.
@@ -276,7 +277,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 - [ ] 4.1 Agenda día (columnas por barbero) y semana; tocar un espacio crea cita.
 - [ ] 4.2 Cita manual, bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
-- [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias.
+- [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias, y borrar un cliente anonimizando sus datos (Ley 1581).
 - [ ] 4.4 Vista "Mi agenda" del barbero por link privado, con permisos limitados.
 - [ ] 4.5 Actualización en vivo de la agenda cuando entra una reserva.
 

@@ -1,21 +1,21 @@
 import { z } from "zod";
-import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 import {
   emailSchema,
   passwordSchema,
-} from "@/modulos/cuentas/dominio/password";
+  type CredentialCode,
+} from "@/lib/validacion/credentials";
+import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 import { normalizeColombianMobile } from "./phone";
 
 // Error codes, not copy: the screen maps each one to src/ui/textos.ts.
-export type RegistrationErrorCode =
+export type BarbershopErrorCode =
   | "owner_name_required"
   | "owner_name_too_long"
   | "barbershop_name_required"
   | "barbershop_name_too_long"
-  | "phone_invalid"
-  | "email_invalid"
-  | "password_too_short"
-  | "password_too_long";
+  | "phone_invalid";
+
+export type RegistrationErrorCode = BarbershopErrorCode | CredentialCode;
 
 const registrationSchema = z.object({
   ownerName: z

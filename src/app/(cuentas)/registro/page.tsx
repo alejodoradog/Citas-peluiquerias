@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { textos } from "@/ui/textos";
+import { routes } from "@/lib/routes";
 import { RedirectIfSignedIn } from "../redirect-if-signed-in";
 import { RegistrationForm } from "./registration-form";
 
@@ -17,7 +18,7 @@ export default function RegistroPage() {
       </Suspense>
       <RegistrationForm />
       <p className="text-muted mt-8 text-base">
-        {t.yaTienes} <TextLink href="/ingresar">{t.ingresa}</TextLink>
+        {t.yaTienes} <TextLink href={routes.signIn}>{t.ingresa}</TextLink>
       </p>
     </AuthShell>
   );

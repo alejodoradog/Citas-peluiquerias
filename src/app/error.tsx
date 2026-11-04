@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonClasses } from "@/ui/button";
 import { textos } from "@/ui/textos";
 
 const t = textos.errorGeneral;
@@ -14,7 +15,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
       <button
         type="button"
         onClick={reset}
-        className="bg-brand hover:bg-brand-strong focus-visible:outline-ink h-12 rounded-lg px-5 text-base font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2"
+        className={buttonClasses("primary")}
       >
         {t.reintentar}
       </button>

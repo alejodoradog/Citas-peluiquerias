@@ -1,15 +1,15 @@
 import { z } from "zod";
+import {
+  emailSchema,
+  passwordSchema,
+  type CredentialCode,
+} from "@/lib/validacion/credentials";
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
-import { emailSchema, passwordSchema } from "./password";
 
 export type CredentialsErrorCode =
-  | "email_invalid"
-  | "password_required"
-  | "password_too_short"
-  | "password_too_long"
-  | "password_mismatch";
+  CredentialCode | "password_required" | "password_mismatch";
 
-const loginSchema = z.object({
+const signInSchema = z.object({
   email: emailSchema,
   // Typed as is: the account decides whether the password is right.
   password: z
@@ -17,7 +17,7 @@ const loginSchema = z.object({
     .min(1, "password_required"),
 });
 
-const recoverySchema = z.object({ email: emailSchema });
+const recoveryRequestSchema = z.object({ email: emailSchema });
 
 const recoveryTokenSchema = z.object({
   tokenHash: z.string().min(1).max(256),
@@ -35,18 +35,16 @@ const newPasswordSchema = z
   })
   .transform(({ password }) => ({ password }));
 
-export type Login = z.output<typeof loginSchema>;
-
-export function parseLogin(
+export function parseSignIn(
   input: unknown,
-): ParseResult<Login, CredentialsErrorCode> {
-  return parseWith(loginSchema, input);
+): ParseResult<z.output<typeof signInSchema>, CredentialsErrorCode> {
+  return parseWith(signInSchema, input);
 }
 
 export function parseRecoveryRequest(
   input: unknown,
-): ParseResult<z.output<typeof recoverySchema>, CredentialsErrorCode> {
-  return parseWith(recoverySchema, input);
+): ParseResult<z.output<typeof recoveryRequestSchema>, CredentialsErrorCode> {
+  return parseWith(recoveryRequestSchema, input);
 }
 
 export function parseRecoveryToken(

@@ -29,7 +29,7 @@ export type Database = {
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id": string,"barbershop_id": string,"created_at"?: string,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"service_id": string,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"service_id": string,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Update: {
                     "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"customer_id"?: string,"deposit_received"?: boolean,"ends_at"?: string,"id"?: string,"manage_token_hash"?: string | null,"price_cop"?: number,"service_id"?: string,"source"?: Database["public"]['Enums']["appointment_source"],"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
@@ -67,7 +67,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id": string,"barbershop_id": string,"created_at"?: string,"end_time": string,"id"?: string,"start_time": string,"updated_at"?: string,"weekday": number
+                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"end_time": string,"id"?: string,"start_time": string,"updated_at"?: string,"weekday": number
                   }
                   Update: {
                     "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"end_time"?: string,"id"?: string,"start_time"?: string,"updated_at"?: string,"weekday"?: number
@@ -87,7 +87,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id": string,"barbershop_id": string,"created_at"?: string,"service_id": string
+                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"service_id": string
                   }
                   Update: {
                     "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"service_id"?: string
@@ -113,7 +113,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id": string,"created_at"?: string,"display_name": string,"id"?: string,"link_active"?: boolean,"link_token_hash": string,"phone"?: string | null,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"whatsapp_notifications"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name": string,"id"?: string,"link_active"?: boolean,"link_token_hash": string,"phone"?: string | null,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"whatsapp_notifications"?: boolean
                   }
                   Update: {
                     "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name"?: string,"id"?: string,"link_active"?: boolean,"link_token_hash"?: string,"phone"?: string | null,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"whatsapp_notifications"?: boolean
@@ -133,7 +133,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barbershop_id": string,"created_at"?: string,"end_time": string,"id"?: string,"start_time": string,"updated_at"?: string,"weekday": number
+                    "barbershop_id"?: string,"created_at"?: string,"end_time": string,"id"?: string,"start_time": string,"updated_at"?: string,"weekday": number
                   }
                   Update: {
                     "barbershop_id"?: string,"created_at"?: string,"end_time"?: string,"id"?: string,"start_time"?: string,"updated_at"?: string,"weekday"?: number
@@ -167,7 +167,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barbershop_id": string,"created_at"?: string,"full_name": string,"id"?: string,"notes"?: string | null,"phone": string,"updated_at"?: string
+                    "barbershop_id"?: string,"created_at"?: string,"full_name": string,"id"?: string,"notes"?: string | null,"phone": string,"updated_at"?: string
                   }
                   Update: {
                     "barbershop_id"?: string,"created_at"?: string,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string,"updated_at"?: string
@@ -187,7 +187,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barbershop_id": string,"created_at"?: string,"holiday_date": string
+                    "barbershop_id"?: string,"created_at"?: string,"holiday_date": string
                   }
                   Update: {
                     "barbershop_id"?: string,"created_at"?: string,"holiday_date"?: string
@@ -253,7 +253,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id": string,"created_at"?: string,"duration_minutes": number,"id"?: string,"name": string,"price_cop": number,"updated_at"?: string
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"duration_minutes": number,"id"?: string,"name": string,"price_cop": number,"updated_at"?: string
                   }
                   Update: {
                     "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"duration_minutes"?: number,"id"?: string,"name"?: string,"price_cop"?: number,"updated_at"?: string
@@ -299,7 +299,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id"?: string | null,"barbershop_id": string,"created_at"?: string,"ends_at": string,"id"?: string,"reason"?: string | null,"starts_at": string,"updated_at"?: string
+                    "barber_id"?: string | null,"barbershop_id"?: string,"created_at"?: string,"ends_at": string,"id"?: string,"reason"?: string | null,"starts_at": string,"updated_at"?: string
                   }
                   Update: {
                     "barber_id"?: string | null,"barbershop_id"?: string,"created_at"?: string,"ends_at"?: string,"id"?: string,"reason"?: string | null,"starts_at"?: string,"updated_at"?: string

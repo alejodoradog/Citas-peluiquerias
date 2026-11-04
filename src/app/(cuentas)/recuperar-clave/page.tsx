@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { FormAlert } from "@/ui/form";
 import { textos } from "@/ui/textos";
+import { routes } from "@/lib/routes";
 import { RecoveryForm } from "./recovery-form";
 
 const t = textos.cuentas.recuperar;
@@ -19,7 +20,7 @@ export default function RecuperarClavePage({
       </Suspense>
       <RecoveryForm />
       <p className="mt-8 text-base">
-        <TextLink href="/ingresar">{t.volver}</TextLink>
+        <TextLink href={routes.signIn}>{t.volver}</TextLink>
       </p>
     </AuthShell>
   );
