@@ -24,3 +24,21 @@ jobs:
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm supabase start
+      - run: pnpm supabase test db
+      - name: Generated types match the migrations
+        run: |
+          pnpm db:types
+          git diff --exit-code -- src/lib/supabase/database.types.ts
