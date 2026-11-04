@@ -33,6 +33,13 @@ async function register(
   await page.getByRole("button", { name: t.registro.enviar }).click();
 }
 
+// Waits until signing out finished: otherwise its response can arrive after
+// the next sign-in and clear the new session.
+async function signOut(page: Page) {
+  await page.getByRole("button", { name: t.salir }).click();
+  await expect(page).toHaveURL(/\/ingresar$/);
+}
+
 async function signIn(page: Page, email: string, password = PASSWORD) {
   await page.goto("/ingresar");
   await page.getByLabel(t.ingreso.campos.email).fill(email);
@@ -82,8 +89,7 @@ test("an email can only have one account", async ({ page, browser }) => {
 test("an owner signs out and signs back in", async ({ page }) => {
   const email = uniqueEmail("ingreso");
   await register(page, { email });
-  await page.getByRole("button", { name: t.salir }).click();
-  await expect(page).toHaveURL(/\/ingresar$/);
+  await signOut(page);
 
   await signIn(page, email, "otra-clave-mala");
   await expect(page.getByText(t.errores.invalid_credentials)).toBeVisible();
@@ -95,7 +101,7 @@ test("an owner signs out and signs back in", async ({ page }) => {
 test("an owner recovers access by email", async ({ page }) => {
   const email = uniqueEmail("recuperar");
   await register(page, { email });
-  await page.getByRole("button", { name: t.salir }).click();
+  await signOut(page);
 
   await page.goto("/recuperar-clave");
   await page.getByLabel(t.recuperar.campos.email).fill(email);
@@ -111,7 +117,7 @@ test("an owner recovers access by email", async ({ page }) => {
   await page.getByRole("button", { name: t.nuevaClave.enviar }).click();
   await expect(page).toHaveURL(/\/panel$/);
 
-  await page.getByRole("button", { name: t.salir }).click();
+  await signOut(page);
   await signIn(page, email, "clave-nueva-2");
   await expect(page).toHaveURL(/\/panel$/);
 });

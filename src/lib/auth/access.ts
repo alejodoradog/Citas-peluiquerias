@@ -1,5 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,7 +19,10 @@ export type Access =
     }
   | { kind: "super_admin"; name: string };
 
+// The session is checked against the current time (token expiry), so this
+// always runs at request time, never while prerendering.
 export const getCurrentAccess = cache(async (): Promise<Access> => {
+  await connection();
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -71,6 +75,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
 
 // True when this session was opened by a recovery link in the last hour.
 export async function hasRecentRecoverySession(): Promise<boolean> {
+  await connection();
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getClaims();
   return cameFromRecentRecovery(
