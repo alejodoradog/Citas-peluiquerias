@@ -1,4 +1,20 @@
+import { loadEnvConfig } from "@next/env";
 import { defineConfig, devices } from "@playwright/test";
+
+// Load the same variables Next.js loads, so the tests reach the local
+// Supabase. In CI they come from the job environment.
+loadEnvConfig(process.cwd());
+
+// Never point the tests at a real project: they create accounts.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (
+  supabaseUrl &&
+  !/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(supabaseUrl)
+) {
+  throw new Error(
+    `E2E tests only run against a local Supabase, not ${supabaseUrl}`,
+  );
+}
 
 const baseURL = "http://localhost:3000";
 

@@ -5,8 +5,10 @@ import type { Database } from "./database.types";
 import { getPublicSupabaseEnv } from "./env";
 
 export async function createSupabaseServerClient() {
-  const { url, publishableKey } = getPublicSupabaseEnv();
+  // Read cookies first: it marks the render as request-time, so prerendering
+  // stops here instead of requiring Supabase variables at build time.
   const cookieStore = await cookies();
+  const { url, publishableKey } = getPublicSupabaseEnv();
 
   return createServerClient<Database>(url, publishableKey, {
     cookies: {

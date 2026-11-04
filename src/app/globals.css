@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Palette: the blue-green of the disinfectant jar on every barber's counter,
+   on a cool paper background. */
+@theme {
+  --color-ink: #16211f;
+  --color-muted: #4c5c58;
+  --color-paper: #f4f7f6;
+  --color-line: #cbd6d3;
+  --color-brand: #1e7f8c;
+  --color-brand-strong: #145a63;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* The teeth of a barber's comb, used once per screen as the brand mark. */
+.comb {
+  height: 0.75rem;
+  background:
+    linear-gradient(var(--color-brand), var(--color-brand)) top / 100% 4px
+      no-repeat,
+    repeating-linear-gradient(
+      90deg,
+      var(--color-brand) 0 3px,
+      transparent 3px 9px
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
