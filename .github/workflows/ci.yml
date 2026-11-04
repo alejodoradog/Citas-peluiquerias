@@ -22,8 +22,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
 
   database:
     runs-on: ubuntu-latest
@@ -42,3 +40,20 @@ jobs:
         run: |
           pnpm db:types
           git diff --exit-code -- src/lib/supabase/database.types.ts
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm supabase start
+      - name: Point the app at the local Supabase
+        run: node scripts/ci/supabase-env.mjs >> "$GITHUB_ENV"
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

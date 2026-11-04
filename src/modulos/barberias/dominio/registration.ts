@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { parseWith, type ParseResult } from "@/lib/validacion/parse";
+import {
+  emailSchema,
+  passwordSchema,
+} from "@/modulos/cuentas/dominio/password";
 import { normalizeColombianMobile } from "./phone";
 
 // Error codes, not copy: the screen maps each one to src/ui/textos.ts.
@@ -31,42 +36,17 @@ const registrationSchema = z.object({
     }
     return phone;
   }),
-  email: z
-    .string({ error: "email_invalid" })
-    .trim()
-    .toLowerCase()
-    .pipe(z.email("email_invalid")),
-  // Supabase Auth hashes with bcrypt, which reads at most 72 bytes. Accented
-  // letters take two bytes, so the limit is checked in bytes, not characters.
-  password: z
-    .string({ error: "password_too_short" })
-    .min(8, "password_too_short")
-    .refine(
-      (value) => new TextEncoder().encode(value).length <= 72,
-      "password_too_long",
-    ),
+  email: emailSchema,
+  password: passwordSchema,
 });
 
 export type Registration = z.output<typeof registrationSchema>;
-type Field = keyof Registration;
 
-export type RegistrationResult =
-  | { success: true; data: Registration }
-  | {
-      success: false;
-      errors: Partial<Record<Field, RegistrationErrorCode>>;
-    };
+export type RegistrationResult = ParseResult<
+  Registration,
+  RegistrationErrorCode
+>;
 
 export function parseRegistration(input: unknown): RegistrationResult {
-  const result = registrationSchema.safeParse(input);
-  if (result.success) {
-    return { success: true, data: result.data };
-  }
-
-  const errors: Partial<Record<Field, RegistrationErrorCode>> = {};
-  for (const issue of result.error.issues) {
-    const field = issue.path[0] as Field;
-    errors[field] ??= issue.message as RegistrationErrorCode;
-  }
-  return { success: false, errors };
+  return parseWith(registrationSchema, input);
 }

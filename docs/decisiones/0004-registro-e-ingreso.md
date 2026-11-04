@@ -33,6 +33,24 @@ El dueño y el super admin entran con correo y contraseña (Supabase Auth). El r
 9. **Contraseña mínima de 8 caracteres** y máxima de 72 bytes, porque bcrypt solo lee 72 bytes; una letra con tilde ocupa 2.
 10. **Correo de recuperación en español** (`supabase/templates/recovery.html`). El link lleva a `/auth/confirm`, que se construye en la 1.4b. En local los correos se ven en Mailpit (`http://127.0.0.1:44324`). En producción saldrán por Resend, configurado en la 6.4, que además debe repetir en el panel de Supabase la contraseña mínima y la plantilla.
 
+11. **Quién entra a dónde lo decide solo `profiles`.** `getCurrentAccess` (`src/lib/auth/access.ts`) lee la cuenta con `getUser`, que valida con Supabase, y después el perfil por RLS. Nunca usa `user_metadata`, que el usuario puede cambiar. Hay cuatro casos:
+    - Dueño activo: entra a `/panel`.
+    - Super admin activo: entra a `/admin`.
+    - Cuenta sin perfil, desactivada o con un rol desconocido: va a `/salir`, que cierra la sesión y explica que no tiene acceso. Si alguien con acceso abre `/salir`, lo manda a su inicio sin cerrar la sesión, para que un link no pueda sacar a nadie.
+    - Sin sesión: va a `/ingresar`.
+    - Si falla la consulta (red, tiempo de espera), se lanza el error en lugar de tratarlo como "sin acceso", para no sacar a un dueño válido.
+12. **`proxy.ts` solo en las rutas de cuentas, panel y admin.** Refresca la sesión antes de que la página se dibuje. Las páginas públicas no lo usan y siguen funcionando aunque Supabase no esté configurado, como en una vista previa sin base de datos.
+13. **Con `cacheComponents`, la sesión se lee dentro de `<Suspense>`.** El marco de cada pantalla se prerenderiza y carga al instante, y la parte que depende de la cuenta llega después. El cliente de Supabase del servidor lee las cookies antes que las variables de entorno, para que el build no exija Supabase.
+14. **El link de recuperación pide un toque.** `/auth/confirm` muestra un botón "Continuar" y solo entonces gasta el token, porque algunos filtros de correo abren los links solos. El token se valida con Zod. `next` solo acepta rutas de una lista (`safeNextPath`), así que un link armado a mano no puede mandar a otro sitio.
+    - **La contraseña nueva solo se puede crear desde la sesión que abrió el link,** y dentro de la hora siguiente (`cameFromRecentRecovery`, que lee el método de ingreso `amr` del token). Una sesión que alguien dejó abierta en el celular de la barbería no basta para quedarse con la cuenta.
+    - **Cerrar sesión cierra solo este aparato.**
+15. **Mensajes.**
+    - La recuperación responde siempre lo mismo, exista o no la cuenta, incluso si Supabase limita los envíos.
+    - El ingreso dice "el correo o la contraseña no coinciden", sin decir cuál de los dos falla.
+    - El registro sí dice "ya existe una cuenta con ese correo", porque sin confirmación de correo no hay otra forma útil de orientar al dueño. Es un riesgo aceptado: permite saber qué correos tienen cuenta. Desaparece al activar la confirmación, que Supabase responde igual en ambos casos.
+16. **Las pruebas de punta a punta solo corren contra Supabase local.** Crean cuentas con contraseñas conocidas, incluidos super admins, así que `playwright.config.ts` y el helper se niegan a correr si la URL no es `127.0.0.1` o `localhost`.
+17. **Módulo `cuentas`** (`src/modulos/cuentas`) para ingreso, salida y recuperación, que sirven a dueños y super admins. El registro vive en `barberias` porque crea una barbería.
+
 ## División de la tarea
 
 - **1.4a, base de cuentas:** esta decisión, con pruebas pgTAP y Vitest.
