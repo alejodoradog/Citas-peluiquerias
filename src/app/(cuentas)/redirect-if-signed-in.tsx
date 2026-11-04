@@ -1,4 +1,4 @@
-import { redirectIfSignedIn } from "@/lib/auth/access";
+import { redirectIfSignedIn } from "@/modulos/cuentas/guards";
 
 // Reads the session, so it renders inside a Suspense boundary.
 export async function RedirectIfSignedIn() {

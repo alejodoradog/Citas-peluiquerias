@@ -21,7 +21,7 @@ El dueño y el super admin entran con correo y contraseña (Supabase Auth). El r
 3. **Prueba gratis de 20 días** (decisión del dueño del proyecto; la spec decía 14). La barbería funciona el día del registro, en hora de Colombia, y 20 días más. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive. La regla vive en `trialEndsOn` (`src/modulos/suscripciones/dominio`, con pruebas) y la base de datos aplica la misma fórmula al registrar, porque no puede confiar en una fecha que llegue del navegador.
 4. **El registro pide también el nombre del dueño**, para saludarlo en el panel y en los avisos.
 5. **Sin confirmación de correo en el MVP.** El dueño entra de inmediato. Se puede activar después en la configuración de Supabase sin afectar las cuentas existentes.
-   - Riesgo aceptado: sin confirmación, alguien puede registrarse con el correo de otra persona y ocuparlo, o crear muchas barberías de prueba para apartar links. El límite de Supabase es 30 registros cada 5 minutos por IP.
+   - Riesgo aceptado: sin confirmación, alguien puede registrarse con el correo de otra persona y ocuparlo, o crear muchas barberías de prueba para apartar links. Supabase limita los registros por IP, pero como el registro pasa por el servidor, ve la IP de Vercel y no la de cada persona: ese límite es compartido por todos y no frena a un abusador.
    - Recomendación: activar la confirmación de correo o un captcha antes de abrir la venta (semana 11).
    - Una cuenta creada sin datos de barbería (por la API, o un super admin creado a mano) no recibe perfil, y por eso no entra a nada. La 1.4b debe tratarla como "sin acceso".
 6. **Reglas puras en `src/modulos/barberias/dominio`, con pruebas:**

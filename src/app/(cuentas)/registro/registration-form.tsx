@@ -1,54 +1,42 @@
 "use client";
 
-import { useActionState } from "react";
-import { registerBarbershop } from "@/modulos/barberias/acciones/register";
-import type { FormState } from "@/modulos/cuentas/acciones/form-state";
-import { Field, FormAlert, SubmitButton, useFocusFirstError } from "@/ui/form";
+import { registerBarbershop } from "@/modulos/barberias/acciones/barbershops";
+import {
+  ActionForm,
+  Field,
+  FormAlert,
+  SubmitButton,
+  useFormAction,
+} from "@/ui/form";
 import { textos } from "@/ui/textos";
 
 const t = textos.cuentas.registro;
-const errores = textos.cuentas.errores;
+const messages = { ...textos.cuentas.errores, ...textos.barberias.errores };
 
 export function RegistrationForm() {
-  const [state, action] = useActionState<FormState, FormData>(
-    registerBarbershop,
-    {},
-  );
-  const formRef = useFocusFirstError(state.fieldErrors);
+  const form = useFormAction(registerBarbershop, messages);
 
-  if (state.notice === "check_email") {
+  if (form.notice === "check_email") {
     return <FormAlert tone="info">{t.revisaCorreo}</FormAlert>;
   }
 
-  const error = (field: string) => {
-    const code = state.fieldErrors?.[field];
-    return code ? errores[code] : undefined;
-  };
-
   return (
-    <form
-      ref={formRef}
-      action={action}
-      noValidate
-      className="flex flex-col gap-5"
-    >
-      {state.formError ? (
-        <FormAlert>{errores[state.formError]}</FormAlert>
-      ) : null}
+    <ActionForm form={form}>
+      {form.formError ? <FormAlert>{form.formError}</FormAlert> : null}
       <Field
         label={t.campos.ownerName}
         name="ownerName"
         autoComplete="name"
-        defaultValue={state.values?.ownerName}
-        error={error("ownerName")}
+        defaultValue={form.value("ownerName")}
+        error={form.fieldError("ownerName")}
         required
       />
       <Field
         label={t.campos.barbershopName}
         name="barbershopName"
         autoComplete="organization"
-        defaultValue={state.values?.barbershopName}
-        error={error("barbershopName")}
+        defaultValue={form.value("barbershopName")}
+        error={form.fieldError("barbershopName")}
         required
       />
       <Field
@@ -57,9 +45,9 @@ export function RegistrationForm() {
         type="tel"
         inputMode="tel"
         autoComplete="tel-national"
-        defaultValue={state.values?.phone}
+        defaultValue={form.value("phone")}
         help={t.ayudas.phone}
-        error={error("phone")}
+        error={form.fieldError("phone")}
         required
       />
       <Field
@@ -67,9 +55,9 @@ export function RegistrationForm() {
         name="email"
         type="email"
         autoComplete="email"
-        defaultValue={state.values?.email}
+        defaultValue={form.value("email")}
         help={t.ayudas.email}
-        error={error("email")}
+        error={form.fieldError("email")}
         required
       />
       <Field
@@ -78,10 +66,10 @@ export function RegistrationForm() {
         type="password"
         autoComplete="new-password"
         help={t.ayudas.password}
-        error={error("password")}
+        error={form.fieldError("password")}
         required
       />
       <SubmitButton pendingText={t.enviando}>{t.enviar}</SubmitButton>
-    </form>
+    </ActionForm>
   );
 }

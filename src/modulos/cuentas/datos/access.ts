@@ -1,10 +1,12 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
-import { now } from "@/lib/fechas/fechas";
+import { now, type BogotaDate } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { cameFromRecentRecovery } from "@/modulos/cuentas/dominio/recovery-session";
+import type { Database } from "@/lib/supabase/database.types";
+import { cameFromRecentRecovery } from "../dominio/recovery-session";
+
+type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
 
 // Who is using the app right now. Decided only from the profiles table, which
 // RLS filters (inactive profiles are invisible), never from user metadata,
@@ -14,8 +16,14 @@ export type Access =
   | { kind: "no_access" }
   | {
       kind: "owner";
-      ownerName: string;
-      barbershop: { name: string; slug: string; expiresOn: string };
+      name: string;
+      barbershop: {
+        id: string;
+        name: string;
+        slug: string;
+        subscriptionStatus: SubscriptionStatus;
+        expiresOn: BogotaDate;
+      };
     }
   | { kind: "super_admin"; name: string };
 
@@ -47,14 +55,14 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   if (profile.role === "super_admin") {
     return { kind: "super_admin", name: profile.full_name };
   }
-  if (profile.role !== "owner") {
+  if (profile.role !== "owner" || !profile.barbershop_id) {
     return { kind: "no_access" };
   }
 
   const { data: barbershop, error: barbershopError } = await supabase
     .from("barbershops")
-    .select("name, slug, expires_on")
-    .eq("id", profile.barbershop_id ?? "")
+    .select("id, name, slug, subscription_status, expires_on")
+    .eq("id", profile.barbershop_id)
     .maybeSingle();
   if (barbershopError) {
     throw barbershopError;
@@ -64,10 +72,12 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   }
   return {
     kind: "owner",
-    ownerName: profile.full_name,
+    name: profile.full_name,
     barbershop: {
+      id: barbershop.id,
       name: barbershop.name,
       slug: barbershop.slug,
+      subscriptionStatus: barbershop.subscription_status,
       expiresOn: barbershop.expires_on,
     },
   };
@@ -82,42 +92,4 @@ export async function hasRecentRecoverySession(): Promise<boolean> {
     data?.claims.amr,
     Math.floor(now().getTime() / 1000),
   );
-}
-
-// Where each kind of account lands after signing in.
-export function homeFor(access: Access): string {
-  switch (access.kind) {
-    case "owner":
-      return "/panel";
-    case "super_admin":
-      return "/admin";
-    // /ingresar explains that the account has no access.
-    case "no_access":
-    case "anonymous":
-      return "/ingresar";
-  }
-}
-
-export async function requireOwner() {
-  const access = await getCurrentAccess();
-  if (access.kind !== "owner") {
-    redirect(homeFor(access));
-  }
-  return access;
-}
-
-export async function requireSuperAdmin() {
-  const access = await getCurrentAccess();
-  if (access.kind !== "super_admin") {
-    redirect(homeFor(access));
-  }
-  return access;
-}
-
-// For sign-in and sign-up screens: someone already inside goes home.
-export async function redirectIfSignedIn() {
-  const access = await getCurrentAccess();
-  if (access.kind === "owner" || access.kind === "super_admin") {
-    redirect(homeFor(access));
-  }
 }

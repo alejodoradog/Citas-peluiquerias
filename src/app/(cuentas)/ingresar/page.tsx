@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getCurrentAccess } from "@/lib/auth/access";
-import { signOut } from "@/modulos/cuentas/acciones/auth";
+import { routes } from "@/lib/routes";
+import { getCurrentAccess } from "@/modulos/cuentas/datos/access";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { FormAlert } from "@/ui/form";
+import { SignOutButton } from "@/ui/sign-out-button";
 import { textos } from "@/ui/textos";
 import { RedirectIfSignedIn } from "../redirect-if-signed-in";
 import { SignInForm } from "./sign-in-form";
@@ -22,10 +23,10 @@ export default function IngresarPage() {
       <SignInForm />
       <div className="mt-8 flex flex-col gap-3 text-base">
         <p>
-          <TextLink href="/recuperar-clave">{t.olvidaste}</TextLink>
+          <TextLink href={routes.recoverPassword}>{t.olvidaste}</TextLink>
         </p>
         <p className="text-muted">
-          {t.sinCuenta} <TextLink href="/registro">{t.crear}</TextLink>
+          {t.sinCuenta} <TextLink href={routes.signUp}>{t.crear}</TextLink>
         </p>
       </div>
     </AuthShell>
@@ -40,14 +41,9 @@ async function NoAccessNotice() {
   return (
     <div className="mb-8 flex flex-col gap-3">
       <FormAlert>{t.sinAcceso}</FormAlert>
-      <form action={signOut}>
-        <button
-          type="submit"
-          className="text-brand-strong focus-visible:outline-brand rounded font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          {textos.cuentas.salir}
-        </button>
-      </form>
+      <div>
+        <SignOutButton variant="link" />
+      </div>
     </div>
   );
 }

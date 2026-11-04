@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseLogin,
+  parseSignIn,
   parseNewPassword,
   parseRecoveryRequest,
 } from "./credentials";
 
-describe("parseLogin", () => {
+describe("parseSignIn", () => {
   it("cleans the email and keeps the password as typed", () => {
     expect(
-      parseLogin({
+      parseSignIn({
         email: " Ana@Example.com ",
         password: " clave con espacios ",
       }),
@@ -19,7 +19,7 @@ describe("parseLogin", () => {
   });
 
   it("asks for both fields", () => {
-    expect(parseLogin({ email: "x", password: "" })).toEqual({
+    expect(parseSignIn({ email: "x", password: "" })).toEqual({
       success: false,
       errors: { email: "email_invalid", password: "password_required" },
     });

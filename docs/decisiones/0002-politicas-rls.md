@@ -48,7 +48,7 @@ La tarea 1.1 dejó RLS activado en las 13 tablas, sin políticas. Esta decisión
 
 | Qué | Cómo | Tarea |
 | --- | --- | --- |
-| Crear la barbería y la cuenta del dueño en el registro | Función del servidor; desde el navegador nadie inserta en `barbershops` ni en `profiles` | 1.4 / 2.1 |
+| Crear la barbería y la cuenta del dueño en el registro | Trigger de registro en la misma transacción que la cuenta (decisión 0004); desde el navegador nadie inserta en `barbershops` ni en `profiles` | 1.4 (hecho) |
 | Horas libres en la página pública | Función que devuelve solo rangos ocupados, sin datos de clientes | 3.1 / 3.3 |
 | Reservar desde la página pública | Función que valida y crea cliente y cita juntos | 3.3 |
 | Gestionar la cita con su link | Función que recibe el token y compara su hash | 3.4 |

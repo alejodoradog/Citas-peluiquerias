@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { routes } from "@/lib/routes";
+import { buttonClasses } from "./button";
 import { textos } from "./textos";
 
 // Frame for the account screens: the comb mark, the brand and one narrow,
@@ -18,7 +20,7 @@ export function AuthShell({
       <div className="comb" aria-hidden="true" />
       <header className="mx-auto w-full max-w-md px-5 pt-6">
         <Link
-          href="/"
+          href={routes.home}
           className="text-brand-strong focus-visible:outline-brand rounded text-lg font-bold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           {textos.cuentas.marca}
@@ -45,10 +47,7 @@ export function TextLink({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="text-brand-strong focus-visible:outline-brand rounded font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
+    <Link href={href} className={buttonClasses("link")}>
       {children}
     </Link>
   );

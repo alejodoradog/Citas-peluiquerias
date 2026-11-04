@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { requireSuperAdmin } from "@/lib/auth/access";
+import { requireSuperAdmin } from "@/modulos/cuentas/guards";
 import { AppShell } from "@/ui/app-shell";
 import { textos } from "@/ui/textos";
 

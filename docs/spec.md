@@ -28,13 +28,13 @@ Cada barbería tiene una sola cuenta, la del dueño; los barberos no necesitan c
 | Barbero | Empleado de la barbería | Vista "Mi agenda" | Link privado y secreto, sin cuenta ni contraseña |
 | Cliente final | Quien se corta el pelo | Página pública de reservas | Nombre y celular, sin contraseña |
 
-**Link privado del barbero:** el sistema lo genera al crear al barbero y el dueño se lo envía por WhatsApp con un toque. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. Si el barbero se va, el dueño desactiva el link y deja de funcionar al instante.
+**Link privado del barbero:** el sistema lo genera al crear al barbero y el dueño se lo envía por WhatsApp con un toque. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. Si el barbero se va, el dueño desactiva el link y deja de funcionar al instante. Por seguridad el link no se guarda: cada vez que el dueño lo envía, el sistema genera uno nuevo y el anterior deja de servir. Si el barbero no tiene celular registrado, el botón abre WhatsApp con el mensaje escrito para que el dueño elija el contacto.
 
 **Avisos al barbero (opcional):** si el dueño registra el celular del barbero, este recibe por WhatsApp cada nueva reserva o cancelación, sin entrar a ninguna parte.
 
 **Fase 2, plan Pro:** cuentas propias por barbero con roles (administrador, recepcionista), para barberías establecidas que necesitan que otra persona maneje la agenda de todos.
 
-**Dueño que también corta:** el dueño puede crearse a sí mismo como barbero; su agenda aparece junto a las demás en el panel.
+**Dueño que también corta:** el dueño puede crearse a sí mismo como barbero; su agenda aparece junto a las demás en el panel. En el asistente de registro hay una casilla "Yo también corto", marcada por defecto.
 
 ## Funcionalidades del MVP
 
@@ -80,8 +80,8 @@ La hora se vuelve a validar al confirmar, porque dos clientes pueden estar miran
 **2. Registro de la barbería (meta: menos de 10 minutos)**
 
 1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular, su correo y una contraseña.
-2. Agrega sus servicios con precio y duración (el sistema sugiere los típicos: corte, barba, corte + barba, cejas, niños).
-3. Agrega sus barberos con nombre, foto opcional y horario; puede usar el horario de la barbería para todos. El sistema genera el link privado de cada barbero.
+2. Agrega sus servicios con precio y duración. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
+3. Agrega sus barberos con nombre, foto opcional y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
 4. Recibe su link y QR listos para compartir; empieza la prueba de 20 días.
 
 **3. Cobro y activación**
@@ -136,7 +136,8 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 **Disponibilidad**
 
-- Los espacios se ofrecen cada 15 minutos; la duración la pone el servicio (ej. corte 40 min, corte + barba 60 min).
+- Los espacios se ofrecen cada 15 minutos; la duración la pone el servicio (ej. corte 40 min, corte + barba 60 min). La duración va de 5 a 240 minutos, en múltiplos de 5.
+- El horario de cada barbero va dentro del horario de la barbería.
 - Anticipación mínima configurable (por defecto 1 hora) y máxima de 30 días.
 - "El primero disponible" asigna al barbero libre con menos citas ese día.
 - Al confirmar se vuelve a validar el espacio en la base de datos, para que dos clientes no tomen la misma hora.
@@ -177,7 +178,7 @@ Ambos planes incluyen todas las funciones del MVP y links privados para los barb
 
 **Ciclo de la suscripción**
 
-1. Registro: empieza la prueba gratis de 20 días con todo habilitado. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive.
+1. Registro: empieza la prueba gratis de 20 días con todo habilitado, desde que se crea la cuenta. Durante la prueba no hay límite de barberos; los límites del plan aplican al pagar. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive.
 2. Avisos automáticos al dueño: 3 días antes de vencer, el día del vencimiento y 3 días después, con tus datos de pago y el valor exacto.
 3. Pago: el dueño transfiere y envía el comprobante a tu WhatsApp.
 4. Activación: en el panel eliges la barbería, el plan y el periodo, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.
@@ -214,23 +215,25 @@ Los recordatorios salen por WhatsApp usando la API oficial de Meta (Cloud API) d
 
 ## Modelo de datos
 
-Son 11 tablas; todas las de negocio llevan `barberia_id` para separar los datos de cada barbería (multi-tenant con seguridad a nivel de fila).
+Son 13 tablas: las 11 de este MVP más el horario de la barbería y los festivos en que abre. Todas las de negocio llevan `barbershop_id` para separar los datos de cada barbería (multi-tenant con seguridad a nivel de fila). En el código las tablas tienen nombre en inglés; el glosario completo y el porqué de cada decisión están en `docs/decisiones/0001-modelo-de-datos.md`.
 
-| Tabla | Campos principales | Relación |
+| Tabla (en el código) | Campos principales | Relación |
 | --- | --- | --- |
-| `barberias` | nombre, slug (para el link), logo, dirección, lat/lng, whatsapp, horario semanal, anticipación mín., horas para cancelar, datos de abono, estado\_suscripcion, plan, vence\_el | Raíz de todo |
-| `usuarios` | nombre, celular, correo, rol (dueño o super\_admin), activo | Pertenece a una barbería (salvo super admin) |
-| `barberos` | nombre visible, foto, celular, token\_link (link privado), link\_activo, avisos\_whatsapp, orden, activo | Pertenece a una barbería |
-| `horarios_barbero` | barbero\_id, día de la semana, hora\_inicio, hora\_fin | Varios por barbero |
-| `servicios` | nombre, precio\_cop, duracion\_min, activo | Pertenece a una barbería |
-| `barbero_servicio` | barbero\_id, servicio\_id | Qué servicios hace cada barbero |
-| `bloqueos` | barbero\_id (o toda la barbería), inicio, fin, motivo | Vacaciones, almuerzo, festivos |
-| `clientes` | nombre, celular (único por barbería), visitas, inasistencias, notas | Pertenece a una barbería |
-| `citas` | cliente\_id, barbero\_id, servicio\_id, inicio, fin, precio\_cop, estado, origen (web o manual), abono\_recibido, token\_gestion | El corazón del sistema |
-| `notificaciones` | cita\_id o barberia\_id, tipo, canal, programada\_para, enviada\_el, estado | Cola de mensajes |
-| `pagos_suscripcion` | barberia\_id, plan, periodo, valor\_cop, medio, referencia, fecha\_pago, cubre\_desde, cubre\_hasta, registrado\_por | Historial de cobros |
+| barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, vence el | Raíz de todo |
+| usuarios (`profiles`) | nombre, celular, rol (dueño o super admin), activo; el correo vive en la cuenta de acceso | Pertenece a una barbería (salvo super admin) |
+| barberos (`barbers`) | nombre visible, foto, celular, link privado (guardado solo como hash), link activo, avisos por WhatsApp, orden, activo | Pertenece a una barbería |
+| horarios del barbero (`barber_schedules`) | barbero, día de la semana, hora de inicio y de fin | Varios por barbero; admiten jornada partida |
+| horario de la barbería (`barbershop_hours`) | día de la semana, hora de inicio y de fin | Varios por barbería; admiten jornada partida |
+| festivos que abre (`holiday_openings`) | fecha | Los festivos están cerrados por defecto; cada fila es uno en que la barbería abre |
+| servicios (`services`) | nombre, precio en pesos, duración en minutos, activo | Pertenece a una barbería |
+| barbero-servicio (`barber_services`) | barbero, servicio | Qué servicios hace cada barbero |
+| bloqueos (`time_blocks`) | barbero (o toda la barbería), inicio, fin, motivo | Almuerzo, permisos, cierres especiales |
+| clientes (`customers`) | nombre, celular (único por barbería), notas; visitas e inasistencias se calculan desde las citas | Pertenece a una barbería |
+| citas (`appointments`) | cliente, barbero, servicio, inicio, fin, precio (copiado al reservar), estado, origen (web o manual), abono recibido, link de gestión (guardado solo como hash) | El corazón del sistema |
+| notificaciones (`notifications`) | cita o barbería, tipo, canal, programada para, enviada el, estado, intentos | Cola de mensajes |
+| pagos de suscripción (`subscription_payments`) | plan, periodo, valor en pesos, medio, referencia, fecha de pago, cubre desde y hasta, registrado por | Historial de cobros |
 
-Todas las fechas se guardan en UTC y se muestran en hora de Colombia. `token_gestion` es un código largo y aleatorio que va en el link del cliente para cancelar o reprogramar sin iniciar sesión.
+Los instantes (citas, bloqueos) se guardan en UTC y se muestran en hora de Colombia; las fechas de calendario (vencimientos, festivos, pagos) se guardan como fecha. Los links privados del barbero y de gestión de la cita son códigos largos y aleatorios que se guardan solo como hash, para que nadie pueda leerlos de la base de datos.
 
 ## Stack técnico y costos
 

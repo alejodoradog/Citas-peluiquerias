@@ -1,17 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
+import { tryGetPublicSupabaseEnv } from "./env";
 
 // Refreshes the Supabase session cookie before the page renders, so Server
 // Components always read a valid session.
 export async function updateSession(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   // Without Supabase configured (a preview without a database) there is no
   // session to refresh; the pages that need one report the missing setup.
-  if (!url || !publishableKey) {
+  const env = tryGetPublicSupabaseEnv();
+  if (!env) {
     return NextResponse.next({ request });
   }
+  const { url, publishableKey } = env;
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient<Database>(url, publishableKey, {
