@@ -1,0 +1,10 @@
+<h2>Recupera tu acceso</h2>
+<p>Hola. Recibimos una solicitud para cambiar la contraseña de tu cuenta.</p>
+<p>
+  <a
+    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/nueva-clave"
+    >Crear una contraseña nueva</a
+  >
+</p>
+<p>El link sirve por una hora y una sola vez.</p>
+<p>Si no pediste este cambio, ignora este correo: tu contraseña sigue igual.</p>

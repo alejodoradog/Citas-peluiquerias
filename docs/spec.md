@@ -48,7 +48,7 @@ Son 24 funciones: P1 es imprescindible para lanzar, P2 entra si cabe en las 6 se
 | 4 | Link para cancelar o reprogramar la cita sin llamar | Cliente | P1 |  |
 | 5 | Recordatorio de la cita (ver sección Notificaciones) | Cliente | P1 |  |
 | 6 | Ver "mis citas" ingresando el celular + código | Cliente | P2 |  |
-| 7 | Registro de la barbería en 3 pasos con prueba gratis de 14 días | Dueño | P1 |  |
+| 7 | Registro de la barbería en 3 pasos con prueba gratis de 20 días | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
 | 9 | Crear barberos (sin cuenta), asignarles servicios y horario, y enviarles su link privado | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
@@ -79,10 +79,10 @@ La hora se vuelve a validar al confirmar, porque dos clientes pueden estar miran
 
 **2. Registro de la barbería (meta: menos de 10 minutos)**
 
-1. El dueño entra desde un link de venta o anuncio y escribe el nombre de la barbería, su celular, su correo y una contraseña.
+1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular, su correo y una contraseña.
 2. Agrega sus servicios con precio y duración (el sistema sugiere los típicos: corte, barba, corte + barba, cejas, niños).
 3. Agrega sus barberos con nombre, foto opcional y horario; puede usar el horario de la barbería para todos. El sistema genera el link privado de cada barbero.
-4. Recibe su link y QR listos para compartir; empieza la prueba de 14 días.
+4. Recibe su link y QR listos para compartir; empieza la prueba de 20 días.
 
 **3. Cobro y activación**
 
@@ -177,7 +177,7 @@ Ambos planes incluyen todas las funciones del MVP y links privados para los barb
 
 **Ciclo de la suscripción**
 
-1. Registro: empieza la prueba gratis de 14 días con todo habilitado.
+1. Registro: empieza la prueba gratis de 20 días con todo habilitado. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive.
 2. Avisos automáticos al dueño: 3 días antes de vencer, el día del vencimiento y 3 días después, con tus datos de pago y el valor exacto.
 3. Pago: el dueño transfiere y envía el comprobante a tu WhatsApp.
 4. Activación: en el panel eliges la barbería, el plan y el periodo, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.
