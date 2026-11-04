@@ -28,4 +28,5 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 ## Forma de trabajo
 - Empieza en modo plan; espera aprobación antes de editar.
 - Una tarea por rama; termina con lint, typecheck y pruebas en verde.
+- Marca las casillas de docs/*.md a medida que avanzas, en la misma rama de la tarea y solo lo comprobado.
 - Si la spec no responde algo, pregunta; no inventes reglas de negocio.
