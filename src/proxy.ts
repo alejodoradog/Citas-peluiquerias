@@ -15,6 +15,5 @@ export const config = {
     "/recuperar-clave",
     "/nueva-clave",
     "/auth/:path*",
-    "/salir",
   ],
 };

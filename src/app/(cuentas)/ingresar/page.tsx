@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getCurrentAccess } from "@/lib/auth/access";
+import { signOut } from "@/modulos/cuentas/acciones/auth";
 import { AuthShell, TextLink } from "@/ui/auth-shell";
 import { FormAlert } from "@/ui/form";
 import { textos } from "@/ui/textos";
@@ -10,12 +12,12 @@ const t = textos.cuentas.ingreso;
 
 export const metadata: Metadata = { title: t.titulo };
 
-export default function IngresarPage({ searchParams }: PageProps<"/ingresar">) {
+export default function IngresarPage() {
   return (
     <AuthShell title={t.titulo}>
       <Suspense fallback={null}>
         <RedirectIfSignedIn />
-        <NoAccessNotice searchParams={searchParams} />
+        <NoAccessNotice />
       </Suspense>
       <SignInForm />
       <div className="mt-8 flex flex-col gap-3 text-base">
@@ -30,14 +32,22 @@ export default function IngresarPage({ searchParams }: PageProps<"/ingresar">) {
   );
 }
 
-async function NoAccessNotice({
-  searchParams,
-}: Pick<PageProps<"/ingresar">, "searchParams">) {
-  const { aviso } = await searchParams;
-  if (aviso !== "sin-acceso") return null;
+// An account without access (no profile, or deactivated) lands here with its
+// session. It can see nothing; the notice explains why and offers to leave.
+async function NoAccessNotice() {
+  const access = await getCurrentAccess();
+  if (access.kind !== "no_access") return null;
   return (
-    <div className="mb-6">
+    <div className="mb-8 flex flex-col gap-3">
       <FormAlert>{t.sinAcceso}</FormAlert>
+      <form action={signOut}>
+        <button
+          type="submit"
+          className="text-brand-strong focus-visible:outline-brand rounded font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          {textos.cuentas.salir}
+        </button>
+      </form>
     </div>
   );
 }

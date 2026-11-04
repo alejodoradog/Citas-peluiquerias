@@ -86,8 +86,8 @@ export function homeFor(access: Access): string {
       return "/panel";
     case "super_admin":
       return "/admin";
+    // /ingresar explains that the account has no access.
     case "no_access":
-      return "/salir";
     case "anonymous":
       return "/ingresar";
   }

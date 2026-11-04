@@ -36,7 +36,7 @@ El dueño y el super admin entran con correo y contraseña (Supabase Auth). El r
 11. **Quién entra a dónde lo decide solo `profiles`.** `getCurrentAccess` (`src/lib/auth/access.ts`) lee la cuenta con `getUser`, que valida con Supabase, y después el perfil por RLS. Nunca usa `user_metadata`, que el usuario puede cambiar. Hay cuatro casos:
     - Dueño activo: entra a `/panel`.
     - Super admin activo: entra a `/admin`.
-    - Cuenta sin perfil, desactivada o con un rol desconocido: va a `/salir`, que cierra la sesión y explica que no tiene acceso. Si alguien con acceso abre `/salir`, lo manda a su inicio sin cerrar la sesión, para que un link no pueda sacar a nadie.
+    - Cuenta sin perfil, desactivada o con un rol desconocido: va a `/ingresar`, que consulta la base de datos, explica que no tiene acceso y ofrece cerrar la sesión. Esa sesión no ve ningún dato. El aviso no viaja en la URL, así que no se pierde entre redireccionamientos ni se puede falsificar con un link.
     - Sin sesión: va a `/ingresar`.
     - Si falla la consulta (red, tiempo de espera), se lanza el error en lugar de tratarlo como "sin acceso", para no sacar a un dueño válido.
 12. **`proxy.ts` solo en las rutas de cuentas, panel y admin.** Refresca la sesión antes de que la página se dibuje. Las páginas públicas no lo usan y siguen funcionando aunque Supabase no esté configurado, como en una vista previa sin base de datos.

@@ -127,18 +127,22 @@ test("a signed-in owner cannot set a new password without the email link", async
   await expect(page.getByLabel(t.nuevaClave.campos.password)).not.toBeVisible();
 });
 
-test("an account without access is signed out with an explanation", async ({
+test("an account without access is told so and can sign out", async ({
   page,
 }) => {
   const email = uniqueEmail("sin-acceso");
   await createAccountWithoutProfile(email, PASSWORD);
 
   await signIn(page, email);
-  await expect(page).toHaveURL(/\/ingresar\?aviso=sin-acceso$/);
+  await expect(page).toHaveURL(/\/ingresar$/);
   await expect(page.getByText(t.ingreso.sinAcceso)).toBeVisible();
 
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/ingresar$/);
+  await expect(page.getByText(t.ingreso.sinAcceso)).toBeVisible();
+
+  await page.getByRole("button", { name: t.salir }).click();
+  await expect(page.getByText(t.ingreso.sinAcceso)).not.toBeVisible();
 });
 
 test("a bad recovery link asks for a new one", async ({ page }) => {
