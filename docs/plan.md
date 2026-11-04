@@ -244,10 +244,10 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 1 · Base de datos, seguridad y acceso (semana 1)
 
 - [x] 1.1 Migraciones de las tablas de la spec (11, más `barbershop_hours` y `holiday_openings`; ver `docs/decisiones/0001-modelo-de-datos.md`), con `barbershop_id`, índices y llaves foráneas.
-- [ ] 1.2 Políticas RLS: el dueño solo ve su barbería; el super admin ve todo; el público solo lee lo necesario para reservar.
+- [x] 1.2 Políticas RLS: el dueño solo ve su barbería; el super admin ve todo; el público solo lee lo necesario para reservar.
 - [ ] 1.3 Constraint de exclusión en `appointments` para que dos citas activas del mismo barbero no se crucen.
 - [ ] 1.4 Registro e ingreso con correo y contraseña, recuperación por correo, rol super admin.
-- [ ] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
+- [x] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
 - [ ] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
