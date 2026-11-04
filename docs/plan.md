@@ -248,7 +248,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.3 Constraint de exclusión en `appointments` para que dos citas activas del mismo barbero no se crucen.
 - [x] 1.4 Registro e ingreso con correo y contraseña, recuperación por correo, rol super admin.
 - [x] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
-- [ ] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
+- [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
