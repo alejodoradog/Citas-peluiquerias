@@ -254,7 +254,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
-- [ ] 2.1 Asistente de registro en 3 pasos (barbería → servicios → barberos y horarios) con prueba de 14 días.
+- [ ] 2.1 Asistente de registro en 3 pasos (barbería → servicios → barberos y horarios) con prueba de 20 días.
 - [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, enviar por WhatsApp (`wa.me`), desactivar y regenerar.
 - [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, datos de abono.
