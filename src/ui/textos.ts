@@ -51,7 +51,7 @@ export const textos = {
       enviar: "Crear cuenta",
       enviando: "Creando tu cuenta…",
       revisaCorreo:
-        "Te enviamos un correo para confirmar tu cuenta. Ábrelo para entrar.",
+        "Revisa tu correo y abre el link para confirmar tu cuenta. Si ese correo ya tenía cuenta, ingresa o recupera tu contraseña.",
       yaTienes: "¿Ya tienes cuenta?",
       ingresa: "Ingresa",
     },
@@ -65,6 +65,10 @@ export const textos = {
       crear: "Crea una gratis",
       sinAcceso:
         "Esta cuenta no tiene acceso. Si crees que es un error, escríbenos.",
+      correoConfirmado:
+        "Listo, tu correo quedó confirmado. Ingresa con tu correo y contraseña.",
+      linkVencido:
+        "Ese link venció o ya se usó. Ingresa con tu correo y contraseña; si te falta confirmar el correo, te enviamos otro link.",
     },
     recuperar: {
       titulo: "Recupera tu acceso",
@@ -79,7 +83,7 @@ export const textos = {
       volver: "Volver a ingresar",
     },
     confirmar: {
-      titulo: "Crea tu contraseña nueva",
+      titulo: "Ya casi",
       bajada: "Toca el botón para continuar.",
       continuar: "Continuar",
       continuando: "Abriendo…",
@@ -105,6 +109,8 @@ export const textos = {
       password_too_long: "La contraseña es muy larga.",
       password_mismatch: "Las contraseñas no coinciden.",
       invalid_credentials: "El correo o la contraseña no coinciden.",
+      email_not_confirmed:
+        "Te falta confirmar tu correo. Te enviamos un link nuevo; revisa también la carpeta de spam.",
       email_taken:
         "Ya existe una cuenta con ese correo. Ingresa o recupera tu contraseña.",
       rate_limited: "Hiciste muchos intentos seguidos. Espera unos minutos.",

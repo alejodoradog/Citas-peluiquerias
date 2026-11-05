@@ -36,12 +36,15 @@ Repite el `db push` cada vez que se fusione un PR con migraciones nuevas, hasta 
 
 En Supabase → **Authentication**:
 
-- **Sign In / Providers → Email:** desactiva **Confirm email**. En la nube viene activado y la decisión del MVP es no exigirlo (decisión 0004).
+- **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change** y pon la longitud del código (**Email OTP length**) en 10, como en `supabase/config.toml`.
 - **Password:** contraseña mínima de 8 caracteres.
 - **URL Configuration:**
   - **Site URL:** la URL de vista previa de Vercel.
   - **Redirect URLs:** `https://citas-peluquerias-*-alejodoradogs-projects.vercel.app/**`.
 - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
+- **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
+
+**Límite mientras no haya remitente propio:** el correo de prueba de Supabase solo envía a direcciones del equipo del proyecto, y unos 2 correos por hora ([documentación](https://supabase.com/docs/guides/auth/auth-smtp)). Para probar el registro en una vista previa, usa un correo de ese equipo. Con otro correo, Supabase rechaza el envío ("Email address not authorized") y la pantalla muestra "No pudimos completar la acción". Esto se resuelve al configurar Amazon SES (tarea 5.2), y entonces hay que subir también el límite de envíos de Auth, que por defecto es de 30 correos por hora.
 
 ## 4. Volver a desplegar
 
@@ -49,4 +52,4 @@ En Vercel → **Deployments** → el último despliegue → **Redeploy**. Las va
 
 ## Cómo verificar
 
-Abre `/registro` en la URL de vista previa y crea una barbería de prueba. Debes llegar a `/panel`. Si sale "Algo salió mal", revisa que las dos variables estén marcadas para Preview y que el despliegue sea posterior a cuando las agregaste.
+Abre `/registro` en la URL de vista previa y crea una barbería de prueba con un correo del equipo. Abre el link que te llega, toca "Continuar" e ingresa con tu contraseña. El link siempre abre la **Site URL**, así que debe ser la URL de la vista previa que estás probando. También revisa en **Emails** que el link dure una hora, como dice la plantilla. Debes llegar a `/panel`. Si sale "Algo salió mal", revisa que las dos variables estén marcadas para Preview y que el despliegue sea posterior a cuando las agregaste.

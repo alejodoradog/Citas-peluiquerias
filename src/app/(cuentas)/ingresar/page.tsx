@@ -13,12 +13,13 @@ const t = textos.cuentas.ingreso;
 
 export const metadata: Metadata = { title: t.titulo };
 
-export default function IngresarPage() {
+export default function IngresarPage({ searchParams }: PageProps<"/ingresar">) {
   return (
     <AuthShell title={t.titulo}>
       <Suspense fallback={null}>
         <RedirectIfSignedIn />
         <NoAccessNotice />
+        <EmailLinkNotice searchParams={searchParams} />
       </Suspense>
       <SignInForm />
       <div className="mt-8 flex flex-col gap-3 text-base">
@@ -30,6 +31,26 @@ export default function IngresarPage() {
         </p>
       </div>
     </AuthShell>
+  );
+}
+
+// Where the email confirmation link leaves the owner.
+async function EmailLinkNotice({
+  searchParams,
+}: Pick<PageProps<"/ingresar">, "searchParams">) {
+  const { vencido, confirmado } = await searchParams;
+  if (confirmado === "1") {
+    return (
+      <div className="mb-6">
+        <FormAlert tone="info">{t.correoConfirmado}</FormAlert>
+      </div>
+    );
+  }
+  if (vencido !== "1") return null;
+  return (
+    <div className="mb-6">
+      <FormAlert>{t.linkVencido}</FormAlert>
+    </div>
   );
 }
 

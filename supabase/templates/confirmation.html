@@ -1,0 +1,18 @@
+<h2>Confirma tu correo</h2>
+<p>
+  Hola. Ya casi: confirma tu correo para entrar a la barbería
+  <strong>{{ .Data.barbershop_name }}</strong>.
+</p>
+<p>
+  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup"
+    >Confirmar mi correo</a
+  >
+</p>
+<p>
+  El link sirve por una hora y una sola vez. Si venció, ingresa con tu correo y
+  contraseña y te enviamos otro.
+</p>
+<p>
+  Si no creaste esa barbería, no abras el link e ignora este correo: alguien
+  pudo escribir tu correo por error.
+</p>

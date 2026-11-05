@@ -5,11 +5,14 @@ import { z } from "zod";
 export type CredentialCode =
   "email_invalid" | "password_too_short" | "password_too_long";
 
+// Same limit as private.is_email in the database.
+export const MAX_EMAIL_LENGTH = 254;
+
 export const emailSchema = z
   .string({ error: "email_invalid" })
   .trim()
   .toLowerCase()
-  .pipe(z.email("email_invalid"));
+  .pipe(z.email("email_invalid").max(MAX_EMAIL_LENGTH, "email_invalid"));
 
 // Supabase Auth hashes with bcrypt, which reads at most 72 bytes. Accented
 // letters take two bytes, so the limit is checked in bytes, not characters.

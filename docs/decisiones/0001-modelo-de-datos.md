@@ -1,6 +1,6 @@
 # 0001 Modelo de datos
 
-Fecha: 2026-11-04 · Tarea: 1.1 · Estado: aceptada por el dueño del proyecto.
+Fecha: 2026-11-04 · Tarea: 1.1 · Estado: aceptada por el dueño del proyecto. La decisión 0006 cambia los datos de contacto de `customers` y `barbers`, y quita el canal de `notifications`.
 
 ## Contexto
 

@@ -19,7 +19,7 @@ const signInSchema = z.object({
 
 const recoveryRequestSchema = z.object({ email: emailSchema });
 
-const recoveryTokenSchema = z.object({
+const emailLinkTokenSchema = z.object({
   tokenHash: z.string().min(1).max(256),
   next: z.string().max(200),
 });
@@ -47,10 +47,10 @@ export function parseRecoveryRequest(
   return parseWith(recoveryRequestSchema, input);
 }
 
-export function parseRecoveryToken(
+export function parseEmailLinkToken(
   input: unknown,
-): ParseResult<z.output<typeof recoveryTokenSchema>, CredentialsErrorCode> {
-  return parseWith(recoveryTokenSchema, input);
+): ParseResult<z.output<typeof emailLinkTokenSchema>, CredentialsErrorCode> {
+  return parseWith(emailLinkTokenSchema, input);
 }
 
 export function parseNewPassword(

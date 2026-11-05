@@ -4,6 +4,7 @@
 
 export type AccountError =
   | "invalid_credentials"
+  | "email_not_confirmed"
   | "email_taken"
   | "rate_limited"
   | "weak_password"
@@ -13,6 +14,7 @@ export type AccountError =
 
 const byCode: Record<string, AccountError> = {
   invalid_credentials: "invalid_credentials",
+  email_not_confirmed: "email_not_confirmed",
   user_already_exists: "email_taken",
   email_exists: "email_taken",
   over_request_rate_limit: "rate_limited",

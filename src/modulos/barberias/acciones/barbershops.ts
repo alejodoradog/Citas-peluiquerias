@@ -54,11 +54,13 @@ export async function registerBarbershop(
   });
 
   if (error) {
-    return {
-      status: "failed",
-      error: toAccountError(error),
-      values: form.values,
-    };
+    const accountError = toAccountError(error);
+    // Answers the same as a new signup, so the form never reveals which emails
+    // have an account. No email is sent; the notice covers that case.
+    if (accountError === "email_taken") {
+      return { status: "done", notice: "check_email" };
+    }
+    return { status: "failed", error: accountError, values: form.values };
   }
   // With email confirmation on, there is no session until the owner confirms.
   if (!data.session) {

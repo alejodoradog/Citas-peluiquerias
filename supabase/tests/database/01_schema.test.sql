@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(63);
+select plan(72);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -87,9 +87,9 @@ insert into public.services (id, barbershop_id, name, price_cop, duration_minute
   ('aaaaaaaa-0000-0000-0000-0000000000c1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Corte', 25000, 40),
   ('bbbbbbbb-0000-0000-0000-0000000000c1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Corte', 30000, 40);
 
-insert into public.customers (id, barbershop_id, full_name, phone) values
-  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', '+573001112233'),
-  ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', '+573001112233');
+insert into public.customers (id, barbershop_id, full_name, email, phone) values
+  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', 'cliente@example.com', '+573001112233'),
+  ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente@example.com', '+573001112233');
 
 insert into public.appointments (
   id, barbershop_id, customer_id, barber_id, service_id,
@@ -156,9 +156,9 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.notifications (barbershop_id, appointment_id, type, channel, scheduled_for, dedupe_key)
+  $$insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key)
     values ('bbbbbbbb-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1',
-            'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'cross-tenant')$$,
+            'appointment_reminder', '2026-11-09 14:00Z', 'cross-tenant')$$,
   '23503', null,
   'a notification cannot point at an appointment from another barbershop'
 );
@@ -283,11 +283,27 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.barbers (barbershop_id, display_name, link_token_hash, whatsapp_notifications)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Sin celular', repeat('c', 64), true)$$,
+  $$insert into public.barbers (barbershop_id, display_name, link_token_hash, email_notifications)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Sin correo', repeat('c', 64), true)$$,
   '23514', null,
-  'WhatsApp notices to a barber need the barber phone'
+  'email notices to a barber need the barber email'
 );
+
+select lives_ok(
+  $$insert into public.barbers (barbershop_id, display_name, email, link_token_hash, email_notifications)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Con correo', 'barbero@example.com', repeat('9', 64), true)$$,
+  'a barber with an email can get email notices'
+);
+
+select throws_ok(
+  $$insert into public.barbers (barbershop_id, display_name, email, link_token_hash)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Correo malo', 'sin-arroba', repeat('8', 64))$$,
+  '23514', null,
+  'a barber email must look like an email'
+);
+
+select hasnt_column('public', 'barbers', 'phone', 'barbers no longer store a phone');
+select hasnt_column('public', 'notifications', 'channel', 'email is the only channel, so notifications have no channel');
 
 select throws_ok(
   $$insert into public.services (barbershop_id, name, price_cop, duration_minutes)
@@ -361,11 +377,43 @@ select throws_ok(
   'a block ends after it starts'
 );
 
-select throws_ok(
+select lives_ok(
   $$insert into public.customers (barbershop_id, full_name, phone)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'Mismo celular', '+573001112233')$$,
+  'an unverified phone can repeat within a barbershop'
+);
+
+select throws_ok(
+  $$insert into public.customers (barbershop_id, full_name, email)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Mismo correo', 'cliente@example.com')$$,
   '23505', null,
-  'a phone is unique within a barbershop'
+  'an email is unique within a barbershop'
+);
+
+select is(
+  (select count(*) from public.customers where email = 'cliente@example.com'),
+  2::bigint,
+  'the same email can be a customer of two barbershops'
+);
+
+select lives_ok(
+  $$insert into public.customers (barbershop_id, full_name)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Sin datos'), ('aaaaaaaa-0000-0000-0000-000000000000', 'Sin datos')$$,
+  'a manual customer needs only a name, and two can share it'
+);
+
+select throws_ok(
+  $$insert into public.customers (barbershop_id, full_name, email)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Mayúsculas', 'Cliente@Example.com')$$,
+  '23514', null,
+  'emails are stored in lowercase, so one person cannot be two customers'
+);
+
+select throws_ok(
+  $$insert into public.customers (barbershop_id, full_name, email)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Correo malo', 'no es un correo@x')$$,
+  '23514', null,
+  'a customer email must look like an email'
 );
 
 select throws_ok(
@@ -394,23 +442,23 @@ select throws_ok(
 -- 9. Notifications and subscription payments ------------------------------------
 
 select lives_ok(
-  $$insert into public.notifications (barbershop_id, appointment_id, type, channel, scheduled_for, dedupe_key)
+  $$insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1',
-            'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'reminder:e1')$$,
+            'appointment_reminder', '2026-11-09 14:00Z', 'reminder:e1')$$,
   'a reminder is queued'
 );
 
 select throws_ok(
-  $$insert into public.notifications (barbershop_id, appointment_id, type, channel, scheduled_for, dedupe_key)
+  $$insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1',
-            'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'reminder:e1')$$,
+            'appointment_reminder', '2026-11-09 14:00Z', 'reminder:e1')$$,
   '23505', null,
   'the same message is never queued twice'
 );
 
 select lives_ok(
-  $$insert into public.notifications (barbershop_id, type, channel, scheduled_for, dedupe_key)
-    values ('bbbbbbbb-0000-0000-0000-000000000000', 'subscription_expiring', 'email', '2026-11-15 13:00Z', 'reminder:e1')$$,
+  $$insert into public.notifications (barbershop_id, type, scheduled_for, dedupe_key)
+    values ('bbbbbbbb-0000-0000-0000-000000000000', 'subscription_expiring', '2026-11-15 13:00Z', 'reminder:e1')$$,
   'dedupe keys are scoped to each barbershop'
 );
 

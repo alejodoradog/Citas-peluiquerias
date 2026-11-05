@@ -1,9 +1,27 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseEmailLinkToken,
   parseSignIn,
   parseNewPassword,
   parseRecoveryRequest,
 } from "./credentials";
+
+describe("parseEmailLinkToken", () => {
+  it("accepts a token and an optional next path", () => {
+    expect(parseEmailLinkToken({ tokenHash: "abc", next: "" })).toEqual({
+      success: true,
+      data: { tokenHash: "abc", next: "" },
+    });
+  });
+
+  it.each([
+    ["an empty token", { tokenHash: "", next: "" }],
+    ["a token that is too long", { tokenHash: "a".repeat(257), next: "" }],
+    ["a next path that is too long", { tokenHash: "a", next: "a".repeat(201) }],
+  ])("rejects %s", (_case, input) => {
+    expect(parseEmailLinkToken(input).success).toBe(false);
+  });
+});
 
 describe("parseSignIn", () => {
   it("cleans the email and keeps the password as typed", () => {
