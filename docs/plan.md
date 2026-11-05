@@ -34,7 +34,7 @@ Las cuatro clases de usuario entran a la misma app; las reglas que no pueden fal
 | Citas que no se cruzan | Constraint de exclusión de PostgreSQL sobre rango de tiempo por barbero | Dos reservas simultáneas a la misma hora: una entra y la otra falla, siempre |
 | Lógica de negocio | Funciones puras en `modulos/*/dominio`, sin base de datos | Se prueban en milisegundos y Claude Code no las rompe sin que una prueba lo note |
 | Escrituras | Server Actions de Next.js, validadas con Zod | Menos código que una API aparte; la API pública llega solo si hace falta |
-| Mensajes | Tabla de cola + tarea programada cada minuto | Si WhatsApp falla, se reintenta; nunca se envía dos veces el mismo mensaje |
+| Mensajes | Solo por correo, con tabla de cola + tarea programada cada minuto (decisión 0006) | Si el envío falla, se reintenta; nunca se envía dos veces el mismo mensaje |
 | Hora | UTC en base de datos, `America/Bogota` en lógica y pantalla | Colombia no cambia de hora, pero el servidor sí puede estar en otra zona |
 | Acceso del barbero | Link con token aleatorio guardado como hash, revocable | Sin cuentas ni contraseñas, y seguro si el barbero se va |
 
@@ -70,7 +70,7 @@ barberias/
 │   │   ├── barberias/         # Registro, configuración, horarios
 │   │   ├── agenda/            # Motor de disponibilidad y citas
 │   │   ├── clientes/
-│   │   ├── notificaciones/    # Plantillas, cola, envío por WhatsApp y correo
+│   │   ├── notificaciones/    # Plantillas, cola y envío por correo
 │   │   └── suscripciones/     # Planes, pagos, estados
 │   ├── ui/                    # Componentes visuales compartidos
 │   └── lib/                   # Supabase, fechas, validación, utilidades
@@ -98,9 +98,9 @@ Todo se prepara en una tarde; ninguna cuenta cuesta dinero al inicio salvo tu su
 - [x] GitHub: repositorio `Citas-peluiquerias` (el nombre `barberias` queda pendiente).
 - [ ] Supabase: dos proyectos, `barberias-dev` y `barberias-prod` (prod se crea en la fase 7). `barberias-dev` ya existe; falta conectarlo a Vercel (`docs/operacion/configurar-barberias-dev.md`).
 - [x] Vercel: conectado al repositorio de GitHub.
-- [ ] Resend: para correos (con tu dominio cuando lo compres).
+- [ ] AWS: cuenta para Amazon SES, con permiso de Amazon para enviar a cualquier correo (antes de la tarea 5.2).
+- [ ] Dominio propio: remitente verificado para SES (antes de la tarea 5.2).
 - [ ] Sentry: plan gratis, para errores.
-- [ ] Meta Business: cuenta + número dedicado (para la fase 5).
 
 **Herramientas en tu computador (Windows)**
 
@@ -250,15 +250,16 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.5 Pruebas de RLS: un dueño intentando leer o escribir datos de otra barbería falla.
 - [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
 - [x] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
+- [x] 1.8 Correo como único canal: sin WhatsApp como canal de mensajes y sin códigos OTP; correo del cliente y del barbero, y confirmación del correo del dueño con un link (`docs/decisiones/0006-correo-unico-canal.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
 - [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
-- [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto, horario semanal, servicios que hace).
-- [ ] 2.3 Link privado por barbero: generar, enviar por WhatsApp (`wa.me`), desactivar y regenerar.
-- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento.
+- [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto, correo opcional, avisos por correo, horario semanal, servicios que hace).
+- [ ] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar.
+- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento.
 - [ ] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
 
 **Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos.
@@ -266,17 +267,17 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 3 · Motor de disponibilidad y página pública (semana 3)
 
 - [ ] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible").
-- [ ] 3.2 Página pública: perfil, servicio, barbero, día y hora, datos, confirmación.
-- [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir.
+- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicio, barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación.
+- [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente.
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
-- [ ] 3.5 Protección contra abuso: límite de reservas por celular e IP, y verificación anti-bots invisible.
+- [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor.
 
 **Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una.
 
 ### Fase 4 · Agenda del panel y vista del barbero (semana 4)
 
 - [ ] 4.1 Agenda día (columnas por barbero) y semana; tocar un espacio crea cita.
-- [ ] 4.2 Cita manual, bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
+- [ ] 4.2 Cita manual (avisando que sin correo no hay confirmación ni recordatorio), bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
 - [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias, y borrar un cliente anonimizando sus datos (Ley 1581).
 - [ ] 4.4 Vista "Mi agenda" del barbero por link privado, con permisos limitados.
 - [ ] 4.5 Actualización en vivo de la agenda cuando entra una reserva.
@@ -286,19 +287,19 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 5 · Notificaciones y suscripciones (semana 5)
 
 - [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados.
-- [ ] 5.2 Envío por WhatsApp Cloud API con plantillas aprobadas; correo con Resend como respaldo.
-- [ ] 5.3 Recordatorio 24 h (o 3 h) con botones Confirmo / Cancelar, y avisos opcionales al barbero.
+- [ ] 5.2 Envío por correo con Amazon SES, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente.
+- [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero.
 - [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", suspender, extender prueba.
-- [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación.
+- [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea).
 
-**Lista cuando:** una cita de prueba recibe confirmación y recordatorio reales en WhatsApp, y una barbería vencida se suspende y se reactiva al registrar el pago.
+**Lista cuando:** una cita de prueba recibe confirmación y recordatorio reales por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
 
 ### Fase 6 · Pulido y salida al piloto (semana 6)
 
 - [ ] 6.1 Pruebas de punta a punta con Playwright de los 3 flujos de la spec.
 - [ ] 6.2 Prueba en celulares reales (Android de gama media, iPhone) y redes lentas.
 - [ ] 6.3 PWA instalable, ícono, nombre, pantalla sin conexión.
-- [ ] 6.4 Proyecto de producción en Supabase, dominio, Sentry, copias de seguridad.
+- [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad.
 - [ ] 6.5 Términos de uso y política de datos personales visibles en el registro y la reserva.
 - [ ] 6.6 Cargar las 10 barberías piloto.
 
@@ -320,7 +321,7 @@ La prueba de fuego del producto es que una barbería nunca vea datos de otra y q
 **Seguridad**
 
 - Los tokens de links (barbero y gestión de cita) son largos y aleatorios, se guardan como hash (nunca el valor original) y se pueden revocar.
-- La página pública no expone celulares ni nombres de otros clientes; solo horas libres.
+- La página pública no expone correos, celulares ni nombres de otros clientes; solo horas libres.
 - La clave de servicio de Supabase solo existe en el servidor; nunca en el navegador.
 - Límite de solicitudes en la página pública y en el ingreso.
 - Datos personales según la Ley 1581 de 2012: aviso de privacidad al reservar, opción de borrar un cliente.
@@ -351,4 +352,4 @@ El objetivo de esta semana es cerrar la fase 0 y arrancar la 1; todo lo demás p
 - [x] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
 - [ ] Traer aquí el plan que proponga Claude Code para la fase 1 (el modelo de datos) antes de aprobarlo: es la decisión más difícil de cambiar después.
 - [ ] En paralelo, empezar el diseño de las 3 pantallas clave (reserva, agenda, registro); lo trabajamos juntos aquí.
-- [ ] Crear la cuenta de Meta Business y conseguir el número dedicado, para no frenar la fase 5.
+- [ ] Comprar el dominio, crear la cuenta de AWS y solicitar el permiso de Amazon SES, para no frenar la fase 5.

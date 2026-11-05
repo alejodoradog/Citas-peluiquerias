@@ -12,7 +12,7 @@ La tarea 1.1 dejó RLS activado en las 13 tablas, sin políticas. Esta decisión
 | --- | --- | --- | --- |
 | `barbershops` | Lee perfil y políticas; no la suscripción | Lee todo; edita perfil y configuración | Lee |
 | `profiles` | — | Lee el suyo; edita nombre y celular | Lee |
-| `barbers` | Activos, sin celular ni hash | Lee, crea, edita y borra; no lee el hash | Lee, sin hash |
+| `barbers` | Activos, sin correo ni hash | Lee, crea, edita y borra; no lee el hash | Lee, sin hash |
 | `services` | Activos | Lee, crea, edita y borra | Lee |
 | `barber_services`, `barber_schedules`, `barbershop_hours`, `holiday_openings` | Lee | Lee, crea, edita y borra | Lee |
 | `time_blocks` | Lee horas, sin el motivo | Lee, crea, edita y borra | Lee |

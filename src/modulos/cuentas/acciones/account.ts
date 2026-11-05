@@ -9,8 +9,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasRecentRecoverySession } from "../datos/access";
 import {
   parseNewPassword,
+  parseEmailLinkToken,
   parseRecoveryRequest,
-  parseRecoveryToken,
   parseSignIn,
   type CredentialsErrorCode,
 } from "../dominio/credentials";
@@ -44,11 +44,14 @@ export async function signIn(
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword(form.data);
   if (error) {
-    return {
-      status: "failed",
-      error: toAccountError(error),
-      values: form.values,
-    };
+    const accountError = toAccountError(error);
+    // Only reached with the right password. The first link lasts an hour, so
+    // this is how an owner who was late gets another. Limits may skip the
+    // send; the message stays the same.
+    if (accountError === "email_not_confirmed") {
+      await supabase.auth.resend({ type: "signup", email: form.data.email });
+    }
+    return { status: "failed", error: accountError, values: form.values };
   }
   // The panel sends a super admin on to /admin.
   redirect(routes.panel);
@@ -81,16 +84,13 @@ export async function requestPasswordRecovery(
   return { status: "done", notice: "recovery_sent" };
 }
 
-// The recovery email links to /auth/confirm, which asks for a tap before
-// spending the one-time token: some email scanners open links on their own.
+// Emails link to /auth/confirm, which asks for a tap before spending the
+// one-time token: some email scanners open links on their own.
 export async function confirmPasswordRecovery(
   formData: FormData,
 ): Promise<void> {
-  const form = readForm(formData, {
-    fields: ["tokenHash", "next"],
-    parse: parseRecoveryToken,
-  });
   const expired = `${routes.recoverPassword}?vencido=1`;
+  const form = readEmailLink(formData);
   if (!form.valid) {
     redirect(expired);
   }
@@ -104,6 +104,35 @@ export async function confirmPasswordRecovery(
     redirect(expired);
   }
   redirect(safeNextPath(form.data.next));
+}
+
+// Confirming does not sign the owner in. Auth records this session and a
+// recovery session the same way, so keeping it would let it set a new password
+// (recovery-session.ts). The owner signs in with their password instead.
+export async function confirmEmailAddress(formData: FormData): Promise<void> {
+  const expired = `${routes.signIn}?vencido=1`;
+  const form = readEmailLink(formData);
+  if (!form.valid) {
+    redirect(expired);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.verifyOtp({
+    type: "signup",
+    token_hash: form.data.tokenHash,
+  });
+  if (error) {
+    redirect(expired);
+  }
+  await supabase.auth.signOut({ scope: "local" });
+  redirect(`${routes.signIn}?confirmado=1`);
+}
+
+function readEmailLink(formData: FormData) {
+  return readForm(formData, {
+    fields: ["tokenHash", "next"],
+    parse: parseEmailLinkToken,
+  });
 }
 
 export async function setNewPassword(

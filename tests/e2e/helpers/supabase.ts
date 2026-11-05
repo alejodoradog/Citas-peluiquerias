@@ -68,7 +68,20 @@ export async function createSuperAdmin(email: string, password: string) {
   if (profileError) throw profileError;
 }
 
-export async function latestRecoveryLink(email: string): Promise<string> {
+export async function emailCount(email: string): Promise<number> {
+  const search = await fetch(
+    `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`,
+  );
+  const { messages = [] } = (await search.json()) as { messages?: unknown[] };
+  return messages.length;
+}
+
+// The newest /auth/confirm link of that kind. An owner gets a confirmation
+// email first, so it waits until the newest email is the one asked for.
+export async function latestEmailLink(
+  email: string,
+  type: "recovery" | "signup",
+): Promise<string> {
   for (let attempt = 0; attempt < 20; attempt++) {
     const search = await fetch(
       `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`,
@@ -81,10 +94,12 @@ export async function latestRecoveryLink(email: string): Promise<string> {
         `${MAILPIT_URL}/api/v1/message/${messages[0].ID}`,
       );
       const { HTML } = (await message.json()) as { HTML: string };
-      const href = /href="([^"]*\/auth\/confirm[^"]*)"/.exec(HTML)?.[1];
-      if (href) return href.replaceAll("&amp;", "&");
+      const href = /href="([^"]*\/auth\/confirm[^"]*)"/
+        .exec(HTML)?.[1]
+        ?.replaceAll("&amp;", "&");
+      if (href?.includes(`type=${type}`)) return href;
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error(`No recovery email arrived for ${email}`);
+  throw new Error(`No ${type} email arrived for ${email}`);
 }

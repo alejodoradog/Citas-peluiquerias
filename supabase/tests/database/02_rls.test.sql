@@ -6,7 +6,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(104);
+select plan(107);
 
 -- Fixtures: the database may also hold the local seed, so counts below look
 -- only at these rows. ----------------------------------------------------------------------
@@ -29,10 +29,10 @@ insert into public.profiles (id, barbershop_id, role, full_name, active) values
   ('00000000-0000-0000-0000-00000000000c', 'cccccccc-0000-0000-0000-000000000000', 'owner', 'Dueño C', false),
   ('00000000-0000-0000-0000-0000000000ad', null, 'super_admin', 'Admin', true);
 
-insert into public.barbers (id, barbershop_id, display_name, phone, link_token_hash, active) values
-  ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', '+573001110001', repeat('a', 64), true),
+insert into public.barbers (id, barbershop_id, display_name, email, link_token_hash, active) values
+  ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', 'barbero-a@example.com', repeat('a', 64), true),
   ('aaaaaaaa-0000-0000-0000-0000000000b2', 'aaaaaaaa-0000-0000-0000-000000000000', 'Retirado A', null, repeat('d', 64), false),
-  ('bbbbbbbb-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Barbero B', '+573001110002', repeat('b', 64), true),
+  ('bbbbbbbb-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Barbero B', 'barbero-b@example.com', repeat('b', 64), true),
   ('cccccccc-0000-0000-0000-0000000000b1', 'cccccccc-0000-0000-0000-000000000000', 'Barbero C', null, repeat('c', 64), true);
 
 insert into public.services (id, barbershop_id, name, price_cop, duration_minutes, active) values
@@ -60,9 +60,9 @@ insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at
   ('aaaaaaaa-0000-0000-0000-0000000000f1', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000b1', '2026-11-10 17:00Z', '2026-11-10 18:00Z', 'Cita médica'),
   ('bbbbbbbb-0000-0000-0000-0000000000f1', 'bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000b1', '2026-11-10 17:00Z', '2026-11-10 18:00Z', 'Almuerzo');
 
-insert into public.customers (id, barbershop_id, full_name, phone) values
-  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', '+573002220001'),
-  ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', '+573002220002');
+insert into public.customers (id, barbershop_id, full_name, email, phone) values
+  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', 'cliente-a@example.com', '+573002220001'),
+  ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente-b@example.com', '+573002220002');
 
 insert into public.appointments (
   id, barbershop_id, customer_id, barber_id, service_id,
@@ -75,9 +75,9 @@ insert into public.appointments (
    'bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-0000000000b1',
    'bbbbbbbb-0000-0000-0000-0000000000c1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 30000, 'web', repeat('f', 64));
 
-insert into public.notifications (barbershop_id, appointment_id, type, channel, scheduled_for, dedupe_key) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'reminder:a'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000e1', 'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'reminder:b');
+insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key) values
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:a'),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:b');
 
 insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-A', '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad'),
@@ -149,6 +149,7 @@ select is(
     'private.current_profile_id:authenticated',
     'private.is_e164_phone:anon',
     'private.is_e164_phone:authenticated',
+    'private.is_email:authenticated',
     'private.is_super_admin:authenticated',
     'private.is_token_hash:anon',
     'private.is_token_hash:authenticated',
@@ -156,6 +157,11 @@ select is(
     'private.set_updated_at:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
+);
+
+select ok(
+  has_function_privilege('service_role', 'private.is_email(text)', 'EXECUTE'),
+  'server jobs can write the columns that private.is_email checks'
 );
 
 select is(
@@ -208,9 +214,9 @@ select is(
 );
 
 select throws_ok(
-  'select phone from public.barbers',
+  'select email from public.barbers',
   '42501', null,
-  'anon cannot read barber phones'
+  'anon cannot read barber emails'
 );
 
 select throws_ok(
@@ -294,9 +300,21 @@ select is(
 );
 
 select is(
-  (select phone from public.barbers where id = 'aaaaaaaa-0000-0000-0000-0000000000b1'),
-  '+573001110001',
-  'owner A reads the phones of their barbers'
+  (select email from public.barbers where id = 'aaaaaaaa-0000-0000-0000-0000000000b1'),
+  'barbero-a@example.com',
+  'owner A reads the emails of their barbers'
+);
+
+select is(
+  (select email from public.customers where id = 'aaaaaaaa-0000-0000-0000-0000000000d1'),
+  'cliente-a@example.com',
+  'owner A reads the emails of their customers'
+);
+
+select is(
+  (select email from public.customers where id = 'bbbbbbbb-0000-0000-0000-0000000000d1'),
+  null,
+  'owner A cannot read the emails of customers of B'
 );
 
 select is(
@@ -450,8 +468,8 @@ select throws_ok(
   '42501', null, 'an owner cannot register their own payment'
 );
 select throws_ok(
-  $$insert into public.notifications (barbershop_id, type, channel, scheduled_for, dedupe_key)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'appointment_reminder', 'whatsapp', '2026-11-09 14:00Z', 'spam')$$,
+  $$insert into public.notifications (barbershop_id, type, scheduled_for, dedupe_key)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'appointment_reminder', '2026-11-09 14:00Z', 'spam')$$,
   '42501', null, 'an owner cannot queue messages directly'
 );
 select throws_ok(

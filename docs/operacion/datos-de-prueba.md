@@ -30,9 +30,9 @@ Los correos que envía Supabase local (por ejemplo, la recuperación de contrase
 | Ciudad | Chapinero, Bogotá | Laureles, Medellín |
 | Suscripción | Prueba gratis de 20 días desde el `db reset` | Activa, plan Básico, con un pago por Nequi registrado |
 | Horario | Lunes a sábado, 9:00 a 13:00 y 14:00 a 19:00 | Lunes a sábado, 8:00 a 18:00 |
-| Barberos | Carlos (el dueño, que también corta) y Andrés | José y Mateo (Mateo recibe avisos por WhatsApp) |
+| Barberos | Carlos (el dueño, que también corta) y Andrés | José y Mateo (Mateo recibe avisos por correo) |
 | Servicios | Corte, barba, corte + barba, cejas y corte niños | Los mismos, con otros precios |
-| Clientes | 5, entre ellos Juan Gómez, con 2 inasistencias | 3 |
+| Clientes | 5, entre ellos Juan Gómez, con 2 inasistencias | 3, entre ellos Camilo Ochoa, solo con nombre porque su única cita es manual |
 | Bloqueos | Andrés tiene una diligencia el siguiente día hábil, de 15:00 a 16:00 | Toda la barbería cierra dentro de una semana por capacitación |
 | Abono | Nequi | — |
 

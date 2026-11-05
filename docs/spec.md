@@ -26,11 +26,11 @@ Cada barbería tiene una sola cuenta, la del dueño; los barberos no necesitan c
 | Super admin | Tú y tu equipo | Panel de plataforma | Correo y contraseña |
 | Dueño | Quien paga la suscripción y administra la barbería | Panel de barbería completo | Correo y contraseña; recupera acceso por correo |
 | Barbero | Empleado de la barbería | Vista "Mi agenda" | Link privado y secreto, sin cuenta ni contraseña |
-| Cliente final | Quien se corta el pelo | Página pública de reservas | Nombre y celular, sin contraseña |
+| Cliente final | Quien se corta el pelo | Página pública de reservas | Nombre y correo, sin contraseña ni código |
 
-**Link privado del barbero:** el sistema lo genera al crear al barbero y el dueño se lo envía por WhatsApp con un toque. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. Si el barbero se va, el dueño desactiva el link y deja de funcionar al instante. Por seguridad el link no se guarda: cada vez que el dueño lo envía, el sistema genera uno nuevo y el anterior deja de servir. Si el barbero no tiene celular registrado, el botón abre WhatsApp con el mensaje escrito para que el dueño elija el contacto.
+**Link privado del barbero:** el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. Si el barbero se va, el dueño desactiva el link y deja de funcionar al instante. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
 
-**Avisos al barbero (opcional):** si el dueño registra el celular del barbero, este recibe por WhatsApp cada nueva reserva o cancelación, sin entrar a ninguna parte.
+**Avisos al barbero (opcional):** si el dueño registra el correo del barbero y activa los avisos, este recibe por correo cada nueva reserva o cancelación, sin entrar a ninguna parte.
 
 **Fase 2, plan Pro:** cuentas propias por barbero con roles (administrador, recepcionista), para barberías establecidas que necesitan que otra persona maneje la agenda de todos.
 
@@ -42,12 +42,12 @@ Son 24 funciones: P1 es imprescindible para lanzar, P2 entra si cabe en las 6 se
 
 | # | Función | Rol | Prioridad |  |
 | --- | --- | --- | --- | --- |
-| 1 | Página pública de la barbería con link propio (logo, dirección, mapa, horario) | Cliente | P1 |  |
-| 2 | Reservar: servicio → barbero (o "cualquiera") → día → hora → nombre y celular | Cliente | P1 |  |
+| 1 | Página pública de la barbería con link propio (logo, dirección, mapa, horario, link a su WhatsApp) | Cliente | P1 |  |
+| 2 | Reservar: servicio → barbero (o "cualquiera") → día → hora → nombre, correo y celular opcional | Cliente | P1 |  |
 | 3 | Confirmación en pantalla + botón "Agregar a mi calendario" | Cliente | P1 |  |
 | 4 | Link para cancelar o reprogramar la cita sin llamar | Cliente | P1 |  |
 | 5 | Recordatorio de la cita (ver sección Notificaciones) | Cliente | P1 |  |
-| 6 | Ver "mis citas" ingresando el celular + código | Cliente | P2 |  |
+| 6 | Ver "mis citas" con un link que llega al correo, sin código | Cliente | P2 |  |
 | 7 | Registro de la barbería en 3 pasos con prueba gratis de 20 días | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
 | 9 | Crear barberos (sin cuenta), asignarles servicios y horario, y enviarles su link privado | Dueño | P1 |  |
@@ -59,7 +59,7 @@ Son 24 funciones: P1 es imprescindible para lanzar, P2 entra si cabe en las 6 se
 | 15 | Lista de clientes con historial de visitas e inasistencias | Dueño | P1 |  |
 | 16 | Datos de abono opcional (Nequi, Daviplata o llave Bre-B) y marcar "abono recibido" | Dueño | P2 |  |
 | 17 | Cierre del día: servicios atendidos, total y comisión por barbero | Dueño | P2 |  |
-| 18 | Botón para compartir el link en WhatsApp e Instagram + código QR para imprimir | Dueño | P1 |  |
+| 18 | Botón para copiar y compartir el link + código QR para imprimir | Dueño | P1 |  |
 | 19 | Aviso de pago y estado de la suscripción dentro del panel | Dueño | P1 |  |
 | 20 | Lista de barberías con plan, estado y fecha de vencimiento | Super admin | P1 |  |
 | 21 | Botón "Registrar pago y activar hasta" | Super admin | P1 |  |
@@ -75,19 +75,19 @@ Hay tres flujos que deben funcionar perfecto el día del lanzamiento: la reserva
 
 &#91;embedded content: flujo de reserva del cliente · 5 pasos, 1 validación\]
 
-La hora se vuelve a validar al confirmar, porque dos clientes pueden estar mirando el mismo espacio; el barbero recibe aviso de cada reserva y cancelación.
+La hora se vuelve a validar al confirmar, porque dos clientes pueden estar mirando el mismo espacio; si tiene los avisos activos, el barbero recibe por correo cada reserva y cancelación.
 
 **2. Registro de la barbería (meta: menos de 10 minutos)**
 
-1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular, su correo y una contraseña.
+1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular (que queda como WhatsApp de contacto de la barbería), su correo y una contraseña. Confirma el correo con un link, sin código, e ingresa con su contraseña.
 2. Agrega sus servicios con precio y duración. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
-3. Agrega sus barberos con nombre, foto opcional y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
+3. Agrega sus barberos con nombre, foto y correo opcionales, y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
 4. Recibe su link y QR listos para compartir; empieza la prueba de 20 días.
 
 **3. Cobro y activación**
 
 1. El sistema avisa al dueño antes de vencer, con el valor y tus datos de pago.
-2. El dueño transfiere y envía el comprobante a tu WhatsApp.
+2. El dueño transfiere y envía el comprobante a tu correo.
 3. Revisas que el dinero llegó a tu cuenta.
 4. En el panel de plataforma registras el pago; la barbería queda activa hasta la nueva fecha y el dueño recibe confirmación.
 
@@ -97,27 +97,27 @@ Son 22 pantallas en tres aplicaciones; todas se diseñan primero para celular.
 
 **Página pública de reservas** (`tuapp.co/nombre-barberia`)
 
-1. Perfil de la barbería: logo, foto, dirección con mapa, horario, botón "Reservar".
+1. Perfil de la barbería: logo, foto, dirección con mapa, horario, botón "Reservar" y link para escribirle por WhatsApp.
 2. Elegir servicio: lista con precio y duración.
 3. Elegir barbero: foto y nombre, o "El primero disponible".
 4. Elegir día y hora: calendario de los próximos 30 días y horas libres.
-5. Datos del cliente: nombre y celular; si ya reservó antes, se autocompleta.
+5. Datos del cliente: nombre, correo y celular opcional; si ya reservó desde ese navegador, se autocompleta. El servidor nunca devuelve datos de un cliente a partir de lo que alguien escriba.
 6. Confirmación: resumen, dirección, agregar al calendario, datos de abono si aplica.
-7. Gestionar mi cita (desde el link del mensaje): ver, cancelar o reprogramar.
+7. Gestionar mi cita (desde el link del correo): ver, cancelar o reprogramar.
 
 **Panel de la barbería**
 
 1. Ingreso: correo y contraseña, con recuperación por correo.
 2. Registro y asistente inicial: datos de la barbería → servicios → barberos y horarios.
 3. Agenda: vista día (columnas por barbero) y semana; tocar un espacio crea cita.
-4. Detalle de cita: cliente, servicio, estado, botón de WhatsApp al cliente.
+4. Detalle de cita: cliente, servicio, estado y datos de contacto del cliente.
 5. Nueva cita manual.
 6. Bloquear horas.
 7. Clientes: lista, búsqueda y ficha con historial.
 8. Servicios.
 9. Barberos y horarios.
 10. Configuración: datos, logo, horario, festivos, política de cancelación, datos de abono.
-11. Compartir: link, QR descargable, texto listo para estados de WhatsApp.
+11. Compartir: link, QR descargable y texto listo para copiar.
 12. Mi suscripción: plan, vence el, datos para pagar, historial de pagos.
 13. Cierre del día (P2).
 
@@ -145,7 +145,7 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 **Cancelación y reprogramación**
 
-- El cliente puede cancelar o reprogramar hasta X horas antes (por defecto 2), desde el link de su mensaje.
+- El cliente puede cancelar o reprogramar hasta X horas antes (por defecto 2), desde el link de su correo.
 - La barbería puede cancelar siempre; el sistema avisa al cliente.
 
 **Inasistencias**
@@ -165,7 +165,7 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 ## Suscripciones y activación manual
 
-No hay pasarela: la barbería paga por transferencia, Nequi o llave Bre-B, envía el comprobante por WhatsApp y tú registras el pago en el panel, lo que extiende su fecha de vencimiento.
+No hay pasarela: la barbería paga por transferencia, Nequi o llave Bre-B, envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento.
 
 **Planes propuestos (a validar con los pilotos)**
 
@@ -180,7 +180,7 @@ Ambos planes incluyen todas las funciones del MVP y links privados para los barb
 
 1. Registro: empieza la prueba gratis de 20 días con todo habilitado, desde que se crea la cuenta. Durante la prueba no hay límite de barberos; los límites del plan aplican al pagar. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive.
 2. Avisos automáticos al dueño: 3 días antes de vencer, el día del vencimiento y 3 días después, con tus datos de pago y el valor exacto.
-3. Pago: el dueño transfiere y envía el comprobante a tu WhatsApp.
+3. Pago: el dueño transfiere y envía el comprobante a tu correo.
 4. Activación: en el panel eliges la barbería, el plan y el periodo, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.
 5. Gracia: 5 días después de vencer, la barbería sigue funcionando con un aviso rojo en el panel.
 6. Suspensión: pasados los 5 días, la página pública deja de recibir reservas nuevas (muestra el WhatsApp de la barbería) y el panel queda en solo lectura. Las citas ya tomadas se respetan y no se borra ningún dato.
@@ -188,30 +188,29 @@ Ambos planes incluyen todas las funciones del MVP y links privados para los barb
 
 **Regla de fechas:** si paga antes de vencer, el nuevo periodo se suma a la fecha de vencimiento; si paga ya vencido, se cuenta desde el día del pago.
 
-## Notificaciones y WhatsApp
+## Notificaciones por correo
 
-Los recordatorios salen por WhatsApp usando la API oficial de Meta (Cloud API) desde un solo número de la plataforma, y cuestan casi nada: la tarifa de mensajes de utilidad en Colombia era de unos US$0,0008 por mensaje con la lista de precios de abril de 2026 ([fuente](https://formbeep.pages.dev/whatsapp-api-pricing/)). Meta actualiza tarifas cada trimestre, así que hay que revisarla en su página oficial antes de lanzar ([Meta](https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing)).
+El correo es el único canal de mensajes automáticos, y no se usan códigos OTP. WhatsApp no envía nada: queda solo como dato de contacto de la barbería, con un link en su página pública para quien quiera escribirle. La razón es el costo y la simplicidad: sin número dedicado, sin verificación de Meta y sin aprobación de plantillas. El porqué y los riesgos aceptados están en `docs/decisiones/0006-correo-unico-canal.md`.
 
-**Costo estimado por barbería:** 300 citas al mes × 2 mensajes = 600 mensajes ≈ US$0,48 al mes, unos $2.000 COP. Es menos del 5% del plan Básico.
+**Costo estimado por barbería:** 300 citas al mes × 2 correos = 600 correos. Con Amazon SES, a US$0,10 por cada 1.000 ([precios](https://aws.amazon.com/ses/pricing/)), son unos US$0,06 al mes.
 
-**Mensajes del MVP (plantillas de utilidad, aprobadas por Meta)**
+**Mensajes del MVP**
 
 | Mensaje | Para | Cuándo |
 | --- | --- | --- |
-| Cita confirmada + link para gestionarla | Cliente | Al reservar |
-| Recordatorio con botones "Confirmo" / "Cancelar" | Cliente | 24 h antes (o 3 h si la cita es para el mismo día) |
-| Cita cancelada o reprogramada | Cliente | Cuando la barbería cambia la cita |
-| Nueva reserva o cancelación (opcional) | Barbero | Al instante |
-| Link privado de su agenda (sale del WhatsApp del dueño con un toque) | Barbero | Al crear al barbero |
+| Cita confirmada + agregar al calendario + link para gestionarla | Cliente con correo | Al reservar |
+| Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día) |
+| Cita cancelada o reprogramada | Cliente con correo | Cuando la barbería cambia la cita |
+| Nueva reserva o cancelación (opcional) | Barbero con correo | Al instante |
+| Link privado de su agenda (opcional; el dueño también lo puede copiar) | Barbero con correo | Cuando el dueño lo envía |
+| Confirmación de correo y recuperación de contraseña | Dueño | Al registrarse o al pedirla |
 | Suscripción por vencer, vencida, suspendida, pago registrado | Dueño | Según el ciclo de suscripción |
 
-**Sin empresa formal sí se puede.** La API de Meta funciona sin verificar el negocio, con un límite de 250 destinatarios distintos cada 24 horas y hasta 2 números ([fuente](https://blueticks.co/blog/whatsapp-api-without-meta-verification)). Solo se necesita una cuenta de Meta Business, un número dedicado y la aprobación de cada plantilla. Como cada barbería genera unos 20 destinatarios al día, ese límite alcanza para el piloto de 10 barberías, pero no para crecer.
+**Cita manual sin correo:** el cliente no recibe confirmación ni recordatorio; la barbería lo sabe al crearla.
 
-**Para escalar hay que verificar el negocio**, con documentos que prueben nombre legal y dirección; con RUT y Cámara de Comercio es lo más fluido. El RUT como persona natural es gratis en la DIAN, así que el plan es sacarlo durante el piloto, intentar la verificación con él y, si Meta lo pide, registrar la matrícula mercantil antes de abrir la venta. No usar servicios no oficiales que conectan un WhatsApp normal: violan las reglas de WhatsApp y el número puede ser bloqueado.
+**Sin código, cualquiera puede escribir un correo ajeno al reservar.** Por eso: hay límites por correo e IP y verificación anti-bots invisible; cada correo lleva el link para cancelar; una reserva pública no sobrescribe la ficha de un cliente existente; y el servidor no autocompleta datos a partir de lo que alguien escriba.
 
-**Los ingresos ya no dependen de WhatsApp:** dueño y super admin entran con correo y contraseña, gratis. WhatsApp queda solo para confirmaciones y recordatorios a clientes y avisos opcionales a barberos.
-
-**Plan B mientras Meta aprueba:** correo electrónico para confirmaciones y un botón en el panel que abre WhatsApp con el mensaje ya escrito (`wa.me`), para que el barbero lo envíe desde su propio celular con un toque.
+**A medir en el piloto:** el correo se revisa menos que WhatsApp, y "menos clientes que no llegan" es parte de la propuesta de valor. Antes de abrir la venta hay que comparar las inasistencias de las barberías piloto con las que tenían antes. Si no bajan, se decide si vale la pena otro canal.
 
 ## Modelo de datos
 
@@ -221,16 +220,16 @@ Son 13 tablas: las 11 de este MVP más el horario de la barbería y los festivos
 | --- | --- | --- |
 | barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, vence el | Raíz de todo |
 | usuarios (`profiles`) | nombre, celular, rol (dueño o super admin), activo; el correo vive en la cuenta de acceso | Pertenece a una barbería (salvo super admin) |
-| barberos (`barbers`) | nombre visible, foto, celular, link privado (guardado solo como hash), link activo, avisos por WhatsApp, orden, activo | Pertenece a una barbería |
+| barberos (`barbers`) | nombre visible, foto, correo opcional, link privado (guardado solo como hash), link activo, avisos por correo, orden, activo | Pertenece a una barbería |
 | horarios del barbero (`barber_schedules`) | barbero, día de la semana, hora de inicio y de fin | Varios por barbero; admiten jornada partida |
 | horario de la barbería (`barbershop_hours`) | día de la semana, hora de inicio y de fin | Varios por barbería; admiten jornada partida |
 | festivos que abre (`holiday_openings`) | fecha | Los festivos están cerrados por defecto; cada fila es uno en que la barbería abre |
 | servicios (`services`) | nombre, precio en pesos, duración en minutos, activo | Pertenece a una barbería |
 | barbero-servicio (`barber_services`) | barbero, servicio | Qué servicios hace cada barbero |
 | bloqueos (`time_blocks`) | barbero (o toda la barbería), inicio, fin, motivo | Almuerzo, permisos, cierres especiales |
-| clientes (`customers`) | nombre, celular (único por barbería), notas; visitas e inasistencias se calculan desde las citas | Pertenece a una barbería |
+| clientes (`customers`) | nombre, correo (único por barbería cuando existe), celular opcional, notas; visitas e inasistencias se calculan desde las citas | Pertenece a una barbería; una reserva web exige correo y una cita manual solo el nombre |
 | citas (`appointments`) | cliente, barbero, servicio, inicio, fin, precio (copiado al reservar), estado, origen (web o manual), abono recibido, link de gestión (guardado solo como hash) | El corazón del sistema |
-| notificaciones (`notifications`) | cita o barbería, tipo, canal, programada para, enviada el, estado, intentos | Cola de mensajes |
+| notificaciones (`notifications`) | cita o barbería, tipo, programada para, enviada el, estado, intentos | Cola de correos |
 | pagos de suscripción (`subscription_payments`) | plan, periodo, valor en pesos, medio, referencia, fecha de pago, cubre desde y hasta, registrado por | Historial de cobros |
 
 Los instantes (citas, bloqueos) se guardan en UTC y se muestran en hora de Colombia; las fechas de calendario (vencimientos, festivos, pagos) se guardan como fecha. Los links privados del barbero y de gestión de la cita son códigos largos y aleatorios que se guardan solo como hash, para que nadie pueda leerlos de la base de datos.
@@ -245,8 +244,7 @@ La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo leng
 | Base de datos y login | Supabase (PostgreSQL, Auth, Row Level Security) | Separa los datos de cada barbería desde la base de datos; login con correo y contraseña incluido |
 | Hosting | Vercel | Despliegue automático desde GitHub |
 | Tareas programadas | Supabase Cron + Edge Functions | Recordatorios y avisos de vencimiento |
-| WhatsApp | Meta Cloud API directa | Sin intermediario que cobre por mensaje |
-| Correo | Resend | Plan B de notificaciones y avisos al dueño |
+| Correo | Amazon SES, aislado en un solo módulo | Único canal de mensajes; el costo más bajo por correo y sin mensualidad |
 | Imágenes | Supabase Storage | Logos y fotos de barberos |
 | Errores | Sentry (plan gratis) | Enterarte antes que el cliente |
 
@@ -254,13 +252,13 @@ La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo leng
 
 | Concepto | Hasta \~100 barberías | \~600 barberías |
 | --- | --- | --- |
-| Supabase | US$0–25 | US$25–75 |
-| Vercel | US$0–20 | US$20 |
-| WhatsApp (≈US$0,48 por barbería) | ≈US$48 | ≈US$290 |
-| Correo, dominio .co, otros | ≈US$15 | ≈US$40 |
-| **Total** | **≈US$85–110** | **≈US$375–425** |
+| Supabase (Pro, por las copias de seguridad) | US$25 | US$25–75 |
+| Vercel (Pro: el plan gratis no permite uso comercial) | US$20 | US$20 |
+| Correo (SES, ≈US$0,06 por barbería) | ≈US$6 | ≈US$36 |
+| Dominio | ≈US$3 | ≈US$3 |
+| **Total** | **≈US$54** | **≈US$84–134** |
 
-Con 600 barberías en plan Básico ($39.900) entran unos $24 millones COP al mes, y la infraestructura costaría alrededor de $1,6 millones COP (≈7%).
+Con 600 barberías en plan Básico ($39.900) entran unos $24 millones COP al mes, y la infraestructura costaría entre $340.000 y $540.000 COP (≈1,4–2,2%), a 4.000 pesos por dólar. Con 10 barberías el costo es de unos US$49 al mes, y se paga con 5 en plan Básico. Los correos a barberos y dueños suman algo más.
 
 ## Plan de construcción
 
@@ -268,7 +266,7 @@ Con un desarrollador dedicado de tiempo completo, el MVP queda listo en 6 semana
 
 &#91;embedded content: plan de construcción · 6 semanas, piloto de 4, 2 compuertas\]
 
-El piloto usa WhatsApp sin verificar el negocio (hasta 250 destinatarios al día) y la verificación se tramita antes de abrir la venta; mientras tanto, el plan B de correo y `wa.me` permite probar todo. Si las barberías piloto no lo usan a diario, se corrige antes de vender, no después.
+El piloto ya usa el correo como único canal, con dominio propio y Amazon SES, y mide si las inasistencias bajan. Si las barberías piloto no lo usan a diario, se corrige antes de vender, no después.
 
 ## Fuera de alcance y fase 2
 
@@ -282,7 +280,8 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 | Facturación electrónica DIAN para la barbería | Complejo y no lo piden las barberías pequeñas | Barberías formales lo exigen para cambiarse |
 | Inventario y venta de productos (ceras, aceites) | No es el dolor principal | Piden registrar ventas en el cierre del día |
 | Fidelización (sellos, cortes gratis, cumpleaños) | Requiere uso estable primero | Barberías activas buscan traer clientes de vuelta |
-| Campañas de marketing por WhatsApp | Mensajes de marketing cuestan más | Lo piden como función paga |
+| Recordatorios por WhatsApp o SMS | Cuestan por mensaje y WhatsApp exige número dedicado, verificación y plantillas | Las inasistencias no bajan en el piloto con el correo |
+| Campañas de marketing por correo | No es el dolor principal y afecta la reputación del remitente | Lo piden como función paga |
 | Directorio o marketplace de barberías | Necesita masa crítica | Más de 300 barberías activas en una ciudad |
 | Apps en Play Store y App Store | La PWA cubre el uso | Barberías lo piden para su imagen |
 | Varias sedes por cuenta | Pocas cadenas al inicio | Cadenas interesadas en pagar plan superior |
@@ -292,8 +291,8 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 
 - [ ] Nombre del producto y dominio (.co o .com.co).
 - [ ] Quién lo desarrolla: tú, un equipo o un freelancer; esto define si el plan de 6 semanas es realista.
-- [ ] Persona natural o empresa: afecta la verificación de Meta, la factura electrónica de tus ventas y las cuentas para recibir pagos (consultar con un contador). Como mínimo, sacar el RUT como persona natural antes de abrir la venta.
+- [ ] Persona natural o empresa: afecta la factura electrónica de tus ventas y las cuentas para recibir pagos (consultar con un contador). Como mínimo, sacar el RUT como persona natural antes de abrir la venta.
 - [ ] Precio final de los planes, después de hablar con 10 barberías.
 - [ ] Ciudad y barrios para las 10 barberías piloto.
-- [ ] Número de WhatsApp dedicado a la plataforma y cuenta bancaria o Nequi para recibir pagos.
-- [ ] Términos de uso y política de tratamiento de datos personales (Ley 1581 de 2012), porque se guardan nombres y celulares de los clientes.
+- [ ] Correo para recibir comprobantes y cuenta bancaria o Nequi para recibir pagos.
+- [ ] Términos de uso y política de tratamiento de datos personales (Ley 1581 de 2012), porque se guardan nombres, correos y celulares de los clientes.

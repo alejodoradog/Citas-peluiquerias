@@ -9,7 +9,8 @@ import { textos } from "../../src/ui/textos";
 import {
   createAccountWithoutProfile,
   createSuperAdmin,
-  latestRecoveryLink,
+  emailCount,
+  latestEmailLink,
   uniqueEmail,
 } from "./helpers/supabase";
 
@@ -33,6 +34,26 @@ async function register(
   await page.getByRole("button", { name: t.registro.enviar }).click();
 }
 
+// Confirming does not sign in: the owner then enters with their password.
+async function confirmEmail(page: Page, email: string) {
+  await page.goto(await latestEmailLink(email, "signup"));
+  await page.getByRole("button", { name: t.confirmar.continuar }).click();
+  await expect(page).toHaveURL(/\/ingresar\?confirmado=1$/);
+  await expect(page.getByText(t.ingreso.correoConfirmado)).toBeVisible();
+
+  await signIn(page, email);
+  await expect(page).toHaveURL(/\/panel$/);
+}
+
+async function registerAndConfirm(
+  page: Page,
+  account: { email: string; barbershop?: string },
+) {
+  await register(page, account);
+  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await confirmEmail(page, account.email);
+}
+
 // Waits until signing out finished: otherwise its response can arrive after
 // the next sign-in and clear the new session.
 async function signOut(page: Page) {
@@ -47,12 +68,11 @@ async function signIn(page: Page, email: string, password = PASSWORD) {
   await page.getByRole("button", { name: t.ingreso.enviar }).click();
 }
 
-test("an owner signs up and lands on the panel with the free trial running", async ({
+test("an owner signs up, confirms their email and sees the free trial running", async ({
   page,
 }) => {
-  await register(page, { email: uniqueEmail("registro") });
+  await registerAndConfirm(page, { email: uniqueEmail("registro") });
 
-  await expect(page).toHaveURL(/\/panel$/);
   await expect(
     page.getByRole("heading", { name: textos.panel.saludo("Carlos Pérez") }),
   ).toBeVisible();
@@ -63,6 +83,56 @@ test("an owner signs up and lands on the panel with the free trial running", asy
     startOfBogotaDay(trialEndsOn(toBogotaDate(new Date()))),
   );
   await expect(page.getByText(textos.panel.prueba(trialEnd))).toBeVisible();
+});
+
+test("an owner cannot enter until they confirm their email", async ({
+  page,
+}) => {
+  const email = uniqueEmail("sin-confirmar");
+  await register(page, { email });
+  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await expect.poll(() => emailCount(email)).toBe(1);
+
+  // A wrong password reveals nothing and sends nothing.
+  await signIn(page, email, "otra-clave-mala");
+  await expect(page.getByText(t.errores.invalid_credentials)).toBeVisible();
+  expect(await emailCount(email)).toBe(1);
+
+  // Auth allows one email per address each second (max_frequency).
+  await page.waitForTimeout(1100);
+  await signIn(page, email);
+  await expect(page).toHaveURL(/\/ingresar$/);
+  await expect(page.getByText(t.errores.email_not_confirmed)).toBeVisible();
+  await expect.poll(() => emailCount(email)).toBe(2);
+
+  await page.goto("/panel");
+  await expect(page).toHaveURL(/\/ingresar$/);
+
+  await confirmEmail(page, email);
+});
+
+test("confirming the email does not allow setting a new password", async ({
+  page,
+}) => {
+  const email = uniqueEmail("confirmo-sin-clave");
+  await register(page, { email });
+  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+
+  await page.goto(await latestEmailLink(email, "signup"));
+  await page.getByRole("button", { name: t.confirmar.continuar }).click();
+  await expect(page).toHaveURL(/\/ingresar\?confirmado=1$/);
+
+  await page.goto("/nueva-clave");
+  await expect(page.getByText(t.nuevaClave.sinSesion)).toBeVisible();
+  await expect(page.getByLabel(t.nuevaClave.campos.password)).not.toBeVisible();
+});
+
+test("a bad confirmation link sends the owner to sign in", async ({ page }) => {
+  await page.goto("/auth/confirm?token_hash=falso&type=signup");
+  await page.getByRole("button", { name: t.confirmar.continuar }).click();
+
+  await expect(page).toHaveURL(/\/ingresar\?vencido=1$/);
+  await expect(page.getByText(t.ingreso.linkVencido)).toBeVisible();
 });
 
 test("the signup form explains what to fix", async ({ page }) => {
@@ -77,20 +147,27 @@ test("the signup form explains what to fix", async ({ page }) => {
   );
 });
 
-test("an email can only have one account", async ({ page, browser }) => {
+test("signing up with a taken email changes nothing and reveals nothing", async ({
+  page,
+  browser,
+}) => {
   const email = uniqueEmail("repetido");
-  await register(page, { email });
-  await expect(page).toHaveURL(/\/panel$/);
+  await registerAndConfirm(page, { email });
 
   const other = await browser.newPage();
   await register(other, { email, barbershop: "Otra Barbería" });
-  await expect(other.getByText(t.errores.email_taken)).toBeVisible();
+  await expect(other.getByText(t.registro.revisaCorreo)).toBeVisible();
   await other.close();
+
+  await page.reload();
+  await expect(
+    page.getByText("Barbería El Parche", { exact: true }),
+  ).toBeVisible();
 });
 
 test("an owner signs out and signs back in", async ({ page }) => {
   const email = uniqueEmail("ingreso");
-  await register(page, { email });
+  await registerAndConfirm(page, { email });
   await signOut(page);
 
   await signIn(page, email, "otra-clave-mala");
@@ -102,7 +179,7 @@ test("an owner signs out and signs back in", async ({ page }) => {
 
 test("an owner recovers access by email", async ({ page }) => {
   const email = uniqueEmail("recuperar");
-  await register(page, { email });
+  await registerAndConfirm(page, { email });
   await signOut(page);
 
   await page.goto("/recuperar-clave");
@@ -110,7 +187,7 @@ test("an owner recovers access by email", async ({ page }) => {
   await page.getByRole("button", { name: t.recuperar.enviar }).click();
   await expect(page.getByText(t.recuperar.enviado)).toBeVisible();
 
-  await page.goto(await latestRecoveryLink(email));
+  await page.goto(await latestEmailLink(email, "recovery"));
   await page.getByRole("button", { name: t.confirmar.continuar }).click();
   await expect(page).toHaveURL(/\/nueva-clave$/);
 
@@ -127,8 +204,7 @@ test("an owner recovers access by email", async ({ page }) => {
 test("a signed-in owner cannot set a new password without the email link", async ({
   page,
 }) => {
-  await register(page, { email: uniqueEmail("sin-link") });
-  await expect(page).toHaveURL(/\/panel$/);
+  await registerAndConfirm(page, { email: uniqueEmail("sin-link") });
 
   await page.goto("/nueva-clave");
   await expect(page.getByText(t.nuevaClave.sinSesion)).toBeVisible();
@@ -169,8 +245,7 @@ test("the panel and the admin need the right account", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/ingresar$/);
 
-  await register(page, { email: uniqueEmail("dueno") });
-  await expect(page).toHaveURL(/\/panel$/);
+  await registerAndConfirm(page, { email: uniqueEmail("dueno") });
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/panel$/);
 });

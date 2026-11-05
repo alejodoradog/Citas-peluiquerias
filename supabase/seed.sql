@@ -120,21 +120,21 @@ begin
   -- Barbers ---------------------------------------------------------------------------
   -- Link tokens are known on purpose, for local testing of "Mi agenda" (4.4).
 
-  insert into public.barbers (barbershop_id, display_name, phone, link_token_hash, sort_order)
-  values (barrio, 'Carlos', '+573001234567',
+  insert into public.barbers (barbershop_id, display_name, email, link_token_hash, sort_order)
+  values (barrio, 'Carlos', 'carlos@barberias.test',
           encode(extensions.digest('demo-barbero-carlos', 'sha256'), 'hex'), 1)
   returning id into b_carlos;
   insert into public.barbers (barbershop_id, display_name, link_token_hash, sort_order)
   values (barrio, 'Andrés',
           encode(extensions.digest('demo-barbero-andres', 'sha256'), 'hex'), 2)
   returning id into b_andres;
-  insert into public.barbers (barbershop_id, display_name, phone, link_token_hash, sort_order)
-  values (donjose, 'José', '+573157654321',
+  insert into public.barbers (barbershop_id, display_name, email, link_token_hash, sort_order)
+  values (donjose, 'José', 'jose@barberias.test',
           encode(extensions.digest('demo-barbero-jose', 'sha256'), 'hex'), 1)
   returning id into b_jose;
   insert into public.barbers (
-    barbershop_id, display_name, phone, link_token_hash, whatsapp_notifications, sort_order
-  ) values (donjose, 'Mateo', '+573209876543',
+    barbershop_id, display_name, email, link_token_hash, email_notifications, sort_order
+  ) values (donjose, 'Mateo', 'mateo@barberias.test',
             encode(extensions.digest('demo-barbero-mateo', 'sha256'), 'hex'), true, 2)
   returning id into b_mateo;
 
@@ -185,23 +185,25 @@ begin
 
   -- Customers ----------------------------------------------------------------------
 
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (barrio, 'Juan Gómez', '+573101112233') returning id into c_juan;
-  insert into public.customers (barbershop_id, full_name, phone, notes)
-  values (barrio, 'Felipe Ramírez', '+573112223344', 'Le gusta el degradado bajo.')
+  -- Email is the channel; the phone is optional, and a customer who only has
+  -- manual appointments may have just a name (Camilo, who walked in).
+  insert into public.customers (barbershop_id, full_name, email, phone)
+  values (barrio, 'Juan Gómez', 'juan@clientes.test', '+573101112233') returning id into c_juan;
+  insert into public.customers (barbershop_id, full_name, email, phone, notes)
+  values (barrio, 'Felipe Ramírez', 'felipe@clientes.test', '+573112223344', 'Le gusta el degradado bajo.')
   returning id into c_felipe;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (barrio, 'Santiago López', '+573123334455') returning id into c_santiago;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (barrio, 'Daniel Torres', '+573134445566') returning id into c_daniel;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (barrio, 'Miguel Ángel Castro', '+573145556677') returning id into c_miguel;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (donjose, 'Andrea Restrepo', '+573156667788') returning id into c_andrea;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (donjose, 'Luis Fernando Mejía', '+573167778899') returning id into c_luis;
-  insert into public.customers (barbershop_id, full_name, phone)
-  values (donjose, 'Camilo Ochoa', '+573178889900') returning id into c_camilo;
+  insert into public.customers (barbershop_id, full_name, email)
+  values (barrio, 'Santiago López', 'santiago@clientes.test') returning id into c_santiago;
+  insert into public.customers (barbershop_id, full_name, email)
+  values (barrio, 'Daniel Torres', 'daniel@clientes.test') returning id into c_daniel;
+  insert into public.customers (barbershop_id, full_name, email)
+  values (barrio, 'Miguel Ángel Castro', 'miguel@clientes.test') returning id into c_miguel;
+  insert into public.customers (barbershop_id, full_name, email, phone)
+  values (donjose, 'Andrea Restrepo', 'andrea@clientes.test', '+573156667788') returning id into c_andrea;
+  insert into public.customers (barbershop_id, full_name, email)
+  values (donjose, 'Luis Fernando Mejía', 'luis@clientes.test') returning id into c_luis;
+  insert into public.customers (barbershop_id, full_name)
+  values (donjose, 'Camilo Ochoa') returning id into c_camilo;
 
   -- Appointments ------------------------------------------------------------------
   -- price_cop copies the service price at booking time.

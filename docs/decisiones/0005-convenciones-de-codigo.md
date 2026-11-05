@@ -29,7 +29,7 @@ Al cerrar la fase 1, la revisión de arquitectura (Arxitect) encontró desorden 
 
 11. **Un archivo por entidad:** `cuentas/acciones/account.ts`, `barberias/acciones/barbershops.ts` y, en la fase 2, por ejemplo `servicios/acciones/services.ts`.
 12. **Nombres verbo + entidad:** `createService`, `updateService`, `deactivateService`.
-13. **Firma de las acciones de formulario:** `(estadoAnterior, formData) → FormState`. Las acciones que siempre redirigen (`signOut`, `confirmPasswordRecovery`) reciben solo los datos y no devuelven nada.
+13. **Firma de las acciones de formulario:** `(estadoAnterior, formData) → FormState`. Las acciones que siempre redirigen (`signOut`, `confirmPasswordRecovery`, `confirmEmailAddress`) reciben solo los datos y no devuelven nada.
 14. **Los campos de formulario van en camelCase** (`tokenHash`, `ownerName`).
 
 ## Rutas y reglas duplicadas
