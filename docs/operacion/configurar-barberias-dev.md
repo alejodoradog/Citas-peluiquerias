@@ -56,8 +56,16 @@ En Supabase → **Authentication**:
 - **URL Configuration:**
   - **Site URL:** la URL de vista previa de Vercel.
   - **Redirect URLs:** `https://citas-peluquerias-*-alejodoradogs-projects.vercel.app/**`.
-- **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
-- **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
+- **Plantillas de correo: esperan a la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), y el nuestro será Amazon SES (decisión 0007). Cuando esté:
+  - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
+  - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
+  - Se copia el archivo completo, en la pestaña **Source**, sin cambiar lo que va entre llaves dobles.
+
+**Mientras tanto, en las vistas previas** Supabase usa sus plantillas por defecto, en inglés, con un link (`{{ .ConfirmationURL }}`) que no pasa por `/auth/confirm`:
+
+- **Confirmar correo funciona:** el link confirma el correo y lleva a la Site URL. Luego se entra por `/ingresar` con el correo y la contraseña.
+- **Recuperar la contraseña no funciona en las vistas previas:** el link no crea la sesión que necesita `/nueva-clave`. Se prueba en local (Mailpit) hasta la 5.2.
+- En local y en CI no cambia nada: Supabase local usa las plantillas del repositorio (`supabase/config.toml`).
 
 **Límite mientras no haya remitente propio:** el correo de prueba de Supabase solo envía a direcciones del equipo del proyecto, y unos 2 correos por hora ([documentación](https://supabase.com/docs/guides/auth/auth-smtp)). Para probar el registro en una vista previa, usa un correo de ese equipo. Con otro correo, Supabase rechaza el envío ("Email address not authorized") y la pantalla muestra "No pudimos completar la acción". Esto se resuelve al configurar Amazon SES (tarea 5.2), y entonces hay que subir también el límite de envíos de Auth, que por defecto es de 30 correos por hora.
 
@@ -67,4 +75,4 @@ En Vercel → **Deployments** → el último despliegue → **Redeploy**. Las va
 
 ## Cómo verificar
 
-Abre `/registro` en la URL de vista previa y crea una barbería de prueba con un correo del equipo. Abre el link que te llega, toca "Continuar" e ingresa con tu contraseña. El link siempre abre la **Site URL**, así que debe ser la URL de la vista previa que estás probando. También revisa en **Emails** que el link dure una hora, como dice la plantilla. Debes llegar a `/panel`. Si sale "Algo salió mal", revisa que las dos variables estén marcadas para Preview y que el despliegue sea posterior a cuando las agregaste.
+Abre `/registro` en la URL de vista previa y crea una barbería de prueba con un correo del equipo. Abre el link que te llega: hasta la 5.2 es el correo en inglés de Supabase, que confirma y te lleva a la Site URL (desde la 5.2, nuestra pantalla con "Continuar"). Luego entra por `/ingresar` con tu contraseña. El link siempre abre la **Site URL**, así que debe ser la URL de la vista previa que estás probando. También revisa en **Emails** que el link dure una hora, como dice la plantilla. Debes llegar a `/panel`. Si sale "Algo salió mal", revisa que las dos variables estén marcadas para Preview y que el despliegue sea posterior a cuando las agregaste.
