@@ -96,9 +96,10 @@ Todo se prepara en una tarde; ninguna cuenta cuesta dinero al inicio salvo tu su
 
 - [x] Plan de Claude con Claude Code (Pro sirve para empezar; Max si vas a trabajar muchas horas al día).
 - [x] GitHub: repositorio `Citas-peluiquerias` (el nombre `barberias` queda pendiente).
-- [ ] Supabase: dos proyectos, `barberias-dev` y `barberias-prod` (prod se crea en la fase 7). `barberias-dev` ya existe; falta conectarlo a Vercel (`docs/operacion/configurar-barberias-dev.md`).
-- [x] Vercel: conectado al repositorio de GitHub.
-- [ ] AWS: cuenta para Amazon SES, con permiso de Amazon para enviar a cualquier correo (antes de la tarea 5.2).
+- [ ] Supabase: dos proyectos, `barberias-dev` (organización gratis) y `barberias-prod` (organización Pro, `us-east-1`, se crea en la 6.4). `barberias-dev` ya existe; falta conectarlo a Vercel (`docs/operacion/configurar-barberias-dev.md`).
+- [x] Vercel: conectado al repositorio de GitHub. Sigue en Hobby hasta la 6.4, cuando pasa a Pro (decisión 0007).
+- [ ] Cloudflare: cuenta gratis, solo para el DNS del dominio y Turnstile (decisión 0007, `docs/operacion/infraestructura-produccion.md`).
+- [ ] AWS: cuenta para Amazon SES en `us-east-1`, con permiso de Amazon para enviar a cualquier correo (antes de la tarea 5.2).
 - [ ] Dominio propio: remitente verificado para SES (antes de la tarea 5.2).
 - [ ] Sentry: plan gratis, para errores.
 
@@ -251,13 +252,14 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
 - [x] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
 - [x] 1.8 Correo como único canal: sin WhatsApp como canal de mensajes y sin códigos OTP; correo del cliente y del barbero, y confirmación del correo del dueño con un link (`docs/decisiones/0006-correo-unico-canal.md`).
+- [ ] 1.10 Infraestructura base: región `iad1` fija en `vercel.json`, lint que prohíbe los servicios exclusivos de Vercel y región de `barberias-dev` documentada (`docs/decisiones/0007-infraestructura.md`, `docs/tareas/1.10-infraestructura-base.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
 - [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
-- [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto, correo opcional, avisos por correo, horario semanal, servicios que hace).
+- [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar.
 - [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento.
 - [ ] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
@@ -267,10 +269,10 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 3 · Motor de disponibilidad y página pública (semana 3)
 
 - [ ] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible").
-- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicio, barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación.
+- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicio, barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
 - [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente.
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
-- [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor.
+- [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor. Según la decisión 0007: Turnstile en modo Managed, captcha de Supabase Auth con Turnstile, límites propios con la IP que entrega Vercel y Vercel WAF para bloquear.
 
 **Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una.
 
@@ -280,15 +282,15 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 4.2 Cita manual (avisando que sin correo no hay confirmación ni recordatorio), bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
 - [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias, y borrar un cliente anonimizando sus datos (Ley 1581).
 - [ ] 4.4 Vista "Mi agenda" del barbero por link privado, con permisos limitados.
-- [ ] 4.5 Actualización en vivo de la agenda cuando entra una reserva.
+- [ ] 4.5 Actualización de la agenda cuando entra una reserva, consultando cada 30–60 s en la vista de hoy, sin Realtime (decisión 0007).
 
 **Lista cuando:** el dueño maneja un día completo de trabajo solo desde el panel, y el barbero ve sus citas desde su link.
 
 ### Fase 5 · Notificaciones y suscripciones (semana 5)
 
-- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados.
-- [ ] 5.2 Envío por correo con Amazon SES, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente.
-- [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero.
+- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados: pg_cron cada minuto y una Edge Function que envía por SES (decisión 0007).
+- [ ] 5.2 Envío por correo con Amazon SES, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente. SES en `us-east-1`, plan Essentials, una llamada por destinatario y lista de supresión (decisión 0007).
+- [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero. Presupuesto de la decisión 0007: 2 correos por cita, uno al cliente y uno al barbero; esta tarea decide cuál recibe el cliente (decisión abierta 2).
 - [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", suspender, extender prueba.
 - [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea).
 
@@ -299,7 +301,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 6.1 Pruebas de punta a punta con Playwright de los 3 flujos de la spec.
 - [ ] 6.2 Prueba en celulares reales (Android de gama media, iPhone) y redes lentas.
 - [ ] 6.3 PWA instalable, ícono, nombre, pantalla sin conexión.
-- [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad.
+- [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad. Según la decisión 0007 y `docs/operacion/infraestructura-produccion.md`: Supabase Pro en `us-east-1`, Vercel Pro en `iad1`, dominio con DNS en Cloudflare ("DNS only"), alertas de gasto sin pausar producción, migraciones y despliegue desde CI, monitor de disponibilidad, `pg_dump` semanal a S3 y simulacro de restauración.
 - [ ] 6.5 Términos de uso y política de datos personales visibles en el registro y la reserva.
 - [ ] 6.6 Cargar las 10 barberías piloto.
 
@@ -332,13 +334,16 @@ La prueba de fuego del producto es que una barbería nunca vea datos de otra y q
 | --- | --- | --- | --- |
 | Local | Supabase en Docker | `pnpm dev` | Donde trabaja Claude Code |
 | Vista previa | `barberias-dev` | URL de Vercel por cada PR | Donde pruebas tú desde el celular |
-| Producción | `barberias-prod` | Tu dominio | Barberías reales (desde la fase 6) |
+| Producción | `barberias-prod` | Tu dominio, en Vercel Pro | Barberías reales (desde la fase 6) |
+
+El detalle de la infraestructura (hosting, imágenes, correo, anti-abuso, secretos, costos y cuándo escalar) está en `docs/decisiones/0007-infraestructura.md`, y el paso a paso de las cuentas en `docs/operacion/infraestructura-produccion.md`.
 
 Las migraciones llegan a producción solo desde GitHub Actions al hacer merge a `main`, nunca desde la computadora. Supabase hace copias de seguridad diarias en el plan Pro, que se activa antes del piloto.
 
 **Operación**
 
 - Sentry avisa de errores en tu correo.
+- Cada mes, las facturas se comparan con los costos de la decisión 0007 y se revisan sus umbrales de "Cuándo escalar o revisar".
 - Un registro de cada mensaje enviado (o fallido) en la tabla de notificaciones.
 - Revisión semanal con Claude (aquí) de errores, métricas del piloto y próximos cambios.
 

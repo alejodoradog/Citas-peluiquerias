@@ -192,7 +192,7 @@ Ambos planes incluyen todas las funciones del MVP y links privados para los barb
 
 El correo es el único canal de mensajes automáticos, y no se usan códigos OTP. WhatsApp no envía nada: queda solo como dato de contacto de la barbería, con un link en su página pública para quien quiera escribirle. La razón es el costo y la simplicidad: sin número dedicado, sin verificación de Meta y sin aprobación de plantillas. El porqué y los riesgos aceptados están en `docs/decisiones/0006-correo-unico-canal.md`.
 
-**Costo estimado por barbería:** 300 citas al mes × 2 correos = 600 correos. Con Amazon SES, a US$0,10 por cada 1.000 ([precios](https://aws.amazon.com/ses/pricing/)), son unos US$0,06 al mes.
+**Costo estimado por barbería:** unas 1.200 citas al mes × 2 correos (uno al cliente y uno al barbero) = 2.400 correos. Con Amazon SES Essentials, a US$0,16 por cada 1.000 ([precios](https://aws.amazon.com/ses/pricing/)), son unos US$0,38 al mes (decisión 0007, que fija ese presupuesto de 2 correos por cita).
 
 **Mensajes del MVP**
 
@@ -236,29 +236,30 @@ Los instantes (citas, bloqueos) se guardan en UTC y se muestran en hora de Colom
 
 ## Stack técnico y costos
 
-La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo lenguaje (TypeScript) y servicios administrados, para que una o dos personas lo construyan y lo operen sin servidores propios.
+La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo lenguaje (TypeScript) y servicios administrados, para que una o dos personas lo construyan y lo operen sin servidores propios. El detalle, los costos, los umbrales para escalar y los riesgos están en `docs/decisiones/0007-infraestructura.md` (aceptada).
 
 | Pieza | Herramienta | Por qué |
 | --- | --- | --- |
 | Web (las 3 aplicaciones) | Next.js + Tailwind, instalable como PWA | Un solo código para página pública, panel y admin; se "instala" en el celular sin tienda de apps |
-| Base de datos y login | Supabase (PostgreSQL, Auth, Row Level Security) | Separa los datos de cada barbería desde la base de datos; login con correo y contraseña incluido |
-| Hosting | Vercel | Despliegue automático desde GitHub |
-| Tareas programadas | Supabase Cron + Edge Functions | Recordatorios y avisos de vencimiento |
-| Correo | Amazon SES, aislado en un solo módulo | Único canal de mensajes; el costo más bajo por correo y sin mensualidad |
-| Imágenes | Supabase Storage | Logos y fotos de barberos |
-| Errores | Sentry (plan gratis) | Enterarte antes que el cliente |
+| Base de datos, login e imágenes | Supabase Pro en `us-east-1` (PostgreSQL, Auth, Row Level Security, Storage) | Separa los datos de cada barbería desde la base de datos; copias de seguridad diarias y sin pausas |
+| Hosting | Vercel Pro, funciones en `iad1` (Hobby solo en desarrollo) | Next.js sin adaptadores y despliegue automático desde GitHub; el plan gratis no permite uso comercial |
+| Tareas programadas | pg_cron + Edge Functions de Supabase | Envío de la cola, recordatorios, avisos y purgas |
+| Correo | Amazon SES en `us-east-1`, aislado en un solo módulo | Único canal de mensajes; el costo más bajo por correo y sin mensualidad |
+| DNS, dominio y anti-bots | Cloudflare (solo DNS, Registrar y Turnstile) | Gratis; los registros van en "DNS only", sin proxy delante de Vercel |
+| Errores | Sentry (plan gratis, a confirmar en la 6.4) | Enterarte antes que el cliente |
 
-**Costo mensual aproximado de operación** (precios de lista a revisar al contratar):
+**Costo mensual aproximado de operación** (decisión 0007: 4 barberos por sede, 10 citas por barbero al día, 30 días y 2 correos por cita; precios de lista del 2026-11-05 a revisar al contratar):
 
-| Concepto | Hasta \~100 barberías | \~600 barberías |
-| --- | --- | --- |
-| Supabase (Pro, por las copias de seguridad) | US$25 | US$25–75 |
-| Vercel (Pro: el plan gratis no permite uso comercial) | US$20 | US$20 |
-| Correo (SES, ≈US$0,06 por barbería) | ≈US$6 | ≈US$36 |
-| Dominio | ≈US$3 | ≈US$3 |
-| **Total** | **≈US$54** | **≈US$84–134** |
+| Concepto | 50 sedes | 600 sedes | 1.000 sedes |
+| --- | --- | --- | --- |
+| Supabase Pro | US$25 | ≈US$30 | ≈US$76 |
+| Vercel Pro | ≈US$40 | ≈US$120 | ≈US$125 |
+| Correo (SES Essentials, US$0,16 por cada 1.000) | ≈US$19 | ≈US$230 | ≈US$384 |
+| Cloudflare | US$0 | US$0 | US$0 |
+| **Total** | **≈US$84** | **≈US$380** | **≈US$585** |
+| Sobre el ingreso, a 25.000 COP por sede | ≈21% | ≈8,1% | ≈7,4% |
 
-Con 600 barberías en plan Básico ($39.900) entran unos $24 millones COP al mes, y la infraestructura costaría entre $340.000 y $540.000 COP (≈1,4–2,2%), a 4.000 pesos por dólar. Con 10 barberías el costo es de unos US$49 al mes, y se paga con 5 en plan Básico. Los correos a barberos y dueños suman algo más.
+A una TRM de 3.183, el costo fijo de Supabase y Vercel se cubre con unas 9 sedes pagando, y con 1.000 sedes son ≈1,86 millones de pesos al mes. El dominio se paga aparte, una vez al año.
 
 ## Plan de construcción
 
