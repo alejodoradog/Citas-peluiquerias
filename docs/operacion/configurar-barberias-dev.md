@@ -38,12 +38,14 @@ pnpm supabase link --project-ref TU_REF
 `TU_REF` es el identificador que aparece en la URL del proyecto: `supabase.com/dashboard/project/TU_REF`.
 
 ```bash
-pnpm supabase db push
+pnpm supabase db push --remote
 ```
+
+Con la CLI 3, `db push` sin `--remote` apunta a la base local y responde "Local database is up to date" sin subir nada. Con `--remote`, la CLI lista las migraciones que va a aplicar y pide confirmación. Al terminar, el Table Editor de `barberias-dev` debe mostrar las tablas.
 
 **Nunca agregues `--include-seed`.** El seed crea un super admin con contraseña pública (`docs/operacion/datos-de-prueba.md`).
 
-Repite el `db push` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo (fase 6).
+Repite el `db push --remote` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo (fase 6).
 
 ## 3. Auth en `barberias-dev`
 
