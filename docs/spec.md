@@ -236,29 +236,32 @@ Los instantes (citas, bloqueos) se guardan en UTC y se muestran en hora de Colom
 
 ## Stack técnico y costos
 
-La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo lenguaje (TypeScript) y servicios administrados, para que una o dos personas lo construyan y lo operen sin servidores propios.
+La recomendación es Next.js + Supabase + Cloudflare: un solo proyecto, un solo lenguaje (TypeScript) y servicios administrados, para que una o dos personas lo construyan y lo operen sin servidores propios. El detalle, los costos y los riesgos están en `docs/decisiones/0007-infraestructura.md` (en propuesta).
 
 | Pieza | Herramienta | Por qué |
 | --- | --- | --- |
 | Web (las 3 aplicaciones) | Next.js + Tailwind, instalable como PWA | Un solo código para página pública, panel y admin; se "instala" en el celular sin tienda de apps |
-| Base de datos y login | Supabase (PostgreSQL, Auth, Row Level Security) | Separa los datos de cada barbería desde la base de datos; login con correo y contraseña incluido |
-| Hosting | Vercel | Despliegue automático desde GitHub |
-| Tareas programadas | Supabase Cron + Edge Functions | Recordatorios y avisos de vencimiento |
+| Base de datos y login | Supabase Pro (PostgreSQL, Auth, Row Level Security) | Separa los datos de cada barbería desde la base de datos; login con correo y contraseña incluido |
+| Hosting | Cloudflare Workers con OpenNext, si pasa la prueba de la tarea 1.10; si no, Vercel Pro | Lo estático sale gratis y la app cuesta US$5 al mes con 10 M de peticiones |
+| Tareas programadas | pg_cron + Edge Functions de Supabase | Envío de la cola, recordatorios, avisos y purgas |
 | Correo | Amazon SES, aislado en un solo módulo | Único canal de mensajes; el costo más bajo por correo y sin mensualidad |
-| Imágenes | Supabase Storage | Logos y fotos de barberos |
+| Imágenes | Cloudflare R2 | Logos y fotos de barberos, sin cobro de transferencia de salida |
+| Anti-abuso | Cloudflare Turnstile y una regla de límite por IP | Gratis, y ve la IP real del cliente |
 | Errores | Sentry (plan gratis) | Enterarte antes que el cliente |
 
 **Costo mensual aproximado de operación** (precios de lista a revisar al contratar):
 
-| Concepto | Hasta \~100 barberías | \~600 barberías |
-| --- | --- | --- |
-| Supabase (Pro, por las copias de seguridad) | US$25 | US$25–75 |
-| Vercel (Pro: el plan gratis no permite uso comercial) | US$20 | US$20 |
-| Correo (SES, ≈US$0,06 por barbería) | ≈US$6 | ≈US$36 |
-| Dominio | ≈US$3 | ≈US$3 |
-| **Total** | **≈US$54** | **≈US$84–134** |
+Con el volumen de la decisión 0006 (unas 1.200 citas al mes por sede):
 
-Con 600 barberías en plan Básico ($39.900) entran unos $24 millones COP al mes, y la infraestructura costaría entre $340.000 y $540.000 COP (≈1,4–2,2%), a 4.000 pesos por dólar. Con 10 barberías el costo es de unos US$49 al mes, y se paga con 5 en plan Básico. Los correos a barberos y dueños suman algo más.
+| Concepto | 10 sedes | 100 sedes | 1.000 sedes |
+| --- | --- | --- | --- |
+| Cloudflare Workers Paid | US$5 | US$5 | ≈US$8 |
+| Supabase Pro | US$25 | US$25 | US$30–80 |
+| Correo (SES, ≈US$0,25 por sede) | ≈US$2,5 | ≈US$25 | ≈US$250 |
+| Dominio | ≈US$3 | ≈US$3 | ≈US$3 |
+| **Total** | **≈US$35** | **≈US$58** | **≈US$290–340** |
+
+A 25.000 COP por sede (decisión 0006), el costo se cubre con unas 6 sedes pagando, y con 1.000 sedes es cerca del 5% del ingreso, a 4.000 pesos por dólar. Si la tarea 1.10 lleva a quedarse en Vercel Pro, se suman unos US$15 al mes con 10 sedes y unos US$140 con 1.000.
 
 ## Plan de construcción
 
