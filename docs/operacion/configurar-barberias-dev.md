@@ -2,25 +2,38 @@
 
 Las vistas previas de Vercel (una por cada PR) usan el proyecto `barberias-dev` de Supabase. Esto lo hace el dueño del proyecto: Claude Code no toca la nube.
 
+## 0. Crear el proyecto (si aún no existe)
+
+1. En [supabase.com](https://supabase.com), crea una organización nueva con plan **Free**. Debe ir aparte de la de producción, porque en una organización Pro cada proyecto suma US$10 al mes (decisión 0007, punto 4).
+2. Dentro de ella, crea el proyecto:
+   - **Name:** `barberias-dev`.
+   - **Database password:** genérala y guárdala en un gestor de contraseñas. Nunca la pegues en un chat ni en el repositorio.
+   - **Region:** East US (North Virginia), `us-east-1`, la misma de producción.
+3. Anota el identificador que aparece en la URL: `supabase.com/dashboard/project/TU_REF`.
+
 ## 1. Variables en Vercel
 
-En vercel.com, entra al proyecto **citas-peluquerias** → **Settings** → **Environment Variables**. Deben existir estas dos, marcadas para **Preview** (y, si quieres, para **Development**):
+En vercel.com, entra al proyecto **citas-peluquerias** → **Settings** → **Environment Variables** → **Add Environment Variable**. Crea estas dos:
 
 | Variable | Valor (Supabase → proyecto `barberias-dev`) |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | **Project Settings → Data API**: "Project URL" |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | **Project Settings → API Keys**: "Publishable key" (`sb_publishable_…`) |
 
-- **No agregues la clave secreta (`SUPABASE_SECRET_KEY`).** La app todavía no la usa, y es mejor no tenerla expuesta hasta que haga falta.
-- **No las marques para Production.** Producción tendrá su propio proyecto (`barberias-prod`) en la fase 6.
+- **Tipo Config.** Vercel crea las variables como secretas y rechaza un nombre con `NEXT_PUBLIC_`, porque ese prefijo las expone al navegador. Estas dos son públicas a propósito, así que se pulsa **Change to Config**. No se quita el prefijo: el código lee esos nombres.
+- **Solo Preview.** En **Environments**, marca solo **Preview** y no elijas ramas, para que aplique a todas las vistas previas. No marques **Production**, que tendrá su propio proyecto (`barberias-prod`) en la 6.4, ni **Development**, porque en el computador se usa el Supabase local.
+- **No agregues la clave secreta (`SUPABASE_SECRET_KEY`).** La app todavía no la usa, y es mejor no tenerla expuesta hasta que haga falta. Si algún día hace falta, va como **secreta** y sin `NEXT_PUBLIC_` (`docs/operacion/infraestructura-produccion.md`, sección 5).
 
 ## 2. Tablas en `barberias-dev`
 
 Un proyecto nuevo está vacío. En tu computador, desde la carpeta del proyecto y en `main` actualizado:
 
 ```bash
+pnpm supabase login
 pnpm supabase link --project-ref TU_REF
 ```
+
+`login` abre el navegador para autorizar la CLI, y se hace una sola vez. `link` pide la contraseña de la base de datos.
 
 `TU_REF` es el identificador que aparece en la URL del proyecto: `supabase.com/dashboard/project/TU_REF`.
 

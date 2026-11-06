@@ -301,7 +301,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 6.1 Pruebas de punta a punta con Playwright de los 3 flujos de la spec.
 - [ ] 6.2 Prueba en celulares reales (Android de gama media, iPhone) y redes lentas.
 - [ ] 6.3 PWA instalable, ícono, nombre, pantalla sin conexión.
-- [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad. Según la decisión 0007 y `docs/operacion/infraestructura-produccion.md`: Supabase Pro en `us-east-1`, Vercel Pro en `iad1`, dominio con DNS en Cloudflare ("DNS only"), alertas de gasto sin pausar producción, migraciones y despliegue desde CI, monitor de disponibilidad, `pg_dump` semanal a S3 y simulacro de restauración.
+- [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad. Según la decisión 0007 y `docs/operacion/infraestructura-produccion.md`: Supabase Pro en `us-east-1`, Vercel Pro en `iad1`, dominio con DNS en Cloudflare ("DNS only"), alertas de gasto sin pausar producción, migraciones y despliegue desde CI, monitor de disponibilidad, `pg_dump` semanal a S3 y simulacro de restauración. Variables de Production nuevas, apuntando a `barberias-prod`, con el tipo y las reglas de seguridad de `docs/operacion/infraestructura-produccion.md` ("Variables de producción en Vercel"); las de Preview no se reutilizan.
 - [ ] 6.5 Términos de uso y política de datos personales visibles en el registro y la reserva.
 - [ ] 6.6 Cargar las 10 barberías piloto.
 
