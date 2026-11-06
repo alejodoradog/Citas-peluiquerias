@@ -18,6 +18,7 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 - Código en inglés; textos de interfaz en español de Colombia en src/ui/textos.ts.
 - Reglas de negocio en src/modulos/*/dominio, puras y con pruebas.
 - Nunca leer ni escribir .env* (excepción: .env.example, sin valores); nunca tocar el proyecto de producción.
+- Infraestructura fija en docs/decisiones/0007-infraestructura.md: Vercel, Supabase, Amazon SES y Cloudflare solo para DNS y Turnstile. No agregar servicios de pago, servicios exclusivos de Vercel (@vercel/kv, blob, postgres, edge-config) ni correos por cita sin una decisión nueva.
 
 ## Configuración de Claude Code
 - Reglas por carpeta en .claude/rules; skills `nueva-migracion`, `nueva-pantalla` y `cerrar-tarea`.

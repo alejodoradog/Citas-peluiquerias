@@ -11,7 +11,7 @@ Se decidió antes de la fase 2, cuando cambiar el modelo de datos aún es barato
 ## Decisiones
 
 1. **Solo correo.** Se elimina `notifications.channel` y el tipo `notification_channel`. `barbershops.whatsapp_phone` se mantiene, solo para el link de contacto en la página pública y en la pantalla de suspensión.
-2. **Amazon SES como proveedor**, aislado en un solo módulo para poder cambiarlo. A US$0,10 por cada 1.000 correos y sin mensualidad, sale más barato que Resend (US$20 al mes) y no tiene el tope de unos 500 correos al día de una cuenta de Gmail, que además detendría los recordatorios si Google la pausa.
+2. **Amazon SES como proveedor**, aislado en un solo módulo para poder cambiarlo. A US$0,10 por cada 1.000 correos y sin mensualidad, sale más barato que Resend (US$20 al mes) y no tiene el tope de unos 500 correos al día de una cuenta de Gmail, que además detendría los recordatorios si Google la pausa. **Precio actualizado por la decisión 0007:** las cuentas nuevas de SES quedan en el plan Essentials, a US$0,16 por cada 1.000; los US$0,10 son la tarifa "a la carta".
 3. **El correo identifica al cliente dentro de cada barbería.**
    - `customers.email` va en minúsculas y es único por barbería cuando existe.
    - `customers.phone` es opcional y deja de ser único: sin verificación, cualquiera podría escribir uno ajeno, y la reserva fallaría o revelaría que ya existe.
@@ -49,6 +49,8 @@ Se decidió antes de la fase 2, cuando cambiar el modelo de datos aún es barato
 - **`otp_length` en 10.** Nadie escribe ese código, porque los links usan el hash del token, pero el punto de acceso de Auth podría seguir aceptándolo. Más largo, adivinarlo no es práctico.
 
 ## Costos
+
+**Reemplazado por la decisión 0007**, que recalcula los costos con 1.200 citas al mes por sede, 2 correos por cita y el precio vigente de SES. Texto original:
 
 Suponen 600 correos por barbería al mes, sin contar los correos a barberos y dueños.
 
