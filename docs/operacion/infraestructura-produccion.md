@@ -43,9 +43,33 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Pasar el equipo a **Pro** (US$20 al mes, 1 asiento). No agregar asientos.
 - [ ] Revisar en **Settings → Functions** que la región sea **`iad1`** (también la fija `vercel.json`).
 - [ ] En **Settings → Domains**, agregar el dominio y copiar los registros que muestra Vercel al DNS de Cloudflare en modo **"DNS only"** (nube gris). Esperar a que Vercel muestre el certificado activo.
-- [ ] Crear las variables de **Production** apuntando a `barberias-prod`. Las de Preview siguen apuntando a `barberias-dev`.
+- [ ] Crear las variables de **Production** apuntando a `barberias-prod`, siguiendo la sección "Variables de producción en Vercel" de abajo. Las de Preview siguen apuntando a `barberias-dev`.
 - [ ] En **Settings → Billing → Spend Management**, poner un presupuesto con avisos al 50, 75 y 100%. **No activar "Pause Production Deployments"**: dejaría la app caída hasta reanudarla a mano.
 - [ ] Revisar en **Billing** que Flat Rate CDN esté activo con el nivel incluido.
+
+### Variables de producción en Vercel
+
+En **Settings → Environment Variables**, las variables de Preview (que apuntan a `barberias-dev`) **no se editan ni se reutilizan**: se crean variables nuevas, solo para Production.
+
+| Variable | Valor | Tipo | Ambiente |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL de **`barberias-prod`** | Config | Solo **Production** |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key de **`barberias-prod`** (`sb_publishable_…`) | Config | Solo **Production** |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (tarea 3.5; el nombre exacto lo fija esa tarea) | Llave del sitio del widget de Turnstile | Config | Production, y Preview con su propio valor |
+| `TURNSTILE_SECRET_KEY` (tarea 3.5; el nombre exacto lo fija esa tarea) | Secreto del widget de Turnstile | **Secreta** (Sensitive) | Production, y Preview con su propio valor |
+| `SUPABASE_SECRET_KEY` | **Solo si una tarea lo pide.** La app no lo usa hoy | **Secreta** (Sensitive) | Solo Production |
+
+Reglas de seguridad:
+
+- **Solo lleva `NEXT_PUBLIC_` lo que puede ver cualquiera:** la URL, la llave publicable y la llave del sitio de Turnstile. Vercel exige marcarlas como **Config**.
+- **Todo lo demás va como secreta y sin `NEXT_PUBLIC_`:** la llave secreta de Supabase, el secreto de Turnstile y cualquier contraseña. Si Vercel muestra el aviso "Keep This Value Private" con una de estas, se corrige el nombre; nunca se pulsa **Change to Config**.
+- **Nunca en Vercel:** la contraseña de la base de datos, la llave de SES (vive en los secretos de la Edge Function) ni la llave de AWS del `pg_dump` (vive en GitHub) (decisión 0007, "Dónde vive cada secreto").
+- **Un valor por ambiente:** Production apunta a `barberias-prod` y Preview a `barberias-dev`. Una vista previa nunca debe ver datos de producción.
+- **Comprobación:**
+  1. Después del **Redeploy**, abre el sitio de producción con las herramientas del navegador (pestaña **Network**) y confirma que las peticiones van a la URL de `barberias-prod`.
+  2. En el código del navegador no debe aparecer ningún `sb_secret_`.
+  3. Haz lo mismo en una vista previa: debe ir a `barberias-dev`.
+- **Si una llave secreta llega a quedar expuesta** (en el navegador, en un chat o en el repositorio), se rota de inmediato en Supabase o en Cloudflare y se reemplaza en Vercel.
 
 ## 6. Copias y monitoreo (tarea 6.4)
 
