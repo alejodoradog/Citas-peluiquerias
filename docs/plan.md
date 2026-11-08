@@ -196,6 +196,8 @@ Los plugins de tu organización en claude.ai se pueden usar también en Claude C
 
 Cada tarea es una sesión nueva de Claude Code que empieza en modo plan y termina en un pull request; tú apruebas dos veces: el plan antes del código y el resultado en tu celular antes del merge.
 
+> **Desde el 2026-11-07, por hitos** (decisión del fundador): todo el trabajo va en la rama `desarrollo`, con commits por tarea. Cada fase de este plan es un hito con un solo PR `desarrollo` → `main`, abierto en borrador al empezar para que el CI corra en cada push. Se marca listo cuando el hito cumple su puerta de calidad, se fusiona con "Create a merge commit" (la cuenta dueña del proyecto en Vercel, para que despliegue) y el hito se cierra probando sus funciones en la URL desplegada. Las funciones P2 entran en el hito de su pantalla.
+
 &#91;embedded content: ciclo de una tarea · 8 pasos, 2 aprobaciones tuyas\]
 
 Cuando un chequeo falla, Claude Code corrige solo; cuando algo falla en tu celular, se escribe una tarea de ajuste en vez de parchar sobre la marcha.
