@@ -1,6 +1,10 @@
-# Conectar `barberias-dev` a las vistas previas de Vercel
+# Conectar `barberias-dev` a Vercel
 
-Las vistas previas de Vercel (una por cada PR) usan el proyecto `barberias-dev` de Supabase. Esto lo hace el dueño del proyecto: Claude Code no toca la nube.
+Hasta la tarea 6.4, la app desplegada en Vercel usa el proyecto `barberias-dev` de Supabase, tanto en **Production** como en las vistas previas. Esto lo hace el dueño del proyecto: Claude Code no toca la nube.
+
+**Dónde se prueba:** en la URL fija de `main`, `https://citas-peluquerias-eta.vercel.app`, después de fusionar cada PR (decisión del fundador, 2026-11-06). Así la Site URL de Supabase no cambia con cada rama. El código sigue llegando a `main` solo por PR con los chequeos en verde, y los merges los hace la cuenta `alejodoradog`, porque en Hobby Vercel bloquea los despliegues cuyo autor no es el dueño del equipo.
+
+**En la 6.4, antes de recibir clientes,** las variables de Production se reemplazan por las de `barberias-prod` (`docs/operacion/infraestructura-produccion.md`, "Variables de producción en Vercel"). Desde ese momento, las pruebas vuelven a las vistas previas.
 
 ## 0. Crear el proyecto (si aún no existe)
 
@@ -21,7 +25,8 @@ En vercel.com, entra al proyecto **citas-peluquerias** → **Settings** → **En
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | **Project Settings → API Keys**: "Publishable key" (`sb_publishable_…`) |
 
 - **Tipo Config.** Vercel crea las variables como secretas y rechaza un nombre con `NEXT_PUBLIC_`, porque ese prefijo las expone al navegador. Estas dos son públicas a propósito, así que se pulsa **Change to Config**. No se quita el prefijo: el código lee esos nombres.
-- **Solo Preview.** En **Environments**, marca solo **Preview** y no elijas ramas, para que aplique a todas las vistas previas. No marques **Production**, que tendrá su propio proyecto (`barberias-prod`) en la 6.4, ni **Development**, porque en el computador se usa el Supabase local.
+- **Production y Preview.** En **Environments**, marca **Production** y **Preview**, sin elegir ramas. No marques **Development**, porque en el computador se usa el Supabase local. Production apunta a `barberias-dev` solo hasta la 6.4.
+- **Revisa que no queden intercambiadas.** Si la URL y la llave van al revés, el registro falla sin llegar a Supabase, y las páginas con sesión responden "Internal Server Error". Los valores se fijan al construir: un despliegue hecho con valores malos sigue roto aunque se corrijan las variables, así que hay que volver a desplegar.
 - **No agregues la clave secreta (`SUPABASE_SECRET_KEY`).** La app todavía no la usa, y es mejor no tenerla expuesta hasta que haga falta. Si algún día hace falta, va como **secreta** y sin `NEXT_PUBLIC_` (`docs/operacion/infraestructura-produccion.md`, sección 5).
 
 ## 2. Tablas en `barberias-dev`
@@ -54,8 +59,8 @@ En Supabase → **Authentication**:
 - **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change** y pon la longitud del código (**Email OTP length**) en 10, como en `supabase/config.toml`.
 - **Password:** contraseña mínima de 8 caracteres.
 - **URL Configuration:**
-  - **Site URL:** la URL de vista previa de Vercel.
-  - **Redirect URLs:** `https://citas-peluquerias-*-alejodoradogs-projects.vercel.app/**`.
+  - **Site URL:** `https://citas-peluquerias-eta.vercel.app`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
+  - **Redirect URLs:** `https://citas-peluquerias-eta.vercel.app/**` y `https://citas-peluquerias-*-alejodoradogs-projects.vercel.app/**`.
 - **Plantillas de correo: esperan a la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), y el nuestro será Amazon SES (decisión 0007). Cuando esté:
   - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
   - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
@@ -71,8 +76,17 @@ En Supabase → **Authentication**:
 
 ## 4. Volver a desplegar
 
-En Vercel → **Deployments** → el último despliegue → **Redeploy**. Las variables nuevas solo aplican a despliegues nuevos.
+En Vercel → **Deployments** → el último despliegue de `main` → **Redeploy**, eligiendo **Production**. Las variables nuevas solo aplican a despliegues nuevos.
 
 ## Cómo verificar
 
-Abre `/registro` en la URL de vista previa y crea una barbería de prueba con un correo del equipo. Abre el link que te llega: hasta la 5.2 es el correo en inglés de Supabase, que confirma y te lleva a la Site URL (desde la 5.2, nuestra pantalla con "Continuar"). Luego entra por `/ingresar` con tu contraseña. El link siempre abre la **Site URL**, así que debe ser la URL de la vista previa que estás probando. También revisa en **Emails** que el link dure una hora, como dice la plantilla. Debes llegar a `/panel`. Si sale "Algo salió mal", revisa que las dos variables estén marcadas para Preview y que el despliegue sea posterior a cuando las agregaste.
+1. Abre `https://citas-peluquerias-eta.vercel.app/registro` y crea una barbería de prueba con un correo del equipo.
+2. Abre el link que te llega. Hasta la 5.2 es el correo en inglés de Supabase, que confirma y te lleva a la Site URL; desde la 5.2 será nuestra pantalla con "Continuar".
+3. Entra por `/ingresar` con tu contraseña. Debes llegar a `/panel`.
+
+**Si algo falla:**
+
+- **"Algo salió mal":** el despliegue no tiene las variables. Revisa que estén marcadas para Production y que el despliegue sea posterior a cuando las agregaste.
+- **"Internal Server Error":** la URL y la llave están intercambiadas o mal escritas. Corrígelas y vuelve a desplegar.
+
+También revisa en **Emails** que el link dure una hora, como dice la plantilla.

@@ -43,13 +43,19 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Pasar el equipo a **Pro** (US$20 al mes, 1 asiento). No agregar asientos.
 - [ ] Revisar en **Settings → Functions** que la región sea **`iad1`** (también la fija `vercel.json`).
 - [ ] En **Settings → Domains**, agregar el dominio y copiar los registros que muestra Vercel al DNS de Cloudflare en modo **"DNS only"** (nube gris). Esperar a que Vercel muestre el certificado activo.
-- [ ] Crear las variables de **Production** apuntando a `barberias-prod`, siguiendo la sección "Variables de producción en Vercel" de abajo. Las de Preview siguen apuntando a `barberias-dev`.
+- [ ] Reemplazar las variables de **Production**, que hasta aquí apuntan a `barberias-dev` porque las pruebas se hacen en la URL de `main`, por las de `barberias-prod`, siguiendo la sección "Variables de producción en Vercel" de abajo. Las de Preview siguen apuntando a `barberias-dev`, y desde aquí las pruebas vuelven a las vistas previas.
+- [ ] En `barberias-dev`, cambiar la **Site URL** de vuelta a una URL de vista previa, porque `citas-peluquerias-eta.vercel.app` pasa a ser producción.
 - [ ] En **Settings → Billing → Spend Management**, poner un presupuesto con avisos al 50, 75 y 100%. **No activar "Pause Production Deployments"**: dejaría la app caída hasta reanudarla a mano.
 - [ ] Revisar en **Billing** que Flat Rate CDN esté activo con el nivel incluido.
 
 ### Variables de producción en Vercel
 
-En **Settings → Environment Variables**, las variables de Preview (que apuntan a `barberias-dev`) **no se editan ni se reutilizan**: se crean variables nuevas, solo para Production.
+En **Settings → Environment Variables**, hasta la 6.4 las dos variables de Supabase están marcadas para **Production y Preview** con los valores de `barberias-dev` (`docs/operacion/configurar-barberias-dev.md`). En la 6.4:
+
+1. Se edita cada una y se **desmarca Production**: quedan solo en Preview, apuntando a `barberias-dev`.
+2. Se crean variables nuevas, **solo para Production**, con los valores de `barberias-prod`.
+
+Los valores de `barberias-dev` nunca se reutilizan en Production.
 
 | Variable | Valor | Tipo | Ambiente |
 | --- | --- | --- | --- |
