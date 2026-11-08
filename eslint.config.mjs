@@ -7,6 +7,25 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            "@vercel/kv",
+            "@vercel/blob",
+            "@vercel/postgres",
+            "@vercel/edge-config",
+          ].map((name) => ({
+            name,
+            message:
+              "Servicio exclusivo de Vercel prohibido (decisión 0007, punto 15): usa Supabase para datos, archivos y configuración.",
+          })),
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

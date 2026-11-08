@@ -4,6 +4,8 @@ Hasta la tarea 6.4, la app desplegada en Vercel usa el proyecto `barberias-dev` 
 
 **Dónde se prueba:** en la URL fija de `main`, `https://citas-peluquerias-eta.vercel.app`, después de fusionar cada PR (decisión del fundador, 2026-11-06). Así la Site URL de Supabase no cambia con cada rama. El código sigue llegando a `main` solo por PR con los chequeos en verde, y los merges los hace la cuenta `alejodoradog`, porque en Hobby Vercel bloquea los despliegues cuyo autor no es el dueño del equipo.
 
+**Estado actual (2026-11-07):** `barberias-dev` ya existe, en **East US (North Virginia), `us-east-1`**, con cómputo Nano, dentro de una **organización gratis aparte de la de producción** (decisión 0007, puntos 2 y 4). Vercel sigue en el plan **Hobby** hasta la 6.4, y sus funciones corren en `iad1` (fijado en `vercel.json`).
+
 **En la 6.4, antes de recibir clientes,** las variables de Production se reemplazan por las de `barberias-prod` (`docs/operacion/infraestructura-produccion.md`, "Variables de producción en Vercel"). Desde ese momento, las pruebas vuelven a las vistas previas.
 
 ## 0. Crear el proyecto (si aún no existe)
