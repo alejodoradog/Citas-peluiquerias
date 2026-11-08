@@ -52,7 +52,14 @@ Con la CLI 3, `db push` sin `--remote` apunta a la base local y responde "Local 
 
 **Nunca agregues `--include-seed`.** El seed crea un super admin con contraseña pública (`docs/operacion/datos-de-prueba.md`).
 
-Repite el `db push --remote` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo (fase 6).
+Repite el `db push --remote` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo.
+
+**Migraciones automáticas desde el CI (2026-11-07):** el workflow `.github/workflows/migrate-dev.yml` aplica las migraciones a `barberias-dev` en cada push a `main` que traiga cambios en `supabase/migrations`, y también se puede correr a mano desde **Actions → Migrate barberias-dev → Run workflow**. Necesita un secreto del repositorio que crea un administrador en GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
+
+- **Nombre:** `SUPABASE_DEV_DB_URL`.
+- **Valor:** en Supabase → proyecto `barberias-dev` → **Connect** → **Session pooler**, la cadena `postgresql://postgres.TU_REF:[YOUR-PASSWORD]@…pooler.supabase.com:5432/postgres`, con la contraseña de la base de datos en lugar de `[YOUR-PASSWORD]`.
+
+Esa cadena solo abre `barberias-dev`: nunca sirve para producción. Mientras el secreto no exista, el workflow se salta con un aviso y el `db push --remote` sigue siendo a mano. La primera corrida con el secreto confirma que la CLI 3 acepta `db push --db-url`.
 
 ## 3. Auth en `barberias-dev`
 

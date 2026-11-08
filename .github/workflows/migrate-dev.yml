@@ -1,0 +1,46 @@
+name: Migrate barberias-dev
+
+# Applies the migrations merged into main to the barberias-dev project, so the
+# app deployed from main runs against the same schema. Production gets its own
+# job in task 6.4 (decision 0007, "Integración y despliegue").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-dev
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Session pooler connection string of barberias-dev only: it cannot reach
+      # any other project.
+      SUPABASE_DEV_DB_URL: ${{ secrets.SUPABASE_DEV_DB_URL }}
+    steps:
+      - name: Skip when the secret is missing
+        if: env.SUPABASE_DEV_DB_URL == ''
+        run: echo "::warning::SUPABASE_DEV_DB_URL is not set; run 'pnpm supabase db push --remote' by hand (docs/operacion/configurar-barberias-dev.md)."
+      - uses: actions/checkout@v7
+        if: env.SUPABASE_DEV_DB_URL != ''
+      - uses: pnpm/action-setup@v6
+        if: env.SUPABASE_DEV_DB_URL != ''
+      - uses: actions/setup-node@v7
+        if: env.SUPABASE_DEV_DB_URL != ''
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SUPABASE_DEV_DB_URL != ''
+        run: pnpm install --frozen-lockfile
+      - name: Push migrations to barberias-dev
+        if: env.SUPABASE_DEV_DB_URL != ''
+        run: pnpm supabase db push --db-url "$SUPABASE_DEV_DB_URL" --yes
