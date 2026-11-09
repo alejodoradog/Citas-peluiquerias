@@ -114,8 +114,8 @@ select throws_ok(
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
             'bbbbbbbb-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
-  '23503', null,
-  'an appointment cannot use a barber from another barbershop'
+  '23514', null,
+  'an appointment cannot use a barber from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
@@ -123,8 +123,8 @@ select throws_ok(
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
             'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
-  '23503', null,
-  'an appointment cannot use a customer from another barbershop'
+  '23514', null,
+  'an appointment cannot use a customer from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
@@ -155,8 +155,8 @@ select throws_ok(
   $$insert into public.time_blocks (barbershop_id, barber_id, starts_at, ends_at)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-10 17:00Z', '2026-11-10 18:00Z')$$,
-  '23503', null,
-  'a block cannot target a barber from another barbershop'
+  '23514', null,
+  'a block cannot target a barber from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(

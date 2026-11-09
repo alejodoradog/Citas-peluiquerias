@@ -28,9 +28,9 @@ insert into public.barbers (id, barbershop_id, display_name, link_token_hash) va
 insert into public.services (id, barbershop_id, name, price_cop, duration_minutes) values
   ('aaaaaaaa-0000-0000-0000-0000000000c1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Corte', 25000, 40);
 
-insert into public.customers (id, barbershop_id, full_name, phone) values
-  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente 1', '+573001112233'),
-  ('aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente 2', '+573004445566');
+insert into public.customers (id, barbershop_id, full_name, email, phone) values
+  ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente 1', 'cliente1@example.com', '+573001112233'),
+  ('aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente 2', 'cliente2@example.com', '+573004445566');
 
 -- Barber 1 is booked 10:00-10:40 Bogotá.
 insert into public.appointments (id, barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source) values
