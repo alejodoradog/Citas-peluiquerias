@@ -1,6 +1,6 @@
 # 0001 Modelo de datos
 
-Fecha: 2026-11-04 · Tarea: 1.1 · Estado: aceptada por el dueño del proyecto. La decisión 0006 cambia los datos de contacto de `customers` y `barbers`, y quita el canal de `notifications`.
+Fecha: 2026-11-04 · Tarea: 1.1 · Estado: aceptada por el dueño del proyecto; **reemplazada en parte** por la decisión 0006 del esquema final (`docs/decisiones/0006-esquema-base-de-datos-final.md`, puntos 2, 4, 7, 9 y 13: `memberships`, `plans`, `appointment_services`, `appointment_events` y el fin de `profiles.role`, `profiles.barbershop_id`, `appointments.service_id` y `billing_period`). La decisión 0006 de correo único cambia los datos de contacto de `customers` y `barbers`, y quita el canal de `notifications`.
 
 ## Contexto
 

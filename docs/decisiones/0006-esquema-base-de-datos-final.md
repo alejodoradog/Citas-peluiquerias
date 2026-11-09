@@ -1,6 +1,10 @@
 # 0006 Esquema de base de datos final
 
-Fecha: 2026-11-04, revisión 3 del 2026-11-05 · Tareas: 1.8, 1.9 (`docs/tareas/1.9-esquema-final.md`), 5.1, 5.4 y 5.5 · Estado: **Propuesta (revisión 3)**. Las decisiones del fundador están cerradas; faltan la aprobación del compañero de infraestructura y las dos decisiones abiertas de la sección 6.
+Fecha: 2026-11-04, revisión 3 del 2026-11-05 · Tareas: 1.8, 1.9 (`docs/tareas/1.9-esquema-final.md`), 5.1, 5.4 y 5.5 · Estado: **aceptada por el fundador** (2026-11-07) y aplicada en la tarea 1.9 (migraciones 2 a 8); las migraciones 9, 10 y 11 llegan en las tareas 5.4, 5.5 y 5.1. Siguen abiertas las tres decisiones de la sección 6.
+
+> **Numeración:** comparte el número 0006 con `0006-correo-unico-canal.md`; no se renombró ninguna (tarea 1.9). "Decisión 0006" sin más se refiere a este documento.
+>
+> **Nota de la 1.9:** el SQL de A.1 en este anexo difiere del que se aplicó en la tarea 1.8 (`20261105025014_email_as_only_channel.sql`) en nombres de constraints e índices (por ejemplo, `customers_barbershop_id_email_key` es una restricción única y no un índice parcial). Ninguna de las migraciones 2 a 11 depende de esos nombres, así que manda la migración aplicada.
 
 Reemplaza, en lo que toque, a las decisiones 0001 (puntos 2, 4, 7, 9 y 13), 0002 (tabla de permisos y punto 4) y 0004 (punto 1). Lo que este documento no menciona sigue igual.
 
