@@ -42,8 +42,8 @@ select is(
 
 select is(
   (select subscription_status::text || ':' || plan::text from public.barbershops where slug = 'barberia-don-jose'),
-  'active:basic',
-  'Barbería Don José is active on the basic plan'
+  'active:standard',
+  'Barbería Don José is active on the single plan'
 );
 
 select is(

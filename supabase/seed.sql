@@ -90,20 +90,23 @@ begin
     deposit_method = 'nequi', deposit_account = '300 123 4567'
   where id = barrio;
 
-  -- Don José already paid: active on the basic plan, with the payment on record.
+  -- Don José already paid: his trial ended 6 days ago and he paid the next day,
+  -- so one month counts from the payment day (decision 0006, single plan).
   update public.barbershops set
     address = 'Carrera 70 # 32-15, Laureles, Medellín',
     latitude = 6.2443, longitude = -75.5906,
-    subscription_status = 'active', plan = 'basic', expires_on = today + 25,
+    subscription_status = 'active', plan = 'standard',
+    trial_ends_on = today - 6,
+    expires_on = ((today - 5) + interval '1 month')::date - 1,
     cancellation_notice_hours = 3
   where id = donjose;
 
   insert into public.subscription_payments (
-    barbershop_id, plan, billing_period, amount_cop, method, reference,
+    barbershop_id, plan, amount_cop, method, reference,
     paid_on, covers_from, covers_until, registered_by
   ) values (
-    donjose, 'basic', 'monthly', 39900, 'nequi', 'NEQUI-DEMO-001',
-    today - 5, today - 5, today + 25, admin
+    donjose, 'standard', 25000, 'nequi', 'NEQUI-DEMO-001',
+    today - 5, today - 5, ((today - 5) + interval '1 month')::date - 1, admin
   );
 
   -- Opening hours: Monday to Saturday ------------------------------------------------

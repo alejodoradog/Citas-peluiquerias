@@ -19,9 +19,9 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000e', 'sin-perfil@example.com');
 
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18'),
-  ('cccccccc-0000-0000-0000-000000000000', 'Barbería C', 'barberia-c', '2026-11-18');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', current_date + 10),
+  ('cccccccc-0000-0000-0000-000000000000', 'Barbería C', 'barberia-c', current_date + 10);
 
 insert into public.profiles (id, full_name, active, is_super_admin) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A', true, false),
@@ -82,9 +82,9 @@ insert into public.notifications (barbershop_id, appointment_id, type, scheduled
   ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:a'),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:b');
 
-insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-A', '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'pro', 'monthly', 69900, 'nequi', 'REF-B', '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad');
+insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-A', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad'),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-B', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad');
 
 -- 1. Grants that hold for every table, including future ones -------------------
 
@@ -466,12 +466,12 @@ select throws_ok(
   '42501', null, 'an owner cannot extend their subscription'
 );
 select throws_ok(
-  $$update public.barbershops set subscription_status = 'active', plan = 'pro' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
+  $$update public.barbershops set subscription_status = 'active', plan = 'standard' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
   '42501', null, 'an owner cannot activate their subscription'
 );
 select throws_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'pro', 'annual', 699000, 'nequi', 'FALSO', '2026-11-18', '2026-11-18', '2027-11-18', '00000000-0000-0000-0000-00000000000a')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 699000, 'nequi', 'FALSO', current_date + 10, current_date + 10, current_date + 375, '00000000-0000-0000-0000-00000000000a')$$,
   '42501', null, 'an owner cannot register their own payment'
 );
 select throws_ok(

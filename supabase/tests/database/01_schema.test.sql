@@ -47,7 +47,7 @@ select is(
     join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public'
       and c.relkind in ('r', 'p')
-      and c.relname not in ('barbershops', 'profiles')
+      and c.relname not in ('barbershops', 'profiles', 'plans')
       and not exists (
         select 1
         from pg_attribute a
@@ -71,8 +71,8 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a2', 'second-a@example.com');
 
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', current_date + 10);
 
 insert into public.profiles (id, full_name, is_super_admin) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A', false),
@@ -168,25 +168,25 @@ select throws_ok(
 -- 5. Barbershops ----------------------------------------------------------------
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'barberia-a', '2026-11-18')$$,
+  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'barberia-a', current_date + 10)$$,
   '23505', null,
   'slugs are unique'
 );
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'Barberia Con Espacios', '2026-11-18')$$,
+  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'Barberia Con Espacios', current_date + 10)$$,
   '23514', null,
   'slugs only allow lowercase letters, digits and single hyphens'
 );
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on, subscription_status) values ('Otra', 'otra', '2026-11-18', 'active')$$,
+  $$insert into public.barbershops (name, slug, expires_on, subscription_status) values ('Otra', 'otra', current_date + 10, 'active')$$,
   '23514', null,
   'an active subscription needs a plan'
 );
 
 select lives_ok(
-  $$insert into public.barbershops (name, slug, expires_on, subscription_status, plan) values ('Activa', 'activa', '2026-12-18', 'active', 'basic')$$,
+  $$insert into public.barbershops (name, slug, expires_on, subscription_status, plan) values ('Activa', 'activa', current_date + 40, 'active', 'standard')$$,
   'an active subscription with a plan is accepted'
 );
 
@@ -474,17 +474,17 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-1',
-            '2026-11-18', '2026-12-18', '2026-11-18', '00000000-0000-0000-0000-0000000000ad')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-1',
+            current_date + 10, current_date + 40, current_date + 10, '00000000-0000-0000-0000-0000000000ad')$$,
   '23514', null,
   'a payment covers a forward period'
 );
 
 select lives_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-1',
-            '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-1',
+            current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad')$$,
   'a valid payment is recorded'
 );
 

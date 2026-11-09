@@ -10,7 +10,7 @@ select plan(5);
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner-a@example.com');
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10);
 insert into public.profiles (id, full_name) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A');
 insert into public.memberships (user_id, barbershop_id, role) values
