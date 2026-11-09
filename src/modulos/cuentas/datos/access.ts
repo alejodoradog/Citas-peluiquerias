@@ -57,21 +57,27 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   }
 
   // An owner reaches their barbershops through memberships (decision 0006).
-  // Until the barbershop switcher exists, the oldest membership is the active
-  // one; the switcher will validate its choice against this same list.
+  // Until the barbershop switcher exists, the active one is the oldest
+  // barbershop, the same one create_barbershop takes the company trial from;
+  // the switcher will validate its choice against this same list.
   const { data: memberships, error: membershipsError } = await supabase
     .from("memberships")
     .select(
-      "role, created_at, barbershops(id, name, slug, subscription_status, expires_on)",
+      "barbershops(id, name, slug, subscription_status, expires_on, created_at)",
     )
     .eq("user_id", user.id)
-    .eq("role", "owner")
-    .order("created_at", { ascending: true })
-    .limit(1);
+    .eq("role", "owner");
   if (membershipsError) {
     throw membershipsError;
   }
-  const barbershop = memberships?.[0]?.barbershops;
+  const barbershop = (memberships ?? [])
+    .flatMap((membership) =>
+      membership.barbershops ? [membership.barbershops] : [],
+    )
+    .sort(
+      (a, b) =>
+        a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id),
+    )[0];
   if (!barbershop) {
     return { kind: "no_access" };
   }

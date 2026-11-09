@@ -92,7 +92,8 @@ select throws_ok(
   'a phone that is not a Colombian mobile in E.164 fails'
 );
 select is(
-  (select count(*)::int from public.barbershops where slug in ('sede-celular', 'mal-link')),
+  (select count(*)::int from public.barbershops where slug in ('sede-celular', 'Mal Link', 'panel')
+     or name in ('Copia', 'Mal', 'Celular', 'Panel')),
   0,
   'a failed creation leaves nothing behind'
 );

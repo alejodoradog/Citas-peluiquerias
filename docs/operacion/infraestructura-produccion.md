@@ -36,6 +36,7 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Repetir en producción los ajustes de Auth de `docs/operacion/configurar-barberias-dev.md`, con el dominio en **Site URL** y en **Redirect URLs**.
 - [ ] En **Authentication → SMTP Settings**, poner el SMTP de SES y el remitente del dominio. Subir el límite de envíos de Auth, que con SMTP propio arranca en 30 por hora.
 - [ ] Activar el captcha con Turnstile.
+- [ ] En **Project Settings → Data API**, dejar expuestos solo `public` y `storage`: quitar `graphql_public` si la app no usa GraphQL, para que nadie encadene varias escrituras en una sola transacción por esa vía (revisión de la tarea 1.9, decisión 0006, sección 7).
 - [ ] Guardar en los secretos de GitHub `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` y el `project-ref` de producción.
 
 ## 5. Vercel Pro (tarea 6.4, antes de recibir clientes)

@@ -12,16 +12,23 @@ const eslintConfig = defineConfig([
       "no-restricted-imports": [
         "error",
         {
-          paths: [
-            "@vercel/kv",
-            "@vercel/blob",
-            "@vercel/postgres",
-            "@vercel/edge-config",
-          ].map((name) => ({
-            name,
-            message:
-              "Servicio exclusivo de Vercel prohibido (decisión 0007, punto 15): usa Supabase para datos, archivos y configuración.",
-          })),
+          // The packages and any of their subpaths (e.g. @vercel/blob/client).
+          patterns: [
+            {
+              group: [
+                "@vercel/kv",
+                "@vercel/kv/*",
+                "@vercel/blob",
+                "@vercel/blob/*",
+                "@vercel/postgres",
+                "@vercel/postgres/*",
+                "@vercel/edge-config",
+                "@vercel/edge-config/*",
+              ],
+              message:
+                "Servicio exclusivo de Vercel prohibido (decisión 0007, punto 15): usa Supabase para datos, archivos y configuración.",
+            },
+          ],
         },
       ],
     },

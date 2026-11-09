@@ -289,7 +289,7 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 
 | Idea | Por qué esperar | Señal para construirla |
 | --- | --- | --- |
-| Cuentas por barbero con roles (administrador, recepcionista), solo plan Pro | Una semana extra de desarrollo; el link privado cubre a la mayoría | Barberías de 5 o más barberos piden que alguien más maneje la agenda |
+| Cuentas por barbero con roles (administrador, recepcionista) | Una semana extra de desarrollo; el link privado cubre a la mayoría | Barberías de 5 o más barberos piden que alguien más maneje la agenda |
 | Pasarela de pagos y anticipos en línea | Costo, trámites y comisión | Varias barberías piden cobrar el abono automático |
 | Pago de la suscripción automatizado (link de pago, conciliación) | Con menos de \~200 barberías se maneja a mano | Más de 15 pagos diarios por verificar |
 | Facturación electrónica DIAN para la barbería | Complejo y no lo piden las barberías pequeñas | Barberías formales lo exigen para cambiarse |

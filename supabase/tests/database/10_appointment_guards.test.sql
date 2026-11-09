@@ -6,7 +6,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(18);
+select plan(19);
 
 -- Fixtures, inserted as the table owner -------------------------------------------
 
@@ -46,6 +46,10 @@ insert into public.appointments (id, barbershop_id, customer_id, barber_id, star
 insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
   ('aaaaaaaa-0000-0000-0000-0000000000f2', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000b2',
    now() + interval '5 days', now() + interval '5 days 1 hour', 'Permiso');
+
+insert into public.time_blocks (barbershop_id, barber_id, starts_at, ends_at, reason) values
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000b2',
+   now() + interval '11 days', now() + interval '11 days 1 hour', 'Vacaciones');
 
 update public.barbers set active = false where id = 'aaaaaaaa-0000-0000-0000-0000000000b2';
 
@@ -134,6 +138,10 @@ select is_empty(
 select is_empty(
   $$select barber_id from public.barber_services where barber_id = 'aaaaaaaa-0000-0000-0000-0000000000b2'$$,
   'anon does not see the services of an inactive barber'
+);
+select is_empty(
+  $$select starts_at from public.time_blocks where barber_id = 'aaaaaaaa-0000-0000-0000-0000000000b2'$$,
+  'anon does not see the blocks of an inactive barber'
 );
 select isnt_empty(
   $$select barber_id from public.barber_schedules where barber_id = 'aaaaaaaa-0000-0000-0000-0000000000b1'$$,

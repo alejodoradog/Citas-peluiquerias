@@ -83,7 +83,7 @@ insert into public.notifications (barbershop_id, appointment_id, type, scheduled
   ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:b');
 
 insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-A', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad'),
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-A', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad'),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-B', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad');
 
 -- 1. Grants that hold for every table, including future ones -------------------
@@ -148,6 +148,7 @@ select is(
     order by n.nspname || '.' || p.proname || ':' || r.rolname collate "C"
   ),
   array[
+    'private.check_appointment_source:authenticated',
     'private.current_barbershop_id:authenticated',
     'private.current_profile_id:authenticated',
     'private.is_e164_phone:anon',
@@ -471,7 +472,7 @@ select throws_ok(
 );
 select throws_ok(
   $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 699000, 'nequi', 'FALSO', current_date + 10, current_date + 10, current_date + 375, '00000000-0000-0000-0000-00000000000a')$$,
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'FALSO', current_date + 10, current_date + 10, current_date + 375, '00000000-0000-0000-0000-00000000000a')$$,
   '42501', null, 'an owner cannot register their own payment'
 );
 select throws_ok(

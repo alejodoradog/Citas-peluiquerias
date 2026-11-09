@@ -1,6 +1,6 @@
 # 0004 Registro e ingreso
 
-Fecha: 2026-11-04 · Tarea: 1.4 · Estado: aceptada por el dueño del proyecto.
+Fecha: 2026-11-04 · Tarea: 1.4 · Estado: aceptada por el dueño del proyecto; **reemplazada en parte** por la decisión 0006 del esquema final (punto 1): el registro crea además la membresía `owner`, y el rol ya no vive en `profiles.role` sino en `memberships.role` y `profiles.is_super_admin`. La confirmación de correo la activó la 0006 de correo único.
 
 ## Contexto
 

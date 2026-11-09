@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(72);
+select plan(73);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -124,6 +124,15 @@ select throws_ok(
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
   '23514', null,
   'an appointment cannot use a customer from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
+);
+
+select throws_ok(
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
+            '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'manual')$$,
+  '23503', null,
+  'a manual appointment with a customer from another barbershop hits the composite foreign key'
 );
 
 select throws_ok(
@@ -475,7 +484,7 @@ select throws_ok(
 
 select throws_ok(
   $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-1',
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
             current_date + 10, current_date + 40, current_date + 10, '00000000-0000-0000-0000-0000000000ad')$$,
   '23514', null,
   'a payment covers a forward period'
@@ -483,7 +492,7 @@ select throws_ok(
 
 select lives_ok(
   $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 39900, 'nequi', 'REF-1',
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
             current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad')$$,
   'a valid payment is recorded'
 );

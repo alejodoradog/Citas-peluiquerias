@@ -84,7 +84,7 @@ barberias/
 - **Validación con Zod** en toda entrada del usuario, tanto en el cliente como en el servidor.
 - **Fechas:** se guardan en UTC, se calculan y muestran en `America/Bogota` con una sola utilidad de fechas; prohibido `new Date()` suelto en lógica de negocio.
 - **Dinero:** pesos enteros (`integer`), nunca decimales.
-- **Commits** en formato convencional (`feat:`, `fix:`, `chore:`), ramas `fase-N/tarea-corta`.
+- **Commits** en formato convencional (`feat:`, `fix:`, `chore:`), rama `desarrollo` y un PR por fase (desde el 2026-11-07; antes, ramas `fase-N/tarea-corta`).
 
 Nota: la especificación nombra las tablas en español; en el código se usan sus equivalentes en inglés (`barbershops`, `barbers`, `appointments`…), con el glosario en `docs/decisiones/0001-modelo-de-datos.md`.
 
@@ -274,7 +274,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 3 · Motor de disponibilidad y página pública (semana 3)
 
 - [ ] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible").
-- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicio, barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
+- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicios (uno o varios), barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
 - [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente.
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
 - [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor. Según la decisión 0007: Turnstile en modo Managed, captcha de Supabase Auth con Turnstile, límites propios con la IP que entrega Vercel y Vercel WAF para bloquear.
@@ -284,7 +284,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 4 · Agenda del panel y vista del barbero (semana 4)
 
 - [ ] 4.1 Agenda día (columnas por barbero) y semana; tocar un espacio crea cita.
-- [ ] 4.2 Cita manual (avisando que sin correo no hay confirmación ni recordatorio), bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
+- [ ] 4.2 Cita manual con uno o varios servicios (`create_appointment`, avisando que sin correo no hay confirmación ni recordatorio), cambio de servicios de una cita (`change_appointment_services`), reprogramar, bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
 - [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias, y borrar un cliente anonimizando sus datos (Ley 1581).
 - [ ] 4.4 Vista "Mi agenda" del barbero por link privado, con permisos limitados.
 - [ ] 4.5 Actualización de la agenda cuando entra una reserva, consultando cada 30–60 s en la vista de hoy, sin Realtime (decisión 0007).
@@ -359,7 +359,7 @@ El objetivo de esta semana es cerrar la fase 0 y arrancar la 1; todo lo demás p
 
 - [ ] Crear las cuentas y preparar tu computador (sección Preparación del entorno).
 - [x] Exportar la especificación del MVP a Markdown y guardarla como `docs/spec.md`.
-- [ ] Elegir un nombre provisional para el repositorio y el producto (se puede cambiar después).
+- [x] Elegir un nombre provisional para el repositorio y el producto (se puede cambiar después): el producto es Yapoin, con dominio `yapoin.com`.
 - [x] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
 - [ ] Traer aquí el plan que proponga Claude Code para la fase 1 (el modelo de datos) antes de aprobarlo: es la decisión más difícil de cambiar después.
 - [ ] En paralelo, empezar el diseño de las 3 pantallas clave (reserva, agenda, registro); lo trabajamos juntos aquí.
