@@ -1,6 +1,8 @@
-# Especificación MVP — Agendamiento para barberías
+# Especificación MVP — Yapoin, agendamiento para barberías
 
-Nov 2, 2026 · @Alejandro
+Nov 2, 2026 · @Alejandro · Actualizada el 2026-11-07 con las decisiones del fundador de la decisión 0006 (esquema final) y del diseño de interfaz (tarea 1.9).
+
+**Producto:** Yapoin. **Dominio:** `yapoin.com`.
 
 ## Visión y alcance
 
@@ -19,7 +21,7 @@ El MVP es una web app que permite a los clientes de una barbería reservar su ci
 
 ## Usuarios y roles
 
-Cada barbería tiene una sola cuenta, la del dueño; los barberos no necesitan cuenta y ven su agenda desde un link privado. El cliente final tampoco crea cuenta.
+Cada barbería (sede) tiene un solo dueño, que entra con su cuenta; un mismo dueño puede tener varias sedes desde esa cuenta y crear otra cuando quiera. Los barberos no necesitan cuenta y ven su agenda desde un link privado. El cliente final tampoco crea cuenta.
 
 | Rol | Quién es | Dónde entra | Cómo se identifica |
 | --- | --- | --- | --- |
@@ -28,27 +30,27 @@ Cada barbería tiene una sola cuenta, la del dueño; los barberos no necesitan c
 | Barbero | Empleado de la barbería | Vista "Mi agenda" | Link privado y secreto, sin cuenta ni contraseña |
 | Cliente final | Quien se corta el pelo | Página pública de reservas | Nombre y correo, sin contraseña ni código |
 
-**Link privado del barbero:** el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. Si el barbero se va, el dueño desactiva el link y deja de funcionar al instante. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
+**Link privado del barbero:** el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. El dueño puede desactivar el link y deja de funcionar al instante. Si el barbero se va, el dueño **desactiva al barbero** (no se borra): no recibe citas nuevas, movidas ni bloqueos nuevos, pero con su link sigue gestionando las citas que ya tenía (marcarlas o cancelarlas), y el dueño puede reasignarlas o cancelarlas. Desactivar al barbero no desactiva su link. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
 
 **Avisos al barbero (opcional):** si el dueño registra el correo del barbero y activa los avisos, este recibe por correo cada nueva reserva o cancelación, sin entrar a ninguna parte.
 
-**Fase 2, plan Pro:** cuentas propias por barbero con roles (administrador, recepcionista), para barberías establecidas que necesitan que otra persona maneje la agenda de todos.
+**Fase 2:** cuentas propias por barbero con roles (administrador, recepcionista), para barberías establecidas que necesitan que otra persona maneje la agenda de todos. En el MVP solo existen el dueño y el super admin.
 
 **Dueño que también corta:** el dueño puede crearse a sí mismo como barbero; su agenda aparece junto a las demás en el panel. En el asistente de registro hay una casilla "Yo también corto", marcada por defecto.
 
 ## Funcionalidades del MVP
 
-Son 24 funciones: P1 es imprescindible para lanzar, P2 entra si cabe en las 6 semanas y si no pasa al primer mes después del lanzamiento.
+Son 24 funciones: P1 es imprescindible para lanzar. Las P2 se construyen dentro del hito de su pantalla (decisión del fundador, 2026-11-07), sin bloquear el cierre de los flujos P1.
 
 | # | Función | Rol | Prioridad |  |
 | --- | --- | --- | --- | --- |
 | 1 | Página pública de la barbería con link propio (logo, dirección, mapa, horario, link a su WhatsApp) | Cliente | P1 |  |
-| 2 | Reservar: servicio → barbero (o "cualquiera") → día → hora → nombre, correo y celular opcional | Cliente | P1 |  |
+| 2 | Reservar: servicios (uno o varios) → barbero (o "cualquiera") → día → hora → nombre, correo y celular opcional | Cliente | P1 |  |
 | 3 | Confirmación en pantalla + botón "Agregar a mi calendario" | Cliente | P1 |  |
 | 4 | Link para cancelar o reprogramar la cita sin llamar | Cliente | P1 |  |
 | 5 | Recordatorio de la cita (ver sección Notificaciones) | Cliente | P1 |  |
 | 6 | Ver "mis citas" con un link que llega al correo, sin código | Cliente | P2 |  |
-| 7 | Registro de la barbería en 3 pasos con prueba gratis de 20 días | Dueño | P1 |  |
+| 7 | Registro de la barbería en 3 pasos con prueba gratis de 20 días (una por cuenta: las sedes que se creen después la comparten) | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
 | 9 | Crear barberos (sin cuenta), asignarles servicios y horario, y enviarles su link privado | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
@@ -60,11 +62,11 @@ Son 24 funciones: P1 es imprescindible para lanzar, P2 entra si cabe en las 6 se
 | 16 | Datos de abono opcional (Nequi, Daviplata o llave Bre-B) y marcar "abono recibido" | Dueño | P2 |  |
 | 17 | Cierre del día: servicios atendidos, total y comisión por barbero | Dueño | P2 |  |
 | 18 | Botón para copiar y compartir el link + código QR para imprimir | Dueño | P1 |  |
-| 19 | Aviso de pago y estado de la suscripción dentro del panel | Dueño | P1 |  |
+| 19 | Aviso de pago y estado de la suscripción dentro del panel (avisos en la agenda, sin pantalla propia) | Dueño | P1 |  |
 | 20 | Lista de barberías con plan, estado y fecha de vencimiento | Super admin | P1 |  |
 | 21 | Botón "Registrar pago y activar hasta" | Super admin | P1 |  |
-| 22 | Suspender, reactivar y extender prueba | Super admin | P1 |  |
-| 23 | Historial de pagos por barbería | Super admin | P1 |  |
+| 22 | Suspender, reactivar (solo levanta una suspensión manual si los pagos aún cubren) y extender prueba | Super admin | P1 |  |
+| 23 | Historial de pagos por barbería, con anulación de un registro equivocado (deja rastro) | Super admin | P1 |  |
 | 24 | Métricas básicas: barberías activas, en prueba, vencidas, ingreso mensual | Super admin | P2 |  |
 
 ## Flujos principales
@@ -80,25 +82,27 @@ La hora se vuelve a validar al confirmar, porque dos clientes pueden estar miran
 **2. Registro de la barbería (meta: menos de 10 minutos)**
 
 1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular (que queda como WhatsApp de contacto de la barbería), su correo y una contraseña. Confirma el correo con un link, sin código, e ingresa con su contraseña.
-2. Agrega sus servicios con precio y duración. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
+2. Agrega sus servicios con precio y duración. Como el cliente puede reservar varios servicios en una cita, no hacen falta combos, aunque el dueño puede crearlos. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
 3. Agrega sus barberos con nombre, foto y correo opcionales, y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
 4. Recibe su link y QR listos para compartir; empieza la prueba de 20 días.
+
+Después, el dueño puede crear otra sede desde su misma cuenta. La sede nueva comparte la prueba de la primera; si se crea con la prueba ya vencida, se puede configurar pero no recibe citas hasta su primer pago.
 
 **3. Cobro y activación**
 
 1. El sistema avisa al dueño antes de vencer, con el valor y tus datos de pago.
 2. El dueño transfiere y envía el comprobante a tu correo.
 3. Revisas que el dinero llegó a tu cuenta.
-4. En el panel de plataforma registras el pago; la barbería queda activa hasta la nueva fecha y el dueño recibe confirmación.
+4. En el panel de plataforma registras el pago; la barbería queda activa hasta la nueva fecha y el dueño recibe confirmación. Cada pago cubre un mes de una sede.
 
 ## Pantallas
 
-Son 22 pantallas en tres aplicaciones; todas se diseñan primero para celular.
+Son 21 pantallas principales en cuatro aplicaciones; todas se diseñan primero para celular. El diseño de cada una, con sus estados de carga, vacío y error, está en Claude Design, canvas "Prototipos Barberías" (pantallas C-xx del cliente, D-xx del dueño, B-xx del barbero, P-xx de la plataforma y E-xx de los correos). Si el diseño y esta lista difieren, manda el diseño.
 
-**Página pública de reservas** (`tuapp.co/nombre-barberia`)
+**Página pública de reservas** (`yapoin.com/nombre-barberia`)
 
 1. Perfil de la barbería: logo, foto, dirección con mapa, horario, botón "Reservar" y link para escribirle por WhatsApp.
-2. Elegir servicio: lista con precio y duración.
+2. Elegir servicios: lista con precio y duración; se pueden elegir varios.
 3. Elegir barbero: foto y nombre, o "El primero disponible".
 4. Elegir día y hora: calendario de los próximos 30 días y horas libres.
 5. Datos del cliente: nombre, correo y celular opcional; si ya reservó desde ese navegador, se autocompleta. El servidor nunca devuelve datos de un cliente a partir de lo que alguien escriba.
@@ -110,7 +114,7 @@ Son 22 pantallas en tres aplicaciones; todas se diseñan primero para celular.
 1. Ingreso: correo y contraseña, con recuperación por correo.
 2. Registro y asistente inicial: datos de la barbería → servicios → barberos y horarios.
 3. Agenda: vista día (columnas por barbero) y semana; tocar un espacio crea cita.
-4. Detalle de cita: cliente, servicio, estado y datos de contacto del cliente.
+4. Detalle de cita: cliente, servicios, estado y datos de contacto del cliente.
 5. Nueva cita manual.
 6. Bloquear horas.
 7. Clientes: lista, búsqueda y ficha con historial.
@@ -118,8 +122,9 @@ Son 22 pantallas en tres aplicaciones; todas se diseñan primero para celular.
 9. Barberos y horarios.
 10. Configuración: datos, logo, horario, festivos, política de cancelación, datos de abono.
 11. Compartir: link, QR descargable y texto listo para copiar.
-12. Mi suscripción: plan, vence el, datos para pagar, historial de pagos.
-13. Cierre del día (P2).
+12. Cierre del día (P2).
+
+El estado de la suscripción no tiene pantalla propia: se muestra con avisos en la agenda (prueba por vencer, vencida en gracia, suspendida en solo lectura) y un link "Ver cómo pagar" (decisión del fundador, 2026-11-07, según el diseño). El selector de sede y "Nueva sede" se diseñan en la fase 2.
 
 **Vista del barbero** (link privado, sin cuenta)
 
@@ -136,7 +141,9 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 **Disponibilidad**
 
-- Los espacios se ofrecen cada 15 minutos; la duración la pone el servicio (ej. corte 40 min, corte + barba 60 min). La duración va de 5 a 240 minutos, en múltiplos de 5.
+- Los espacios se ofrecen cada 15 minutos. Cada servicio dura de 5 a 240 minutos, en múltiplos de 5.
+- Una cita puede llevar de 1 a 5 servicios distintos, con un solo barbero y en un solo bloque: su duración y su precio son la suma de los servicios (máximo 480 minutos), y el barbero debe ofrecerlos todos (ej. corte 40 min + barba 20 min = 60 min).
+- Un barbero desactivado no aparece en la página pública ni recibe citas o bloqueos nuevos.
 - El horario de cada barbero va dentro del horario de la barbería.
 - Anticipación mínima configurable (por defecto 1 hora) y máxima de 30 días.
 - "El primero disponible" asigna al barbero libre con menos citas ese día.
@@ -147,6 +154,8 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 - El cliente puede cancelar o reprogramar hasta X horas antes (por defecto 2), desde el link de su correo.
 - La barbería puede cancelar siempre; el sistema avisa al cliente.
+- Reprogramar mueve la misma cita y conserva su duración. Los servicios de una cita confirmada o atendida se pueden cambiar (por ejemplo, agregar la barba en la silla); la duración y el precio se recalculan.
+- Cada cambio de estado, hora, barbero o servicios queda en el historial de la cita.
 
 **Inasistencias**
 
@@ -165,28 +174,27 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 ## Suscripciones y activación manual
 
-No hay pasarela: la barbería paga por transferencia, Nequi o llave Bre-B, envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento.
+No hay pasarela: la barbería paga solo por transferencia (bancaria, Nequi o llave Bre-B), envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento. Los pagos registrados no se editan ni se borran: un registro equivocado se anula y queda el rastro.
 
-**Planes propuestos (a validar con los pilotos)**
+**Plan único** (decisión del fundador, decisión 0006)
 
-| Plan | Barberos | Precio mensual | Trimestral | Anual |
-| --- | --- | --- | --- | --- |
-| Básico | Hasta 3 | $39.900 COP | $107.700 COP (10% dto.) | $399.000 COP (2 meses gratis) |
-| Pro | Hasta 8 | $69.900 COP | $188.700 COP (10% dto.) | $699.000 COP (2 meses gratis) |
+| Plan | Precio | Barberos |
+| --- | --- | --- |
+| Estándar | $25.000 COP por sede al mes | Hasta 5, de forma informativa: nunca se bloquea registrar más |
 
-Ambos planes incluyen todas las funciones del MVP y links privados para los barberos. Cuando lleguen las cuentas por barbero con roles (fase 2), serán exclusivas del Pro.
+Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6), y el precio por encima de 5 barberos sigue abierto.
 
 **Ciclo de la suscripción**
 
-1. Registro: empieza la prueba gratis de 20 días con todo habilitado, desde que se crea la cuenta. Durante la prueba no hay límite de barberos; los límites del plan aplican al pagar. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive.
+1. Registro: empieza la prueba gratis de 20 días con todo habilitado, desde que se crea la cuenta. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive. La prueba es por cuenta: las sedes creadas después comparten su fecha, y una sede creada con la prueba vencida espera su primer pago para recibir citas (se puede configurar mientras tanto).
 2. Avisos automáticos al dueño: 3 días antes de vencer, el día del vencimiento y 3 días después, con tus datos de pago y el valor exacto.
 3. Pago: el dueño transfiere y envía el comprobante a tu correo.
-4. Activación: en el panel eliges la barbería, el plan y el periodo, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.
+4. Activación: en el panel eliges la barbería, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.
 5. Gracia: 5 días después de vencer, la barbería sigue funcionando con un aviso rojo en el panel.
-6. Suspensión: pasados los 5 días, la página pública deja de recibir reservas nuevas (muestra el WhatsApp de la barbería) y el panel queda en solo lectura. Las citas ya tomadas se respetan y no se borra ningún dato.
-7. Reactivación: al registrar un pago, todo vuelve a funcionar al instante.
+6. Suspensión: pasados los 5 días, la página pública deja de recibir reservas nuevas (muestra el WhatsApp de la barbería) y el panel queda en solo lectura: no se crea nada ni se cambia la configuración. Solo se permite que el dueño y el barbero (por su link) marquen las citas como atendida o no asistió, y que el cliente (por su link) cancele la suya. Las citas ya tomadas se respetan y no se borra ningún dato.
+7. Reactivación: al registrar un pago, todo vuelve a funcionar al instante. "Reactivar" en el panel de plataforma solo levanta una suspensión manual cuando los pagos todavía cubren la fecha; no extiende fechas.
 
-**Regla de fechas:** si paga antes de vencer, el nuevo periodo se suma a la fecha de vencimiento; si paga ya vencido, se cuenta desde el día del pago.
+**Regla de fechas:** la vigencia sale solo de la prueba y de los pagos no anulados. Si paga antes de vencer o el mismo día, el nuevo mes empieza al día siguiente del vencimiento; si paga ya vencido, se cuenta desde el día del pago. Un pago del 31 de enero vence el 28 de febrero. Anular un pago recalcula la vigencia.
 
 ## Notificaciones por correo
 
@@ -206,6 +214,8 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 | Confirmación de correo y recuperación de contraseña | Dueño | Al registrarse o al pedirla |
 | Suscripción por vencer, vencida, suspendida, pago registrado | Dueño | Según el ciclo de suscripción |
 
+**Correo del cliente:** es obligatorio en la reserva web y opcional en la cita manual. El cliente que vuelve se reconoce por su correo dentro de cada barbería. La cola de avisos se guarda 90 días.
+
 **Cita manual sin correo:** el cliente no recibe confirmación ni recordatorio; la barbería lo sabe al crearla.
 
 **Sin código, cualquiera puede escribir un correo ajeno al reservar.** Por eso: hay límites por correo e IP y verificación anti-bots invisible; cada correo lleva el link para cancelar; una reserva pública no sobrescribe la ficha de un cliente existente; y el servidor no autocompleta datos a partir de lo que alguien escriba.
@@ -214,12 +224,14 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 
 ## Modelo de datos
 
-Son 13 tablas: las 11 de este MVP más el horario de la barbería y los festivos en que abre. Todas las de negocio llevan `barbershop_id` para separar los datos de cada barbería (multi-tenant con seguridad a nivel de fila). En el código las tablas tienen nombre en inglés; el glosario completo y el porqué de cada decisión están en `docs/decisiones/0001-modelo-de-datos.md`.
+Son 17 tablas. Todas las de negocio llevan `barbershop_id` para separar los datos de cada barbería (multi-tenant con seguridad a nivel de fila); las excepciones son `plans` (catálogo de la plataforma) y `profiles` (la persona, que se une a sus sedes por `memberships`). En el código las tablas tienen nombre en inglés. El esquema final, con su diagrama, la especificación de cada tabla y el SQL de cada migración, está en `docs/decisiones/0006-esquema-base-de-datos-final.md`, que reemplaza en parte a `docs/decisiones/0001-modelo-de-datos.md`.
 
 | Tabla (en el código) | Campos principales | Relación |
 | --- | --- | --- |
-| barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, vence el | Raíz de todo |
-| usuarios (`profiles`) | nombre, celular, rol (dueño o super admin), activo; el correo vive en la cuenta de acceso | Pertenece a una barbería (salvo super admin) |
+| planes (`plans`) | código, nombre, precio mensual en pesos, barberos incluidos (informativo), activo | Catálogo de la plataforma; hoy un solo plan, `standard` |
+| barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, fin de la prueba, vence el | Raíz de cada sede |
+| usuarios (`profiles`) | nombre, celular, super admin (sí o no), activo; el correo vive en la cuenta de acceso | Una persona; se une a sus sedes por `memberships` |
+| membresías (`memberships`) | cuenta, barbería, rol (`owner` en el MVP) | Un dueño por barbería; un dueño puede tener varias sedes |
 | barberos (`barbers`) | nombre visible, foto, correo opcional, link privado (guardado solo como hash), link activo, avisos por correo, orden, activo | Pertenece a una barbería |
 | horarios del barbero (`barber_schedules`) | barbero, día de la semana, hora de inicio y de fin | Varios por barbero; admiten jornada partida |
 | horario de la barbería (`barbershop_hours`) | día de la semana, hora de inicio y de fin | Varios por barbería; admiten jornada partida |
@@ -228,9 +240,11 @@ Son 13 tablas: las 11 de este MVP más el horario de la barbería y los festivos
 | barbero-servicio (`barber_services`) | barbero, servicio | Qué servicios hace cada barbero |
 | bloqueos (`time_blocks`) | barbero (o toda la barbería), inicio, fin, motivo | Almuerzo, permisos, cierres especiales |
 | clientes (`customers`) | nombre, correo (único por barbería cuando existe), celular opcional, notas; visitas e inasistencias se calculan desde las citas | Pertenece a una barbería; una reserva web exige correo y una cita manual solo el nombre |
-| citas (`appointments`) | cliente, barbero, servicio, inicio, fin, precio (copiado al reservar), estado, origen (web o manual), abono recibido, link de gestión (guardado solo como hash) | El corazón del sistema |
+| citas (`appointments`) | cliente, barbero, inicio, fin, precio total, estado, origen (web o manual), abono recibido, link de gestión (guardado solo como hash) | El corazón del sistema; un solo bloque y un solo barbero |
+| servicios de la cita (`appointment_services`) | cita, servicio, posición, precio y duración (copiados al agregarlo) | De 1 a 5 por cita; la base de datos garantiza que la cita dure y cueste la suma |
+| historial de la cita (`appointment_events`) | cita, tipo de cambio, valores antes y después, quién (equipo, cliente, barbero o sistema), cuándo | Lo escriben solo los triggers |
 | notificaciones (`notifications`) | cita o barbería, tipo, programada para, enviada el, estado, intentos | Cola de correos |
-| pagos de suscripción (`subscription_payments`) | plan, periodo, valor en pesos, medio, referencia, fecha de pago, cubre desde y hasta, registrado por | Historial de cobros |
+| pagos de suscripción (`subscription_payments`) | plan, valor en pesos, medio, referencia, fecha de pago, cubre desde y hasta (un mes), registrado por, anulación | Historial de cobros; no se edita ni se borra |
 
 Los instantes (citas, bloqueos) se guardan en UTC y se muestran en hora de Colombia; las fechas de calendario (vencimientos, festivos, pagos) se guardan como fecha. Los links privados del barbero y de gestión de la cita son códigos largos y aleatorios que se guardan solo como hash, para que nadie pueda leerlos de la base de datos.
 
@@ -285,15 +299,15 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 | Campañas de marketing por correo | No es el dolor principal y afecta la reputación del remitente | Lo piden como función paga |
 | Directorio o marketplace de barberías | Necesita masa crítica | Más de 300 barberías activas en una ciudad |
 | Apps en Play Store y App Store | La PWA cubre el uso | Barberías lo piden para su imagen |
-| Varias sedes por cuenta | Pocas cadenas al inicio | Cadenas interesadas en pagar plan superior |
+| Cobro consolidado de una cadena (`organizations`) | Cada sede paga su suscripción | Una cadena pide una sola factura |
 | Reseñas de clientes | Moderación y reclamos | Piden mostrar reputación |
 
 ## Decisiones pendientes
 
-- [ ] Nombre del producto y dominio (.co o .com.co).
+- [x] Nombre del producto y dominio: **Yapoin**, `yapoin.com`.
 - [ ] Quién lo desarrolla: tú, un equipo o un freelancer; esto define si el plan de 6 semanas es realista.
 - [ ] Persona natural o empresa: afecta la factura electrónica de tus ventas y las cuentas para recibir pagos (consultar con un contador). Como mínimo, sacar el RUT como persona natural antes de abrir la venta.
-- [ ] Precio final de los planes, después de hablar con 10 barberías.
+- [x] Precio: plan único de $25.000 COP por sede al mes (decisión 0006). Queda abierto el precio por encima de 5 barberos.
 - [ ] Ciudad y barrios para las 10 barberías piloto.
 - [ ] Correo para recibir comprobantes y cuenta bancaria o Nequi para recibir pagos.
 - [ ] Términos de uso y política de tratamiento de datos personales (Ley 1581 de 2012), porque se guardan nombres, correos y celulares de los clientes.
