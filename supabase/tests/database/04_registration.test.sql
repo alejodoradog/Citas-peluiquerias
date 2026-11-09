@@ -51,12 +51,12 @@ select is(
   'the trial runs through the signup day in Bogotá plus 20 days'
 );
 select is(
-  (select p.barbershop_id from public.profiles p where p.id = '00000000-0000-0000-0000-0000000000a1'),
+  (select m.barbershop_id from public.memberships m where m.user_id = '00000000-0000-0000-0000-0000000000a1'),
   (select b.id from public.barbershops b where b.slug = 'barberia-el-parche'),
-  'the owner profile belongs to the new barbershop'
+  'the owner membership belongs to the new barbershop'
 );
 select is(
-  (select role::text from public.profiles where id = '00000000-0000-0000-0000-0000000000a1'),
+  (select role::text from public.memberships where user_id = '00000000-0000-0000-0000-0000000000a1'),
   'owner',
   'the account is an owner'
 );
@@ -78,8 +78,8 @@ insert into auth.users (id, email, raw_user_meta_data) values (
 );
 
 select is(
-  (select role::text from public.profiles where id = '00000000-0000-0000-0000-0000000000a2'),
-  'owner',
+  (select is_super_admin from public.profiles where id = '00000000-0000-0000-0000-0000000000a2'),
+  false,
   'a signup can never choose the super admin role'
 );
 select is(
@@ -103,7 +103,7 @@ select is(
   'a signup can never activate its subscription'
 );
 select isnt(
-  (select barbershop_id from public.profiles where id = '00000000-0000-0000-0000-0000000000a2'),
+  (select barbershop_id from public.memberships where user_id = '00000000-0000-0000-0000-0000000000a2'),
   (select id from public.barbershops where slug = 'barberia-el-parche'),
   'a signup always gets its own new barbershop'
 );

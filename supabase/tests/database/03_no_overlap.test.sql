@@ -16,8 +16,10 @@ insert into auth.users (id, email) values
 insert into public.barbershops (id, name, slug, expires_on) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18');
 
-insert into public.profiles (id, barbershop_id, role, full_name) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A');
+insert into public.profiles (id, full_name) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A');
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner');
 
 insert into public.barbers (id, barbershop_id, display_name, link_token_hash) values
   ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero 1', repeat('a', 64)),

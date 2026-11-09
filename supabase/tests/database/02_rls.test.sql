@@ -23,11 +23,16 @@ insert into public.barbershops (id, name, slug, expires_on) values
   ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18'),
   ('cccccccc-0000-0000-0000-000000000000', 'Barbería C', 'barberia-c', '2026-11-18');
 
-insert into public.profiles (id, barbershop_id, role, full_name, active) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A', true),
-  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner', 'Dueño B', true),
-  ('00000000-0000-0000-0000-00000000000c', 'cccccccc-0000-0000-0000-000000000000', 'owner', 'Dueño C', false),
-  ('00000000-0000-0000-0000-0000000000ad', null, 'super_admin', 'Admin', true);
+insert into public.profiles (id, full_name, active, is_super_admin) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A', true, false),
+  ('00000000-0000-0000-0000-00000000000b', 'Dueño B', true, false),
+  ('00000000-0000-0000-0000-00000000000c', 'Dueño C', false, false),
+  ('00000000-0000-0000-0000-0000000000ad', 'Admin', true, true);
+
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000c', 'cccccccc-0000-0000-0000-000000000000', 'owner');
 
 insert into public.barbers (id, barbershop_id, display_name, email, link_token_hash, active) values
   ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', 'barbero-a@example.com', repeat('a', 64), true),
@@ -153,6 +158,7 @@ select is(
     'private.is_super_admin:authenticated',
     'private.is_token_hash:anon',
     'private.is_token_hash:authenticated',
+    'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated'
   ],
@@ -443,12 +449,12 @@ delete from public.barbers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000
 -- Owner A tries to give themselves more power.
 
 select throws_ok(
-  $$update public.profiles set role = 'super_admin' where id = '00000000-0000-0000-0000-00000000000a'$$,
+  $$update public.profiles set is_super_admin = true where id = '00000000-0000-0000-0000-00000000000a'$$,
   '42501', null, 'an owner cannot make themselves super admin'
 );
 select throws_ok(
-  $$update public.profiles set barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000' where id = '00000000-0000-0000-0000-00000000000a'$$,
-  '42501', null, 'an owner cannot move to another barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role) values ('00000000-0000-0000-0000-00000000000a', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner')$$,
+  '42501', null, 'an owner cannot join another barbershop'
 );
 select throws_ok(
   $$update public.profiles set active = true where id = '00000000-0000-0000-0000-00000000000a'$$,

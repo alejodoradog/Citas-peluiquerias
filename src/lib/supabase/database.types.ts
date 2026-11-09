@@ -201,6 +201,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"memberships": {
+                  Row: {
+                    "barbershop_id": string,"created_at": string,"role": Database["public"]['Enums']["membership_role"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "barbershop_id": string,"created_at"?: string,"role": Database["public"]['Enums']["membership_role"],"user_id": string
+                  }
+                  Update: {
+                    "barbershop_id"?: string,"created_at"?: string,"role"?: Database["public"]['Enums']["membership_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "memberships_barbershop_id_fkey"
+      columns: ["barbershop_id"]
+isOneToOne: false
+      referencedRelation: "barbershops"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"notifications": {
                   Row: {
                     "appointment_id": string | null,"attempts": number,"barbershop_id": string,"created_at": string,"dedupe_key": string,"id": string,"last_error": string | null,"scheduled_for": string,"sent_at": string | null,"status": Database["public"]['Enums']["notification_status"],"type": Database["public"]['Enums']["notification_type"],"updated_at": string
@@ -229,23 +255,17 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "active": boolean,"barbershop_id": string | null,"created_at": string,"full_name": string,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"],"updated_at": string
+                    "active": boolean,"created_at": string,"full_name": string,"id": string,"is_super_admin": boolean,"phone": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id"?: string | null,"created_at"?: string,"full_name": string,"id": string,"phone"?: string | null,"role": Database["public"]['Enums']["user_role"],"updated_at"?: string
+                    "active"?: boolean,"created_at"?: string,"full_name": string,"id": string,"is_super_admin"?: boolean,"phone"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "active"?: boolean,"barbershop_id"?: string | null,"created_at"?: string,"full_name"?: string,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"],"updated_at"?: string
+                    "active"?: boolean,"created_at"?: string,"full_name"?: string,"id"?: string,"is_super_admin"?: boolean,"phone"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
-                    {
-      foreignKeyName: "profiles_barbershop_id_fkey"
-      columns: ["barbershop_id"]
-isOneToOne: false
-      referencedRelation: "barbershops"
-      referencedColumns: ["id"]
-    }
+                    
                   ]
                 },"services": {
                   Row: {
@@ -328,7 +348,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "appointment_source": "web"|"manual","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","billing_period": "monthly"|"quarterly"|"annual","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","subscription_plan": "basic"|"pro","subscription_status": "trial"|"active"|"suspended","user_role": "owner"|"super_admin"
+            "appointment_source": "web"|"manual","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","billing_period": "monthly"|"quarterly"|"annual","membership_role": "owner","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","subscription_plan": "basic"|"pro","subscription_status": "trial"|"active"|"suspended"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -448,7 +468,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "appointment_source": ["web", "manual"],"appointment_status": ["confirmed", "attended", "no_show", "cancelled_by_customer", "cancelled_by_barbershop"],"billing_period": ["monthly", "quarterly", "annual"],"notification_status": ["pending", "sent", "failed", "cancelled"],"notification_type": ["appointment_confirmed", "appointment_reminder", "appointment_cancelled", "appointment_rescheduled", "barber_new_booking", "barber_booking_cancelled", "subscription_expiring", "subscription_expired", "subscription_suspended", "subscription_payment_registered"],"payment_method": ["bank_transfer", "nequi", "daviplata", "bre_b"],"subscription_plan": ["basic", "pro"],"subscription_status": ["trial", "active", "suspended"],"user_role": ["owner", "super_admin"]
+            "appointment_source": ["web", "manual"],"appointment_status": ["confirmed", "attended", "no_show", "cancelled_by_customer", "cancelled_by_barbershop"],"billing_period": ["monthly", "quarterly", "annual"],"membership_role": ["owner"],"notification_status": ["pending", "sent", "failed", "cancelled"],"notification_type": ["appointment_confirmed", "appointment_reminder", "appointment_cancelled", "appointment_rescheduled", "barber_new_booking", "barber_booking_cancelled", "subscription_expiring", "subscription_expired", "subscription_suspended", "subscription_payment_registered"],"payment_method": ["bank_transfer", "nequi", "daviplata", "bre_b"],"subscription_plan": ["basic", "pro"],"subscription_status": ["trial", "active", "suspended"]
           }
         }
 } as const

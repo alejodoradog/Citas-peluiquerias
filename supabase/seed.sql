@@ -75,8 +75,8 @@ begin
   where u.id in (carlos, jose, admin);
 
   -- Super admins are never created by signup (docs/operacion/crear-super-admin.md).
-  insert into public.profiles (id, role, full_name)
-  values (admin, 'super_admin', 'Admin Plataforma');
+  insert into public.profiles (id, full_name, is_super_admin)
+  values (admin, 'Admin Plataforma', true);
 
   select id into barrio from public.barbershops where slug = 'la-barberia-del-barrio';
   select id into donjose from public.barbershops where slug = 'barberia-don-jose';

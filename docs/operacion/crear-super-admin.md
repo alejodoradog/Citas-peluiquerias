@@ -9,11 +9,13 @@ El super admin no se registra por la web: el registro siempre crea dueños. Se c
 3. En **SQL Editor**, corre esto cambiando el correo y el nombre:
 
 ```sql
-insert into public.profiles (id, role, full_name)
-select id, 'super_admin', 'Tu nombre'
+insert into public.profiles (id, full_name, is_super_admin)
+select id, 'Tu nombre', true
 from auth.users
 where email = 'tu-correo@ejemplo.com';
 ```
+
+   **Nunca le crees una membresía** (`memberships`): un super admin no es dueño de ninguna barbería. Si la tuviera, vería esa barbería como miembro (decisión 0006, riesgos aceptados).
 
 4. Entra por `/ingresar` con ese correo y contraseña. Llegas a `/admin`.
 

@@ -25,10 +25,10 @@ select is(
 );
 
 select is(
-  (select p.role::text from public.profiles p
+  (select p.is_super_admin from public.profiles p
    join auth.users u on u.id = p.id
    where u.email = 'admin@barberias.test'),
-  'super_admin',
+  true,
   'the seed super admin has the super admin role'
 );
 
@@ -55,9 +55,9 @@ select is(
 );
 
 select is(
-  (select count(*) from public.profiles p
-   join public.barbershops b on b.id = p.barbershop_id
-   where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose') and p.role = 'owner'),
+  (select count(*) from public.memberships m
+   join public.barbershops b on b.id = m.barbershop_id
+   where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose') and m.role = 'owner'),
   2::bigint,
   'each seed barbershop has its owner'
 );

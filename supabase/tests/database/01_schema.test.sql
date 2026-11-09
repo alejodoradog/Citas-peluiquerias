@@ -74,10 +74,14 @@ insert into public.barbershops (id, name, slug, expires_on) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18'),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18');
 
-insert into public.profiles (id, barbershop_id, role, full_name) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A'),
-  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner', 'Dueño B'),
-  ('00000000-0000-0000-0000-0000000000ad', null, 'super_admin', 'Admin');
+insert into public.profiles (id, full_name, is_super_admin) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A', false),
+  ('00000000-0000-0000-0000-00000000000b', 'Dueño B', false),
+  ('00000000-0000-0000-0000-0000000000ad', 'Admin', true);
+
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner');
 
 insert into public.barbers (id, barbershop_id, display_name, link_token_hash) values
   ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', repeat('a', 64)),
@@ -236,32 +240,35 @@ select throws_ok(
   'phones are stored in E.164 format'
 );
 
--- 6. Profiles -------------------------------------------------------------------
+-- 6. Profiles and memberships ----------------------------------------------------
+
+insert into public.profiles (id, full_name) values
+  ('00000000-0000-0000-0000-0000000000a2', 'Otro dueño');
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Otro dueño')$$,
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner')$$,
   '23505', null,
   'a barbershop has only one owner account'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', null, 'owner', 'Sin barbería')$$,
-  '23514', null,
-  'an owner must belong to a barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', null, 'owner')$$,
+  '23502', null,
+  'a membership must name a barbershop'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'super_admin', 'Admin con barbería')$$,
-  '23514', null,
-  'a super admin does not belong to a barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', 'dddddddd-0000-0000-0000-000000000000', 'owner')$$,
+  '23503', null,
+  'a membership needs an existing barbershop'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000ff', 'super_admin', 'Sin usuario')$$,
+  $$insert into public.profiles (id, full_name)
+    values ('00000000-0000-0000-0000-0000000000ff', 'Sin usuario')$$,
   '23503', null,
   'a profile needs an auth user'
 );
