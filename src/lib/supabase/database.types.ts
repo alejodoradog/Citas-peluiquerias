@@ -149,14 +149,14 @@ isOneToOne: false
                   ]
                 },"barbershops": {
                   Row: {
-                    "address": string | null,"cancellation_notice_hours": number,"cover_photo_path": string | null,"created_at": string,"deposit_account": string | null,"deposit_method": Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id": string,"latitude": number | null,"logo_path": string | null,"longitude": number | null,"min_booking_notice_minutes": number,"name": string,"plan": Database["public"]['Enums']["subscription_plan"] | null,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"updated_at": string,"whatsapp_phone": string | null
+                    "address": string | null,"cancellation_notice_hours": number,"cover_photo_path": string | null,"created_at": string,"deposit_account": string | null,"deposit_method": Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id": string,"latitude": number | null,"logo_path": string | null,"longitude": number | null,"min_booking_notice_minutes": number,"name": string,"plan": Database["public"]['Enums']["subscription_plan"] | null,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at": string,"whatsapp_phone": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name": string,"plan"?: Database["public"]['Enums']["subscription_plan"] | null,"slug": string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"updated_at"?: string,"whatsapp_phone"?: string | null
+                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name": string,"plan"?: Database["public"]['Enums']["subscription_plan"] | null,"slug": string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at"?: string,"whatsapp_phone"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on"?: string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name"?: string,"plan"?: Database["public"]['Enums']["subscription_plan"] | null,"slug"?: string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"updated_at"?: string,"whatsapp_phone"?: string | null
+                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on"?: string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name"?: string,"plan"?: Database["public"]['Enums']["subscription_plan"] | null,"slug"?: string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on"?: string,"updated_at"?: string,"whatsapp_phone"?: string | null
                   }
                   Relationships: [
                     
@@ -345,7 +345,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "create_barbershop":
+{ Args: { "p_name": string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
+                           }
           }
           Enums: {
             "appointment_source": "web"|"manual","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","billing_period": "monthly"|"quarterly"|"annual","membership_role": "owner","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","subscription_plan": "basic"|"pro","subscription_status": "trial"|"active"|"suspended"

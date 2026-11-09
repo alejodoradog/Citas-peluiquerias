@@ -160,7 +160,8 @@ select is(
     'private.is_token_hash:authenticated',
     'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
-    'private.set_updated_at:authenticated'
+    'private.set_updated_at:authenticated',
+    'public.create_barbershop:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
 );
