@@ -62,8 +62,9 @@ export async function createSuperAdmin(email: string, password: string) {
 
   const { error: profileError } = await admin.from("profiles").insert({
     id: data.user.id,
-    role: "super_admin",
     full_name: "Admin Plataforma",
+    // A super admin has no membership (decision 0006).
+    is_super_admin: true,
   });
   if (profileError) throw profileError;
 }

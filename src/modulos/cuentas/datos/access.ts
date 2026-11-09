@@ -8,9 +8,9 @@ import { cameFromRecentRecovery } from "../dominio/recovery-session";
 
 type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
 
-// Who is using the app right now. Decided only from the profiles table, which
-// RLS filters (inactive profiles are invisible), never from user metadata,
-// which the user can change at will.
+// Who is using the app right now. Decided only from the profiles and
+// memberships tables, which RLS filters (inactive profiles see nothing), never
+// from user metadata, which the user can change at will.
 export type Access =
   | { kind: "anonymous" }
   | { kind: "no_access" }
