@@ -70,15 +70,13 @@ insert into public.customers (id, barbershop_id, full_name, email, phone) values
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente-b@example.com', '+573002220002');
 
 insert into public.appointments (
-  id, barbershop_id, customer_id, barber_id, service_id,
+  id, barbershop_id, customer_id, barber_id,
   starts_at, ends_at, price_cop, source, manage_token_hash
 ) values
   ('aaaaaaaa-0000-0000-0000-0000000000e1', 'aaaaaaaa-0000-0000-0000-000000000000',
-   'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1',
-   'aaaaaaaa-0000-0000-0000-0000000000c1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web', repeat('e', 64)),
+   'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web', repeat('e', 64)),
   ('bbbbbbbb-0000-0000-0000-0000000000e1', 'bbbbbbbb-0000-0000-0000-000000000000',
-   'bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-0000000000b1',
-   'bbbbbbbb-0000-0000-0000-0000000000c1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 30000, 'web', repeat('f', 64));
+   'bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-0000000000b1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 30000, 'web', repeat('f', 64));
 
 insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:a'),
@@ -161,6 +159,8 @@ select is(
     'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
+    'public.change_appointment_services:authenticated',
+    'public.create_appointment:authenticated',
     'public.create_barbershop:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
@@ -381,9 +381,9 @@ select throws_ok(
   '42501', null, 'owner A cannot create customers in B'
 );
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
-            'bbbbbbbb-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-0000000000c1',
+            'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-11 14:00Z', '2026-11-11 14:40Z', 30000, 'manual')$$,
   '42501', null, 'owner A cannot create appointments in B'
 );

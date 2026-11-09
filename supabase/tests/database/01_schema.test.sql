@@ -96,44 +96,42 @@ insert into public.customers (id, barbershop_id, full_name, email, phone) values
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente@example.com', '+573001112233');
 
 insert into public.appointments (
-  id, barbershop_id, customer_id, barber_id, service_id,
+  id, barbershop_id, customer_id, barber_id,
   starts_at, ends_at, price_cop, source
 ) values (
   'aaaaaaaa-0000-0000-0000-0000000000e1',
   'aaaaaaaa-0000-0000-0000-000000000000',
   'aaaaaaaa-0000-0000-0000-0000000000d1',
   'aaaaaaaa-0000-0000-0000-0000000000b1',
-  'aaaaaaaa-0000-0000-0000-0000000000c1',
   '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web'
 );
 
 -- 4. Nothing from barbershop A may point at barbershop B -----------------------
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'bbbbbbbb-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
   '23514', null,
   'an appointment cannot use a barber from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
   '23514', null,
   'an appointment cannot use a customer from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-0000000000c1',
-            '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
-  '23503', null,
-  'an appointment cannot use a service from another barbershop'
+  $$insert into public.appointment_services (barbershop_id, appointment_id, position, service_id)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 2,
+            'bbbbbbbb-0000-0000-0000-0000000000c1')$$,
+  '23514', null,
+  'an appointment cannot use a service from another barbershop (the line copy trigger rejects it, decision 0006)'
 );
 
 select throws_ok(
@@ -424,9 +422,9 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:00Z', 25000, 'web')$$,
   '23514', null,
   'an appointment ends after it starts'

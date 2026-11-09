@@ -35,6 +35,7 @@ declare
   j_corte uuid; j_barba uuid; j_combo uuid;
   c_juan uuid; c_felipe uuid; c_santiago uuid; c_daniel uuid; c_miguel uuid;
   c_andrea uuid; c_luis uuid; c_camilo uuid;
+  appt record; appt_id uuid;
 begin
   d0 := case when extract(dow from today) = 0 then today + 1 else today end;
   d1 := case when extract(dow from d0 + 1) = 0 then d0 + 2 else d0 + 1 end;
@@ -206,47 +207,43 @@ begin
   values (donjose, 'Camilo Ochoa') returning id into c_camilo;
 
   -- Appointments ------------------------------------------------------------------
-  -- price_cop copies the service price at booking time.
+  -- Created like the app does, with create_appointment (decision 0006): length
+  -- and price come from the services, and an appointment may have several.
+  -- Closed ones are then moved to their status, which leaves their history.
 
-  insert into public.appointments (
-    barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at,
-    price_cop, status, source
-  )
-  select barrio, a.customer_id, a.barber_id, a.service_id,
-         (a.day + a.start_time) at time zone tz,
-         (a.day + a.start_time) at time zone tz + make_interval(mins => s.duration_minutes),
-         s.price_cop, a.status::public.appointment_status, a.source::public.appointment_source
-  from (values
-    -- Two days ago: Juan did not show up (first time).
-    (p2, time '10:00', c_juan, b_carlos, s_corte, 'no_show', 'web'),
-    (p2, time '15:00', c_santiago, b_andres, s_corte, 'attended', 'web'),
-    -- Yesterday: Juan did not show up again; Felipe came.
-    (p1, time '10:00', c_juan, b_carlos, s_corte, 'no_show', 'web'),
-    (p1, time '11:00', c_felipe, b_andres, s_combo, 'attended', 'manual'),
-    -- Today.
-    (d0, time '10:00', c_daniel, b_carlos, s_corte, 'confirmed', 'web'),
-    (d0, time '15:00', c_felipe, b_andres, s_barba, 'confirmed', 'web'),
-    (d0, time '16:00', c_miguel, b_carlos, s_cejas, 'cancelled_by_customer', 'web'),
-    -- Tomorrow.
-    (d1, time '09:00', c_santiago, b_andres, s_ninos, 'confirmed', 'manual'),
-    (d1, time '17:00', c_juan, b_carlos, s_corte, 'confirmed', 'web')
-  ) as a (day, start_time, customer_id, barber_id, service_id, status, source)
-  join public.services s on s.id = a.service_id;
-
-  insert into public.appointments (
-    barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at,
-    price_cop, status, source
-  )
-  select donjose, a.customer_id, a.barber_id, a.service_id,
-         (a.day + a.start_time) at time zone tz,
-         (a.day + a.start_time) at time zone tz + make_interval(mins => s.duration_minutes),
-         s.price_cop, a.status::public.appointment_status, a.source::public.appointment_source
-  from (values
-    (p1, time '09:00', c_andrea, b_jose, j_corte, 'attended', 'web'),
-    (d0, time '11:00', c_luis, b_mateo, j_combo, 'confirmed', 'web'),
-    (d0, time '14:00', c_camilo, b_jose, j_barba, 'cancelled_by_barbershop', 'manual'),
-    (d1, time '10:00', c_andrea, b_mateo, j_corte, 'confirmed', 'web')
-  ) as a (day, start_time, customer_id, barber_id, service_id, status, source)
-  join public.services s on s.id = a.service_id;
+  for appt in
+    select * from (values
+      -- Two days ago: Juan did not show up (first time).
+      (barrio, p2, time '10:00', c_juan, b_carlos, array[s_corte], 'no_show', 'web'),
+      (barrio, p2, time '15:00', c_santiago, b_andres, array[s_corte], 'attended', 'web'),
+      -- Yesterday: Juan did not show up again; Felipe came.
+      (barrio, p1, time '10:00', c_juan, b_carlos, array[s_corte], 'no_show', 'web'),
+      (barrio, p1, time '11:00', c_felipe, b_andres, array[s_combo], 'attended', 'manual'),
+      -- Today.
+      (barrio, d0, time '10:00', c_daniel, b_carlos, array[s_corte], 'confirmed', 'web'),
+      (barrio, d0, time '15:00', c_felipe, b_andres, array[s_barba], 'confirmed', 'web'),
+      (barrio, d0, time '16:00', c_miguel, b_carlos, array[s_cejas], 'cancelled_by_customer', 'web'),
+      -- Tomorrow, one of them with two services in one booking.
+      (barrio, d1, time '09:00', c_santiago, b_andres, array[s_ninos], 'confirmed', 'manual'),
+      (barrio, d1, time '11:00', c_daniel, b_carlos, array[s_corte, s_barba], 'confirmed', 'web'),
+      (barrio, d1, time '17:00', c_juan, b_carlos, array[s_corte], 'confirmed', 'web'),
+      -- Barbería Don José.
+      (donjose, p1, time '09:00', c_andrea, b_jose, array[j_corte], 'attended', 'web'),
+      (donjose, d0, time '11:00', c_luis, b_mateo, array[j_combo], 'confirmed', 'web'),
+      (donjose, d0, time '14:00', c_camilo, b_jose, array[j_barba], 'cancelled_by_barbershop', 'manual'),
+      (donjose, d1, time '10:00', c_andrea, b_mateo, array[j_corte], 'confirmed', 'web')
+    ) as a (barbershop_id, day, start_time, customer_id, barber_id, service_ids, status, source)
+  loop
+    appt_id := public.create_appointment(
+      appt.barbershop_id, appt.customer_id, appt.barber_id,
+      (appt.day + appt.start_time) at time zone tz,
+      appt.service_ids, appt.source::public.appointment_source
+    );
+    if appt.status <> 'confirmed' then
+      update public.appointments
+      set status = appt.status::public.appointment_status
+      where id = appt_id;
+    end if;
+  end loop;
 end;
 $$;

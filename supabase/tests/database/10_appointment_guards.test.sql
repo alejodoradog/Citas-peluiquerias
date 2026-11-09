@@ -33,15 +33,15 @@ insert into public.customers (id, barbershop_id, full_name, email) values
   ('aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-000000000000', 'Sin correo', null);
 
 -- Appointments and a block the leaving barber already had.
-insert into public.appointments (id, barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source) values
+insert into public.appointments (id, barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source) values
   ('aaaaaaaa-0000-0000-0000-0000000000e1', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b2', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b2', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web'),
   ('aaaaaaaa-0000-0000-0000-0000000000e2', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b2', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '2 days', now() + interval '2 days 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b2', now() + interval '2 days', now() + interval '2 days 40 minutes', 25000, 'web'),
   ('aaaaaaaa-0000-0000-0000-0000000000e3', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b2', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '3 days', now() + interval '3 days 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b2', now() + interval '3 days', now() + interval '3 days 40 minutes', 25000, 'web'),
   ('aaaaaaaa-0000-0000-0000-0000000000e4', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '4 days', now() + interval '4 days 40 minutes', 25000, 'web');
+   'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '4 days', now() + interval '4 days 40 minutes', 25000, 'web');
 
 insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
   ('aaaaaaaa-0000-0000-0000-0000000000f2', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000b2',
@@ -52,25 +52,22 @@ update public.barbers set active = false where id = 'aaaaaaaa-0000-0000-0000-000
 -- Email on web bookings ------------------------------------------------------------
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-0000000000b1',
-            'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '6 days', now() + interval '6 days 40 minutes', 25000, 'web')$$,
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '6 days', now() + interval '6 days 40 minutes', 25000, 'web')$$,
   '23514', 'web booking needs the customer email',
   'a web booking for a customer without email fails'
 );
 select lives_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-0000000000b1',
-            'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '7 days', now() + interval '7 days 40 minutes', 25000, 'manual')$$,
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2', 'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '7 days', now() + interval '7 days 40 minutes', 25000, 'manual')$$,
   'a manual appointment for a customer without email works'
 );
 
 -- The inactive barber's agenda is closed from now on -------------------------------------
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b2',
-            'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '8 days', now() + interval '8 days 40 minutes', 25000, 'manual')$$,
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b2', now() + interval '8 days', now() + interval '8 days 40 minutes', 25000, 'manual')$$,
   '23514', 'barber is inactive',
   'a new appointment with an inactive barber fails'
 );

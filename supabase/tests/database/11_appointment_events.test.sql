@@ -39,15 +39,15 @@ insert into public.customers (id, barbershop_id, full_name, email) values
   ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', 'cliente-a@example.com'),
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente-b@example.com');
 
-insert into public.appointments (id, barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source) values
+insert into public.appointments (id, barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source) values
   ('aaaaaaaa-0000-0000-0000-0000000000e1', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web'),
   ('aaaaaaaa-0000-0000-0000-0000000000e2', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '2 days', now() + interval '2 days 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '2 days', now() + interval '2 days 40 minutes', 25000, 'web'),
   ('aaaaaaaa-0000-0000-0000-0000000000e3', 'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-   'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1', now() + interval '3 days', now() + interval '3 days 40 minutes', 25000, 'web'),
+   'aaaaaaaa-0000-0000-0000-0000000000b1', now() + interval '3 days', now() + interval '3 days 40 minutes', 25000, 'web'),
   ('bbbbbbbb-0000-0000-0000-0000000000e1', 'bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
-   'bbbbbbbb-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-0000000000c1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web');
+   'bbbbbbbb-0000-0000-0000-0000000000b1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web');
 
 -- A signed-in owner is staff, with their account -----------------------------------------
 

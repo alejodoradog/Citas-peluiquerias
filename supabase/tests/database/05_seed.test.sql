@@ -131,13 +131,13 @@ select is(
 );
 
 select is(
-  (select array_agg(distinct a.price_cop = s.price_cop)
-   from public.appointments a
-   join public.services s on s.id = a.service_id
-   join public.barbershops b on b.id = a.barbershop_id
+  (select array_agg(distinct l.price_cop = s.price_cop)
+   from public.appointment_services l
+   join public.services s on s.id = l.service_id
+   join public.barbershops b on b.id = l.barbershop_id
    where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose')),
   array[true],
-  'appointments keep the price of their service'
+  'appointment lines keep the price of their service'
 );
 
 select * from finish();

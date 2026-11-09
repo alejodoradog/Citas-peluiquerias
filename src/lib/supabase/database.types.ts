@@ -49,16 +49,42 @@ isOneToOne: false
       referencedColumns: ["barbershop_id","id"]
     }
                   ]
-                },"appointments": {
+                },"appointment_services": {
                   Row: {
-                    "barber_id": string,"barbershop_id": string,"created_at": string,"customer_id": string,"deposit_received": boolean,"ends_at": string,"id": string,"manage_token_hash": string | null,"price_cop": number,"service_id": string,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
+                    "appointment_id": string,"barbershop_id": string,"created_at": string,"duration_minutes": number,"position": number,"price_cop": number,"service_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"service_id": string,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "appointment_id": string,"barbershop_id"?: string,"created_at"?: string,"duration_minutes": number,"position": number,"price_cop": number,"service_id": string
                   }
                   Update: {
-                    "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"customer_id"?: string,"deposit_received"?: boolean,"ends_at"?: string,"id"?: string,"manage_token_hash"?: string | null,"price_cop"?: number,"service_id"?: string,"source"?: Database["public"]['Enums']["appointment_source"],"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "appointment_id"?: string,"barbershop_id"?: string,"created_at"?: string,"duration_minutes"?: number,"position"?: number,"price_cop"?: number,"service_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "appointment_services_barbershop_id_appointment_id_fkey"
+      columns: ["barbershop_id","appointment_id"]
+isOneToOne: false
+      referencedRelation: "appointments"
+      referencedColumns: ["barbershop_id","id"]
+    },{
+      foreignKeyName: "appointment_services_barbershop_id_service_id_fkey"
+      columns: ["barbershop_id","service_id"]
+isOneToOne: false
+      referencedRelation: "services"
+      referencedColumns: ["barbershop_id","id"]
+    }
+                  ]
+                },"appointments": {
+                  Row: {
+                    "barber_id": string,"barbershop_id": string,"created_at": string,"customer_id": string,"deposit_received": boolean,"ends_at": string,"id": string,"manage_token_hash": string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                  }
+                  Update: {
+                    "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"customer_id"?: string,"deposit_received"?: boolean,"ends_at"?: string,"id"?: string,"manage_token_hash"?: string | null,"price_cop"?: number,"source"?: Database["public"]['Enums']["appointment_source"],"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -79,12 +105,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "barbershops"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "appointments_barbershop_id_service_id_fkey"
-      columns: ["barbershop_id","service_id"]
-isOneToOne: false
-      referencedRelation: "services"
-      referencedColumns: ["barbershop_id","id"]
     }
                   ]
                 },"barber_schedules": {
@@ -371,7 +391,13 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "create_barbershop":
+            "change_appointment_services":
+{ Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined
+                           },
+"create_appointment":
+{ Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_id": string,"p_manage_token_hash"?: string,"p_service_ids": (string)[],"p_source"?: Database["public"]['Enums']["appointment_source"],"p_starts_at": string }; Returns: string
+                           },
+"create_barbershop":
 { Args: { "p_name": string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
                            }
           }
