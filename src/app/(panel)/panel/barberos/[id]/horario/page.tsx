@@ -57,8 +57,13 @@ async function BarberSchedule({ params }: { params: Promise<{ id: string }> }) {
   ]);
   if (!barber) notFound();
 
+  // The editor keeps its draft in state, seeded from these props. Next.js may
+  // first show this page from a payload it kept and then refresh it: keyed by
+  // the saved schedule, the editor starts over when the refreshed one differs,
+  // instead of showing the week as it was before the last save.
   return (
     <ScheduleEditor
+      key={`${barber.uses_barbershop_hours}:${JSON.stringify(barber.shifts)}`}
       action={saveBarberSchedule}
       barber={{
         id: barber.id,
