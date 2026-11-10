@@ -1,5 +1,6 @@
 import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
+import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
@@ -472,6 +473,53 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberActionErrorCode | "invalid", string>,
+  },
+  // D-55, a barber's own hours (decision 8 of task 2.2).
+  horario: {
+    titulo: (nombre: string) => `Horario de ${nombre}`,
+    tituloCargando: "Horario",
+    cargando: "Cargando el horario…",
+    usaBarberia: "Usa el horario de la barbería",
+    barberiaSinHorario: "La barbería aún no tiene horario.",
+    bajada:
+      "Su horario va dentro del de la barbería. Puedes partir la jornada en dos tramos.",
+    // By weekday: 0 is Sunday.
+    dias: [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ],
+    // The name of each day's switch; on screen it reads as the day alone.
+    trabaja: (dia: string) => `Trabaja el ${dia.toLocaleLowerCase("es-CO")}`,
+    descansa: "Descansa",
+    tramos: ["Primer tramo", "Segundo tramo"],
+    desde: "Desde",
+    hasta: "Hasta",
+    partir: "Partir la jornada",
+    partirDia: (dia: string) =>
+      `Partir la jornada del ${dia.toLocaleLowerCase("es-CO")}`,
+    quitar: "Quitar",
+    quitarDia: (dia: string) =>
+      `Quitar el segundo tramo del ${dia.toLocaleLowerCase("es-CO")}`,
+    // After hours_outside_shop, what the barbershop opens that day.
+    barberiaAbre: (horas: string) => `Ese día la barbería abre ${horas}.`,
+    barberiaCerrada: "Ese día la barbería no abre.",
+    guardar: "Guardar horario",
+    guardando: "Guardando…",
+    errores: {
+      hours_invalid: "Elige las horas de la lista, de 15 en 15 minutos.",
+      hours_too_many: "Máximo dos tramos por día.",
+      hours_order: "La hora de «Hasta» debe ser después de la de «Desde».",
+      hours_overlap:
+        "Los dos tramos se cruzan. El segundo debe empezar después de que termine el primero.",
+      hours_outside_shop: "Se sale del horario de la barbería.",
+      unknown: "No pudimos guardar el horario. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ScheduleActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

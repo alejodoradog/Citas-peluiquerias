@@ -84,6 +84,10 @@ describe("BarberEditor", () => {
     expect(screen.getByRole("checkbox", { name: "Corte" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Barba" })).toBeChecked();
     expect(screen.getByText(t.horarioBarberia)).toBeInTheDocument();
+    // The hours of D-55 need a saved barber: no link yet.
+    expect(
+      screen.queryByRole("link", { name: new RegExp(`^${t.horario}`) }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(t.linkNuevo)).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Desactivar/ }),
@@ -121,6 +125,9 @@ describe("BarberEditor", () => {
     expect(screen.getByRole("checkbox", { name: "Corte" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Barba" })).toBeChecked();
     expect(screen.getByText(t.linkActivoChip)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: new RegExp(`^${t.horario}`) }),
+    ).toHaveAttribute("href", `/panel/barberos/${kevin.id}/horario`);
     expect(
       screen.getByText("Lun a sáb 9:00 a. m. – 6:00 p. m."),
     ).toBeInTheDocument();
