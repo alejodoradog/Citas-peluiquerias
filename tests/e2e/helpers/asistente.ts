@@ -18,4 +18,17 @@ export async function finishSetup(page: Page) {
   });
   await page.getByRole("link", { name: t.listo.agenda }).click();
   await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
+  // The agenda streams its greeting once it knows the setup is done. Waiting
+  // for it lets any navigation still in flight settle, so the next
+  // page.goto() is not interrupted by it.
+  await expect(
+    page
+      .getByRole("heading", {
+        level: 1,
+        name: new RegExp(`^${textos.panel.saludo("")}`),
+      })
+      .filter({ visible: true }),
+  ).toBeVisible({ timeout: 20_000 });
+  await page.waitForLoadState("networkidle");
+  await expect(page).toHaveURL(/\/panel$/);
 }
