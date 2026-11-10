@@ -312,3 +312,22 @@ describe("parseSetupPayload", () => {
     });
   });
 });
+
+describe("services added in the wizard", () => {
+  it("are accepted with the key the draft gives them", () => {
+    const key = `nuevo-${crypto.randomUUID()}`;
+    const draft = setupReducer(initialDraft(), {
+      type: "save_service",
+      service: {
+        key,
+        name: "Diseño",
+        priceCop: 10000,
+        durationMinutes: 15,
+        offered: true,
+      },
+    });
+    const payload = toSetupPayload(draft, "Carlos");
+    expect(payload.services.map((s) => s.key)).toContain(key);
+    expect(parseSetupPayload(payload).success).toBe(true);
+  });
+});

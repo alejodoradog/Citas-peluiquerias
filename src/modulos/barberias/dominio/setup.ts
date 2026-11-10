@@ -191,7 +191,8 @@ const setupPayloadSchema = z
     services: z
       .array(
         z.object({
-          key: z.string().min(1).max(40),
+          // Keys come from the draft: "sugerido-1" or "nuevo-<uuid>" (42 chars).
+          key: z.string().min(1).max(64),
           name: z
             .string()
             .trim()
