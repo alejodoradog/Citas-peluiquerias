@@ -99,7 +99,11 @@ async function More() {
             subtitle={summarizeHours(hours) || undefined}
             href={routes.panelShopHours}
           />
-          <ListRow icon={<CalendarIcon />} title={t.festivos} trailing={soon} />
+          <ListRow
+            icon={<CalendarIcon />}
+            title={t.festivos}
+            href={routes.panelHolidays}
+          />
           <ListRow
             icon={<SlidersIcon />}
             title={t.politicas}

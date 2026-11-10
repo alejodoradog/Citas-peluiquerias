@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useState } from "react";
+import { Fragment, useState, type ComponentProps } from "react";
 import { routes } from "@/lib/routes";
 import type { ShopHoursState } from "@/modulos/barberias/acciones/shop-hours";
 import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
@@ -13,8 +13,8 @@ import {
   type WeekDraft,
   type Weekday,
 } from "@/modulos/barberias/dominio/weekly-hours";
-import { Chip } from "@/ui/chip";
 import { FlowShell } from "@/ui/flow-shell";
+import { FreshOnReturn } from "@/ui/fresh-on-return";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
 import { CalendarIcon } from "@/ui/icons";
 import { List, ListRow } from "@/ui/list";
@@ -33,11 +33,23 @@ const noShifts = () => [];
 
 export type OutsideBarber = { id: string; displayName: string };
 
+// Back on this screen after leaving it, the editor starts from what is
+// saved, not from a draft that was never saved (FreshOnReturn).
+export function ShopHoursEditor(
+  props: ComponentProps<typeof ShopHoursForm>,
+) {
+  return (
+    <FreshOnReturn>
+      <ShopHoursForm {...props} />
+    </FreshOnReturn>
+  );
+}
+
 // D-58: the barbershop's week, each day open or closed with one or two
 // shifts, the same editor as a barber's own hours (D-55). The week travels as
 // JSON in a hidden field; the server checks it again and the database refuses
 // a week without open days or with shifts that overlap.
-export function ShopHoursEditor({
+function ShopHoursForm({
   action,
   hours,
   saved,
@@ -105,7 +117,7 @@ export function ShopHoursEditor({
               ))}
             </Notice>
           ) : null}
-          <p className="text-help text-muted leading-[1.45]">{t.bajada}</p>
+          <p className="text-muted text-sm leading-[1.45]">{t.bajada}</p>
           <WeekEditor
             week={week}
             labels={dayLabels}
@@ -113,13 +125,12 @@ export function ShopHoursEditor({
             firstShifts={noShifts}
             errorOf={(weekday) => form.fieldError(dayField(weekday))}
           />
-          {/* D-59 arrives with task 2.4c. */}
           <List>
             <ListRow
               icon={<CalendarIcon />}
               title={t.festivos}
               subtitle={t.festivosDetalle}
-              trailing={<Chip tone="warning">{t.pronto}</Chip>}
+              href={routes.panelHolidays}
             />
           </List>
         </div>

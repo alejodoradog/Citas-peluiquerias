@@ -11,10 +11,12 @@ import {
   addDays,
   formatBogotaDate,
   formatBogotaDayMonth,
+  formatCalendarDay,
   formatWallClock,
   formatBogotaTime,
   fromBogota,
   getWeekday,
+  isBogotaDate,
   now,
   startOfBogotaDay,
   toBogotaDate,
@@ -180,5 +182,28 @@ describe("formatBogotaDayMonth", () => {
     expect(formatBogotaDayMonth(startOfBogotaDay("2026-11-24"))).toBe(
       "24 de noviembre",
     );
+  });
+});
+
+describe("isBogotaDate", () => {
+  it.each(["2026-11-16", "2028-02-29"])("takes %s", (date) => {
+    expect(isBogotaDate(date)).toBe(true);
+  });
+
+  it.each(["2026-02-30", "2027-02-29", "2026-13-01", "16/11/2026", "", "2026-11-16T00:00"])(
+    "refuses %s",
+    (date) => {
+      expect(isBogotaDate(date)).toBe(false);
+    },
+  );
+});
+
+describe("formatCalendarDay", () => {
+  it.each([
+    ["2026-11-16", "lunes 16 de noviembre"],
+    ["2026-12-24", "jueves 24 de diciembre"],
+    ["2027-01-01", "viernes 1 de enero"],
+  ])("writes %s as %s, whatever the server zone", (date, text) => {
+    expect(formatCalendarDay(date)).toBe(text);
   });
 });

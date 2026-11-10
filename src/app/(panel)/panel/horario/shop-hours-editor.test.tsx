@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Activity } from "react";
 import { describe, expect, it } from "vitest";
 import type { ShopHoursState } from "@/modulos/barberias/acciones/shop-hours";
 import {
@@ -74,12 +75,12 @@ describe("ShopHoursEditor", () => {
     expect(screen.getByRole("button", { name: t.guardar })).toBeEnabled();
   });
 
-  it("shows holidays and closures as coming soon, without a link", () => {
+  it("links to holidays and closures (D-59)", () => {
     renderEditor();
-    expect(screen.getByText(t.festivos)).toBeInTheDocument();
-    expect(screen.getByText(t.festivosDetalle)).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Festivos/ })).toBeNull();
-    expect(screen.getByText(t.pronto)).toBeInTheDocument();
+    const row = screen.getByRole("link", { name: /^Festivos y cierres/ });
+    expect(row).toHaveAttribute("href", "/panel/horario/festivos");
+    expect(row).toHaveTextContent(t.festivos);
+    expect(row).toHaveTextContent(t.festivosDetalle);
   });
 
   it("opens a closed day, splits it and closes another", async () => {
@@ -194,5 +195,47 @@ describe("ShopHoursEditor", () => {
     expect(
       within(day("Lunes")).getByRole("combobox", { name: h.desde }),
     ).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+// Next.js keeps a page it leaves mounted and hidden (Activity) and shows the
+// same instance again on coming back.
+describe("ShopHoursEditor, hidden and shown again", () => {
+  function inActivity(mode: "visible" | "hidden") {
+    return (
+      <Activity mode={mode}>
+        <ShopHoursEditor
+          action={async () => ({
+            status: "failed",
+            error: "hours_required",
+            values: { shifts: "[]" },
+          })}
+          hours={DEFAULT_BARBERSHOP_HOURS}
+          saved={false}
+          outside={[]}
+        />
+      </Activity>
+    );
+  }
+
+  it("starts again from the saved week, without the draft or its error", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(inActivity("visible"));
+    await user.click(
+      within(day("Lunes")).getByRole("switch", { name: t.abre("Lunes") }),
+    );
+    await user.click(screen.getByRole("button", { name: t.guardar }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      t.errores.hours_required,
+    );
+
+    rerender(inActivity("hidden"));
+    rerender(inActivity("visible"));
+
+    expect(
+      within(day("Lunes")).getByRole("switch", { name: t.abre("Lunes") }),
+    ).toBeChecked();
+    expect(sentShifts()).toEqual(DEFAULT_BARBERSHOP_HOURS);
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });

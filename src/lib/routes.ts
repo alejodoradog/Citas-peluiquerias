@@ -19,6 +19,7 @@ export const routes = {
   panelShare: "/panel/compartir",
   panelMore: "/panel/mas",
   panelShopHours: "/panel/horario",
+  panelHolidays: "/panel/horario/festivos",
   panelPolicies: "/panel/reservas",
   panelServices: "/panel/servicios",
   panelServiceNew: "/panel/servicios/nuevo",

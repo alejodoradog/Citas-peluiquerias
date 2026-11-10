@@ -169,6 +169,7 @@ select is(
     'public.set_barber_schedule:authenticated',
     'public.set_barber_services:authenticated',
     'public.set_barbershop_hours:authenticated',
+    'public.set_holiday_openings:authenticated',
     'public.set_service_barbers:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'

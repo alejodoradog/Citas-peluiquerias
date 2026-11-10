@@ -6,6 +6,8 @@ import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registrati
 import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
+import type { ClosureActionErrorCode } from "@/modulos/barberias/acciones/holidays";
+import type { HolidayKey } from "@/lib/fechas/festivos";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
 import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
@@ -643,7 +645,6 @@ export const textos = {
     cerrado: "Cerrado",
     festivos: "Festivos y cierres especiales",
     festivosDetalle: "Festivos cerrados, salvo los que abras",
-    pronto: "Pronto",
     guardar: "Guardar horario",
     guardando: "Guardando…",
     guardado: "Guardamos el horario.",
@@ -664,6 +665,99 @@ export const textos = {
       invalid: "Revisa este dato.",
     } satisfies Record<ShopHoursActionErrorCode | "invalid", string>,
   },
+  // D-59. Dates and hours arrive written ("jueves 24 de diciembre",
+  // "2:00 p. m.").
+  festivos: {
+    titulo: "Festivos y cierres",
+    cargando: "Cargando los festivos…",
+    festivos: "Festivos de Colombia",
+    bajada:
+      "Por defecto cerramos. Activa los que abres; usamos tu horario de ese día.",
+    // By the keys of src/lib/fechas/festivos.ts.
+    nombres: {
+      new_year: "Año Nuevo",
+      epiphany: "Reyes Magos",
+      saint_joseph: "San José",
+      holy_thursday: "Jueves Santo",
+      good_friday: "Viernes Santo",
+      labor_day: "Día del Trabajo",
+      ascension: "Ascensión del Señor",
+      corpus_christi: "Corpus Christi",
+      sacred_heart: "Sagrado Corazón",
+      saints_peter_and_paul: "San Pedro y San Pablo",
+      chiquinquira: "Virgen de Chiquinquirá",
+      independence_day: "Día de la Independencia",
+      battle_of_boyaca: "Batalla de Boyacá",
+      assumption: "Asunción de la Virgen",
+      columbus_day: "Día de la Raza",
+      all_saints: "Todos los Santos",
+      cartagena_independence: "Independencia de Cartagena",
+      immaculate_conception: "Inmaculada Concepción",
+      christmas: "Navidad",
+    } satisfies Record<HolidayKey, string>,
+    cierres: "Cierres especiales",
+    sinCierres: "No tienes cierres programados",
+    sinCierresDetalle:
+      "Agrega uno para cerrar la barbería un día, varios o unas horas.",
+    todaLaBarberia: "Toda la barbería",
+    // How a closure reads, by its kind (dominio/closures.ts).
+    cierre: {
+      day: (dia: string) => `${dia} · todo el día`,
+      days: (desde: string, hasta: string) => `Del ${desde} al ${hasta}`,
+      from: (dia: string, hora: string) => `${dia} · desde ${hora}`,
+      until: (dia: string, hora: string) => `${dia} · hasta ${hora}`,
+      between: (dia: string, desde: string, hasta: string) =>
+        `${dia} · ${desde} – ${hasta}`,
+      span: (dia: string, desde: string, otroDia: string, hasta: string) =>
+        `Del ${dia}, ${desde}, al ${otroDia}, ${hasta}`,
+    },
+    // 24:00, the end of a closure that runs to the end of the day.
+    medianoche: "medianoche",
+    opcionMedianoche: "12:00 a. m. (medianoche)",
+    borrar: (cierre: string) => `Borrar el cierre: ${cierre}`,
+    agregar: "Agregar cierre",
+    agregado: "Agregamos el cierre.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    guardado: "Guardamos los festivos.",
+    errores: {
+      unknown: "No pudimos guardar los festivos. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    },
+    // The sheet "Agregar cierre".
+    hoja: {
+      titulo: "Agregar cierre",
+      desdeFecha: "Desde el día",
+      hastaFecha: "Hasta el día",
+      todoElDia: "Todo el día",
+      desdeHora: "Desde la hora",
+      hastaHora: "Hasta la hora",
+      motivo: "Motivo",
+      motivoAyuda: "Por ejemplo, Nochebuena. Tus clientes no lo ven.",
+      citas: "Las citas que ya tienes en esas horas se mantienen.",
+      guardar: "Agregar cierre",
+      guardando: "Agregando…",
+      errores: {
+        closure_date_invalid: "Elige una fecha.",
+        closure_time_invalid: "Elige una hora de la lista.",
+        closure_order: "Debe terminar después de empezar.",
+        closure_past: "Ese cierre ya terminó. Elige una fecha que no haya pasado.",
+        closure_too_long: "Máximo 31 días seguidos.",
+        closure_reason_too_long: "Usa máximo 200 caracteres.",
+        unknown: "No pudimos agregar el cierre. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      } satisfies Record<ClosureActionErrorCode | "invalid", string>,
+    },
+    // Before removing a closure.
+    confirmar: {
+      titulo: "¿Borrar este cierre?",
+      cuerpo: "Tus clientes podrán volver a reservar en esas horas.",
+      si: "Sí, borrar",
+      borrando: "Borrando…",
+      no: "Cancelar",
+      fallo: "No pudimos borrar el cierre. Intenta de nuevo.",
+    },
+  },
   // D-60.
   politicas: {
     titulo: "Reservas y cancelaciones",
@@ -682,7 +776,7 @@ export const textos = {
     cancelarOpcion: (horas: number) =>
       horas === 0 ? "La hora de la cita" : `${duracion(horas * 60)} antes`,
     siempre: "Tú siempre puedes cancelar o cambiar",
-    siempreDetalle: "Le avisamos al cliente por correo.",
+    siempreDetalle: "Si tiene correo, le avisamos.",
     guardar: "Guardar",
     guardando: "Guardando…",
     errores: {

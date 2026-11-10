@@ -1,9 +1,19 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  addDays,
+  fromBogota,
+  startOfBogotaDay,
+  toBogotaDate,
+} from "../../src/lib/fechas/fechas";
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
-import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
+import {
+  createConfirmedOwner,
+  insertShopClosure,
+  uniqueEmail,
+} from "./helpers/supabase";
 
 // Task 2.0: the app against the design (docs/diseno, copied from Claude
 // Design on 2026-11-09) at 390 × 844. Measured styles, with 1 px of slack,
@@ -357,7 +367,7 @@ test("D-62 matches the design", async ({ page }) => {
 async function signInReadyOwner(page: Page, prefix: string) {
   const email = uniqueEmail(prefix);
   const password = "clave-segura-1";
-  await createConfirmedOwner(email, password, {
+  const { slug } = await createConfirmedOwner(email, password, {
     ownerName: "Carlos Pérez",
     barbershopName: "Barbería La Esquina",
   });
@@ -373,6 +383,7 @@ async function signInReadyOwner(page: Page, prefix: string) {
     .getByRole("button", { name: textos.cuentas.ingreso.enviar })
     .click();
   await finishSetup(page);
+  return slug;
 }
 
 const primaryButton = [
@@ -507,5 +518,97 @@ test("D-60 matches the design", async ({ page }) => {
   ]);
 
   await attachSideBySide(page, design, "D-60");
+  await design.close();
+});
+
+test("D-59 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  const slug = await signInReadyOwner(page, "fidelidad-festivos");
+  // The design's closure: from 2:00 p. m. to the end of a day, three days
+  // from now so it has not ended.
+  const day = addDays(toBogotaDate(new Date()), 3);
+  await insertShopClosure(slug, {
+    startsAt: fromBogota(day, "14:00"),
+    endsAt: startOfBogotaDay(addDays(day, 1)),
+    reason: "Nochebuena",
+  });
+  await page.goto("/panel/horario/festivos");
+  const f = textos.festivos;
+  await expect(
+    page.getByRole("heading", { level: 1, name: f.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D59-Festivos-cierres.dc.html");
+  const firstHoliday = page.getByRole("switch").first();
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Festivos y cierres", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "título de sección",
+    page.getByRole("heading", { level: 2, name: f.festivos }),
+    design.getByRole("heading", { level: 2, name: "Festivos de Colombia" }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "bajada",
+    page.getByText(f.bajada),
+    design.getByText("Por defecto cerramos."),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "tarjeta de festivos",
+    page.locator("ul").filter({ has: firstHoliday }),
+    design.getByText("Independencia de Cartagena").locator("../../../.."),
+    ["border-radius", "background-color"],
+  );
+  // The switch is named by the day; its row draws the day and the holiday.
+  await compare(
+    "día del festivo",
+    page.locator(`[id="${await firstHoliday.getAttribute("aria-labelledby")}"]`),
+    design.getByText("Lunes 16 de noviembre", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "nombre del festivo",
+    page.locator(
+      `[id="${await firstHoliday.getAttribute("aria-describedby")}"]`,
+    ),
+    design.getByText("Independencia de Cartagena", { exact: true }),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "cierre",
+    page.getByText(/ · desde 2:00 p\. m\.$/),
+    design.getByText("Jueves 24 de diciembre · desde 2:00 p. m.", {
+      exact: true,
+    }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "detalle del cierre",
+    page.getByText(`${f.todaLaBarberia} · Nochebuena`, { exact: true }),
+    design.getByText("Toda la barbería · Nochebuena", { exact: true }),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "agregar cierre",
+    page.getByRole("button", { name: f.agregar }),
+    design.getByRole("button", { name: "Agregar cierre" }),
+    ["height", "border-radius", "background-color", "font-size", "font-weight"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: f.guardar, exact: true }),
+    design.getByRole("link", { name: "Guardar", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-59");
   await design.close();
 });
