@@ -43,4 +43,6 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Push migrations to barberias-dev
         if: env.SUPABASE_DEV_DB_URL != ''
-        run: pnpm supabase db push --db-url "$SUPABASE_DEV_DB_URL" --yes
+        # --remote takes the connection string; the old flag for it is
+        # deprecated in CLI 3 and goes away in v4.
+        run: pnpm supabase db push --remote="$SUPABASE_DEV_DB_URL" --yes

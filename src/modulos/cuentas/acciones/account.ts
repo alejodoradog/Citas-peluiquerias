@@ -5,8 +5,10 @@ import { safeNextPath } from "@/lib/auth/safe-next";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
+import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasRecentRecoverySession } from "../datos/access";
+import { recoveryLinkIsFresh } from "../dominio/recovery-session";
 import {
   parseNewPassword,
   parseEmailLinkToken,
@@ -45,7 +47,7 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(form.data);
   if (error) {
     const accountError = toAccountError(error);
-    // Only reached with the right password. The first link lasts an hour, so
+    // Only reached with the right password. The first link lasts 24 hours, so
     // this is how an owner who was late gets another. Limits may skip the
     // send; the message stays the same.
     if (accountError === "email_not_confirmed") {
@@ -96,11 +98,17 @@ export async function confirmPasswordRecovery(
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     type: "recovery",
     token_hash: form.data.tokenHash,
   });
   if (error) {
+    redirect(expired);
+  }
+  // Auth keeps every email link 24 hours; a recovery link only counts within
+  // the hour, so a forwarded or forgotten email cannot take over the account.
+  if (!recoveryLinkIsFresh(data.user?.recovery_sent_at, now().getTime())) {
+    await supabase.auth.signOut({ scope: "local" });
     redirect(expired);
   }
   redirect(safeNextPath(form.data.next));

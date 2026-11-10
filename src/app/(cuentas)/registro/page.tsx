@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AuthShell, TextLink } from "@/ui/auth-shell";
+import { AuthShell } from "@/ui/auth-shell";
 import { textos } from "@/ui/textos";
-import { routes } from "@/lib/routes";
 import { RedirectIfSignedIn } from "../redirect-if-signed-in";
 import { RegistrationForm } from "./registration-form";
 
-const t = textos.cuentas.registro;
+export const metadata: Metadata = { title: textos.cuentas.registro.titulo };
 
-export const metadata: Metadata = { title: t.titulo };
-
+// D-02, and D-03 once the account is created.
 export default function RegistroPage() {
   return (
-    <AuthShell title={t.titulo} intro={t.bajada}>
+    <AuthShell>
       <Suspense fallback={null}>
         <RedirectIfSignedIn />
       </Suspense>
       <RegistrationForm />
-      <p className="text-muted mt-8 text-base">
-        {t.yaTienes} <TextLink href={routes.signIn}>{t.ingresa}</TextLink>
-      </p>
     </AuthShell>
   );
 }

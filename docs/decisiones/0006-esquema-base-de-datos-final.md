@@ -2764,6 +2764,11 @@ Las revisiones de seguridad (`revisor-seguridad`) y de integridad (`ingeniero-cr
 2. **Transiciones de estado de una cita.** Hoy se puede pasar de `attended` a `confirmed`, o de cancelada a confirmada (ahora con las guardas). ¿Qué cambios se permiten?
 3. **Quitar un servicio a un barbero.** Sus citas futuras con ese servicio no se pueden reprogramar ni reasignar hasta quitarles el servicio. ¿Se acepta así?
 
+**Respuestas del fundador (2026-11-09):**
+1. **Tope de sedes:** no hay tope. En la práctica una cuenta no pasará de 2 sedes. No hace falta ningún cambio en la base de datos.
+2. **Estados de una cita:** se usan las transiciones de las mejores apps de citas, con Fresha como referencia. La tarea 4.2 propone la tabla de transiciones con esa referencia y el fundador la confirma antes de construirla. Si hace falta, una migración nueva la exige en la base de datos.
+3. **Quitar un servicio a un barbero:** las citas que ya estaban aceptadas se conservan como están. La regla "el barbero ofrece todos los servicios" aplica solo a ocupaciones nuevas: cita nueva, reprogramación, reasignación o volver a confirmar una cancelada. Así funciona hoy (sección 7, hueco 3), y se acepta así.
+
 ## Anexo A. SQL de cada migración (en orden, validado)
 
 ### A.1 `add_email_contact`

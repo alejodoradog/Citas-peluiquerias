@@ -1,32 +1,73 @@
+import Link from "next/link";
 import type { ComponentProps } from "react";
+import { cx } from "./cx";
 
-// One look per role, so every screen's buttons and links match.
+// The five buttons of F-01. Every size reaches 44 px, the smallest touch the
+// design allows.
 const variants = {
-  primary:
-    "bg-brand hover:bg-brand-strong focus-visible:outline-ink flex h-12 w-full items-center justify-center rounded-lg px-5 text-base font-bold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-70",
-  secondary:
-    "border-line text-ink hover:border-ink focus-visible:outline-brand flex h-12 items-center justify-center rounded-lg border-2 px-5 text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2",
-  compact:
-    "text-ink border-line hover:border-ink focus-visible:outline-brand h-10 rounded-lg border-2 px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-  link: "text-brand-strong focus-visible:outline-brand rounded font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2",
+  primary: "bg-brand text-white hover:bg-brand-strong",
+  secondary: "border border-line bg-white text-ink hover:border-ink",
+  danger: "border border-danger bg-white text-danger hover:bg-danger-soft",
+  dangerSolid: "bg-danger text-white hover:bg-ink",
+  text: "bg-transparent text-brand-strong hover:text-ink",
+} as const;
+
+const sizes = {
+  lg: "min-h-13.5 text-button",
+  md: "min-h-11.5 text-body font-bold",
+  sm: "min-h-11 text-label font-bold",
 } as const;
 
 export type ButtonVariant = keyof typeof variants;
+export type ButtonSize = keyof typeof sizes;
 
-export function buttonClasses(variant: ButtonVariant): string {
-  return variants[variant];
+export type ButtonStyle = {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  // Full width, as most buttons of the design. Off for buttons in a row.
+  block?: boolean;
+};
+
+export function buttonClasses({
+  variant = "primary",
+  size = "lg",
+  block = true,
+}: ButtonStyle = {}): string {
+  return cx(
+    "rounded-button inline-flex items-center justify-center gap-2 px-4.5 text-center no-underline transition-colors disabled:cursor-not-allowed disabled:opacity-70",
+    variants[variant],
+    sizes[size],
+    block && "w-full",
+  );
 }
 
 export function Button({
-  variant = "primary",
+  variant,
+  size,
+  block,
   className,
   ...props
-}: ComponentProps<"button"> & { variant?: ButtonVariant }) {
+}: ComponentProps<"button"> & ButtonStyle) {
   return (
     <button
       type="button"
       {...props}
-      className={[variants[variant], className].filter(Boolean).join(" ")}
+      className={cx(buttonClasses({ variant, size, block }), className)}
+    />
+  );
+}
+
+export function ButtonLink({
+  variant,
+  size,
+  block,
+  className,
+  ...props
+}: ComponentProps<typeof Link> & ButtonStyle) {
+  return (
+    <Link
+      {...props}
+      className={cx(buttonClasses({ variant, size, block }), className)}
     />
   );
 }

@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { hasRecentRecoverySession } from "@/modulos/cuentas/datos/access";
-import { AuthShell, TextLink } from "@/ui/auth-shell";
-import { FormAlert } from "@/ui/form";
-import { textos } from "@/ui/textos";
 import { routes } from "@/lib/routes";
+import { hasRecentRecoverySession } from "@/modulos/cuentas/datos/access";
+import { AuthHeading, AuthShell } from "@/ui/auth-shell";
+import { Notice } from "@/ui/notice";
+import { LoadingState } from "@/ui/states";
+import { TextLink } from "@/ui/text-link";
+import { textos } from "@/ui/textos";
 import { NewPasswordForm } from "./new-password-form";
 
 const t = textos.cuentas.nuevaClave;
 
 export const metadata: Metadata = { title: t.titulo };
 
+// D-09.
 export default function NuevaClavePage() {
   return (
-    <AuthShell title={t.titulo}>
-      <Suspense fallback={<p className="text-muted">{t.cargando}</p>}>
+    <AuthShell>
+      <AuthHeading title={t.titulo} />
+      <Suspense fallback={<LoadingState label={t.cargando} />}>
         <NewPasswordOrExpired />
       </Suspense>
     </AuthShell>
@@ -26,12 +30,12 @@ export default function NuevaClavePage() {
 async function NewPasswordOrExpired() {
   if (!(await hasRecentRecoverySession())) {
     return (
-      <div className="flex flex-col gap-6">
-        <FormAlert>{t.sinSesion}</FormAlert>
-        <p className="text-base">
-          <TextLink href={routes.recoverPassword}>{t.pedirOtro}</TextLink>
-        </p>
-      </div>
+      <>
+        <Notice tone="warning" title={t.sinSesion} />
+        <TextLink href={routes.recoverPassword} standalone>
+          {t.pedirOtro}
+        </TextLink>
+      </>
     );
   }
   return <NewPasswordForm />;

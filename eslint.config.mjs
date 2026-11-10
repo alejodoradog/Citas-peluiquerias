@@ -42,6 +42,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    "coverage/**",
     "src/lib/supabase/database.types.ts",
   ]),
 ]);

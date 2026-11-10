@@ -6,6 +6,7 @@ import {
 } from "../../src/lib/fechas/fechas";
 import { trialEndsOn } from "../../src/modulos/suscripciones/dominio/trial";
 import { textos } from "../../src/ui/textos";
+import { expectAccessible, expectTouchTargets } from "./helpers/pantalla";
 import {
   createAccountWithoutProfile,
   createSuperAdmin,
@@ -39,7 +40,7 @@ async function confirmEmail(page: Page, email: string) {
   await page.goto(await latestEmailLink(email, "signup"));
   await page.getByRole("button", { name: t.confirmar.continuar }).click();
   await expect(page).toHaveURL(/\/ingresar\?confirmado=1$/);
-  await expect(page.getByText(t.ingreso.correoConfirmado)).toBeVisible();
+  await expect(page.getByText(t.ingreso.correoConfirmado.titulo)).toBeVisible();
 
   await signIn(page, email);
   await expect(page).toHaveURL(/\/panel$/);
@@ -50,7 +51,9 @@ async function registerAndConfirm(
   account: { email: string; barbershop?: string },
 ) {
   await register(page, account);
-  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: t.registro.revisaCorreo.titulo }),
+  ).toBeVisible();
   await confirmEmail(page, account.email);
 }
 
@@ -90,12 +93,26 @@ test("an owner cannot enter until they confirm their email", async ({
 }) => {
   const email = uniqueEmail("sin-confirmar");
   await register(page, { email });
-  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: t.registro.revisaCorreo.titulo }),
+  ).toBeVisible();
+  // D-03 says where the link went and how long it lasts.
+  await expect(
+    page.getByText(t.registro.revisaCorreo.cuerpo(email)),
+  ).toBeVisible();
+  await expect(
+    page.getByText(t.registro.revisaCorreo.avisoCuerpo),
+  ).toBeVisible();
+  await expectAccessible(page);
   await expect.poll(() => emailCount(email)).toBe(1);
 
-  // A wrong password reveals nothing and sends nothing.
+  // A wrong password reveals nothing and sends nothing (D-06).
   await signIn(page, email, "otra-clave-mala");
-  await expect(page.getByText(t.errores.invalid_credentials)).toBeVisible();
+  // Next.js adds an empty route announcer with role alert; find ours by text.
+  await expect(
+    page.getByRole("alert").filter({ hasText: t.errores.invalid_credentials }),
+  ).toBeVisible();
+  await expectAccessible(page);
   expect(await emailCount(email)).toBe(1);
 
   // Auth allows one email per address each second (max_frequency).
@@ -116,7 +133,9 @@ test("confirming the email does not allow setting a new password", async ({
 }) => {
   const email = uniqueEmail("confirmo-sin-clave");
   await register(page, { email });
-  await expect(page.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: t.registro.revisaCorreo.titulo }),
+  ).toBeVisible();
 
   await page.goto(await latestEmailLink(email, "signup"));
   await page.getByRole("button", { name: t.confirmar.continuar }).click();
@@ -156,7 +175,9 @@ test("signing up with a taken email changes nothing and reveals nothing", async 
 
   const other = await browser.newPage();
   await register(other, { email, barbershop: "Otra Barbería" });
-  await expect(other.getByText(t.registro.revisaCorreo)).toBeVisible();
+  await expect(
+    other.getByRole("heading", { name: t.registro.revisaCorreo.titulo }),
+  ).toBeVisible();
   await other.close();
 
   await page.reload();
@@ -186,11 +207,16 @@ test("an owner recovers access by email", async ({ page }) => {
   await page.getByLabel(t.recuperar.campos.email).fill(email);
   await page.getByRole("button", { name: t.recuperar.enviar }).click();
   await expect(page.getByText(t.recuperar.enviado)).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: t.recuperar.enviadoTitulo }),
+  ).toBeVisible();
+  await expectAccessible(page);
 
   await page.goto(await latestEmailLink(email, "recovery"));
   await page.getByRole("button", { name: t.confirmar.continuar }).click();
   await expect(page).toHaveURL(/\/nueva-clave$/);
 
+  await expectAccessible(page);
   await page.getByLabel(t.nuevaClave.campos.password).fill("clave-nueva-2");
   await page.getByLabel(t.nuevaClave.campos.confirmation).fill("clave-nueva-2");
   await page.getByRole("button", { name: t.nuevaClave.enviar }).click();
@@ -262,4 +288,38 @@ test("a super admin lands on the platform panel", async ({ page }) => {
 
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/admin$/);
+});
+
+test("the owner's panel has its bottom bar", async ({ page }) => {
+  await registerAndConfirm(page, { email: uniqueEmail("barra") });
+  const nav = page.getByRole("navigation", {
+    name: textos.ui.navegacion.etiqueta,
+  });
+  await expect(
+    nav.getByRole("link", { name: textos.ui.navegacion.agenda }),
+  ).toHaveAttribute("aria-current", "page");
+  await expectAccessible(page);
+  await expectTouchTargets(page);
+
+  await nav.getByRole("link", { name: textos.ui.navegacion.clientes }).click();
+  await expect(page).toHaveURL(/\/panel\/clientes$/);
+  await expect(
+    page.getByRole("heading", { name: textos.panel.secciones.clientes }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(textos.panel.pronto.titulo, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    nav.getByRole("link", { name: textos.ui.navegacion.clientes }),
+  ).toHaveAttribute("aria-current", "page");
+  await expectAccessible(page);
+});
+
+test("the platform panel has no bottom bar", async ({ page }) => {
+  const email = uniqueEmail("admin-sin-barra");
+  await createSuperAdmin(email, PASSWORD);
+  await signIn(page, email);
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByRole("navigation")).toHaveCount(0);
+  await expectAccessible(page);
 });

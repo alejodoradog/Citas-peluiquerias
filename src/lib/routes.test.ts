@@ -6,13 +6,22 @@ import { routes } from "./routes";
 
 // Top-level URL segments of src/app, looking through route groups "(x)".
 function topLevelSegments(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
-    .flatMap((entry) =>
-      entry.name.startsWith("(")
-        ? topLevelSegments(join(dir, entry.name))
-        : [entry.name],
-    );
+  return (
+    readdirSync(dir, { withFileTypes: true })
+      // "_x" folders are private; "%5Fx" ones serve /_x, which no link can take
+      // (slugs start with a letter or digit).
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          !entry.name.startsWith("_") &&
+          !entry.name.startsWith("%5F"),
+      )
+      .flatMap((entry) =>
+        entry.name.startsWith("(")
+          ? topLevelSegments(join(dir, entry.name))
+          : [entry.name],
+      )
+  );
 }
 
 const reserved: readonly string[] = RESERVED_SLUGS;

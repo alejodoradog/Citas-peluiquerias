@@ -255,13 +255,13 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
 - [x] 1.8 Correo como único canal: sin WhatsApp como canal de mensajes y sin códigos OTP; correo del cliente y del barbero, y confirmación del correo del dueño con un link (`docs/decisiones/0006-correo-unico-canal.md`).
 - [x] 1.9 Esquema final de la base de datos (`docs/decisiones/0006-esquema-base-de-datos-final.md`, `docs/tareas/1.9-esquema-final.md`): varias sedes por cuenta (`memberships`), varios servicios por cita (`appointment_services`), historial de citas, horarios sin cruces, barberos dados de baja, correo obligatorio en la reserva web y plan único. Migraciones 2 a 8 del anexo A.
-- [ ] 1.10 Infraestructura base: región `iad1` fija en `vercel.json`, lint que prohíbe los servicios exclusivos de Vercel y región de `barberias-dev` documentada (`docs/decisiones/0007-infraestructura.md`, `docs/tareas/1.10-infraestructura-base.md`).
+- [x] 1.10 Infraestructura base: región `iad1` fija en `vercel.json`, lint que prohíbe los servicios exclusivos de Vercel y región de `barberias-dev` documentada (`docs/decisiones/0007-infraestructura.md`, `docs/tareas/1.10-infraestructura-base.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
-- [ ] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
+- [x] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
 - [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar.
