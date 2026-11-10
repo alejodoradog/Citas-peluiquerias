@@ -6,7 +6,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(107);
+select plan(109);
 
 -- Fixtures: the database may also hold the local seed, so counts below look
 -- only at these rows. ----------------------------------------------------------------------
@@ -154,6 +154,7 @@ select is(
     'private.is_e164_phone:anon',
     'private.is_e164_phone:authenticated',
     'private.is_email:authenticated',
+    'private.is_image_key:authenticated',
     'private.is_super_admin:authenticated',
     'private.is_token_hash:anon',
     'private.is_token_hash:authenticated',
@@ -161,8 +162,12 @@ select is(
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
     'public.change_appointment_services:authenticated',
+    'public.complete_barbershop_setup:authenticated',
     'public.create_appointment:authenticated',
-    'public.create_barbershop:authenticated'
+    'public.create_barbershop:authenticated',
+    'public.set_barber_schedule:authenticated',
+    'public.set_barber_services:authenticated',
+    'public.set_service_barbers:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
 );
@@ -446,7 +451,12 @@ delete from public.barber_schedules where barbershop_id = 'bbbbbbbb-0000-0000-00
 delete from public.barbershop_hours where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.customers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.services where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
-delete from public.barbers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
+-- Barbers are never deleted (task 2.2): the session has no delete at all.
+select throws_ok(
+  $$delete from public.barbers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000'$$,
+  '42501', null,
+  'an owner cannot delete barbers, not even of another barbershop'
+);
 
 -- Owner A tries to give themselves more power.
 
@@ -585,7 +595,11 @@ select lives_ok(
   $$update public.customers set full_name = 'Admin estuvo aquí' where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
   'a super admin update on tenant data runs'
 );
-delete from public.barbers where id = 'aaaaaaaa-0000-0000-0000-0000000000b2';
+select throws_ok(
+  $$delete from public.barbers where id = 'aaaaaaaa-0000-0000-0000-0000000000b2'$$,
+  '42501', null,
+  'a super admin cannot delete barbers either'
+);
 
 reset role;
 

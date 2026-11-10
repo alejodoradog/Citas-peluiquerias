@@ -17,6 +17,8 @@ export type Access =
   | {
       kind: "owner";
       name: string;
+      // The sign-in email, shown in Más › Tu cuenta (D-50).
+      email: string;
       barbershop: {
         id: string;
         name: string;
@@ -84,6 +86,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   return {
     kind: "owner",
     name: profile.full_name,
+    email: user.email ?? "",
     barbershop: {
       id: barbershop.id,
       name: barbershop.name,

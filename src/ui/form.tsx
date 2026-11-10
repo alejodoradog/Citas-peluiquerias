@@ -53,13 +53,17 @@ export function useFormAction<S extends FormState<string, string, string>>(
 
 // The form element for a useFormAction form. After a submit with errors it
 // moves focus to the first invalid field, so keyboard and screen reader users
-// land on what needs fixing.
+// land on what needs fixing. className replaces the column layout, for a
+// form that wraps a whole flow screen (D-52) so its submit button can sit in
+// the bottom bar.
 export function ActionForm({
   form,
   children,
+  className = "flex flex-col gap-5.5",
 }: {
   form: { formAction: (formData: FormData) => void; invalidFields?: object };
   children: ReactNode;
+  className?: string;
 }) {
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -69,12 +73,7 @@ export function ActionForm({
   }, [form.invalidFields]);
 
   return (
-    <form
-      ref={ref}
-      action={form.formAction}
-      noValidate
-      className="flex flex-col gap-5.5"
-    >
+    <form ref={ref} action={form.formAction} noValidate className={className}>
       {children}
     </form>
   );

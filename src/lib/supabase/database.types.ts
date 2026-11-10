@@ -155,14 +155,14 @@ isOneToOne: false
                   ]
                 },"barbers": {
                   Row: {
-                    "active": boolean,"barbershop_id": string,"created_at": string,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"link_active": boolean,"link_token_hash": string,"photo_path": string | null,"sort_order": number,"updated_at": string
+                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_token_hash": string,"photo_path": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"link_active"?: boolean,"link_token_hash": string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash": string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Update: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"link_active"?: boolean,"link_token_hash"?: string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash"?: string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Relationships: [
                     {
@@ -195,14 +195,14 @@ isOneToOne: false
                   ]
                 },"barbershops": {
                   Row: {
-                    "address": string | null,"cancellation_notice_hours": number,"cover_photo_path": string | null,"created_at": string,"deposit_account": string | null,"deposit_method": Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id": string,"latitude": number | null,"logo_path": string | null,"longitude": number | null,"min_booking_notice_minutes": number,"name": string,"plan": string | null,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at": string,"whatsapp_phone": string | null
+                    "address": string | null,"cancellation_notice_hours": number,"cover_photo_path": string | null,"created_at": string,"deposit_account": string | null,"deposit_method": Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id": string,"latitude": number | null,"logo_path": string | null,"longitude": number | null,"min_booking_notice_minutes": number,"name": string,"plan": string | null,"setup_completed_at": string | null,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at": string,"whatsapp_phone": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name": string,"plan"?: string | null,"slug": string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at"?: string,"whatsapp_phone"?: string | null
+                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name": string,"plan"?: string | null,"setup_completed_at"?: string | null,"slug": string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at"?: string,"whatsapp_phone"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on"?: string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name"?: string,"plan"?: string | null,"slug"?: string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on"?: string,"updated_at"?: string,"whatsapp_phone"?: string | null
+                    "address"?: string | null,"cancellation_notice_hours"?: number,"cover_photo_path"?: string | null,"created_at"?: string,"deposit_account"?: string | null,"deposit_method"?: Database["public"]['Enums']["payment_method"] | null,"expires_on"?: string,"id"?: string,"latitude"?: number | null,"logo_path"?: string | null,"longitude"?: number | null,"min_booking_notice_minutes"?: number,"name"?: string,"plan"?: string | null,"setup_completed_at"?: string | null,"slug"?: string,"subscription_status"?: Database["public"]['Enums']["subscription_status"],"trial_ends_on"?: string,"updated_at"?: string,"whatsapp_phone"?: string | null
                   }
                   Relationships: [
                     {
@@ -420,11 +420,23 @@ isOneToOne: false
             "change_appointment_services":
 { Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined
                            },
+"complete_barbershop_setup":
+{ Args: { "p_barbers": Json,"p_barbershop_id": string,"p_hours": Json,"p_services": Json }; Returns: undefined
+                           },
 "create_appointment":
 { Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_id": string,"p_manage_token_hash"?: string,"p_service_ids": (string)[],"p_source"?: Database["public"]['Enums']["appointment_source"],"p_starts_at": string }; Returns: string
                            },
 "create_barbershop":
 { Args: { "p_name": string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
+                           },
+"set_barber_schedule":
+{ Args: { "p_barber_id": string,"p_shifts"?: Json,"p_uses_barbershop_hours": boolean }; Returns: undefined
+                           },
+"set_barber_services":
+{ Args: { "p_barber_id": string,"p_service_ids": (string)[] }; Returns: undefined
+                           },
+"set_service_barbers":
+{ Args: { "p_barber_ids": (string)[],"p_service_id": string }; Returns: undefined
                            }
           }
           Enums: {

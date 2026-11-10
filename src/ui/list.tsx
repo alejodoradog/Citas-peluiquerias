@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cx } from "./cx";
 import { ChevronRightIcon } from "./icons";
 
 // List of F-01: rows inside a card, split by a soft line. A row with href is
@@ -18,10 +19,13 @@ export function ListRow({
   trailing,
   icon,
   href,
+  badge,
 }: {
   title: string;
   subtitle?: string;
   trailing?: ReactNode;
+  // Shown right after the title, as the "Tú" chip of the owner (D-12, D-53).
+  badge?: ReactNode;
   icon?: ReactNode;
   href?: string;
 }) {
@@ -31,7 +35,15 @@ export function ListRow({
       {/* The spaces keep the link's name readable ("Corte 40 min $25.000");
           flex layout hides them on screen. */}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-body font-semibold">{title}</span>{" "}
+        <span
+          className={cx(
+            "text-body font-semibold",
+            badge != null && "flex flex-wrap items-center gap-x-2 gap-y-0.5",
+          )}
+        >
+          {title}
+          {badge != null ? <> {badge}</> : null}
+        </span>{" "}
         {subtitle ? (
           <span className="text-help text-muted leading-[1.35]">
             {subtitle}

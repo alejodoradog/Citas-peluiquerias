@@ -35,4 +35,22 @@ describe("Field", () => {
     render(<Field label="Correo" name="email" />);
     expect(screen.getByLabelText("Correo")).toHaveClass("text-base");
   });
+
+  it("shows a decorative prefix inside the field", () => {
+    const { container } = render(
+      <Field label="Precio" name="price" prefix="$" inputMode="numeric" />,
+    );
+    const input = screen.getByLabelText("Precio");
+    expect(input).toHaveAccessibleName("Precio");
+    const prefix = container.querySelector('[data-prefix="true"]');
+    expect(prefix).toHaveTextContent("$");
+    expect(prefix).toHaveAttribute("aria-hidden", "true");
+    expect(input).toHaveClass("pl-7.5");
+  });
+
+  it("keeps the regular padding without a prefix", () => {
+    const { container } = render(<Field label="Correo" name="email" />);
+    expect(container.querySelector('[data-prefix="true"]')).toBeNull();
+    expect(screen.getByLabelText("Correo")).toHaveClass("px-3.5");
+  });
 });

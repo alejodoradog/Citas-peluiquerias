@@ -1,5 +1,9 @@
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
+import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
+import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
+import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
 import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
@@ -36,6 +40,18 @@ export const textos = {
       mas: "Más",
     },
     nuevaCita: "Nueva cita",
+    volver: "Volver",
+    cerrar: "Cerrar",
+    copiar: {
+      fallo: "No pudimos copiar. Selecciona el texto y cópialo a mano:",
+    },
+    compartir: {
+      copiado: "Copiamos el link. Pégalo donde lo quieras compartir.",
+    },
+    qr: {
+      falloDescarga:
+        "No pudimos descargar el QR. Intenta de nuevo o toma una captura de pantalla.",
+    },
   },
   legal: {
     terminos: { titulo: "Términos de uso" },
@@ -173,7 +189,7 @@ export const textos = {
     prueba: (fecha: string) => `Tu prueba gratis va hasta el ${fecha}.`,
     tuLink: "Link de reservas",
     proximo:
-      "Lo siguiente es agregar tus servicios y tus barberos. Esa parte llega muy pronto.",
+      "Aquí vas a ver tu agenda del día. Mientras tanto, comparte tu link con tus clientes.",
     secciones: {
       clientes: "Clientes",
       compartir: "Compartir tu link",
@@ -190,6 +206,182 @@ export const textos = {
     cargando: "Cargando…",
     saludo: (nombre: string) => `Hola, ${nombre}`,
     proximo: "Aquí verás las barberías, sus pagos y su estado.",
+  },
+  asistente: {
+    servicios: {
+      barra: "Tus servicios",
+      paso: "Paso 2 de 3",
+      titulo: "¿Qué servicios ofreces?",
+      bajada:
+        "Te sugerimos los típicos. Toca uno para cambiar precio o duración, o desmárcalo.",
+      ofrecer: (nombre: string) => `Ofrecer ${nombre}`,
+      // Read before the row's visible text: "Editar Corte 40 min $25.000".
+      editar: "Editar",
+      duracion: (minutos: number) => `${minutos} min`,
+      agregar: "Agregar otro servicio",
+      continuar: "Continuar",
+      pie: "Podrás cambiarlos cuando quieras en Más › Servicios.",
+      ninguno: "Marca al menos un servicio para continuar.",
+    },
+    servicio: {
+      editar: "Editar servicio",
+      nuevo: "Nuevo servicio",
+      campos: { nombre: "Nombre", precio: "Precio", duracion: "Duración" },
+      ayudaDuracion: "La duración va de 5 a 240 minutos, de 5 en 5.",
+      guardar: "Guardar",
+      quitar: "Quitar este servicio",
+    },
+    equipo: {
+      barra: "Tu equipo",
+      paso: "Paso 3 de 3",
+      titulo: "¿Quiénes cortan en tu barbería?",
+      bajada:
+        "Cada barbero recibe un link privado para ver su agenda. No necesita cuenta ni contraseña.",
+      yoCorto: "Yo también corto",
+      yoCortoAyuda: "Tu agenda aparece junto a la de los demás.",
+      tu: "Tú",
+      resumen: (servicios: number) =>
+        `Horario de la barbería · ${servicios} ${servicios === 1 ? "servicio" : "servicios"}`,
+      agregar: "Agregar barbero",
+      terminar: "Terminar",
+      terminando: "Guardando…",
+      despues: "Lo hago después",
+      sinServicios: (nombres: string) =>
+        `${nombres} no tiene servicios. Tócalo y marca al menos uno.`,
+      sinServiciosTodos:
+        "Vuelve a tus servicios y marca al menos uno para terminar.",
+      volverServicios: "Volver a mis servicios",
+    },
+    barbero: {
+      agregar: "Agregar barbero",
+      editar: "Editar barbero",
+      fotoDespues: "La foto la agregas después en Más › Barberos.",
+      campos: { nombre: "Nombre visible", correo: "Correo" },
+      ayudas: {
+        nombre: "Así lo ven tus clientes al reservar.",
+        correo:
+          "Para enviarle su link y, si quieres, avisarle de cada reserva.",
+      },
+      servicios: "Servicios que hace",
+      horario: "Horario",
+      usaHorario: "Usa el horario de la barbería",
+      horarioPropio:
+        "Si trabaja otro horario, lo cambias después en Más › Barberos.",
+      guardar: "Guardar barbero",
+      quitar: "Quitar barbero",
+    },
+    listo: {
+      titulo: "¡Tu barbería ya recibe citas!",
+      tituloSinBarberos: "Tu barbería está casi lista",
+      prueba: (fecha: string) =>
+        `Tu prueba gratis va hasta el ${fecha}. Comparte este link con tus clientes.`,
+      sinBarberos: "Agrega al menos un barbero para recibir citas.",
+      link: "Link de reservas",
+      copiar: "Copiar",
+      copiado: "Link copiado",
+      compartir: "Compartir",
+      compartirTexto: (barberia: string) => `Reserva tu cita en ${barberia}`,
+      qr: "Código QR del link de reservas",
+      descargarQr: "Descargar QR para imprimir",
+      agenda: "Ir a mi agenda",
+    },
+    horario: {
+      dias: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+      rango: (desde: string, hasta: string) =>
+        `${desde} a ${String(hasta).toLocaleLowerCase("es-CO")}`,
+    },
+    errores: {
+      service_name_required: "Escribe el nombre del servicio.",
+      service_name_too_long:
+        "El nombre es muy largo. Usa máximo 60 caracteres.",
+      service_name_taken: "Ya tienes un servicio con ese nombre.",
+      service_price_invalid:
+        "Escribe el precio en pesos, sin decimales. Ej.: 25.000",
+      service_duration_invalid: "Elige una duración de 5 a 240 minutos.",
+      barber_name_required: "Escribe el nombre del barbero.",
+      barber_name_too_long: "El nombre es muy largo. Usa máximo 60 caracteres.",
+      barber_services_required: "Marca al menos un servicio.",
+      email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
+      setup_invalid: "Revisa tus servicios y tu equipo e intenta de nuevo.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<
+      ServiceErrorCode | BarberErrorCode | SetupActionErrorCode | "invalid",
+      string
+    >,
+  },
+  mas: {
+    titulo: "Más",
+    cargando: "Cargando…",
+    prueba: (fecha: string) => `Prueba gratis hasta el ${fecha}`,
+    pruebaDetalle: "Todo está habilitado durante la prueba.",
+    secciones: {
+      equipo: "Tu equipo",
+      barberia: "Tu barbería",
+      dinero: "Dinero",
+      cuenta: "Tu cuenta",
+    },
+    servicios: "Servicios",
+    conteoServicios: (total: number) =>
+      `${total} ${total === 1 ? "servicio" : "servicios"}`,
+    barberos: "Barberos y horarios",
+    conteoBarberos: (total: number) =>
+      `${total} ${total === 1 ? "barbero" : "barberos"}`,
+    datos: "Datos y fotos",
+    horario: "Horario",
+    festivos: "Festivos y cierres",
+    politicas: "Reservas y cancelaciones",
+    link: "Link de reservas",
+    abono: "Datos de abono",
+    cierre: "Cierre del día",
+    pronto: "Pronto",
+    correo: "Correo de ingreso",
+    volver: "Volver a Más",
+  },
+  servicios: {
+    titulo: "Servicios",
+    cargando: "Cargando tus servicios…",
+    bajada:
+      "Tus clientes pueden elegir varios en la misma cita. La cita dura lo que sumen.",
+    agregar: "Agregar servicio",
+    inactivos: "Inactivos",
+    inactivo: "Inactivo",
+    duracion: (minutos: number) => `${minutos} min`,
+    detalle: (duracion: string, precio: string) => `${duracion} · ${precio}`,
+    vacio: {
+      titulo: "Aún no tienes servicios",
+      cuerpo: "Agrega lo que ofreces para que tus clientes puedan reservar.",
+    },
+    nuevo: "Nuevo servicio",
+    editar: "Editar servicio",
+    campos: { nombre: "Nombre", precio: "Precio", duracion: "Duración" },
+    ayudaDuracion: "La duración va de 5 a 240 minutos, de 5 en 5.",
+    quien: "¿Quién lo hace?",
+    sinBarberos:
+      "Aún no tienes barberos activos. Los agregas en Más › Barberos y horarios.",
+    activo: "Activo",
+    activoAyuda:
+      "Si lo desactivas, no aparece al reservar. Las citas ya tomadas se mantienen.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      service_name_required: "Escribe el nombre del servicio.",
+      service_name_too_long:
+        "El nombre es muy largo. Usa máximo 60 caracteres.",
+      service_name_taken: "Ya tienes un servicio con ese nombre.",
+      service_price_invalid:
+        "Escribe el precio en pesos, sin decimales. Ej.: 25.000",
+      service_duration_invalid: "Elige una duración de 5 a 240 minutos.",
+      barbers_not_saved:
+        "Guardamos el servicio, pero no quién lo hace. Ábrelo en Servicios y guárdalo de nuevo.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ServiceActionErrorCode | "invalid", string>,
+  },
+  noEncontrado: {
+    titulo: "No encontramos esta página",
+    bajada: "Puede que el link esté incompleto o que ya no exista.",
+    volver: "Volver a la agenda",
   },
   errorGeneral: {
     titulo: "Algo salió mal",

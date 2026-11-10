@@ -67,6 +67,41 @@ describe("Checkbox", () => {
   });
 });
 
+describe("Checkbox options", () => {
+  it("is described by its detail, named by its label alone", () => {
+    render(
+      <Checkbox
+        label="Yo también corto"
+        description="Tu agenda aparece junto a la de los demás."
+        name="corto"
+      />,
+    );
+    const box = screen.getByRole("checkbox", { name: "Yo también corto" });
+    expect(box).toHaveAccessibleDescription(
+      "Tu agenda aparece junto a la de los demás.",
+    );
+  });
+
+  it("draws a 28 px box with an 8 px radius in its large size", () => {
+    const { container } = render(
+      <Checkbox label="Ofrecer Corte" name="corte" size="lg" />,
+    );
+    const drawn = container.querySelector('[aria-hidden="true"]');
+    expect(drawn).toHaveClass("size-7", "rounded-lg");
+  });
+
+  it("keeps the label for screen readers and a 44 × 44 target when hidden", async () => {
+    const user = userEvent.setup();
+    render(<Checkbox label="Ofrecer Corte" name="corte" size="lg" hideLabel />);
+    const box = screen.getByRole("checkbox", { name: "Ofrecer Corte" });
+    expect(screen.getByText("Ofrecer Corte")).toHaveClass("sr-only");
+    const row = box.closest("label");
+    expect(row).toHaveClass("min-h-11", "min-w-11");
+    await user.click(row!);
+    expect(box).toBeChecked();
+  });
+});
+
 describe("Chip", () => {
   it("shows a state without being a control", () => {
     render(<Chip tone="success">Atendida</Chip>);
