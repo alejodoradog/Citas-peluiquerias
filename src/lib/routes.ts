@@ -18,5 +18,9 @@ export const routes = {
   panelClients: "/panel/clientes",
   panelShare: "/panel/compartir",
   panelMore: "/panel/mas",
+  panelServices: "/panel/servicios",
+  panelServiceNew: "/panel/servicios/nuevo",
+  panelServiceEdit: (id: string) => `/panel/servicios/${id}`,
+  panelBarbers: "/panel/barberos",
   admin: "/admin",
 } as const;

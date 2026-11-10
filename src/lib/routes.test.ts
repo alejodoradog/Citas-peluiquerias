@@ -36,7 +36,9 @@ describe("routes", () => {
   });
 
   it("reserves the first segment of every named route", () => {
-    for (const path of Object.values(routes)) {
+    for (const route of Object.values(routes)) {
+      // Routes with a parameter are functions; a sample value stands in.
+      const path = typeof route === "function" ? route("muestra") : route;
       const first = path.split("/")[1];
       if (first) expect(reserved, path).toContain(first);
     }

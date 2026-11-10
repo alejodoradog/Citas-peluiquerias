@@ -1,34 +1,41 @@
 import { Suspense } from "react";
 import { routes } from "@/lib/routes";
-import { requireOwner } from "@/modulos/cuentas/guards";
 import { AppShell } from "@/ui/app-shell";
 import { ButtonLink } from "@/ui/button";
 import { EmptyState, LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
+import { requireReadyOwner } from "./ready-owner";
 
 const t = textos.panel;
 
-// A section of the bottom bar whose screens arrive in a later task: Clientes
-// (4.3), Compartir (2.5) and Más (2.5). Only owners reach it.
-export function ComingSoon({ title }: { title: string }) {
+// A section whose screens arrive in a later task: Clientes (4.3), Compartir
+// (2.5) and Barberos (2.2b). Only owners who finished the wizard reach it.
+// It goes back to the agenda unless it says where else.
+export function ComingSoon({
+  title,
+  back = { href: routes.panel, label: t.pronto.volver },
+}: {
+  title: string;
+  back?: { href: string; label: string };
+}) {
   return (
     <AppShell bottomNav>
       <h1 className="text-title">{title}</h1>
       <Suspense fallback={<LoadingState label={t.cargando} />}>
-        <OwnerOnly />
+        <OwnerOnly back={back} />
       </Suspense>
     </AppShell>
   );
 }
 
-async function OwnerOnly() {
-  await requireOwner();
+async function OwnerOnly({ back }: { back: { href: string; label: string } }) {
+  await requireReadyOwner();
   return (
     <EmptyState
       title={t.pronto.titulo}
       action={
-        <ButtonLink href={routes.panel} variant="secondary" size="md">
-          {t.pronto.volver}
+        <ButtonLink href={back.href} variant="secondary" size="md">
+          {back.label}
         </ButtonLink>
       }
     >

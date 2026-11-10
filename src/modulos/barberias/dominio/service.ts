@@ -79,3 +79,38 @@ export function sameServiceName(a: string, b: string): boolean {
     a.trim().toLocaleLowerCase("es-CO") === b.trim().toLocaleLowerCase("es-CO")
   );
 }
+
+const idSchema = z.guid();
+
+// A database id (uuid). Checked before a query, so a bad link answers "not
+// found" instead of a database error.
+export function isId(value: unknown): value is string {
+  return idSchema.safeParse(value).success;
+}
+
+// The ids a form sends for "¿Quién lo hace?" (D-52), without repeats. Null
+// when any of them is not an id: the form never sends that, so the request
+// was tampered with.
+export function parseIdList(values: readonly unknown[]): string[] | null {
+  const ids: string[] = [];
+  for (const value of values) {
+    if (!isId(value)) return null;
+    const id = value.toLowerCase();
+    if (!ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+// The service list of D-51: active ones first, then the inactive ones, each
+// group in alphabetical order as people read it ("Árbol" next to "Arco").
+export function splitServices<S extends { name: string; active: boolean }>(
+  services: readonly S[],
+): { active: S[]; inactive: S[] } {
+  const sorted = [...services].sort((a, b) =>
+    a.name.localeCompare(b.name, "es-CO", { sensitivity: "base" }),
+  );
+  return {
+    active: sorted.filter((service) => service.active),
+    inactive: sorted.filter((service) => !service.active),
+  };
+}

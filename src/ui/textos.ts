@@ -1,5 +1,6 @@
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
 import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
@@ -214,8 +215,8 @@ export const textos = {
       bajada:
         "Te sugerimos los típicos. Toca uno para cambiar precio o duración, o desmárcalo.",
       ofrecer: (nombre: string) => `Ofrecer ${nombre}`,
-      editar: (nombre: string, detalle: string) =>
-        `Editar ${nombre}, ${detalle}`,
+      // Read before the row's visible text: "Editar Corte 40 min $25.000".
+      editar: "Editar",
       duracion: (minutos: number) => `${minutos} min`,
       agregar: "Agregar otro servicio",
       continuar: "Continuar",
@@ -308,6 +309,79 @@ export const textos = {
       ServiceErrorCode | BarberErrorCode | SetupActionErrorCode | "invalid",
       string
     >,
+  },
+  mas: {
+    titulo: "Más",
+    cargando: "Cargando…",
+    prueba: (fecha: string) => `Prueba gratis hasta el ${fecha}`,
+    pruebaDetalle: "Todo está habilitado durante la prueba.",
+    secciones: {
+      equipo: "Tu equipo",
+      barberia: "Tu barbería",
+      dinero: "Dinero",
+      cuenta: "Tu cuenta",
+    },
+    servicios: "Servicios",
+    conteoServicios: (total: number) =>
+      `${total} ${total === 1 ? "servicio" : "servicios"}`,
+    barberos: "Barberos y horarios",
+    conteoBarberos: (total: number) =>
+      `${total} ${total === 1 ? "barbero" : "barberos"}`,
+    datos: "Datos y fotos",
+    horario: "Horario",
+    festivos: "Festivos y cierres",
+    politicas: "Reservas y cancelaciones",
+    link: "Link de reservas",
+    abono: "Datos de abono",
+    cierre: "Cierre del día",
+    pronto: "Pronto",
+    correo: "Correo de ingreso",
+    volver: "Volver a Más",
+  },
+  servicios: {
+    titulo: "Servicios",
+    cargando: "Cargando tus servicios…",
+    bajada:
+      "Tus clientes pueden elegir varios en la misma cita. La cita dura lo que sumen.",
+    agregar: "Agregar servicio",
+    inactivos: "Inactivos",
+    inactivo: "Inactivo",
+    duracion: (minutos: number) => `${minutos} min`,
+    detalle: (duracion: string, precio: string) => `${duracion} · ${precio}`,
+    vacio: {
+      titulo: "Aún no tienes servicios",
+      cuerpo: "Agrega lo que ofreces para que tus clientes puedan reservar.",
+    },
+    nuevo: "Nuevo servicio",
+    editar: "Editar servicio",
+    campos: { nombre: "Nombre", precio: "Precio", duracion: "Duración" },
+    ayudaDuracion: "La duración va de 5 a 240 minutos, de 5 en 5.",
+    quien: "¿Quién lo hace?",
+    sinBarberos:
+      "Aún no tienes barberos activos. Los agregas en Más › Barberos y horarios.",
+    activo: "Activo",
+    activoAyuda:
+      "Si lo desactivas, no aparece al reservar. Las citas ya tomadas se mantienen.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      service_name_required: "Escribe el nombre del servicio.",
+      service_name_too_long:
+        "El nombre es muy largo. Usa máximo 60 caracteres.",
+      service_name_taken: "Ya tienes un servicio con ese nombre.",
+      service_price_invalid:
+        "Escribe el precio en pesos, sin decimales. Ej.: 25.000",
+      service_duration_invalid: "Elige una duración de 5 a 240 minutos.",
+      barbers_not_saved:
+        "Guardamos el servicio, pero no quién lo hace. Ábrelo en Servicios y guárdalo de nuevo.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ServiceActionErrorCode | "invalid", string>,
+  },
+  noEncontrado: {
+    titulo: "No encontramos esta página",
+    bajada: "Puede que el link esté incompleto o que ya no exista.",
+    volver: "Volver a la agenda",
   },
   errorGeneral: {
     titulo: "Algo salió mal",
