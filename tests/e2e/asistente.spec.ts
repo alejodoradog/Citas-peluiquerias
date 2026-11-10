@@ -15,10 +15,9 @@ import {
 // agenda. Owners are created already confirmed, so no email is sent.
 const t = textos.asistente;
 const PASSWORD = "clave-segura-1";
-// The row button is named "Editar Corte, 40 min, $25.000"; tests find it by
+// The row button is named "Editar Corte 40 min $25.000"; tests find it by
 // its start, so a price change does not change how it is found.
-const editar = (nombre: string) =>
-  t.servicios.editar(nombre, "").replace(/,\s*$/, "");
+const editar = (nombre: string) => `${t.servicios.editar} ${nombre}`;
 
 async function signInNewOwner(page: Page, tag: string) {
   const email = uniqueEmail(tag);
@@ -47,6 +46,8 @@ test("an owner sets up services and team, and gets the link to share", async ({
   page,
   context,
 }) => {
+  // A long flow, and the dev server compiles each page on first use.
+  test.setTimeout(180_000);
   const { slug } = await signInNewOwner(page, "asistente");
 
   // D-10: the suggested services, Niños unchecked.
@@ -92,7 +93,8 @@ test("an owner sets up services and team, and gets the link to share", async ({
   ).toBeVisible();
   await page
     .getByRole("checkbox", { name: t.servicios.ofrecer("Cejas") })
-    .uncheck();
+    // Visually hidden native input: its drawn box takes the tap.
+    .uncheck({ force: true });
 
   // D-12: the owner cuts by default.
   await page.getByRole("link", { name: t.servicios.continuar }).click();
@@ -116,7 +118,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await page
     .getByLabel(new RegExp(t.barbero.campos.correo))
     .fill("Kevin@Correo.com");
-  await page.getByRole("checkbox", { name: "Barba" }).uncheck();
+  await page.getByRole("checkbox", { name: "Barba" }).uncheck({ force: true });
   await page.getByRole("button", { name: t.barbero.guardar }).click();
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/);
   await expect(page.getByRole("link", { name: /Kevin/ })).toContainText(
@@ -173,6 +175,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
 });
 
 test("an owner can finish later without barbers", async ({ page }) => {
+  test.setTimeout(90_000);
   const { slug } = await signInNewOwner(page, "asistente-despues");
 
   await page.getByRole("link", { name: t.servicios.continuar }).click();
@@ -181,7 +184,8 @@ test("an owner can finish later without barbers", async ({ page }) => {
   });
   await page
     .getByRole("checkbox", { name: new RegExp(t.equipo.yoCorto) })
-    .uncheck();
+    // Visually hidden native input: its drawn box takes the tap.
+    .uncheck({ force: true });
   await page.getByRole("button", { name: t.equipo.despues }).click();
 
   await expect(page).toHaveURL(/\/panel\/configurar\/listo$/, {

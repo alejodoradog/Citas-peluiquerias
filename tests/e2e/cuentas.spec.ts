@@ -76,6 +76,8 @@ async function signIn(page: Page, email: string, password = PASSWORD) {
 test("an owner signs up, confirms their email and sees the free trial running", async ({
   page,
 }) => {
+  // Goes through the setup wizard; the dev server compiles each page once.
+  test.setTimeout(90_000);
   await registerAndConfirm(page, { email: uniqueEmail("registro") });
   await finishSetup(page);
 
@@ -173,6 +175,8 @@ test("signing up with a taken email changes nothing and reveals nothing", async 
   page,
   browser,
 }) => {
+  // Goes through the setup wizard; the dev server compiles each page once.
+  test.setTimeout(90_000);
   const email = uniqueEmail("repetido");
   await registerAndConfirm(page, { email });
   await finishSetup(page);
@@ -191,20 +195,25 @@ test("signing up with a taken email changes nothing and reveals nothing", async 
 });
 
 test("an owner signs out and signs back in", async ({ page }) => {
+  test.setTimeout(90_000);
   const email = uniqueEmail("ingreso");
   await registerAndConfirm(page, { email });
+  // The wizard has no sign out: the panel does.
+  await finishSetup(page);
   await signOut(page);
 
   await signIn(page, email, "otra-clave-mala");
   await expect(page.getByText(t.errores.invalid_credentials)).toBeVisible();
 
   await signIn(page, email);
-  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
 });
 
 test("an owner recovers access by email", async ({ page }) => {
+  test.setTimeout(90_000);
   const email = uniqueEmail("recuperar");
   await registerAndConfirm(page, { email });
+  await finishSetup(page);
   await signOut(page);
 
   await page.goto("/recuperar-clave");
@@ -224,11 +233,11 @@ test("an owner recovers access by email", async ({ page }) => {
   await page.getByLabel(t.nuevaClave.campos.password).fill("clave-nueva-2");
   await page.getByLabel(t.nuevaClave.campos.confirmation).fill("clave-nueva-2");
   await page.getByRole("button", { name: t.nuevaClave.enviar }).click();
-  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
 
   await signOut(page);
   await signIn(page, email, "clave-nueva-2");
-  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
 });
 
 test("a signed-in owner cannot set a new password without the email link", async ({
@@ -295,6 +304,8 @@ test("a super admin lands on the platform panel", async ({ page }) => {
 });
 
 test("the owner's panel has its bottom bar", async ({ page }) => {
+  // Goes through the setup wizard; the dev server compiles each page once.
+  test.setTimeout(90_000);
   await registerAndConfirm(page, { email: uniqueEmail("barra") });
   await finishSetup(page);
   const nav = page.getByRole("navigation", {

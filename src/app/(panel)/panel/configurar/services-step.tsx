@@ -77,12 +77,13 @@ function ServicesList() {
                   dispatch({ type: "toggle_service", key: item.key })
                 }
               />
+              {/* Named by its visible text, so voice control finds it too. */}
               <button
                 type="button"
-                aria-label={t.editar(item.name, `${duration}, ${price}`)}
                 onClick={(event) => open(item.key, event.currentTarget)}
                 className="flex min-h-13 flex-1 items-center justify-between gap-3 rounded-lg px-2 text-left"
               >
+                <span className="sr-only">{t.editar} </span>
                 <span className="flex flex-col">
                   <span className="text-body font-bold">{item.name}</span>
                   <span className="text-help text-muted">{duration}</span>
