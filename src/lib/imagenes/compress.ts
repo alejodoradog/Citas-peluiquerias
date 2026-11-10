@@ -1,4 +1,4 @@
-import type { ImageMime } from "./keys";
+import { IMAGE_MAX_BYTES, type ImageMime } from "./keys";
 
 // Photos are shrunk in the browser before they are uploaded (decision 0007):
 // at most 400 px a side, WebP, or JPEG where the browser cannot encode WebP
@@ -7,6 +7,16 @@ import type { ImageMime } from "./keys";
 
 export const PHOTO_MAX_SIDE = 400;
 export const PHOTO_QUALITY = 0.82;
+
+// The cover of a barbershop (D-57) is a wide banner: 1200 px and under
+// 100 KB, as decision 0007 budgets it. A busy photo gets less quality until
+// it fits; one that still passes the bucket's 256 KB is refused by the
+// picker (decision P10 of task 2.4, provisional).
+export const COVER_COMPRESSION = {
+  maxSide: 1200,
+  qualities: [PHOTO_QUALITY, 0.7, 0.55, 0.4],
+  maxBytes: 100 * 1024,
+} as const;
 
 // Anything the browser calls an image. Whether it can actually be decoded is
 // only known when createImageBitmap tries.
@@ -53,11 +63,38 @@ function toBlob(
 
 export class ImageCompressionError extends Error {}
 
-// Decodes the file, draws it at most `maxSide` px a side and encodes it.
-// Throws ImageCompressionError when the browser cannot read or encode it.
+// Encodes at each quality in turn and keeps the first result within
+// maxBytes; when none fits, the last one, for the caller to refuse. Null
+// when the browser cannot encode the format at all.
+export async function shrinkToFit<T extends { size: number }>(
+  qualities: readonly number[],
+  maxBytes: number,
+  encode: (quality: number) => Promise<T | null>,
+): Promise<T | null> {
+  let last: T | null = null;
+  for (const quality of qualities) {
+    const encoded = await encode(quality);
+    if (!encoded) return last;
+    last = encoded;
+    if (encoded.size <= maxBytes) break;
+  }
+  return last;
+}
+
+// Decodes the file, draws it at most `maxSide` px a side and encodes it, at
+// the first of `qualities` that fits in `maxBytes`. Throws
+// ImageCompressionError when the browser cannot read or encode it.
 export async function compressPhoto(
   file: Blob,
-  { maxSide = PHOTO_MAX_SIDE, quality = PHOTO_QUALITY } = {},
+  {
+    maxSide = PHOTO_MAX_SIDE,
+    qualities = [PHOTO_QUALITY],
+    maxBytes = IMAGE_MAX_BYTES,
+  }: {
+    maxSide?: number;
+    qualities?: readonly number[];
+    maxBytes?: number;
+  } = {},
 ): Promise<{ blob: Blob; mime: ImageMime }> {
   let bitmap: ImageBitmap;
   try {
@@ -76,8 +113,11 @@ export async function compressPhoto(
     context.drawImage(bitmap, 0, 0, size.width, size.height);
 
     for (const mime of PHOTO_FORMATS) {
-      const blob = await toBlob(canvas, mime, quality);
-      if (blob && acceptedFormat(mime, blob.type)) return { blob, mime };
+      const blob = await shrinkToFit(qualities, maxBytes, async (quality) => {
+        const encoded = await toBlob(canvas, mime, quality);
+        return encoded && acceptedFormat(mime, encoded.type) ? encoded : null;
+      });
+      if (blob) return { blob, mime };
     }
     throw new ImageCompressionError("The browser cannot encode WebP or JPEG");
   } finally {

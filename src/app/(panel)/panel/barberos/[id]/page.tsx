@@ -5,10 +5,10 @@ import { formatBogotaDayMonth } from "@/lib/fechas/fechas";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import {
   removeBarberPhoto,
-  requestImageUpload,
   setBarberActive,
   updateBarber,
 } from "@/modulos/barberias/acciones/barbers";
+import { requestImageUpload } from "@/modulos/barberias/acciones/images";
 import {
   getBarber,
   listActiveServiceOptions,

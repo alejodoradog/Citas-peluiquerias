@@ -8,6 +8,18 @@ import { requireEnv } from "@/lib/supabase/env";
 export const IMAGES_BUCKET = "images";
 
 export type ImageKind = "barbers" | "logo" | "cover";
+
+const KINDS: readonly ImageKind[] = ["barbers", "logo", "cover"];
+
+// A kind of the bucket. Kinds come back from the browser too.
+export function isImageKind(value: unknown): value is ImageKind {
+  return KINDS.includes(value as ImageKind);
+}
+
+// What the first step of an upload hands the browser: the key to upload to
+// and the token of its signed URL.
+export type ImageUploadTicket =
+  { ok: true; path: string; token: string } | { ok: false };
 export type ImageExtension = "webp" | "jpg";
 export type ImageMime = "image/webp" | "image/jpeg";
 

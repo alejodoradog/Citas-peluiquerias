@@ -17,25 +17,34 @@ export type BarbershopErrorCode =
 
 export type RegistrationErrorCode = BarbershopErrorCode | CredentialCode;
 
-const registrationSchema = z.object({
-  ownerName: z
-    .string({ error: "owner_name_required" })
-    .trim()
-    .min(1, "owner_name_required")
-    .max(100, "owner_name_too_long"),
-  barbershopName: z
-    .string({ error: "barbershop_name_required" })
-    .trim()
-    .min(1, "barbershop_name_required")
-    .max(100, "barbershop_name_too_long"),
-  phone: z.string({ error: "phone_invalid" }).transform((value, ctx) => {
+// The barbershop's name, as barbershops.name accepts it (1 to 100). Also
+// the rule of D-57, where the owner changes it.
+export const barbershopNameSchema = z
+  .string({ error: "barbershop_name_required" })
+  .trim()
+  .min(1, "barbershop_name_required")
+  .max(100, "barbershop_name_too_long");
+
+// A Colombian mobile, stored in E.164.
+export const colombianMobileSchema = z
+  .string({ error: "phone_invalid" })
+  .transform((value, ctx) => {
     const phone = normalizeColombianMobile(value);
     if (!phone) {
       ctx.addIssue({ code: "custom", message: "phone_invalid" });
       return z.NEVER;
     }
     return phone;
-  }),
+  });
+
+const registrationSchema = z.object({
+  ownerName: z
+    .string({ error: "owner_name_required" })
+    .trim()
+    .min(1, "owner_name_required")
+    .max(100, "owner_name_too_long"),
+  barbershopName: barbershopNameSchema,
+  phone: colombianMobileSchema,
   email: emailSchema,
   password: passwordSchema,
 });

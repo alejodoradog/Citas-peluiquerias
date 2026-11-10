@@ -1,30 +1,29 @@
 "use client";
 
-import { useState, useTransition, type ChangeEvent } from "react";
-import { compressPhoto, isImageFile } from "@/lib/imagenes/compress";
-import {
-  IMAGE_MAX_BYTES,
-  type ImageUploadErrorCode,
-} from "@/lib/imagenes/keys";
-import { uploadToSignedImageUrl } from "@/lib/imagenes/upload";
-import type { ImageUploadTicket } from "@/modulos/barberias/acciones/barbers";
+import { compressPhoto } from "@/lib/imagenes/compress";
+import type { ImageUploadTicket } from "@/lib/imagenes/keys";
 import { Avatar } from "@/ui/avatar";
 import { Button, buttonClasses } from "@/ui/button";
 import { cx } from "@/ui/cx";
 import { ImageIcon } from "@/ui/icons";
-import { Notice } from "@/ui/notice";
 import { textos } from "@/ui/textos";
+import {
+  ImageUploadNotices,
+  filePickerClasses,
+  useImageUpload,
+  type PendingImage,
+} from "../image-upload";
 
 const t = textos.barberos.foto;
 
 // A photo uploaded in this visit, not saved yet: its key travels with the
 // form (photoPath) and the preview is the compressed file itself.
-export type PendingPhoto = { path: string; previewUrl: string };
+export type PendingPhoto = PendingImage;
 
-// The photo of D-54. Choosing a file shrinks it in the browser, asks the
-// server for a signed URL and uploads it (decision 0007); "Guardar" then
-// saves the key. "Quitar foto" drops a photo not saved yet, or deletes the
-// saved one right away (removeSaved).
+// The photo of D-54, at 400 px. Choosing a file shrinks it in the browser,
+// asks the server for a signed URL and uploads it (decision 0007); "Guardar"
+// then saves the key. "Quitar foto" drops a photo not saved yet, or deletes
+// the saved one right away (removeSaved).
 export function PhotoField({
   name,
   personName,
@@ -45,75 +44,16 @@ export function PhotoField({
   requestUpload: (kind: "barbers", mime: string) => Promise<ImageUploadTicket>;
   removeSaved?: () => Promise<boolean>;
 }) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<ImageUploadErrorCode | "remove" | null>(
-    null,
-  );
-  const [removing, startRemoving] = useTransition();
+  const { uploading, removing, busy, error, choose, remove } = useImageUpload({
+    kind: "barbers",
+    compress: (file) => compressPhoto(file),
+    requestUpload,
+    pending,
+    onPendingChange,
+    onUploadingChange,
+    removeSaved,
+  });
   const shownUrl = pending?.previewUrl ?? savedUrl;
-  const busy = uploading || removing;
-
-  function replacePending(photo: PendingPhoto | null) {
-    if (pending) URL.revokeObjectURL(pending.previewUrl);
-    onPendingChange(photo);
-  }
-
-  async function upload(file: File): Promise<ImageUploadErrorCode | null> {
-    if (!isImageFile(file)) return "photo_not_image";
-    let compressed: Awaited<ReturnType<typeof compressPhoto>>;
-    try {
-      compressed = await compressPhoto(file);
-    } catch {
-      return "photo_unreadable";
-    }
-    if (compressed.blob.size > IMAGE_MAX_BYTES) return "photo_too_big";
-
-    const ticket = await requestUpload("barbers", compressed.mime).catch(
-      () => ({ ok: false }) as const,
-    );
-    if (!ticket.ok) return "photo_upload_failed";
-    const stored = await uploadToSignedImageUrl(
-      ticket.path,
-      ticket.token,
-      compressed.blob,
-      compressed.mime,
-    );
-    if (!stored) return "photo_upload_failed";
-    replacePending({
-      path: ticket.path,
-      previewUrl: URL.createObjectURL(compressed.blob),
-    });
-    return null;
-  }
-
-  async function choose(event: ChangeEvent<HTMLInputElement>) {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    // The same file can be chosen again after an error.
-    input.value = "";
-    if (!file) return;
-    setError(null);
-    setUploading(true);
-    onUploadingChange(true);
-    try {
-      setError(await upload(file));
-    } finally {
-      setUploading(false);
-      onUploadingChange(false);
-    }
-  }
-
-  function remove() {
-    setError(null);
-    if (pending) {
-      replacePending(null);
-      return;
-    }
-    if (!removeSaved) return;
-    startRemoving(async () => {
-      if (!(await removeSaved())) setError("remove");
-    });
-  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -123,7 +63,7 @@ export function PhotoField({
         <label
           className={cx(
             buttonClasses({ variant: "secondary", size: "sm", block: false }),
-            "has-[:focus-visible]:outline-brand-strong cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
+            filePickerClasses,
           )}
         >
           <input
@@ -148,16 +88,12 @@ export function PhotoField({
           </Button>
         ) : null}
       </div>
-      {uploading ? <Notice tone="info" title={t.subiendo} /> : null}
-      {error ? (
-        <Notice
-          tone="danger"
-          title={error === "remove" ? t.falloQuitar : t.errores[error]}
-        />
-      ) : null}
-      {pending && !uploading && !error ? (
-        <Notice tone="success" title={t.lista} />
-      ) : null}
+      <ImageUploadNotices
+        texts={t}
+        uploading={uploading}
+        error={error}
+        ready={pending !== null}
+      />
       {!shownUrl && !error && !uploading ? (
         <p className="text-help text-muted">{t.ayuda}</p>
       ) : null}

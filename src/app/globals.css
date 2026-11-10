@@ -88,6 +88,16 @@
     );
 }
 
+/* Where an image or a map goes while there is none (D-57): the design's
+   diagonal stripes, two tints of paper. */
+@utility image-placeholder {
+  background: repeating-linear-gradient(
+    135deg,
+    #e3eae8 0 10px,
+    #edf2f0 10px 20px
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

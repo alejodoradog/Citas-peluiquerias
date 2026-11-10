@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   extensionFor,
+  isImageKind,
   isOwnImageKey,
   newImageKey,
   publicImageUrl,
@@ -93,5 +94,19 @@ describe("publicImageUrl", () => {
   it("fails loudly without the variable", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
     expect(() => publicImageUrl("x")).toThrow(/NEXT_PUBLIC_SUPABASE_URL/);
+  });
+});
+
+describe("isImageKind", () => {
+  it("knows the three folders of a barbershop", () => {
+    for (const kind of ["barbers", "logo", "cover"]) {
+      expect(isImageKind(kind)).toBe(true);
+    }
+  });
+
+  it("refuses anything else", () => {
+    for (const value of ["avatars", "LOGO", "../logo", "", null, 3]) {
+      expect(isImageKind(value)).toBe(false);
+    }
   });
 });
