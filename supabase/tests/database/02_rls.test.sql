@@ -154,6 +154,7 @@ select is(
     'private.is_e164_phone:anon',
     'private.is_e164_phone:authenticated',
     'private.is_email:authenticated',
+    'private.is_image_key:authenticated',
     'private.is_super_admin:authenticated',
     'private.is_token_hash:anon',
     'private.is_token_hash:authenticated',
