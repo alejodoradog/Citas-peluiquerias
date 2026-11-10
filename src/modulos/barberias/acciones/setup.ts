@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
@@ -40,5 +41,9 @@ export async function completeSetup(
   if (result === "failed") {
     return { status: "failed", error: "unknown", values: {} };
   }
+  // Every panel page answered "set up first" until now, and the browser may
+  // keep those answers: without this, "Ir a la agenda" can bounce the owner
+  // back to the wizard.
+  revalidatePath(routes.panel, "layout");
   redirect(routes.setupDone);
 }
