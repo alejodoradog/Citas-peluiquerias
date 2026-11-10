@@ -4,6 +4,7 @@ import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barbe
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
+import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
 import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
@@ -618,6 +619,37 @@ export const textos = {
       unknown: "No pudimos guardar el horario. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ScheduleActionErrorCode | "invalid", string>,
+  },
+  // D-58. The days, shifts and their buttons are in horario.
+  horarioBarberia: {
+    titulo: "Horario de la barbería",
+    cargando: "Cargando el horario…",
+    bajada: "Los barberos trabajan dentro de este horario.",
+    // The name of each day's switch; on screen it reads as the day alone.
+    abre: (dia: string) => `Abre el ${dia.toLocaleLowerCase("es-CO")}`,
+    cerrado: "Cerrado",
+    festivos: "Festivos y cierres especiales",
+    festivosDetalle: "Festivos cerrados, salvo los que abras",
+    pronto: "Pronto",
+    guardar: "Guardar horario",
+    guardando: "Guardando…",
+    guardado: "Guardamos el horario.",
+    // Barbers with own hours beyond the barbershop's: theirs are not cut.
+    fuera: (nombres: readonly string[]) =>
+      `${new Intl.ListFormat("es-CO", { type: "conjunction" }).format(nombres)} ${
+        nombres.length === 1 ? "tiene" : "tienen"
+      } horas fuera de este horario`,
+    fueraDetalle: "En esas horas no recibirán citas. Revisa su horario:",
+    errores: {
+      hours_invalid: "Elige las horas de la lista, de 15 en 15 minutos.",
+      hours_too_many: "Máximo dos tramos por día.",
+      hours_order: "La hora de «Hasta» debe ser después de la de «Desde».",
+      hours_overlap:
+        "Los dos tramos se cruzan. El segundo debe empezar después de que termine el primero.",
+      hours_required: "Abre al menos un día de la semana.",
+      unknown: "No pudimos guardar el horario. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ShopHoursActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

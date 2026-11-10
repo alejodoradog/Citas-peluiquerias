@@ -4,6 +4,7 @@ import { formatBogotaDayMonth, startOfBogotaDay } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { displayBookingUrl } from "@/lib/sitio";
 import { countActive } from "@/modulos/barberias/datos/services";
+import { getBarbershopHours } from "@/modulos/barberias/datos/setup";
 import { Chip } from "@/ui/chip";
 import {
   BarChartIcon,
@@ -23,15 +24,17 @@ import { SignOutButton } from "@/ui/sign-out-button";
 import { LoadingState } from "@/ui/states";
 import { TabShell } from "@/ui/tab-shell";
 import { textos } from "@/ui/textos";
+import { summarizeHours } from "../configurar/hours-summary";
 import { requireReadyOwner } from "../ready-owner";
 
 const t = textos.mas;
 
 export const metadata: Metadata = { title: t.titulo };
 
-// D-50: the owner's settings. Servicios and Barberos work now; the other rows
-// arrive with tasks 2.4, 2.6 and 4.6 and show "Pronto" without a link
-// (decision 9 of task 2.2). Its top bar names the barbershop, as the design
+// D-50: the owner's settings. Servicios, Barberos, Horario (2.4a) and
+// Reservas y cancelaciones (2.4b) work now; the other rows arrive with tasks
+// 2.4c to 2.4e, 2.6 and 4.6 and show "Pronto" without a link (decision 9 of
+// task 2.2). Its top bar names the barbershop, as the design
 // does, so the whole frame waits for it; "Cerrar sesión" is in "Tu cuenta".
 export default function MorePage() {
   return (
@@ -60,7 +63,10 @@ const soon = <Chip tone="warning">{t.pronto}</Chip>;
 
 async function More() {
   const { email, barbershop } = await requireReadyOwner();
-  const counts = await countActive(barbershop.id);
+  const [counts, hours] = await Promise.all([
+    countActive(barbershop.id),
+    getBarbershopHours(barbershop.id),
+  ]);
   const trialEnd = formatBogotaDayMonth(startOfBogotaDay(barbershop.expiresOn));
 
   return (
@@ -87,7 +93,12 @@ async function More() {
         </Section>
         <Section title={t.secciones.barberia}>
           <ListRow icon={<StoreIcon />} title={t.datos} trailing={soon} />
-          <ListRow icon={<ClockIcon />} title={t.horario} trailing={soon} />
+          <ListRow
+            icon={<ClockIcon />}
+            title={t.horario}
+            subtitle={summarizeHours(hours) || undefined}
+            href={routes.panelShopHours}
+          />
           <ListRow icon={<CalendarIcon />} title={t.festivos} trailing={soon} />
           <ListRow icon={<SlidersIcon />} title={t.politicas} trailing={soon} />
           <ListRow

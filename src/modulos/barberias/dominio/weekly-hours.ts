@@ -185,6 +185,38 @@ export function validateWeek(
   };
 }
 
+// The barbershop's own week (D-58, decision P5 of task 2.4): the same rules
+// as a barber's each day, and at least one day open, because a barbershop
+// closed every day takes no bookings. set_barbershop_hours refuses it too.
+// Its days have no barbershop to fit into, so hours_outside_shop never comes up.
+export type ShopDayErrorCode = Exclude<WeekErrorCode, "hours_outside_shop">;
+export type ShopWeekResult =
+  | { status: "valid"; shifts: WeeklyShift[] }
+  | { status: "invalid"; errors: Partial<Record<Weekday, ShopDayErrorCode>> }
+  | { status: "malformed" }
+  | { status: "closed" };
+
+export function validateShopWeek(input: unknown): ShopWeekResult {
+  const parsed = parseWeekForm(input);
+  if (parsed.status === "valid" && parsed.shifts.length === 0) {
+    return { status: "closed" };
+  }
+  // parseWeekForm checks each day on its own, never against a barbershop.
+  return parsed as ShopWeekResult;
+}
+
+// The barbers whose own hours go beyond the barbershop's, in the order given.
+// Their hours are not cut: the availability engine (task 3.1) crosses both,
+// so in those hours they take no bookings. D-58 warns about them.
+export function barbersOutsideShop<
+  Barber extends { usesBarbershopHours: boolean; shifts: readonly WeeklyShift[] },
+>(barbers: readonly Barber[], shop: readonly WeeklyShift[]): Barber[] {
+  return barbers.filter(
+    (barber) =>
+      !barber.usesBarbershopHours && !isWithinShop(barber.shifts, shop),
+  );
+}
+
 // The p_shifts argument of set_barber_schedule: [{ weekday, start, end }].
 export function toRpcShifts(
   shifts: readonly WeeklyShift[],

@@ -16,6 +16,7 @@ import {
   type WeekErrorCode,
   type Weekday,
 } from "../dominio/weekly-hours";
+import { readWeek } from "./week-field";
 
 // - hours_*: what is wrong with a day (WeekErrorCode). hours_overlap also
 //   comes back as a form error when the database refuses two shifts that
@@ -28,18 +29,6 @@ export type ScheduleActionErrorCode = WeekErrorCode | "unknown";
 export type ScheduleField = "usesBarbershopHours" | "shifts" | DayField;
 
 export type ScheduleState = FormState<ScheduleField, ScheduleActionErrorCode>;
-
-// Far above the 14 shifts the screen can send; longer is not parsed at all.
-const MAX_WEEK_LENGTH = 4_000;
-
-function readWeek(sent: FormDataEntryValue | null): unknown {
-  if (typeof sent !== "string" || sent.length > MAX_WEEK_LENGTH) return null;
-  try {
-    return JSON.parse(sent);
-  } catch {
-    return null;
-  }
-}
 
 // D-55, "Guardar horario". The barber must be one of the owner's barbershop;
 // their own hours are checked again here, against the barbershop's hours

@@ -352,3 +352,90 @@ test("D-62 matches the design", async ({ page }) => {
   await attachSideBySide(page, design, "D-62");
   await design.close();
 });
+
+// An owner past the wizard, signed in, for the panel's screens.
+async function signInReadyOwner(page: Page, prefix: string) {
+  const email = uniqueEmail(prefix);
+  const password = "clave-segura-1";
+  await createConfirmedOwner(email, password, {
+    ownerName: "Carlos Pérez",
+    barbershopName: "Barbería La Esquina",
+  });
+  await page.goto("/ingresar");
+  await page
+    .getByRole("textbox", { name: textos.cuentas.ingreso.campos.email })
+    .fill(email);
+  await page
+    .getByLabel(textos.cuentas.ingreso.campos.password)
+    .filter({ visible: true })
+    .fill(password);
+  await page
+    .getByRole("button", { name: textos.cuentas.ingreso.enviar })
+    .click();
+  await finishSetup(page);
+}
+
+const primaryButton = [
+  "height",
+  "border-radius",
+  "background-color",
+  "color",
+  "font-size",
+  "font-weight",
+] as const;
+
+test("D-58 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  await signInReadyOwner(page, "fidelidad-horario");
+  await page.goto("/panel/horario");
+  const hb = textos.horarioBarberia;
+  await expect(
+    page.getByRole("heading", { level: 1, name: hb.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D58-Horario-barberia.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Horario de la barbería", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "bajada",
+    page.getByText(hb.bajada),
+    design.getByText("Los barberos trabajan dentro de este horario"),
+    ["font-size", "line-height", "color"],
+  );
+  // The week's card. Its rows differ on purpose: the seven days are open to
+  // edit, as in D-55 (docs/tareas/2.4-configuracion.md).
+  await compare(
+    "tarjeta de la semana",
+    page.getByRole("group", { name: "Lunes" }).locator(".."),
+    design.getByText("Lunes", { exact: true }).locator("../.."),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "festivos",
+    page.getByText(hb.festivos, { exact: true }),
+    design.getByText("Festivos y cierres especiales", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "detalle de festivos",
+    page.getByText(hb.festivosDetalle, { exact: true }),
+    design.getByText("Festivos cerrados, salvo los que abras", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: hb.guardar }),
+    design.getByRole("link", { name: "Guardar horario" }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-58");
+  await design.close();
+});

@@ -435,6 +435,9 @@ isOneToOne: false
 "set_barber_services":
 { Args: { "p_barber_id": string,"p_service_ids": (string)[] }; Returns: undefined
                            },
+"set_barbershop_hours":
+{ Args: { "p_barbershop_id": string,"p_shifts": Json }; Returns: undefined
+                           },
 "set_service_barbers":
 { Args: { "p_barber_ids": (string)[],"p_service_id": string }; Returns: undefined
                            }

@@ -148,6 +148,51 @@ export async function getBarber(
   };
 }
 
+export type OwnHoursBarber = {
+  id: string;
+  displayName: string;
+  usesBarbershopHours: false;
+  shifts: WeeklyShift[];
+};
+
+// The active barbers with hours of their own, in the team's order, with their
+// week: D-58 warns about those whose hours go beyond the barbershop's.
+export async function listOwnHoursBarbers(
+  barbershopId: string,
+): Promise<OwnHoursBarber[]> {
+  const supabase = await createSupabaseServerClient();
+  const [barbers, shifts] = await Promise.all([
+    supabase
+      .from("barbers")
+      .select("id, display_name")
+      .eq("barbershop_id", barbershopId)
+      .eq("active", true)
+      .eq("uses_barbershop_hours", false)
+      .order("sort_order")
+      .order("display_name"),
+    supabase
+      .from("barber_schedules")
+      .select("barber_id, weekday, start_time, end_time")
+      .eq("barbershop_id", barbershopId)
+      .order("weekday")
+      .order("start_time"),
+  ]);
+  if (barbers.error) throw barbers.error;
+  if (shifts.error) throw shifts.error;
+  return barbers.data.map((barber) => ({
+    id: barber.id,
+    displayName: barber.display_name,
+    usesBarbershopHours: false,
+    shifts: shifts.data
+      .filter((row) => row.barber_id === barber.id)
+      .map((row) => ({
+        weekday: row.weekday,
+        start: row.start_time.slice(0, 5),
+        end: row.end_time.slice(0, 5),
+      })),
+  }));
+}
+
 // Whether another barber of the barbershop already shows this photo, so one
 // barber's replaced photo never deletes another's.
 export async function photoInUse(

@@ -18,6 +18,8 @@ export const routes = {
   panelClients: "/panel/clientes",
   panelShare: "/panel/compartir",
   panelMore: "/panel/mas",
+  panelShopHours: "/panel/horario",
+  panelPolicies: "/panel/reservas",
   panelServices: "/panel/servicios",
   panelServiceNew: "/panel/servicios/nuevo",
   panelServiceEdit: (id: string) => `/panel/servicios/${id}`,
@@ -31,3 +33,7 @@ export const routes = {
   barberAgenda: (token: string) => `/b/${token}`,
   admin: "/admin",
 } as const;
+
+// The query a screen reads after its own save sent the owner back to it, to
+// say it was saved (D-58, D-60): "?guardado=1".
+export const SAVED_PARAM = "guardado";
