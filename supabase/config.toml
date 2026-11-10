@@ -205,7 +205,8 @@ anonymous_users = 30
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
-sign_in_sign_ups = 30
+# Raised for the e2e suite, which signs up and in many times; only local and CI.
+sign_in_sign_ups = 100
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
 token_verifications = 30
 # Number of Web3 logins that can be made in a 5 minute interval per IP address.
@@ -233,8 +234,9 @@ max_frequency = "1s"
 # Number of characters used in the email OTP. Nobody types this code: the links
 # use the token hash. The longest value makes guessing it impractical.
 otp_length = 10
-# Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+# Number of seconds before the email OTP expires (defaults to 1 hour). The
+# links last 24 hours (EMAIL_LINK_HOURS, founder decision of 2026-11-09).
+otp_expiry = 86400
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]

@@ -1,58 +1,9 @@
 "use client";
 
-import {
-  useActionState,
-  useEffect,
-  useId,
-  useRef,
-  type InputHTMLAttributes,
-  type ReactNode,
-} from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { IDLE, type FormState } from "@/lib/formularios/form-state";
 import { buttonClasses } from "./button";
-
-type FieldProps = {
-  label: string;
-  name: string;
-  help?: string;
-  error?: string;
-} & Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "id">;
-
-export function Field({ label, name, help, error, ...input }: FieldProps) {
-  const id = useId();
-  const helpId = `${id}-ayuda`;
-  const errorId = `${id}-error`;
-  // With an error, the error says what to do; the help would repeat it.
-  const showHelp = Boolean(help) && !error;
-  const describedBy = error ? errorId : showHelp ? helpId : undefined;
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-base font-semibold">
-        {label}
-      </label>
-      <input
-        id={id}
-        name={name}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy}
-        className="border-line text-ink focus-visible:border-brand focus-visible:outline-brand aria-invalid:border-danger h-12 rounded-lg border-2 bg-white px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-1"
-        {...input}
-      />
-      {error ? (
-        <p id={errorId} className="text-danger text-sm font-medium">
-          {error}
-        </p>
-      ) : null}
-      {showHelp ? (
-        <p id={helpId} className="text-muted text-sm">
-          {help}
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
 // Wires a form to its Server Action: the state, the copy for each error code
 // and the values to show again. Field names are typed, so a typo in
@@ -86,6 +37,9 @@ export function useFormAction<S extends FormState<string, string, string>>(
     invalidFields: state.status === "invalid" ? state.fieldErrors : undefined,
     notice: state.status === "done" ? state.notice : undefined,
     formError: state.status === "failed" ? lookup[state.error] : undefined,
+    // The code behind formError, so the screen can pick the notice's tone.
+    formErrorCode:
+      state.status === "failed" ? (state.error as CodeOf<S>) : undefined,
     fieldError(field: FieldOf<S>): string | undefined {
       const code =
         state.status === "invalid" ? state.fieldErrors[field] : undefined;
@@ -119,7 +73,7 @@ export function ActionForm({
       ref={ref}
       action={form.formAction}
       noValidate
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-5.5"
     >
       {children}
     </form>
@@ -139,30 +93,9 @@ export function SubmitButton({
       type="submit"
       disabled={pending}
       aria-disabled={pending}
-      className={buttonClasses("primary")}
+      className={buttonClasses()}
     >
       {pending ? pendingText : children}
     </button>
-  );
-}
-
-export function FormAlert({
-  children,
-  tone = "error",
-}: {
-  children: ReactNode;
-  tone?: "error" | "info";
-}) {
-  return (
-    <p
-      role={tone === "error" ? "alert" : "status"}
-      className={
-        tone === "error"
-          ? "bg-danger-soft text-danger rounded-lg px-4 py-3 text-base font-medium"
-          : "border-brand text-ink rounded-lg border-l-4 bg-white px-4 py-3 text-base"
-      }
-    >
-      {children}
-    </p>
   );
 }

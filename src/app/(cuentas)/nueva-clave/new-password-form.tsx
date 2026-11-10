@@ -1,13 +1,9 @@
 "use client";
 
 import { setNewPassword } from "@/modulos/cuentas/acciones/account";
-import {
-  ActionForm,
-  Field,
-  FormAlert,
-  SubmitButton,
-  useFormAction,
-} from "@/ui/form";
+import { Field } from "@/ui/field";
+import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
+import { Notice } from "@/ui/notice";
 import { textos } from "@/ui/textos";
 
 const t = textos.cuentas.nuevaClave;
@@ -17,7 +13,9 @@ export function NewPasswordForm() {
 
   return (
     <ActionForm form={form}>
-      {form.formError ? <FormAlert>{form.formError}</FormAlert> : null}
+      {form.formError ? (
+        <Notice tone="danger" title={form.formError} />
+      ) : null}
       <Field
         label={t.campos.password}
         name="password"

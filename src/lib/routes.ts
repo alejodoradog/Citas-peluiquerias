@@ -8,6 +8,11 @@ export const routes = {
   recoverPassword: "/recuperar-clave",
   newPassword: "/nueva-clave",
   confirmEmailLink: "/auth/confirm",
+  terms: "/terminos",
+  privacy: "/privacidad",
   panel: "/panel",
+  panelClients: "/panel/clientes",
+  panelShare: "/panel/compartir",
+  panelMore: "/panel/mas",
   admin: "/admin",
 } as const;

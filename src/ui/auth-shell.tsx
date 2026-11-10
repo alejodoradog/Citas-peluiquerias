@@ -1,54 +1,36 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { routes } from "@/lib/routes";
-import { buttonClasses } from "./button";
-import { textos } from "./textos";
+import { BrandHeader } from "./brand";
 
-// Frame for the account screens: the comb mark, the brand and one narrow,
-// left-aligned column that reads well on a phone.
-export function AuthShell({
-  title,
-  intro,
-  children,
-}: {
-  title: string;
-  intro?: string;
-  children: ReactNode;
-}) {
+// Frame of the account screens (D-02 to D-09): the brand on top and one
+// narrow column, with 22 px between blocks, that reads well on a phone.
+export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <div className="comb" aria-hidden="true" />
-      <header className="mx-auto w-full max-w-md px-5 pt-6">
-        <Link
-          href={routes.home}
-          className="text-brand-strong focus-visible:outline-brand rounded text-lg font-bold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4"
-        >
-          {textos.cuentas.marca}
-        </Link>
-      </header>
-      <main className="mx-auto w-full max-w-md flex-1 px-5 pt-10 pb-16">
-        <h1 className="text-[2rem] leading-[1.1] font-extrabold tracking-tight text-balance">
-          {title}
-        </h1>
-        {intro ? (
-          <p className="text-muted mt-3 text-base leading-relaxed">{intro}</p>
-        ) : null}
-        <div className="mt-8">{children}</div>
-      </main>
-    </div>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5.5 px-5 pt-7 pb-7.5">
+      <BrandHeader />
+      {children}
+    </main>
   );
 }
 
-export function TextLink({
-  href,
-  children,
+// Heading of an account screen: optional icon, the title and one line of
+// intro. Forms that switch to a "done" view render their own, so the whole
+// screen changes, as in D-03 and D-08.
+export function AuthHeading({
+  title,
+  intro,
+  icon,
 }: {
-  href: string;
-  children: ReactNode;
+  title: string;
+  intro?: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
-    <Link href={href} className={buttonClasses("link")}>
-      {children}
-    </Link>
+    <>
+      {icon ? <span className="text-brand flex">{icon}</span> : null}
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-title text-balance">{title}</h1>
+        {intro ? <p className="text-body text-muted">{intro}</p> : null}
+      </div>
+    </>
   );
 }

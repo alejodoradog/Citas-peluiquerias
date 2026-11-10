@@ -1,17 +1,48 @@
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
+import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
 
 // Error copy lives with each module and is keyed by the codes its actions
 // return (decision 0005), plus "invalid" for anything a schema did not name.
 
 export const textos = {
+  marca: "Yapoin",
   inicio: {
-    titulo: "Barberías",
-    descripcion: "Agendamiento de citas para barberías en Colombia.",
+    titulo: "Tu barbería recibe citas sola, desde un link",
+    bajada:
+      "Tus clientes reservan a cualquier hora en menos de un minuto. Tú ves la agenda de todos tus barberos en el celular.",
+    beneficios: [
+      "Menos mensajes contestando horarios",
+      "Recordatorios por correo para que no te dejen plantado",
+      "Configuras todo en 10 minutos, sin descargar nada",
+    ],
+    descripcion:
+      "Agenda de citas para barberías en Colombia: tus clientes reservan solos desde un link.",
     crearCuenta: "Crear cuenta gratis",
     ingresar: "Ingresar",
+    nota: `${TRIAL_DAYS} días gratis. No pedimos tarjeta.`,
+  },
+  ui: {
+    opcional: "(opcional)",
+    cargando: "Cargando…",
+    paso: (actual: number, total: number) => `Paso ${actual} de ${total}`,
+    navegacion: {
+      etiqueta: "Principal",
+      agenda: "Agenda",
+      clientes: "Clientes",
+      compartir: "Compartir",
+      mas: "Más",
+    },
+    nuevaCita: "Nueva cita",
+  },
+  legal: {
+    terminos: { titulo: "Términos de uso" },
+    privacidad: { titulo: "Política de datos" },
+    enPreparacion:
+      "Estamos terminando este documento. Lo publicamos aquí antes de abrir Yapoin a más barberías.",
+    volver: "Volver al inicio",
   },
   agenda: {
     errores: {
@@ -31,7 +62,6 @@ export const textos = {
     } satisfies Record<BarbershopErrorCode, string>,
   },
   cuentas: {
-    marca: "Barberías",
     registro: {
       titulo: "Crea la cuenta de tu barbería",
       bajada: `Tienes ${TRIAL_DAYS} días gratis para probar todo. No pedimos tarjeta.`,
@@ -48,10 +78,23 @@ export const textos = {
         email: "Con este correo ingresas y recuperas tu contraseña.",
         password: "Mínimo 8 caracteres.",
       },
+      legal: {
+        antes: "Al crear la cuenta aceptas los ",
+        terminos: "términos de uso",
+        y: " y la ",
+        privacidad: "política de datos",
+        despues: ".",
+      },
       enviar: "Crear cuenta",
       enviando: "Creando tu cuenta…",
-      revisaCorreo:
-        "Revisa tu correo y abre el link para confirmar tu cuenta. Si ese correo ya tenía cuenta, ingresa o recupera tu contraseña.",
+      revisaCorreo: {
+        titulo: "Revisa tu correo",
+        cuerpo: (correo: string) =>
+          `Te enviamos un link a ${correo} para confirmar tu cuenta. Si ese correo ya tenía cuenta, ingresa o recupera tu contraseña.`,
+        avisoTitulo: "¿No te llegó?",
+        avisoCuerpo: `Revisa la carpeta de spam. El link vence en ${EMAIL_LINK_HOURS} horas.`,
+        irAIngresar: "Ir a ingresar",
+      },
       yaTienes: "¿Ya tienes cuenta?",
       ingresa: "Ingresa",
     },
@@ -65,8 +108,10 @@ export const textos = {
       crear: "Crea una gratis",
       sinAcceso:
         "Esta cuenta no tiene acceso. Si crees que es un error, escríbenos.",
-      correoConfirmado:
-        "Listo, tu correo quedó confirmado. Ingresa con tu correo y contraseña.",
+      correoConfirmado: {
+        titulo: "Listo, tu correo quedó confirmado.",
+        cuerpo: "Ingresa con tu correo y contraseña.",
+      },
       linkVencido:
         "Ese link venció o ya se usó. Ingresa con tu correo y contraseña; si te falta confirmar el correo, te enviamos otro link.",
     },
@@ -77,6 +122,7 @@ export const textos = {
       campos: { email: "Correo" },
       enviar: "Enviar link",
       enviando: "Enviando…",
+      enviadoTitulo: "Revisa tu correo",
       enviado:
         "Si ese correo tiene una cuenta, ya te llegó el link. Revisa también la carpeta de spam.",
       linkVencido: "Ese link venció o ya se usó. Pide uno nuevo aquí.",
@@ -128,6 +174,16 @@ export const textos = {
     tuLink: "Link de reservas",
     proximo:
       "Lo siguiente es agregar tus servicios y tus barberos. Esa parte llega muy pronto.",
+    secciones: {
+      clientes: "Clientes",
+      compartir: "Compartir tu link",
+      mas: "Más",
+    },
+    pronto: {
+      titulo: "Muy pronto",
+      cuerpo: "Esta sección llega en las próximas semanas.",
+      volver: "Volver a la agenda",
+    },
   },
   admin: {
     titulo: "Panel de plataforma",

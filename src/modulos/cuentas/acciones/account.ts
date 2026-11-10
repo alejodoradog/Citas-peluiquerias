@@ -45,7 +45,7 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(form.data);
   if (error) {
     const accountError = toAccountError(error);
-    // Only reached with the right password. The first link lasts an hour, so
+    // Only reached with the right password. The first link lasts 24 hours, so
     // this is how an owner who was late gets another. Limits may skip the
     // send; the message stays the same.
     if (accountError === "email_not_confirmed") {
