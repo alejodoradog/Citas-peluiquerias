@@ -306,7 +306,9 @@ test("the owner's panel has its bottom bar", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: textos.panel.secciones.clientes }),
   ).toBeVisible();
-  await expect(page.getByText(textos.panel.pronto.titulo)).toBeVisible();
+  await expect(
+    page.getByText(textos.panel.pronto.titulo, { exact: true }),
+  ).toBeVisible();
   await expect(
     nav.getByRole("link", { name: textos.ui.navegacion.clientes }),
   ).toHaveAttribute("aria-current", "page");

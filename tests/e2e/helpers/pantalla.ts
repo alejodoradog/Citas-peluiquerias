@@ -63,7 +63,10 @@ export async function expectVisibleFocus(page: Page, stops = 12) {
     await page.keyboard.press("Tab");
     const ring = await page.evaluate(() => {
       const element = document.activeElement;
+      // The end of the page, or the Next.js dev tools button (a custom
+      // element that exists only in development).
       if (!element || element === document.body) return null;
+      if (element.tagName.includes("-")) return null;
       const style = getComputedStyle(element);
       // A visually hidden input shows its ring on the drawn control next to it.
       const drawn =
