@@ -139,7 +139,8 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   const kevin = barberRow(page, "Kevin");
   await expect(kevin).toContainText(t.horarioBarberia);
   await expect(kevin).toContainText(t.conteoServicios(3));
-  await expect(kevin).toContainText(t.linkActivo);
+  // A new barber's link was never issued (task 2.3).
+  await expect(kevin).toContainText(t.linkSinEnviar);
   await expect(kevin.locator("img")).toHaveAttribute("src", storagePhoto);
   const first = await barberPhotos(slug, "Kevin");
   expect(first.objects).toEqual([first.photoPath]);
@@ -219,7 +220,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toHaveCount(0);
-  await expect(barberRow(page, "Kevin")).toContainText(t.linkActivo);
+  await expect(barberRow(page, "Kevin")).toContainText(t.linkSinEnviar);
 
   // Más counts both active barbers.
   await page.getByRole("link", { name: textos.ui.volver }).click();

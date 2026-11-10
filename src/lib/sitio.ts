@@ -1,3 +1,5 @@
+import { routes } from "./routes";
+
 // The public address of Yapoin. Booking links are <SITE_URL>/<slug>. The page
 // behind them arrives with task 3.2.
 export const SITE_URL = "https://yapoin.com";
@@ -9,4 +11,10 @@ export function publicBookingUrl(slug: string): string {
 // The same link without the protocol, as screens show it ("yapoin.com/slug").
 export function displayBookingUrl(slug: string): string {
   return publicBookingUrl(slug).replace(/^https?:\/\//, "");
+}
+
+// A barber's private link, <SITE_URL>/b/<token> (D-56). It is built only in
+// the Server Action that issues the token and travels only in its answer.
+export function barberAgendaUrl(token: string): string {
+  return `${SITE_URL}${routes.barberAgenda(token)}`;
 }

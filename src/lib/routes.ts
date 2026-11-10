@@ -25,5 +25,9 @@ export const routes = {
   panelBarberNew: "/panel/barberos/nuevo",
   panelBarberEdit: (id: string) => `/panel/barberos/${id}`,
   panelBarberSchedule: (id: string) => `/panel/barberos/${id}/horario`,
+  panelBarberLink: (id: string) => `/panel/barberos/${id}/link`,
+  // A barber's private agenda (task 4.4). The token is the whole credential:
+  // only the owner's screen right after issuing it ever holds this path.
+  barberAgenda: (token: string) => `/b/${token}`,
   admin: "/admin",
 } as const;

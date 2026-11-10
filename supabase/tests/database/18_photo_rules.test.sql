@@ -15,9 +15,10 @@ insert into public.profiles (id, full_name, phone) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A', '+573001112233');
 insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner');
-insert into public.barbers (id, barbershop_id, display_name, link_token_hash, is_owner) values
-  ('a1000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000000', 'Dueño', repeat('a', 64), true),
-  ('a2000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000000', 'Beto', repeat('b', 64), false);
+-- The owner has no private link (barbers_owner_has_no_link, task 2.3).
+insert into public.barbers (id, barbershop_id, display_name, link_token_hash, is_owner, link_active) values
+  ('a1000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000000', 'Dueño', repeat('a', 64), true, false),
+  ('a2000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000000', 'Beto', repeat('b', 64), false, true);
 
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';

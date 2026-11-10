@@ -13,6 +13,7 @@ import {
   getBarber,
   listActiveServiceOptions,
 } from "@/modulos/barberias/datos/barbers";
+import { barberLinkState } from "@/modulos/barberias/dominio/barber-link";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../../ready-owner";
 import { BarberEditor } from "../barber-editor";
@@ -58,7 +59,14 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
         serviceIds: barber.service_ids,
         active: barber.active,
         isOwner: barber.is_owner,
-        linkActive: barber.link_active,
+        linkState: barberLinkState({
+          isOwner: barber.is_owner,
+          linkActive: barber.link_active,
+          linkIssuedAt: barber.link_issued_at,
+        }),
+        linkSentOn: barber.link_issued_at
+          ? formatBogotaDayMonth(new Date(barber.link_issued_at))
+          : null,
         inactiveSince: barber.deactivated_at
           ? formatBogotaDayMonth(new Date(barber.deactivated_at))
           : null,

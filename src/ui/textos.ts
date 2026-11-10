@@ -6,6 +6,7 @@ import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registrati
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
+import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
 import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
 import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
@@ -392,8 +393,10 @@ export const textos = {
     horarioPropio: "Horario propio",
     conteoServicios: (total: number) =>
       `${total} ${total === 1 ? "servicio" : "servicios"}`,
-    linkActivo: "Link activo",
-    linkDesactivado: "Link desactivado",
+    // After the separator of D-53, in lowercase as in the design.
+    linkActivo: "link activo",
+    linkSinEnviar: "link sin enviar",
+    linkDesactivado: "link desactivado",
     sinLink: "sin link (eres tú)",
     seFue: (fecha: string) => `Se fue el ${fecha}`,
     // Between the parts of a barber's line in D-53.
@@ -436,7 +439,10 @@ export const textos = {
     linkNuevo: "Lo creamos al guardar.",
     linkDueno: "No lo necesitas: ves toda la agenda desde tu cuenta.",
     linkActivoChip: "Activo",
+    linkSinEnviarChip: "Sin enviar",
     linkDesactivadoChip: "Desactivado",
+    linkEnviado: (fecha: string) => `Enviado el ${fecha}`,
+    linkSinEnviarAyuda: "Aún no se lo has enviado",
     servicios: "Servicios que hace",
     sinServicios:
       "Aún no tienes servicios activos. Los agregas en Más › Servicios.",
@@ -473,6 +479,75 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberActionErrorCode | "invalid", string>,
+    // D-56, a barber's private link (task 2.3). There is no "Enviar a …"
+    // button until emails arrive (task 5.2): "Compartir" opens WhatsApp or
+    // the email app of the phone.
+    link: {
+      titulo: (nombre: string) => `Link privado de ${nombre}`,
+      tituloCargando: "Link privado",
+      estadoDesactivado: "Link desactivado",
+      cargando: "Cargando el link…",
+      alcance: (nombre: string) =>
+        `Con este link ${nombre} ve su agenda del día y la semana, marca citas y bloquea sus horas. No ve totales, reportes ni a los demás barberos.`,
+      // An inactive barber takes no new blocks (spec).
+      alcanceInactivo: (nombre: string) =>
+        `Con este link ${nombre} ve su agenda del día y la semana y marca las citas que ya tenía. No ve totales, reportes ni a los demás barberos.`,
+      reemplaza: {
+        titulo: "Cada link nuevo reemplaza al anterior",
+        cuerpo:
+          "El anterior deja de funcionar. Guardamos el link de forma segura y no lo podemos volver a mostrar.",
+      },
+      inactivo: {
+        titulo: "Con su link solo atiende las citas que ya tenía",
+        cuerpo: "Está inactivo: no aparece al reservar ni recibe citas nuevas.",
+      },
+      desactivado: {
+        titulo: (nombre: string) => `${nombre} no puede entrar`,
+        cuerpo:
+          "Su link está desactivado. Crea uno nuevo y envíaselo cuando vuelva a necesitarlo.",
+      },
+      copiarNuevo: "Copiar link nuevo",
+      crearNuevo: "Crear link nuevo",
+      creando: "Creando el link…",
+      desactivar: "Desactivar link",
+      desactivarAyuda: (nombre: string) =>
+        `Úsalo si ${nombre} perdió el celular o se fue. Deja de funcionar al instante.`,
+      // Right after a new link: the only time it is shown.
+      nuevo: {
+        etiqueta: "Link nuevo",
+        titulo: "Este link solo se muestra ahora",
+        cuerpo: (nombre: string) =>
+          `Envíaselo a ${nombre} ya. Si sales de esta pantalla, tendrás que crear otro.`,
+        copiado: "Copiamos el link. Pégalo en el chat o en el correo.",
+        copiarOtraVez: "Copiar otra vez",
+        compartir: "Compartir",
+        compartirTitulo: "Tu agenda en Yapoin",
+        compartirTexto: (nombre: string) =>
+          `Hola, ${nombre}. Con este link ves tu agenda en Yapoin. No se lo pases a nadie.`,
+      },
+      confirmarNuevo: {
+        titulo: "¿Crear un link nuevo?",
+        cuerpo: (nombre: string) =>
+          `${nombre} deja de entrar con el que tiene. Tendrás que enviarle el nuevo.`,
+        si: "Sí, crear link nuevo",
+        no: "Cancelar",
+      },
+      confirmarDesactivar: {
+        titulo: (nombre: string) => `¿Desactivar el link de ${nombre}?`,
+        cuerpo: (nombre: string) =>
+          `${nombre} deja de entrar a su agenda al instante. Para que vuelva a entrar tendrás que crearle un link nuevo.`,
+        si: "Sí, desactivar link",
+        desactivando: "Desactivando…",
+        no: "Cancelar",
+      },
+      errores: {
+        owner_has_no_link:
+          "Tú no necesitas link: ves toda la agenda desde tu cuenta.",
+        not_found:
+          "No encontramos a este barbero. Vuelve a Barberos e intenta de nuevo.",
+        unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
+      } satisfies Record<BarberLinkErrorCode, string>,
+    },
   },
   // D-55, a barber's own hours (decision 8 of task 2.2).
   horario: {
