@@ -87,8 +87,12 @@ test("an owner shares the booking link from D-62", async ({
       .getByRole("navigation", { name: nav.etiqueta })
       .getByRole("link", { name: nav.compartir }),
   ).toHaveAttribute("aria-current", "page");
-  await expect(page.getByText(t.subtitulo)).toBeVisible();
-  await expect(page.getByText(t.bajada)).toBeVisible();
+  await expect(
+    page.getByText(t.subtitulo).filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(t.bajada).filter({ visible: true }),
+  ).toBeVisible();
   // The link also ends the message, so the card's is the exact match; D-14
   // may still be mounted and hidden with the same link.
   await expect(
@@ -99,7 +103,9 @@ test("an owner shares the booking link from D-62", async ({
   await expect(
     page.getByRole("img", { name: textos.ui.qr.etiqueta }),
   ).toBeVisible();
-  await expect(page.getByText(t.qrTitulo, { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(t.qrTitulo, { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
   // Next.js keeps the previous page mounted and hidden: only visible text.
   await expect(
     page.getByText(BARBERSHOP, { exact: true }).filter({ visible: true }),
@@ -107,26 +113,34 @@ test("an owner shares the booking link from D-62", async ({
   await expect(
     page.getByRole("heading", { level: 2, name: t.texto.titulo }),
   ).toBeVisible();
-  await expect(page.getByText(message, { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(message, { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: card.compartir }),
   ).toBeVisible();
   // The wizard left a barber ("Yo también corto"): no warning.
-  await expect(page.getByText(textos.asistente.listo.sinBarberos)).toHaveCount(
-    0,
-  );
+  await expect(
+    page
+      .getByText(textos.asistente.listo.sinBarberos)
+      .filter({ visible: true }),
+  ).toHaveCount(0);
   await checkScreen(page);
 
   if (test.info().project.name === "android") {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.getByRole("button", { name: card.copiar, exact: true }).click();
-    await expect(page.getByText(card.copiado)).toBeVisible();
+    await expect(
+      page.getByText(card.copiado).filter({ visible: true }),
+    ).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
       link,
     );
 
     await page.getByRole("button", { name: t.texto.copiar }).click();
-    await expect(page.getByText(t.texto.copiado)).toBeVisible();
+    await expect(
+      page.getByText(t.texto.copiado).filter({ visible: true }),
+    ).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
       message,
     );
