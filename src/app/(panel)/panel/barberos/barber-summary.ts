@@ -36,7 +36,7 @@ export function summarizeBarber(barber: SummarizedBarber): string {
 }
 
 // The Horario row of D-54: the barbershop's hours, or the barber's own week
-// ("Lun a vie 9:00 a. m. – 6:00 p. m."). The editor arrives with 2.2c.
+// ("Lun a vie 9:00 a. m. – 6:00 p. m."), edited in D-55.
 export function summarizeBarberHours(
   usesBarbershopHours: boolean,
   shifts: readonly WeeklyShift[],

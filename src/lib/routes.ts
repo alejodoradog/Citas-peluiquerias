@@ -24,5 +24,6 @@ export const routes = {
   panelBarbers: "/panel/barberos",
   panelBarberNew: "/panel/barberos/nuevo",
   panelBarberEdit: (id: string) => `/panel/barberos/${id}`,
+  panelBarberSchedule: (id: string) => `/panel/barberos/${id}/horario`,
   admin: "/admin",
 } as const;

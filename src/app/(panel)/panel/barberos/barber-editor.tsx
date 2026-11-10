@@ -192,10 +192,12 @@ export function BarberEditor({
             />
           </div>
           <List>
+            {/* D-55 needs a saved barber; a new one gets the barbershop's. */}
             <ListRow
               icon={<ClockIcon />}
               title={t.horario}
               subtitle={hoursSummary}
+              href={barber ? routes.panelBarberSchedule(barber.id) : undefined}
             />
             <ListRow
               icon={<LinkIcon />}

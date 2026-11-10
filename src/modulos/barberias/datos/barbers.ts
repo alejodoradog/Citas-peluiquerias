@@ -274,3 +274,29 @@ export async function setBarberServices(
   });
   return !error;
 }
+
+export type ScheduleWriteResult = "saved" | "overlap" | "failed";
+
+// Switches a barber between the barbershop's hours and their own, shifts
+// included, in one transaction (set_barber_schedule, security invoker: RLS
+// applies). 23P01 is the exclusion constraint of barber_schedules: two
+// shifts of a day overlap. P0002 (not one of the owner's barbers) and
+// shifts_invalid fail like anything else.
+export async function setBarberSchedule(
+  barberId: string,
+  usesBarbershopHours: boolean,
+  shifts: ReadonlyArray<{ weekday: number; start: string; end: string }>,
+): Promise<ScheduleWriteResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_barber_schedule", {
+    p_barber_id: barberId,
+    p_uses_barbershop_hours: usesBarbershopHours,
+    p_shifts: shifts.map(({ weekday, start, end }) => ({
+      weekday,
+      start,
+      end,
+    })),
+  });
+  if (!error) return "saved";
+  return error.code === "23P01" ? "overlap" : "failed";
+}
