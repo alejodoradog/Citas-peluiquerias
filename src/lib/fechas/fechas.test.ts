@@ -10,6 +10,8 @@ import {
 import {
   addDays,
   formatBogotaDate,
+  formatBogotaDayMonth,
+  formatWallClock,
   formatBogotaTime,
   fromBogota,
   getWeekday,
@@ -153,5 +155,30 @@ describe("now", () => {
     vi.setSystemTime(new Date("2026-11-03T05:00:00Z"));
 
     expect(now().toISOString()).toBe("2026-11-03T05:00:00.000Z");
+  });
+});
+
+describe("formatWallClock", () => {
+  it.each([
+    ["09:00", "9:00 a. m."],
+    ["09:00:00", "9:00 a. m."],
+    ["00:30", "12:30 a. m."],
+    ["12:00", "12:00 p. m."],
+    ["20:00", "8:00 p. m."],
+    ["21:45", "9:45 p. m."],
+  ])("reads %s as %s", (time, text) => {
+    expect(formatWallClock(time)).toBe(text);
+  });
+
+  it("rejects text that is not a time", () => {
+    expect(() => formatWallClock("9am")).toThrow(RangeError);
+  });
+});
+
+describe("formatBogotaDayMonth", () => {
+  it("writes the day and the month in Bogotá", () => {
+    expect(formatBogotaDayMonth(startOfBogotaDay("2026-11-24"))).toBe(
+      "24 de noviembre",
+    );
   });
 });

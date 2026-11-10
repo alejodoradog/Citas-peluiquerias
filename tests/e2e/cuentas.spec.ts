@@ -6,6 +6,7 @@ import {
 } from "../../src/lib/fechas/fechas";
 import { trialEndsOn } from "../../src/modulos/suscripciones/dominio/trial";
 import { textos } from "../../src/ui/textos";
+import { finishSetup } from "./helpers/asistente";
 import { expectAccessible, expectTouchTargets } from "./helpers/pantalla";
 import {
   createAccountWithoutProfile,
@@ -43,7 +44,8 @@ async function confirmEmail(page: Page, email: string) {
   await expect(page.getByText(t.ingreso.correoConfirmado.titulo)).toBeVisible();
 
   await signIn(page, email);
-  await expect(page).toHaveURL(/\/panel$/);
+  // A new barbershop has no services: the panel sends the owner to the wizard.
+  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
 }
 
 async function registerAndConfirm(
@@ -75,6 +77,7 @@ test("an owner signs up, confirms their email and sees the free trial running", 
   page,
 }) => {
   await registerAndConfirm(page, { email: uniqueEmail("registro") });
+  await finishSetup(page);
 
   await expect(
     page.getByRole("heading", { name: textos.panel.saludo("Carlos Pérez") }),
@@ -172,6 +175,7 @@ test("signing up with a taken email changes nothing and reveals nothing", async 
 }) => {
   const email = uniqueEmail("repetido");
   await registerAndConfirm(page, { email });
+  await finishSetup(page);
 
   const other = await browser.newPage();
   await register(other, { email, barbershop: "Otra Barbería" });
@@ -195,7 +199,7 @@ test("an owner signs out and signs back in", async ({ page }) => {
   await expect(page.getByText(t.errores.invalid_credentials)).toBeVisible();
 
   await signIn(page, email);
-  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
 });
 
 test("an owner recovers access by email", async ({ page }) => {
@@ -220,11 +224,11 @@ test("an owner recovers access by email", async ({ page }) => {
   await page.getByLabel(t.nuevaClave.campos.password).fill("clave-nueva-2");
   await page.getByLabel(t.nuevaClave.campos.confirmation).fill("clave-nueva-2");
   await page.getByRole("button", { name: t.nuevaClave.enviar }).click();
-  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
 
   await signOut(page);
   await signIn(page, email, "clave-nueva-2");
-  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
 });
 
 test("a signed-in owner cannot set a new password without the email link", async ({
@@ -273,7 +277,7 @@ test("the panel and the admin need the right account", async ({ page }) => {
 
   await registerAndConfirm(page, { email: uniqueEmail("dueno") });
   await page.goto("/admin");
-  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
 });
 
 test("a super admin lands on the platform panel", async ({ page }) => {
@@ -292,6 +296,7 @@ test("a super admin lands on the platform panel", async ({ page }) => {
 
 test("the owner's panel has its bottom bar", async ({ page }) => {
   await registerAndConfirm(page, { email: uniqueEmail("barra") });
+  await finishSetup(page);
   const nav = page.getByRole("navigation", {
     name: textos.ui.navegacion.etiqueta,
   });

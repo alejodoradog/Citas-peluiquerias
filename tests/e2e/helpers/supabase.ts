@@ -104,3 +104,67 @@ export async function latestEmailLink(
   }
   throw new Error(`No ${type} email arrived for ${email}`);
 }
+
+// An owner whose email is already confirmed, created the way sign-up creates
+// one (the same metadata, so the database trigger opens their barbershop).
+// Skips the confirmation email, which the Auth rate limits count.
+export async function createConfirmedOwner(
+  email: string,
+  password: string,
+  owner: { ownerName: string; barbershopName: string },
+): Promise<{ slug: string }> {
+  const slug = `prueba-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const { error } = await adminClient().auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      owner_name: owner.ownerName,
+      barbershop_name: owner.barbershopName,
+      barbershop_slug: slug,
+      phone: "+573001234567",
+    },
+  });
+  if (error) throw error;
+  return { slug };
+}
+
+// What the setup wizard saved for a barbershop, read past RLS.
+export async function setupSnapshot(slug: string) {
+  const admin = adminClient();
+  const { data: shop, error } = await admin
+    .from("barbershops")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  const [services, barbers, hours] = await Promise.all([
+    admin
+      .from("services")
+      .select("name, price_cop, duration_minutes")
+      .eq("barbershop_id", shop.id)
+      .order("name"),
+    admin
+      .from("barbers")
+      .select("display_name, email, is_owner, barber_services(service_id)")
+      .eq("barbershop_id", shop.id)
+      .order("sort_order"),
+    admin
+      .from("barbershop_hours")
+      .select("weekday")
+      .eq("barbershop_id", shop.id),
+  ]);
+  for (const result of [services, barbers, hours]) {
+    if (result.error) throw result.error;
+  }
+  return {
+    services: services.data ?? [],
+    barbers: (barbers.data ?? []).map((b) => ({
+      name: b.display_name,
+      email: b.email,
+      isOwner: b.is_owner,
+      services: b.barber_services.length,
+    })),
+    hourRows: hours.data?.length ?? 0,
+  };
+}

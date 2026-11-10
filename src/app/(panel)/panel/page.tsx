@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { formatBogotaDate, startOfBogotaDay } from "@/lib/fechas/fechas";
+import { routes } from "@/lib/routes";
+import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { AppShell } from "@/ui/app-shell";
 import { Notice } from "@/ui/notice";
@@ -23,6 +26,10 @@ export default function PanelPage() {
 
 async function OwnerHome() {
   const { name, barbershop } = await requireOwner();
+  // A barbershop without services has not finished the wizard (task 2.1).
+  if (await barbershopNeedsSetup(barbershop.id)) {
+    redirect(routes.setup);
+  }
   const trialEnd = formatBogotaDate(startOfBogotaDay(barbershop.expiresOn));
 
   return (

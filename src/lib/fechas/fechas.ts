@@ -82,3 +82,27 @@ export function formatBogotaDate(instant: Date): string {
 export function formatBogotaTime(instant: Date): string {
   return timeFormatter.format(instant);
 }
+
+const dayMonthFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
+
+// "24 de noviembre", as D-14 writes the end of the trial.
+export function formatBogotaDayMonth(instant: Date): string {
+  return dayMonthFormatter.format(instant);
+}
+
+// A wall clock time of a weekly schedule ("09:00" or "09:00:00") as people
+// read it: "9:00 a. m.", "8:30 p. m.", "12:00 m." stays "12:00 p. m.".
+// Intl puts a narrow no-break space before "a. m."; screens use a plain one.
+export function formatWallClock(time: string): string {
+  const match = /^(\d{2}):(\d{2})/.exec(time);
+  if (!match) throw new RangeError(`Invalid time: ${time}`);
+  const hours = Number(match[1]);
+  const minutes = match[2];
+  const suffix = hours < 12 ? "a. m." : "p. m.";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour12}:${minutes} ${suffix}`;
+}
