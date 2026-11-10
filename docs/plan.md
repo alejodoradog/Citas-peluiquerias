@@ -261,7 +261,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
-- [ ] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
+- [x] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
 - [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar.
