@@ -35,10 +35,19 @@ const CHECKS: ReadonlyArray<{ constraint: string } & BarberFieldError> = [
   },
 ];
 
+const UNIQUE_VIOLATION = "23505";
+
 // The field and code of a broken check, or null for any other error.
 export function toBarberFieldError(
   error: DatabaseError,
 ): BarberFieldError | null {
+  // One photo belongs to one barber (barbers_photo_path_key).
+  if (
+    error.code === UNIQUE_VIOLATION &&
+    error.message?.includes('"barbers_photo_path_key"')
+  ) {
+    return { field: "photo", code: "photo_invalid" };
+  }
   if (error.code !== CHECK_VIOLATION) return null;
   const check = CHECKS.find((c) =>
     error.message?.includes(`"${c.constraint}"`),
