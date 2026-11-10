@@ -8,8 +8,8 @@ import { requireReadyOwner } from "./ready-owner";
 
 const t = textos.panel;
 
-// A section whose screens arrive in a later task: Clientes (4.3), Compartir
-// (2.5) and Barberos (2.2b). Only owners who finished the wizard reach it.
+// A section whose screens arrive in a later task: Clientes (4.3). Only
+// owners who finished the wizard reach it.
 // It goes back to the agenda unless it says where else.
 export function ComingSoon({
   title,

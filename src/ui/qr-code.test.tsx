@@ -52,6 +52,14 @@ describe("QrCode", () => {
     expect(image).toHaveClass("bg-white", "border-line", "rounded-[0.75rem]");
   });
 
+  it("drops the border inside a grey block (D-62)", () => {
+    render(<QrCode value={LINK} label="QR" size={200} bordered={false} />);
+    const image = screen.getByRole("img", { name: "QR" });
+    expect(image).not.toHaveClass("border");
+    expect(image).not.toHaveClass("border-line");
+    expect(image).toHaveClass("bg-white", "rounded-[0.75rem]");
+  });
+
   it("takes another size", () => {
     render(<QrCode value={LINK} label="QR" size={200} />);
     expect(screen.getByRole("img", { name: "QR" })).toHaveAttribute(

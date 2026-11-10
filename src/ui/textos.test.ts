@@ -35,6 +35,17 @@ describe("textos", () => {
     }
   });
 
+  it("writes the D-62 message like the design, with the link last", () => {
+    expect(
+      textos.compartir.mensaje(
+        "Barbería La Esquina",
+        "yapoin.com/barberia-la-esquina",
+      ),
+    ).toBe(
+      "¡Ya puedes reservar tu cita en Barbería La Esquina sin escribirnos! Elige servicio, barbero y hora aquí: yapoin.com/barberia-la-esquina",
+    );
+  });
+
   it("says how long the email links last", () => {
     expect(textos.cuentas.registro.revisaCorreo.avisoCuerpo).toContain(
       "24 horas",

@@ -52,7 +52,15 @@ export const textos = {
     compartir: {
       copiado: "Copiamos el link. Pégalo donde lo quieras compartir.",
     },
+    // The booking link card of D-14 and D-62.
+    linkReservas: {
+      copiar: "Copiar",
+      copiado: "Link copiado",
+      compartir: "Compartir",
+      compartirTexto: (barberia: string) => `Reserva tu cita en ${barberia}`,
+    },
     qr: {
+      etiqueta: "Código QR del link de reservas",
       falloDescarga:
         "No pudimos descargar el QR. Intenta de nuevo o toma una captura de pantalla.",
     },
@@ -196,7 +204,6 @@ export const textos = {
       "Aquí vas a ver tu agenda del día. Mientras tanto, comparte tu link con tus clientes.",
     secciones: {
       clientes: "Clientes",
-      compartir: "Compartir tu link",
       mas: "Más",
     },
     pronto: {
@@ -281,11 +288,6 @@ export const textos = {
         `Tu prueba gratis va hasta el ${fecha}. Comparte este link con tus clientes.`,
       sinBarberos: "Agrega al menos un barbero para recibir citas.",
       link: "Link de reservas",
-      copiar: "Copiar",
-      copiado: "Link copiado",
-      compartir: "Compartir",
-      compartirTexto: (barberia: string) => `Reserva tu cita en ${barberia}`,
-      qr: "Código QR del link de reservas",
       descargarQr: "Descargar QR para imprimir",
       agenda: "Ir a mi agenda",
     },
@@ -341,6 +343,27 @@ export const textos = {
     pronto: "Pronto",
     correo: "Correo de ingreso",
     volver: "Volver a Más",
+  },
+  // D-62. The link card's buttons are in ui.linkReservas.
+  compartir: {
+    titulo: "Compartir",
+    subtitulo: "Tu link de reservas",
+    cargando: "Cargando tu link…",
+    bajada:
+      "Ponlo en tu Instagram, en tu estado de WhatsApp y en el espejo de la barbería.",
+    qrTitulo: "Reserva tu cita aquí",
+    descargarQr: "Descargar QR",
+    afiche: "Afiche",
+    falloAfiche:
+      "No pudimos crear el afiche. Intenta de nuevo o toma una captura de pantalla.",
+    texto: {
+      titulo: "Texto listo para enviar",
+      copiar: "Copiar texto",
+      copiado: "Texto copiado",
+    },
+    // The link goes without the protocol, as the design writes it.
+    mensaje: (barberia: string, link: string) =>
+      `¡Ya puedes reservar tu cita en ${barberia} sin escribirnos! Elige servicio, barbero y hora aquí: ${link}`,
   },
   servicios: {
     titulo: "Servicios",
