@@ -149,7 +149,7 @@ set local role service_role;
 select lives_ok(
   $$insert into public.barbers (barbershop_id, display_name, link_token_hash, photo_path)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'Desde el servidor', repeat('f', 64),
-            'aaaaaaaa-0000-0000-0000-000000000000/barbers/77777777-7777-4777-8777-777777777777.webp')$$,
+            'aaaaaaaa-0000-0000-0000-000000000000/barbers/abcdef01-2345-4678-9abc-def012345678.webp')$$,
   'service_role writes a barber with a photo'
 );
 
