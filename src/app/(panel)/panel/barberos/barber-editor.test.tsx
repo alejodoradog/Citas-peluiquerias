@@ -36,7 +36,8 @@ const kevin: EditableBarber = {
   serviceIds: [BARBA],
   active: true,
   isOwner: false,
-  linkActive: true,
+  linkState: "active",
+  linkSentOn: "3 de noviembre",
   inactiveSince: null,
 };
 
@@ -216,7 +217,13 @@ describe("BarberEditor", () => {
     render(
       <BarberEditor
         action={answer(() => ({ status: "idle" }))}
-        barber={{ ...kevin, displayName: "Mario", isOwner: true }}
+        barber={{
+          ...kevin,
+          displayName: "Mario",
+          isOwner: true,
+          linkState: "owner",
+          linkSentOn: null,
+        }}
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
@@ -227,6 +234,53 @@ describe("BarberEditor", () => {
       screen.queryByRole("button", { name: t.desactivar("Mario") }),
     ).not.toBeInTheDocument();
     expect(screen.getByText(t.linkDueno)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: new RegExp(`^${t.linkPrivado}`) }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens D-56 from the link row, saying when it was sent", () => {
+    render(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={kevin}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+      />,
+    );
+    const row = screen.getByRole("link", {
+      name: new RegExp(`^${t.linkPrivado}`),
+    });
+    expect(row).toHaveAttribute("href", `/panel/barberos/${kevin.id}/link`);
+    expect(row).toHaveTextContent(t.linkEnviado("3 de noviembre"));
+    expect(row).toHaveTextContent(t.linkActivoChip);
+  });
+
+  it("says when a link was never sent, or is off", () => {
+    const { rerender } = render(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={{ ...kevin, linkState: "unsent", linkSentOn: null }}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+      />,
+    );
+    const row = () =>
+      screen.getByRole("link", { name: new RegExp(`^${t.linkPrivado}`) });
+    expect(row()).toHaveTextContent(t.linkSinEnviarAyuda);
+    expect(row()).toHaveTextContent(t.linkSinEnviarChip);
+    rerender(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={{ ...kevin, linkState: "off" }}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+      />,
+    );
+    expect(row()).toHaveTextContent(t.linkDesactivadoChip);
   });
 
   it("focuses the email when the notices have nowhere to go", async () => {

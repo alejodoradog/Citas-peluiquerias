@@ -8,6 +8,7 @@ import type {
   BarberState,
   ImageUploadTicket,
 } from "@/modulos/barberias/acciones/barbers";
+import type { BarberLinkState } from "@/modulos/barberias/dominio/barber-link";
 import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { Chip } from "@/ui/chip";
@@ -35,7 +36,9 @@ export type EditableBarber = {
   serviceIds: string[];
   active: boolean;
   isOwner: boolean;
-  linkActive: boolean;
+  linkState: BarberLinkState;
+  // "3 de noviembre", when the working link was sent (task 2.3).
+  linkSentOn: string | null;
   // "2 de noviembre" when inactive.
   inactiveSince: string | null;
 };
@@ -199,20 +202,25 @@ export function BarberEditor({
               subtitle={hoursSummary}
               href={barber ? routes.panelBarberSchedule(barber.id) : undefined}
             />
+            {/* D-56 needs a saved barber who is not the owner. */}
             <ListRow
               icon={<LinkIcon />}
               title={t.linkPrivado}
-              subtitle={
-                !barber ? t.linkNuevo : barber.isOwner ? t.linkDueno : undefined
-              }
+              subtitle={linkSubtitle(barber)}
               trailing={
-                barber && !barber.isOwner ? (
-                  barber.linkActive ? (
-                    <Chip tone="success">{t.linkActivoChip}</Chip>
-                  ) : (
-                    <Chip tone="neutral">{t.linkDesactivadoChip}</Chip>
-                  )
-                ) : undefined
+                barber
+                  ? {
+                      owner: undefined,
+                      unsent: <Chip tone="warning">{t.linkSinEnviarChip}</Chip>,
+                      active: <Chip tone="success">{t.linkActivoChip}</Chip>,
+                      off: <Chip tone="neutral">{t.linkDesactivadoChip}</Chip>,
+                    }[barber.linkState]
+                  : undefined
+              }
+              href={
+                barber && barber.linkState !== "owner"
+                  ? routes.panelBarberLink(barber.id)
+                  : undefined
               }
             />
           </List>
@@ -316,4 +324,19 @@ export function BarberEditor({
       ) : null}
     </>
   );
+}
+
+// The line under "Link privado" in D-54.
+function linkSubtitle(barber: EditableBarber | null): string | undefined {
+  if (!barber) return t.linkNuevo;
+  switch (barber.linkState) {
+    case "owner":
+      return t.linkDueno;
+    case "unsent":
+      return t.linkSinEnviarAyuda;
+    case "active":
+      return barber.linkSentOn ? t.linkEnviado(barber.linkSentOn) : undefined;
+    case "off":
+      return undefined;
+  }
 }

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
 // Local Supabase only: Mailpit catches every email the local Auth sends.
@@ -197,4 +198,65 @@ export async function barberPhotos(slug: string, barberName: string) {
     ),
     photoPath: barber.data.photo_path as string | null,
   };
+}
+
+async function barbershopIdOf(slug: string): Promise<string> {
+  const { data, error } = await adminClient()
+    .from("barbershops")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+// A barber's id and private link as the database keeps them, read past RLS
+// (task 2.3): the hash, whether it works and when it was issued.
+export async function barberLinkSnapshot(slug: string, barberName: string) {
+  const { data, error } = await adminClient()
+    .from("barbers")
+    .select("id, link_token_hash, link_active, link_issued_at")
+    .eq("barbershop_id", await barbershopIdOf(slug))
+    .eq("display_name", barberName)
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id as string,
+    hash: data.link_token_hash as string,
+    active: data.link_active as boolean,
+    issuedAt: data.link_issued_at as string | null,
+  };
+}
+
+// A barber added straight to a barbershop, past the app, so a test has a
+// barber of another barbershop to aim at. Its token is thrown away.
+export async function insertBarber(
+  slug: string,
+  barberName: string,
+): Promise<string> {
+  const { data, error } = await adminClient()
+    .from("barbers")
+    .insert({
+      barbershop_id: await barbershopIdOf(slug),
+      display_name: barberName,
+      link_token_hash: randomBytes(32).toString("hex"),
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+// Deactivates or brings back a barber past the app; the trigger stamps when.
+export async function setBarberActive(
+  slug: string,
+  barberName: string,
+  active: boolean,
+) {
+  const { error } = await adminClient()
+    .from("barbers")
+    .update({ active })
+    .eq("barbershop_id", await barbershopIdOf(slug))
+    .eq("display_name", barberName);
+  if (error) throw error;
 }

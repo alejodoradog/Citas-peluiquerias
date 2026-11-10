@@ -1,7 +1,13 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CopyButton } from "./copy-button";
+import { CopyButton, useCopy } from "./copy-button";
 import { textos } from "./textos";
 
 const LINK = "yapoin.co/barberia-la-esquina";
@@ -78,5 +84,76 @@ describe("CopyButton", () => {
     expect(screen.getByRole("button", { name: "Copiar" })).toHaveClass(
       "bg-brand",
     );
+  });
+});
+
+// Safari copies only during the tap: for text that comes from the server,
+// the clipboard gets a promise of it at once (ClipboardItem).
+describe("useCopy().copyFrom", () => {
+  class FakeClipboardItem {
+    constructor(readonly items: Record<string, Promise<Blob>>) {}
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("hands the clipboard a promise of the text in the same tap", async () => {
+    vi.stubGlobal("ClipboardItem", FakeClipboardItem);
+    const written: FakeClipboardItem[] = [];
+    const write = vi.fn(async (items: FakeClipboardItem[]) => {
+      written.push(...items);
+      await items[0]!.items["text/plain"];
+    });
+    Object.defineProperty(navigator, "clipboard", {
+      value: { write, writeText: vi.fn() },
+      configurable: true,
+    });
+    let resolve: (text: string) => void = () => {};
+    const text = new Promise<string | null>((r) => (resolve = r));
+    const { result } = renderHook(() => useCopy());
+    let done: Promise<void> = Promise.resolve();
+    act(() => {
+      done = result.current.copyFrom(text);
+    });
+    // Called before the text exists.
+    expect(write).toHaveBeenCalledTimes(1);
+    resolve(LINK);
+    await act(() => done);
+    const blob = await written[0]!.items["text/plain"]!;
+    expect(await blob.text()).toBe(LINK);
+    expect(result.current.result).toBe("copied");
+  });
+
+  it("falls back to writing the text once it arrives", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+    const { result } = renderHook(() => useCopy());
+    await act(() => result.current.copyFrom(Promise.resolve(LINK)));
+    expect(writeText).toHaveBeenCalledWith(LINK);
+    expect(result.current.result).toBe("copied");
+  });
+
+  it("says nothing when there is no text to copy", async () => {
+    vi.stubGlobal("ClipboardItem", FakeClipboardItem);
+    const write = vi.fn(async (items: FakeClipboardItem[]) => {
+      await items[0]!.items["text/plain"];
+    });
+    const writeText = vi.fn();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { write, writeText },
+      configurable: true,
+    });
+    const { result } = renderHook(() => useCopy());
+    await act(() => result.current.copyFrom(Promise.resolve(null)));
+    expect(writeText).not.toHaveBeenCalled();
+    expect(result.current.result).toBe("idle");
+  });
+
+  it("asks to copy by hand when every way fails", async () => {
+    stubClipboard(vi.fn().mockRejectedValue(new Error("NotAllowedError")));
+    const { result } = renderHook(() => useCopy());
+    await act(() => result.current.copyFrom(Promise.resolve(LINK)));
+    expect(result.current.result).toBe("failed");
   });
 });

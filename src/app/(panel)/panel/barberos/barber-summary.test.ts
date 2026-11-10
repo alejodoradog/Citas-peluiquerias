@@ -5,6 +5,7 @@ const active = {
   is_owner: false,
   uses_barbershop_hours: true,
   link_active: true,
+  link_issued_at: "2026-11-03T15:00:00+00:00",
   deactivated_at: null,
   service_ids: ["a", "b", "c"],
 };
@@ -12,7 +13,7 @@ const active = {
 describe("summarizeBarber", () => {
   it("sums up an active barber", () => {
     expect(summarizeBarber(active)).toBe(
-      "Horario de la barbería · 3 servicios · Link activo",
+      "Horario de la barbería · 3 servicios · link activo",
     );
   });
 
@@ -24,7 +25,13 @@ describe("summarizeBarber", () => {
         link_active: false,
         service_ids: ["a"],
       }),
-    ).toBe("Horario propio · 1 servicio · Link desactivado");
+    ).toBe("Horario propio · 1 servicio · link desactivado");
+  });
+
+  it("says when the link was never sent", () => {
+    expect(summarizeBarber({ ...active, link_issued_at: null })).toBe(
+      "Horario de la barbería · 3 servicios · link sin enviar",
+    );
   });
 
   it("tells the owner they have no link", () => {
@@ -40,7 +47,7 @@ describe("summarizeBarber", () => {
         // 9:00 p. m. of November 2 in Bogotá.
         deactivated_at: "2026-11-03T02:00:00+00:00",
       }),
-    ).toBe("Se fue el 2 de noviembre · Link activo");
+    ).toBe("Se fue el 2 de noviembre · link activo");
   });
 });
 

@@ -20,7 +20,41 @@ export function useCopy() {
       setResult("failed");
     }
   }
-  return { result, copy, reset: () => setResult("idle") };
+  // For text that does not exist yet when the person taps, such as a link the
+  // server makes (D-56). Safari lets a page write the clipboard only during
+  // the tap, so the clipboard gets a promise of the text right away; where
+  // that is not supported, the text is written once it arrives. Null means
+  // there is nothing to copy (the caller shows why) and says nothing here.
+  async function copyFrom(text: Promise<string | null>) {
+    if (
+      typeof ClipboardItem === "function" &&
+      typeof navigator.clipboard?.write === "function"
+    ) {
+      const blob = text.then((value) => {
+        if (value === null) throw new Error("nothing to copy");
+        return new Blob([value], { type: "text/plain" });
+      });
+      // Handled below through `text`; this only keeps the rejection quiet.
+      blob.catch(() => {});
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "text/plain": blob }),
+        ]);
+        setResult("copied");
+        return;
+      } catch {
+        // Falls through to writing the text.
+      }
+    }
+    const value = await text.catch(() => null);
+    if (value === null) {
+      setResult("idle");
+      return;
+    }
+    await copy(value);
+  }
+
+  return { result, copy, copyFrom, reset: () => setResult("idle") };
 }
 
 // What happened after copying. The live region is always on the page, so

@@ -12,7 +12,7 @@ import { toBarberFieldError, type BarberFormField } from "./barber-errors";
 // out. link_token_hash is never read: sessions cannot select it anyway.
 
 const BARBER_COLUMNS =
-  "id, display_name, photo_path, email, email_notifications, active, deactivated_at, is_owner, uses_barbershop_hours, link_active, sort_order";
+  "id, display_name, photo_path, email, email_notifications, active, deactivated_at, is_owner, uses_barbershop_hours, link_active, link_issued_at, sort_order";
 
 export type BarberRow = {
   id: string;
@@ -25,6 +25,8 @@ export type BarberRow = {
   is_owner: boolean;
   uses_barbershop_hours: boolean;
   link_active: boolean;
+  // When the owner last issued a new link; null if never (task 2.3).
+  link_issued_at: string | null;
   sort_order: number;
   // The active services they do. An inactive service keeps its pairs for
   // when it comes back (set_barber_services), but does not count here.
@@ -299,4 +301,42 @@ export async function setBarberSchedule(
   });
   if (!error) return "saved";
   return error.code === "23P01" ? "overlap" : "failed";
+}
+
+// D-56, a new link: the hash of a token just made replaces the old one and
+// turns the link on, in one statement, so the old token stops working the
+// moment the new one exists. Never the owner's barber (the check
+// barbers_owner_has_no_link refuses it too). The trigger guard_barber_link
+// stamps link_issued_at. Zero rows: not one of this barbershop's barbers.
+export async function writeBarberLinkHash(
+  barbershopId: string,
+  id: string,
+  hash: string,
+): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("barbers")
+    .update({ link_token_hash: hash, link_active: true })
+    .eq("barbershop_id", barbershopId)
+    .eq("id", id)
+    .eq("is_owner", false)
+    .select("id");
+  return !error && data.length === 1;
+}
+
+// D-56, "Desactivar link". The hash stays, and the trigger refuses to turn
+// the same one on again: only a new token brings the link back.
+export async function turnOffBarberLinkRow(
+  barbershopId: string,
+  id: string,
+): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("barbers")
+    .update({ link_active: false })
+    .eq("barbershop_id", barbershopId)
+    .eq("id", id)
+    .eq("is_owner", false)
+    .select("id");
+  return !error && data.length === 1;
 }
