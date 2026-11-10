@@ -100,7 +100,11 @@ async function More() {
             href={routes.panelShopHours}
           />
           <ListRow icon={<CalendarIcon />} title={t.festivos} trailing={soon} />
-          <ListRow icon={<SlidersIcon />} title={t.politicas} trailing={soon} />
+          <ListRow
+            icon={<SlidersIcon />}
+            title={t.politicas}
+            href={routes.panelPolicies}
+          />
           <ListRow
             icon={<LinkIcon />}
             title={t.link}

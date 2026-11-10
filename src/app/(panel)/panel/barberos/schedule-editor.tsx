@@ -18,9 +18,10 @@ import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
 import { Notice } from "@/ui/notice";
 import { Switch } from "@/ui/switch";
 import { textos } from "@/ui/textos";
+import { useRestoredControls } from "@/ui/restored-controls";
 import { TopBar } from "@/ui/top-bar";
 import { summarizeHours } from "../configurar/hours-summary";
-import { WeekEditor, useRestoredControls } from "../week-editor";
+import { WeekEditor } from "../week-editor";
 
 const t = textos.horario;
 

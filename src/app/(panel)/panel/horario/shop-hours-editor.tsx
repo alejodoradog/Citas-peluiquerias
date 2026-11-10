@@ -20,8 +20,9 @@ import { CalendarIcon } from "@/ui/icons";
 import { List, ListRow } from "@/ui/list";
 import { Notice } from "@/ui/notice";
 import { textos } from "@/ui/textos";
+import { useRestoredControls } from "@/ui/restored-controls";
 import { TopBar } from "@/ui/top-bar";
-import { WeekEditor, useRestoredControls } from "../week-editor";
+import { WeekEditor } from "../week-editor";
 
 const t = textos.horarioBarberia;
 

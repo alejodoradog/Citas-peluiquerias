@@ -439,3 +439,73 @@ test("D-58 matches the design", async ({ page }) => {
   await attachSideBySide(page, design, "D-58");
   await design.close();
 });
+
+test("D-60 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  await signInReadyOwner(page, "fidelidad-politicas");
+  await page.goto("/panel/reservas");
+  const p = textos.politicas;
+  await expect(
+    page.getByRole("heading", { level: 1, name: p.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D60-Politicas.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Reservas y cancelaciones", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  // A native select instead of the design's button with a sheet
+  // (docs/tareas/2.4-configuracion.md); it is drawn the same.
+  await compare(
+    "selector",
+    page.getByRole("combobox", { name: p.anticipacion }),
+    design.locator("#po1"),
+    ["height", "border-radius", "background-color", "font-size", "color"],
+  );
+  await compare(
+    "etiqueta",
+    page.getByText(p.anticipacion, { exact: true }),
+    design.getByText("Anticipación mínima para reservar", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "ayuda",
+    page.getByText(p.anticipacionAyuda, { exact: true }),
+    design.getByText("Nadie puede reservar para dentro de menos tiempo.", {
+      exact: true,
+    }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "dato fijo",
+    page.getByText(p.ventanaValor(30), { exact: true }),
+    design.getByText("30 días hacia adelante", { exact: true }),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "aviso",
+    page.getByRole("status").filter({ hasText: p.siempre }),
+    design.locator('[role="status"]'),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "título del aviso",
+    page.getByText(p.siempre, { exact: true }),
+    design.getByText("Tú siempre puedes cancelar o cambiar", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: p.guardar, exact: true }),
+    design.getByRole("link", { name: "Guardar", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-60");
+  await design.close();
+});

@@ -3,6 +3,7 @@ import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-e
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
@@ -12,6 +13,18 @@ import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
 import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
+
+// "1 hora", "2 horas", "1 día", "15 minutos": a span of time, from minutes,
+// in the largest whole unit (D-60).
+function duracion(minutos: number): string {
+  const [cantidad, una, varias] =
+    minutos % 1440 === 0
+      ? [minutos / 1440, "día", "días"]
+      : minutos % 60 === 0
+        ? [minutos / 60, "hora", "horas"]
+        : [minutos, "minuto", "minutos"];
+  return `${cantidad} ${cantidad === 1 ? una : varias}`;
+}
 
 // Error copy lives with each module and is keyed by the codes its actions
 // return (decision 0005), plus "invalid" for anything a schema did not name.
@@ -650,6 +663,34 @@ export const textos = {
       unknown: "No pudimos guardar el horario. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ShopHoursActionErrorCode | "invalid", string>,
+  },
+  // D-60.
+  politicas: {
+    titulo: "Reservas y cancelaciones",
+    cargando: "Cargando…",
+    anticipacion: "Anticipación mínima para reservar",
+    anticipacionAyuda: "Nadie puede reservar para dentro de menos tiempo.",
+    // An option of the select, from minutes: "1 hora antes".
+    anticipacionOpcion: (minutos: number) =>
+      minutos === 0 ? "Sin anticipación" : `${duracion(minutos)} antes`,
+    ventana: "Hasta cuándo pueden reservar",
+    ventanaValor: (dias: number) => `${dias} días hacia adelante`,
+    cancelar: "Pueden cancelar o cambiar hasta",
+    cancelarAyuda:
+      "Después, el link del correo ya no lo permite y les mostramos tu WhatsApp.",
+    // An option of the select, from hours: "2 horas antes".
+    cancelarOpcion: (horas: number) =>
+      horas === 0 ? "La hora de la cita" : `${duracion(horas * 60)} antes`,
+    siempre: "Tú siempre puedes cancelar o cambiar",
+    siempreDetalle: "Le avisamos al cliente por correo.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      min_booking_notice_invalid: "Elige una de las opciones de la lista.",
+      cancellation_notice_invalid: "Elige una de las opciones de la lista.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<PoliciesActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

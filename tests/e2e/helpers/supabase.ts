@@ -260,3 +260,34 @@ export async function setBarberActive(
     .eq("display_name", barberName);
   if (error) throw error;
 }
+
+// D-60's two columns of a barbershop, read or written past RLS.
+export async function policiesSnapshot(slug: string) {
+  const { data, error } = await adminClient()
+    .from("barbershops")
+    .select("min_booking_notice_minutes, cancellation_notice_hours")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  return {
+    minBookingNoticeMinutes: data.min_booking_notice_minutes as number,
+    cancellationNoticeHours: data.cancellation_notice_hours as number,
+  };
+}
+
+export async function setPolicies(
+  slug: string,
+  policies: {
+    minBookingNoticeMinutes: number;
+    cancellationNoticeHours: number;
+  },
+) {
+  const { error } = await adminClient()
+    .from("barbershops")
+    .update({
+      min_booking_notice_minutes: policies.minBookingNoticeMinutes,
+      cancellation_notice_hours: policies.cancellationNoticeHours,
+    })
+    .eq("slug", slug);
+  if (error) throw error;
+}
