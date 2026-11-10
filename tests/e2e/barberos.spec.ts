@@ -147,7 +147,9 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   // D-54, edit: the saved photo shows; a new one replaces it and the old file
   // is deleted.
   await openBarber(page, "Kevin");
-  await expect(page.locator("main img")).toHaveAttribute("src", storagePhoto);
+  await expect(
+    page.locator("main img").filter({ visible: true }),
+  ).toHaveAttribute("src", storagePhoto);
   await expect(
     page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
   ).toHaveValue("kevin@correo.com");
@@ -170,7 +172,9 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(
     page.getByLabel(t.foto.agregar).filter({ visible: true }),
   ).toBeAttached(FIRST_VISIT);
-  await expect(page.locator("main img")).toHaveCount(0);
+  await expect(page.locator("main img").filter({ visible: true })).toHaveCount(
+    0,
+  );
   await expect
     .poll(async () => (await barberPhotos(slug, "Kevin")).objects)
     .toEqual([]);
