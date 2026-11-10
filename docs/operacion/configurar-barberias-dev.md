@@ -59,7 +59,9 @@ Repite el `db push --remote` cada vez que se fusione un PR con migraciones nueva
 - **Nombre:** `SUPABASE_DEV_DB_URL`.
 - **Valor:** en Supabase → proyecto `barberias-dev` → **Connect** → **Session pooler**, la cadena `postgresql://postgres.TU_REF:[YOUR-PASSWORD]@…pooler.supabase.com:5432/postgres`, con la contraseña de la base de datos en lugar de `[YOUR-PASSWORD]`.
 
-Esa cadena solo abre `barberias-dev`: nunca sirve para producción. Mientras el secreto no exista, el workflow se salta con un aviso y el `db push --remote` sigue siendo a mano. La primera corrida con el secreto confirma que la CLI 3 acepta `db push --db-url`.
+Esa cadena solo abre `barberias-dev`: nunca sirve para producción. Mientras el secreto no exista, el workflow se salta con un aviso y el `db push --remote` sigue siendo a mano.
+
+**Estado (2026-11-09):** el secreto existe y el workflow aplicó las migraciones del Hito 1. Si la contraseña de la cadena está mal, el paso falla con `password authentication failed (SQLSTATE 28P01)`. Para arreglarlo, se crea una contraseña nueva de la base de datos, solo con letras y números, se actualiza el secreto y se usa **Re-run failed jobs**. Si la contraseña tiene símbolos, la cadena se rompe: hay que cambiar cada símbolo por su código (por ejemplo `@` por `%40`) o no usarlos.
 
 ## 3. Auth en `barberias-dev`
 
@@ -80,6 +82,8 @@ En Supabase → **Authentication**:
 - **Confirmar correo funciona:** el link confirma el correo y lleva a la Site URL. Luego se entra por `/ingresar` con el correo y la contraseña.
 - **Recuperar la contraseña no funciona en las vistas previas:** el link no crea la sesión que necesita `/nueva-clave`. Se prueba en local (Mailpit) hasta la 5.2.
 - En local y en CI no cambia nada: Supabase local usa las plantillas del repositorio (`supabase/config.toml`).
+
+**Estado observado (2026-11-09):** Auth de `barberias-dev` ya envía por un SMTP propio con Amazon SES, que sigue en modo de prueba en la región `us-east-2`. En ese modo, SES solo entrega a correos verificados uno por uno: con cualquier otro correo, el registro falla con `554 Email address is not verified` y la pantalla muestra "No pudimos completar la acción". Mientras tanto, para probar el registro hay que verificar el correo de prueba en **SES → Identities**. Los links de los correos apuntan a `https://yapoin.com`, que ya sirve esta misma app en Vercel. La decisión 0007 pide SES en `us-east-1`, así que está pendiente confirmar la región con el fundador.
 
 **Límite mientras no haya remitente propio:** el correo de prueba de Supabase solo envía a direcciones del equipo del proyecto, y unos 2 correos por hora ([documentación](https://supabase.com/docs/guides/auth/auth-smtp)). Para probar el registro en una vista previa, usa un correo de ese equipo. Con otro correo, Supabase rechaza el envío ("Email address not authorized") y la pantalla muestra "No pudimos completar la acción". Esto se resuelve al configurar Amazon SES (tarea 5.2), y entonces hay que subir también el límite de envíos de Auth, que por defecto es de 30 correos por hora.
 
