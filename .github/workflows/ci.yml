@@ -57,7 +57,8 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Up to three browser install tries of 8 minutes, plus the tests.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -74,13 +75,19 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      # The system packages come from apt, which is sometimes very slow: each
-      # try gets 8 minutes and a second try before the job gives up.
+      # The system packages come from apt, which is sometimes very slow. Each
+      # try gets 8 minutes; a try that times out leaves apt running, so it is
+      # stopped and its lock released before the next one.
       - name: Install the browsers
         run: |
-          for try in 1 2; do
-            timeout 480 pnpm exec playwright install --with-deps chromium webkit && exit 0
+          for try in 1 2 3; do
+            if timeout -k 15 480 pnpm exec playwright install --with-deps chromium webkit; then
+              exit 0
+            fi
             echo "::warning::Browser install try $try did not finish"
+            sudo pkill -9 -f 'apt-get|dpkg' || true
+            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock
+            sudo dpkg --configure -a || true
           done
           exit 1
       - run: pnpm test:e2e
