@@ -161,6 +161,7 @@ select is(
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
     'public.change_appointment_services:authenticated',
+    'public.complete_barbershop_setup:authenticated',
     'public.create_appointment:authenticated',
     'public.create_barbershop:authenticated'
   ],
