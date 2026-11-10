@@ -2,6 +2,8 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { textos } from "../../src/ui/textos";
+import { finishSetup } from "./helpers/asistente";
+import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
 
 // Task 2.0: the app against the design (docs/diseno, copied from Claude
 // Design on 2026-11-09) at 390 × 844. Measured styles, with 1 px of slack,
@@ -223,5 +225,130 @@ test("D-05 matches the design", async ({ page }) => {
   );
 
   await attachSideBySide(page, design, "D-05");
+  await design.close();
+});
+
+test("D-62 matches the design", async ({ page }) => {
+  // The wizard first, so the owner reaches the panel.
+  test.setTimeout(120_000);
+  const email = uniqueEmail("fidelidad-compartir");
+  const password = "clave-segura-1";
+  const { slug } = await createConfirmedOwner(email, password, {
+    ownerName: "Carlos Pérez",
+    barbershopName: "Barbería La Esquina",
+  });
+  await page.goto("/ingresar");
+  await page
+    .getByRole("textbox", { name: textos.cuentas.ingreso.campos.email })
+    .fill(email);
+  await page
+    .getByLabel(textos.cuentas.ingreso.campos.password)
+    .filter({ visible: true })
+    .fill(password);
+  await page
+    .getByRole("button", { name: textos.cuentas.ingreso.enviar })
+    .click();
+  await finishSetup(page);
+  await page.goto("/panel/compartir");
+  const c = textos.compartir;
+  await expect(
+    page.getByRole("heading", { level: 1, name: c.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D62-Compartir.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.locator("x-dc > div > div").first().locator("span").first(),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "subtítulo de la barra",
+    page.getByText(c.subtitulo, { exact: true }),
+    design.getByText("Tu link de reservas", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "bajada",
+    page.getByText(c.bajada),
+    design.getByText("Ponlo en tu Instagram"),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "link",
+    page.getByText(`yapoin.com/${slug}`, { exact: true }),
+    design.locator("strong").first(),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", {
+      name: textos.ui.linkReservas.copiar,
+      exact: true,
+    }),
+    design.getByRole("button", { name: "Copiar", exact: true }),
+    [
+      "height",
+      "border-radius",
+      "background-color",
+      "color",
+      "font-size",
+      "font-weight",
+    ],
+  );
+  await compare(
+    "botón secundario",
+    page.getByRole("button", { name: c.afiche }),
+    design.getByRole("button", { name: "Afiche" }),
+    [
+      "height",
+      "border-radius",
+      "background-color",
+      "color",
+      "font-size",
+      "font-weight",
+    ],
+  );
+  await compare(
+    "bloque del QR",
+    page.getByRole("img", { name: textos.ui.qr.etiqueta }).locator(".."),
+    design.locator('[role="img"]').locator(".."),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "QR",
+    page.getByRole("img", { name: textos.ui.qr.etiqueta }),
+    design.locator('[role="img"]'),
+    ["height", "border-radius", "background-color"],
+  );
+  await compare(
+    "leyenda del QR",
+    page.getByText(c.qrTitulo, { exact: true }),
+    design.getByText("Reserva tu cita aquí", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "título del texto",
+    page.getByRole("heading", { level: 2, name: c.texto.titulo }),
+    design.getByText("Texto listo para enviar", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "texto listo",
+    page.getByText(c.mensaje("Barbería La Esquina", `yapoin.com/${slug}`)),
+    design.getByText("¡Ya puedes reservar tu cita"),
+    ["border-radius", "background-color", "color", "font-size", "line-height"],
+  );
+  await compare(
+    "pestaña activa",
+    page.locator('nav a[aria-current="page"]'),
+    design.locator('nav a[aria-current="page"]'),
+    ["color", "font-size", "font-weight"],
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-62");
   await design.close();
 });

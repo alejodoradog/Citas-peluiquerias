@@ -21,15 +21,41 @@ function drawQr(matrix: ReadonlyArray<ReadonlyArray<boolean>>) {
   const modules = matrix.length;
   const scale = Math.floor(CANVAS_SIZE / modules);
   const offset = Math.floor((CANVAS_SIZE - scale * modules) / 2);
+  fillModules(context, matrix, offset, offset, scale);
+  return canvas;
+}
+
+// The dark modules in plain black, one whole-pixel square each, from (x, y).
+// Shared with the poster of D-62.
+export function fillModules(
+  context: CanvasRenderingContext2D,
+  matrix: ReadonlyArray<ReadonlyArray<boolean>>,
+  left: number,
+  top: number,
+  scale: number,
+) {
   context.fillStyle = "#000000";
   matrix.forEach((row, y) => {
     row.forEach((dark, x) => {
       if (dark) {
-        context.fillRect(offset + x * scale, offset + y * scale, scale, scale);
+        context.fillRect(left + x * scale, top + y * scale, scale, scale);
       }
     });
   });
-  return canvas;
+}
+
+// Hands a finished image to the browser as a download, without leaving the
+// link on the page.
+export function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // Some browsers start the download after click returns.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 // "Descargar QR para imprimir" (D-14, D-62). The matrix comes from the
@@ -57,15 +83,7 @@ export function QrDownloadButton({
         return;
       }
       setFailed(false);
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      // Some browsers start the download after click returns.
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      downloadBlob(blob, fileName);
     }, "image/png");
   }
 

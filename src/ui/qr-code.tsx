@@ -1,4 +1,5 @@
 import { encode } from "uqr";
+import { cx } from "./cx";
 
 // QR codes are made on the server with uqr (MIT, no network, no external
 // service). Error correction M survives a scratched or creased print; the
@@ -28,15 +29,18 @@ export function qrPath(matrix: ReadonlyArray<ReadonlyArray<boolean>>): string {
 }
 
 // QR of the booking link (D-14, D-62): white, Line border and 12 px radius.
-// It is an image named by its label; the modules are drawn in ink.
+// Inside the grey block of D-62 it goes without the border. It is an image
+// named by its label; the modules are drawn in ink.
 export function QrCode({
   value,
   label,
   size = 168,
+  bordered = true,
 }: {
   value: string;
   label: string;
   size?: number;
+  bordered?: boolean;
 }) {
   const matrix = qrMatrix(value);
   const modules = matrix.length;
@@ -48,7 +52,10 @@ export function QrCode({
       height={size}
       viewBox={`0 0 ${modules} ${modules}`}
       shapeRendering="crispEdges"
-      className="border-line text-ink rounded-[0.75rem] border bg-white"
+      className={cx(
+        "text-ink rounded-[0.75rem] bg-white",
+        bordered && "border-line border",
+      )}
     >
       <path d={qrPath(matrix)} fill="currentColor" />
     </svg>

@@ -143,13 +143,17 @@ test("an owner sets up services and team, and gets the link to share", async ({
     page.getByRole("heading", { level: 1, name: t.listo.titulo }),
   ).toBeVisible();
   await expect(page.getByText(`yapoin.com/${slug}`)).toBeVisible();
-  await expect(page.getByRole("img", { name: t.listo.qr })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: textos.ui.qr.etiqueta }),
+  ).toBeVisible();
   await checkScreen(page);
 
   if (test.info().project.name === "android") {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await page.getByRole("button", { name: t.listo.copiar }).click();
-    await expect(page.getByText(t.listo.copiado)).toBeVisible();
+    await page
+      .getByRole("button", { name: textos.ui.linkReservas.copiar })
+      .click();
+    await expect(page.getByText(textos.ui.linkReservas.copiado)).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
       `https://yapoin.com/${slug}`,
     );

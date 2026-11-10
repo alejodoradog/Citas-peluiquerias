@@ -4,7 +4,6 @@ import { formatBogotaDayMonth, startOfBogotaDay } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { displayBookingUrl } from "@/lib/sitio";
 import { countActive } from "@/modulos/barberias/datos/services";
-import { AppShell } from "@/ui/app-shell";
 import { Chip } from "@/ui/chip";
 import {
   BarChartIcon,
@@ -22,6 +21,7 @@ import { List, ListRow } from "@/ui/list";
 import { Notice } from "@/ui/notice";
 import { SignOutButton } from "@/ui/sign-out-button";
 import { LoadingState } from "@/ui/states";
+import { TabShell } from "@/ui/tab-shell";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../ready-owner";
 
@@ -31,14 +31,19 @@ export const metadata: Metadata = { title: t.titulo };
 
 // D-50: the owner's settings. Servicios and Barberos work now; the other rows
 // arrive with tasks 2.4, 2.6 and 4.6 and show "Pronto" without a link
-// (decision 9 of task 2.2).
+// (decision 9 of task 2.2). Its top bar names the barbershop, as the design
+// does, so the whole frame waits for it; "Cerrar sesión" is in "Tu cuenta".
 export default function MorePage() {
   return (
-    <AppShell bottomNav>
-      <Suspense fallback={<LoadingState label={t.cargando} />}>
-        <More />
-      </Suspense>
-    </AppShell>
+    <Suspense
+      fallback={
+        <TabShell title={t.titulo}>
+          <LoadingState label={t.cargando} />
+        </TabShell>
+      }
+    >
+      <More />
+    </Suspense>
   );
 }
 
@@ -59,52 +64,50 @@ async function More() {
   const trialEnd = formatBogotaDayMonth(startOfBogotaDay(barbershop.expiresOn));
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-title">{t.titulo}</h1>
-        <p className="text-body text-muted">{barbershop.name}</p>
+    <TabShell title={t.titulo} subtitle={barbershop.name}>
+      <div className="flex flex-col gap-4">
+        {barbershop.subscriptionStatus === "trial" ? (
+          <Notice tone="info" title={t.prueba(trialEnd)}>
+            {t.pruebaDetalle}
+          </Notice>
+        ) : null}
+        <Section title={t.secciones.equipo}>
+          <ListRow
+            icon={<ScissorsIcon />}
+            title={t.servicios}
+            subtitle={t.conteoServicios(counts.services)}
+            href={routes.panelServices}
+          />
+          <ListRow
+            icon={<UsersIcon />}
+            title={t.barberos}
+            subtitle={t.conteoBarberos(counts.barbers)}
+            href={routes.panelBarbers}
+          />
+        </Section>
+        <Section title={t.secciones.barberia}>
+          <ListRow icon={<StoreIcon />} title={t.datos} trailing={soon} />
+          <ListRow icon={<ClockIcon />} title={t.horario} trailing={soon} />
+          <ListRow icon={<CalendarIcon />} title={t.festivos} trailing={soon} />
+          <ListRow icon={<SlidersIcon />} title={t.politicas} trailing={soon} />
+          <ListRow
+            icon={<LinkIcon />}
+            title={t.link}
+            subtitle={displayBookingUrl(barbershop.slug)}
+            trailing={soon}
+          />
+        </Section>
+        <Section title={t.secciones.dinero}>
+          <ListRow icon={<DollarIcon />} title={t.abono} trailing={soon} />
+          <ListRow icon={<BarChartIcon />} title={t.cierre} trailing={soon} />
+        </Section>
+        <Section title={t.secciones.cuenta}>
+          <ListRow icon={<UserIcon />} title={email} subtitle={t.correo} />
+          <li>
+            <SignOutButton row />
+          </li>
+        </Section>
       </div>
-      {barbershop.subscriptionStatus === "trial" ? (
-        <Notice tone="info" title={t.prueba(trialEnd)}>
-          {t.pruebaDetalle}
-        </Notice>
-      ) : null}
-      <Section title={t.secciones.equipo}>
-        <ListRow
-          icon={<ScissorsIcon />}
-          title={t.servicios}
-          subtitle={t.conteoServicios(counts.services)}
-          href={routes.panelServices}
-        />
-        <ListRow
-          icon={<UsersIcon />}
-          title={t.barberos}
-          subtitle={t.conteoBarberos(counts.barbers)}
-          href={routes.panelBarbers}
-        />
-      </Section>
-      <Section title={t.secciones.barberia}>
-        <ListRow icon={<StoreIcon />} title={t.datos} trailing={soon} />
-        <ListRow icon={<ClockIcon />} title={t.horario} trailing={soon} />
-        <ListRow icon={<CalendarIcon />} title={t.festivos} trailing={soon} />
-        <ListRow icon={<SlidersIcon />} title={t.politicas} trailing={soon} />
-        <ListRow
-          icon={<LinkIcon />}
-          title={t.link}
-          subtitle={displayBookingUrl(barbershop.slug)}
-          trailing={soon}
-        />
-      </Section>
-      <Section title={t.secciones.dinero}>
-        <ListRow icon={<DollarIcon />} title={t.abono} trailing={soon} />
-        <ListRow icon={<BarChartIcon />} title={t.cierre} trailing={soon} />
-      </Section>
-      <Section title={t.secciones.cuenta}>
-        <ListRow icon={<UserIcon />} title={email} subtitle={t.correo} />
-        <li>
-          <SignOutButton row />
-        </li>
-      </Section>
-    </div>
+    </TabShell>
   );
 }
