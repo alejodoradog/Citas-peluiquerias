@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import {
-  createBarber,
-  requestImageUpload,
-} from "@/modulos/barberias/acciones/barbers";
+import { createBarber } from "@/modulos/barberias/acciones/barbers";
+import { requestImageUpload } from "@/modulos/barberias/acciones/images";
 import { listActiveServiceOptions } from "@/modulos/barberias/datos/barbers";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../../ready-owner";

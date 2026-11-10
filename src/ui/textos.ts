@@ -4,6 +4,7 @@ import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barbe
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
+import type { ShopProfileActionErrorCode } from "@/modulos/barberias/acciones/shop-profile";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
 import type { ClosureActionErrorCode } from "@/modulos/barberias/acciones/holidays";
@@ -741,7 +742,8 @@ export const textos = {
         closure_date_invalid: "Elige una fecha.",
         closure_time_invalid: "Elige una hora de la lista.",
         closure_order: "Debe terminar después de empezar.",
-        closure_past: "Ese cierre ya terminó. Elige una fecha que no haya pasado.",
+        closure_past:
+          "Ese cierre ya terminó. Elige una fecha que no haya pasado.",
         closure_too_long: "Máximo 31 días seguidos.",
         closure_reason_too_long: "Usa máximo 200 caracteres.",
         unknown: "No pudimos agregar el cierre. Intenta de nuevo.",
@@ -785,6 +787,97 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<PoliciesActionErrorCode | "invalid", string>,
+  },
+  // D-57, Más › Datos y fotos.
+  datos: {
+    titulo: "Datos y fotos",
+    cargando: "Cargando…",
+    logo: {
+      // The placeholder with the initials, named for screen readers.
+      actual: "Logo actual",
+      sinLogo: "Sin logo",
+      agregar: "Agregar logo",
+      cambiar: "Cambiar logo",
+      quitar: "Quitar logo",
+      quitando: "Quitando logo…",
+      subiendo: "Subiendo logo…",
+      lista: "Logo listo. Se guarda al tocar Guardar.",
+      falloQuitar: "No pudimos quitar el logo. Intenta de nuevo.",
+      errores: {
+        photo_not_image: "Ese archivo no es una imagen. Elige tu logo.",
+        photo_unreadable:
+          "No pudimos abrir esa imagen. Prueba con otra o toma una foto.",
+        photo_too_big: "La imagen es muy pesada. Prueba con otra.",
+        photo_upload_failed:
+          "No pudimos subir la imagen. Revisa tu conexión e intenta de nuevo.",
+      } satisfies Record<ImageUploadErrorCode, string>,
+    },
+    portada: {
+      agregar: "Foto de portada · toca para agregarla",
+      cambiar: "Foto de portada · toca para cambiar",
+      quitar: "Quitar portada",
+      quitando: "Quitando portada…",
+      subiendo: "Subiendo portada…",
+      lista: "Portada lista. Se guarda al tocar Guardar.",
+      falloQuitar: "No pudimos quitar la portada. Intenta de nuevo.",
+      errores: {
+        photo_not_image: "Ese archivo no es una foto. Elige una imagen.",
+        photo_unreadable:
+          "No pudimos abrir esa foto. Prueba con otra o toma una nueva.",
+        photo_too_big: "La foto es muy pesada. Prueba con otra.",
+        photo_upload_failed:
+          "No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.",
+      } satisfies Record<ImageUploadErrorCode, string>,
+    },
+    campos: {
+      nombre: "Nombre de la barbería",
+      direccion: "Dirección",
+      barrio: "Barrio y ciudad",
+      whatsapp: "WhatsApp de la barbería",
+    },
+    ayudas: {
+      nombre: "Cambiarlo no cambia tu link de reservas.",
+      whatsapp:
+        "Aparece como botón en tu página. Por aquí no enviamos mensajes.",
+    },
+    ubicacion: {
+      titulo: "Ubicación en el mapa",
+      ayuda:
+        "Tócalo estando en la barbería, cerca de la puerta, para que tus clientes lleguen fácil.",
+      usar: "Usar mi ubicación actual",
+      buscando: "Buscando tu ubicación…",
+      marcada: "Ubicación marcada",
+      marcadaDetalle: "Se guarda al tocar Guardar.",
+      guardada: "Ubicación guardada",
+      ver: "Ver en el mapa",
+      // The link opens another tab; screen readers hear it.
+      verNuevaPestana: "Ver en el mapa (se abre en otra pestaña)",
+      quitar: "Quitar ubicación",
+      errores: {
+        denied:
+          "No tenemos permiso para ver tu ubicación. Actívalo en tu navegador e intenta de nuevo.",
+        unavailable:
+          "No pudimos encontrar tu ubicación. Intenta de nuevo en un momento.",
+        unsupported: "Este navegador no puede darnos tu ubicación.",
+      },
+    },
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      barbershop_name_required: "Escribe el nombre de tu barbería.",
+      barbershop_name_too_long:
+        "El nombre es muy largo. Usa máximo 100 caracteres.",
+      address_too_long: "La dirección es muy larga. Usa máximo 200 caracteres.",
+      locality_too_long: "Es muy largo. Usa máximo 100 caracteres.",
+      phone_invalid:
+        "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+      location_invalid:
+        "No pudimos leer la ubicación. Tócala de nuevo o quítala.",
+      image_invalid:
+        "No pudimos guardar el logo o la portada. Elígelos de nuevo.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ShopProfileActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

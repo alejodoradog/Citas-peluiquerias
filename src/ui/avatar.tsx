@@ -14,6 +14,27 @@ export function initialsOf(name: string): string {
   return letters.join("").toLocaleUpperCase("es-CO");
 }
 
+// The kind of business a name may start with; the logo placeholder of D-57
+// skips it ("Barbería La Esquina" → "LE").
+const BUSINESS_WORDS = new Set([
+  "barbería",
+  "barberia",
+  "barbershop",
+  "peluquería",
+  "peluqueria",
+]);
+
+// Initials of a barbershop, for the logo while there is none.
+export function shopInitialsOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const [first, ...rest] = words;
+  const skip =
+    first !== undefined &&
+    rest.length > 0 &&
+    BUSINESS_WORDS.has(first.toLocaleLowerCase("es-CO"));
+  return initialsOf((skip ? rest : words).join(" "));
+}
+
 const sizes = {
   md: "size-11 text-sm",
   lg: "size-16 text-[1.3125rem]",

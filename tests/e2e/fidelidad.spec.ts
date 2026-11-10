@@ -521,6 +521,77 @@ test("D-60 matches the design", async ({ page }) => {
   await design.close();
 });
 
+test("D-57 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  await signInReadyOwner(page, "fidelidad-datos");
+  await page.goto("/panel/datos");
+  const d = textos.datos;
+  await expect(
+    page.getByRole("heading", { level: 1, name: d.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D57-Datos-barberia.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Datos y fotos", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  // "Barbería La Esquina" without a logo: the initials LE, as the design.
+  await compare(
+    "logo",
+    page.getByRole("img", { name: d.logo.sinLogo }),
+    design.locator('[aria-label="Logo actual"]'),
+    [
+      "height",
+      "border-radius",
+      "background-color",
+      "color",
+      "font-size",
+      "font-weight",
+    ],
+  );
+  await compare(
+    "portada",
+    page.locator("label").filter({ hasText: d.portada.agregar }),
+    design.locator('[aria-label="Foto de portada · toca para cambiar"]'),
+    ["height", "border-radius", "color", "font-size", "font-weight"],
+  );
+  await compare(
+    "etiqueta",
+    page.locator("label", { hasText: d.campos.nombre }),
+    design.locator("label[for=db1]"),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "campo",
+    page.getByRole("textbox", { name: d.campos.nombre }),
+    design.locator("#db1"),
+    ["height", "border-radius", "background-color", "font-size", "color"],
+  );
+  await compare(
+    "ayuda",
+    page.getByText(d.ayudas.whatsapp, { exact: true }),
+    design.getByText(
+      "Aparece como botón en tu página. Por aquí no enviamos mensajes.",
+      { exact: true },
+    ),
+    ["font-size", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: d.guardar, exact: true }),
+    design.getByRole("link", { name: "Guardar", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-57");
+  await design.close();
+});
+
 test("D-59 matches the design", async ({ page }) => {
   test.setTimeout(120_000);
   const slug = await signInReadyOwner(page, "fidelidad-festivos");
@@ -567,7 +638,9 @@ test("D-59 matches the design", async ({ page }) => {
   // The switch is named by the day; its row draws the day and the holiday.
   await compare(
     "día del festivo",
-    page.locator(`[id="${await firstHoliday.getAttribute("aria-labelledby")}"]`),
+    page.locator(
+      `[id="${await firstHoliday.getAttribute("aria-labelledby")}"]`,
+    ),
     design.getByText("Lunes 16 de noviembre", { exact: true }),
     ["font-size", "font-weight", "color"],
   );

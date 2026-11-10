@@ -210,6 +210,39 @@ async function barbershopIdOf(slug: string): Promise<string> {
   return data.id as string;
 }
 
+// D-57's data of a barbershop and the files of its logo and cover folders,
+// read past RLS, so a test can check that replacing or removing an image
+// leaves exactly one file per kind, or none.
+export async function shopProfileSnapshot(slug: string) {
+  const admin = adminClient();
+  const { data: shop, error } = await admin
+    .from("barbershops")
+    .select(
+      "id, name, address, locality, whatsapp_phone, latitude, longitude, logo_path, cover_photo_path",
+    )
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  const [logos, covers] = await Promise.all([
+    admin.storage.from("images").list(`${shop.id}/logo`, { limit: 100 }),
+    admin.storage.from("images").list(`${shop.id}/cover`, { limit: 100 }),
+  ]);
+  if (logos.error) throw logos.error;
+  if (covers.error) throw covers.error;
+  return {
+    name: shop.name as string,
+    address: shop.address as string | null,
+    locality: shop.locality as string | null,
+    whatsappPhone: shop.whatsapp_phone as string | null,
+    latitude: shop.latitude as number | null,
+    longitude: shop.longitude as number | null,
+    logoPath: shop.logo_path as string | null,
+    coverPath: shop.cover_photo_path as string | null,
+    logoObjects: (logos.data ?? []).map((o) => `${shop.id}/logo/${o.name}`),
+    coverObjects: (covers.data ?? []).map((o) => `${shop.id}/cover/${o.name}`),
+  };
+}
+
 // A barber's id and private link as the database keeps them, read past RLS
 // (task 2.3): the hash, whether it works and when it was issued.
 export async function barberLinkSnapshot(slug: string, barberName: string) {

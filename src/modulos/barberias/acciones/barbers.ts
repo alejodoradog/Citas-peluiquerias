@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
-import { extensionFor, isOwnImageKey, newImageKey } from "@/lib/imagenes/keys";
+import {
+  isOwnImageKey,
+  type ImageUploadTicket as UploadTicket,
+} from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import {
@@ -17,7 +20,7 @@ import {
   updateBarberRow,
   type BarberWriteResult,
 } from "../datos/barbers";
-import { imageExists, removeImages, signImageUpload } from "../datos/images";
+import { imageExists, removeImages } from "../datos/images";
 import {
   missingServices,
   parseTeamBarberForm,
@@ -50,8 +53,8 @@ export type BarberState = FormState<BarberField, BarberActionErrorCode>;
 export type BarberCommandResult =
   { ok: true } | { ok: false; error: BarberActionErrorCode };
 
-export type ImageUploadTicket =
-  { ok: true; path: string; token: string } | { ok: false };
+// The upload itself is requested from ./images (requestImageUpload).
+export type ImageUploadTicket = UploadTicket;
 
 const TEXT_FIELDS = ["displayName", "email", "emailNotifications"] as const;
 
@@ -287,19 +290,4 @@ export async function removeBarberPhoto(
   }
   revalidateTeam(barber.id);
   return { ok: true };
-}
-
-// The first step of a photo upload (decision 0007): a new key in the
-// barbers folder of the owner's barbershop and a signed URL for it. The
-// browser uploads there and sends the key back with the form.
-export async function requestImageUpload(
-  kind: "barbers",
-  mime: string,
-): Promise<ImageUploadTicket> {
-  const { barbershop } = await requireOwner();
-  const extension = extensionFor(mime);
-  if (kind !== "barbers" || !extension) return { ok: false };
-  const path = newImageKey(barbershop.id, kind, extension);
-  const token = await signImageUpload(path);
-  return token ? { ok: true, path, token } : { ok: false };
 }

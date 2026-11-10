@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Avatar, initialsOf } from "./avatar";
+import { Avatar, initialsOf, shopInitialsOf } from "./avatar";
 
 describe("initialsOf", () => {
   it("takes the first letter of the first two words", () => {
@@ -20,6 +20,22 @@ describe("initialsOf", () => {
   it("handles one letter and an empty name", () => {
     expect(initialsOf("J")).toBe("J");
     expect(initialsOf("   ")).toBe("");
+  });
+});
+
+describe("shopInitialsOf", () => {
+  it("skips the word that says what the business is (D-57: LE)", () => {
+    expect(shopInitialsOf("Barbería La Esquina")).toBe("LE");
+    expect(shopInitialsOf("barberia el parche")).toBe("EP");
+    expect(shopInitialsOf("Peluquería Mónica")).toBe("MÓ");
+  });
+
+  it("keeps the word when it is the whole name", () => {
+    expect(shopInitialsOf("Barbería")).toBe("BA");
+  });
+
+  it("works like a person's initials otherwise", () => {
+    expect(shopInitialsOf("Don José Barber Shop")).toBe("DJ");
   });
 });
 
