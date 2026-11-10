@@ -22,9 +22,35 @@ export default defineConfig({
   testDir: "./tests/e2e",
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  // One worker on the laptop (7.8 GB of RAM); two in CI.
+  workers: process.env.CI ? 2 : 1,
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: { baseURL, trace: "on-first-retry" },
-  projects: [{ name: "mobile-chromium", use: devices["Pixel 7"] }],
+  projects: [
+    // Every flow, on an Android phone.
+    {
+      name: "android",
+      use: devices["Pixel 7"],
+      testIgnore: /fidelidad\.spec\.ts/,
+    },
+    // Screens tagged @ui on an iPhone (WebKit). The account flows stay on
+    // Android: running them twice would hit the Auth rate limits.
+    {
+      name: "iphone",
+      use: devices["iPhone 13"],
+      grep: /@ui/,
+      testIgnore: /fidelidad\.spec\.ts/,
+    },
+    // Side by side with the design, at the 390 × 844 of its artboards.
+    {
+      name: "diseno",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 390, height: 844 },
+      },
+      testMatch: /fidelidad\.spec\.ts/,
+    },
+  ],
   webServer: {
     command: "next dev",
     url: baseURL,
