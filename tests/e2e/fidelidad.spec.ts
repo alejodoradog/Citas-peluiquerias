@@ -196,6 +196,31 @@ test("D-05 matches the design", async ({ page }) => {
     design.getByText("Listo, tu correo quedó confirmado."),
     ["font-size", "font-weight", "color"],
   );
+  await compare(
+    "campo",
+    page.getByLabel(textos.cuentas.ingreso.campos.email),
+    design.locator("#i1"),
+    ["height", "border-radius", "background-color", "font-size", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: textos.cuentas.ingreso.enviar }),
+    design.getByRole("link", { name: "Ingresar", exact: true }),
+    [
+      "height",
+      "border-radius",
+      "background-color",
+      "color",
+      "font-size",
+      "font-weight",
+    ],
+  );
+  await compare(
+    "link de recuperar",
+    page.getByRole("link", { name: textos.cuentas.ingreso.olvidaste }),
+    design.getByRole("link", { name: "¿Olvidaste tu contraseña?" }),
+    ["font-size", "font-weight", "color"],
+  );
 
   await attachSideBySide(page, design, "D-05");
   await design.close();

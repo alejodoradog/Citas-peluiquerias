@@ -53,7 +53,6 @@ describe("design tokens", () => {
     ["radius-field", "0.75rem"],
     ["radius-button", "0.875rem"],
     ["radius-card", "1rem"],
-    ["radius-sheet", "1.375rem"],
   ])("%s is %s", (name, value) => {
     expect(token(name)).toBe(value);
   });

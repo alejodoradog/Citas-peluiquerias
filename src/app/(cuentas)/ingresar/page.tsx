@@ -28,7 +28,7 @@ export default function IngresarPage({ searchParams }: PageProps<"/ingresar">) {
       <TextLink href={routes.recoverPassword} standalone>
         {t.olvidaste}
       </TextLink>
-      <p className="text-label text-muted text-center font-normal">
+      <p className="text-label text-muted text-center leading-[1.45] font-normal">
         {t.sinCuenta} <TextLink href={routes.signUp}>{t.crear}</TextLink>
       </p>
     </AuthShell>

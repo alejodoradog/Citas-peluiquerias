@@ -81,7 +81,7 @@ for (const screen of screens) {
 test("D-01 offers to sign up and to sign in @ui", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "es-CO");
-  await expect(page.getByRole("link", { name: textos.marca })).toBeVisible();
+  await expect(page.getByText(textos.marca, { exact: true })).toBeVisible();
   for (const benefit of textos.inicio.beneficios) {
     await expect(page.getByText(benefit)).toBeVisible();
   }

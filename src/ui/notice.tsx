@@ -65,8 +65,14 @@ export function Notice({
         {children ? (
           <span className="text-help text-ink">{children}</span>
         ) : null}
+        {/* The action is a 44 px tall touch target, whatever it is. */}
         {action ? (
-          <span className={cx("text-label font-bold", style.accent)}>
+          <span
+            className={cx(
+              "text-label font-bold underline *:inline-flex *:min-h-11 *:items-center",
+              style.accent,
+            )}
+          >
             {action}
           </span>
         ) : null}

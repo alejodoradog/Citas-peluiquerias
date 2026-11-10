@@ -98,7 +98,7 @@ describe("account screen frame", () => {
       </AuthShell>,
     );
     expect(screen.getByRole("main")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Yapoin" })).toBeInTheDocument();
+    expect(screen.getByText("Yapoin")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 1, name: "Ingresa a tu barbería" }),
     ).toBeInTheDocument();

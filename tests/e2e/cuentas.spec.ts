@@ -108,9 +108,10 @@ test("an owner cannot enter until they confirm their email", async ({
 
   // A wrong password reveals nothing and sends nothing (D-06).
   await signIn(page, email, "otra-clave-mala");
-  await expect(page.getByRole("alert")).toHaveText(
-    t.errores.invalid_credentials,
-  );
+  // Next.js adds an empty route announcer with role alert; find ours by text.
+  await expect(
+    page.getByRole("alert").filter({ hasText: t.errores.invalid_credentials }),
+  ).toBeVisible();
   await expectAccessible(page);
   expect(await emailCount(email)).toBe(1);
 

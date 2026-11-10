@@ -80,7 +80,7 @@ export function RegistrationForm() {
           error={form.fieldError("password")}
           required
         />
-        <p className="text-help text-muted">
+        <p className="text-help text-muted leading-[1.45]">
           {t.legal.antes}
           <TextLink href={routes.terms}>{t.legal.terminos}</TextLink>
           {t.legal.y}
@@ -89,7 +89,7 @@ export function RegistrationForm() {
         </p>
         <SubmitButton pendingText={t.enviando}>{t.enviar}</SubmitButton>
       </ActionForm>
-      <p className="text-label text-muted text-center font-normal">
+      <p className="text-label text-muted text-center leading-[1.45] font-normal">
         {t.yaTienes} <TextLink href={routes.signIn}>{t.ingresa}</TextLink>
       </p>
     </>

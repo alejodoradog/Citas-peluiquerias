@@ -13,9 +13,7 @@ export function NewPasswordForm() {
 
   return (
     <ActionForm form={form}>
-      {form.formError ? (
-        <Notice tone="danger" title={form.formError} />
-      ) : null}
+      {form.formError ? <Notice tone="danger" title={form.formError} /> : null}
       <Field
         label={t.campos.password}
         name="password"

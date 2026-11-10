@@ -41,7 +41,7 @@ export const textos = {
     terminos: { titulo: "Términos de uso" },
     privacidad: { titulo: "Política de datos" },
     enPreparacion:
-      "Estamos terminando este documento. Lo publicamos aquí antes de abrir Yapoin a más barberías.",
+      "Estamos terminando este documento. Muy pronto lo vas a encontrar aquí.",
     volver: "Volver al inicio",
   },
   agenda: {

@@ -15,6 +15,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/ui/states";
 import { Steps } from "@/ui/steps";
 import { Switch } from "@/ui/switch";
 import { TextLink } from "@/ui/text-link";
+import { textos } from "@/ui/textos";
 
 // Development-only catalog of the F-01 components (a "*.dev.tsx" page, left
 // out of production builds by next.config.ts). The e2e tests check every
@@ -43,9 +44,9 @@ export default function Catalogo() {
           Crear cita
         </Button>
         <Button size="sm" variant="secondary" block={false}>
-          Cerrar sesión
+          {textos.cuentas.salir}
         </Button>
-        <Button disabled>Guardando…</Button>
+        <Button disabled>{textos.cuentas.nuevaClave.enviando}</Button>
         <ButtonLink href="/registro">Crear cuenta gratis</ButtonLink>
         <TextLink href="/ingresar" standalone>
           Volver a ingresar
@@ -159,7 +160,7 @@ export default function Catalogo() {
       <ActionBar>
         <Button>Guardar</Button>
       </ActionBar>
-      <Fab href="#nueva" label="Nueva cita" />
+      <Fab href="#nueva" label={textos.ui.nuevaCita} />
       <BottomNav />
     </main>
   );

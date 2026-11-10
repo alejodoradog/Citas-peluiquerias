@@ -11,12 +11,10 @@ import { Steps } from "./steps";
 import { textos } from "./textos";
 
 describe("BrandHeader", () => {
-  it("names the product and links home", () => {
+  it("names the product as plain text, like the design", () => {
     render(<BrandHeader />);
-    expect(screen.getByRole("link", { name: "Yapoin" })).toHaveAttribute(
-      "href",
-      "/",
-    );
+    expect(screen.getByText("Yapoin")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 });
 
