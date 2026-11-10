@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ActionBar } from "./action-bar";
 import { BrandHeader } from "./brand";
 import { Card } from "./card";
+import { Chip } from "./chip";
 import { Fab } from "./fab";
 import { List, ListRow } from "./list";
 import { EmptyState, ErrorState, LoadingState } from "./states";
@@ -52,12 +53,33 @@ describe("List", () => {
     expect(link).toHaveAccessibleName("Corte 40 min $25.000");
     expect(within(items[1]!).queryByRole("link")).not.toBeInTheDocument();
   });
+
+  it("shows a badge next to the title, inside the link's name", () => {
+    render(
+      <List>
+        <ListRow
+          href="/barberos/1"
+          title="Mario Gómez"
+          badge={<Chip tone="brand">Tú</Chip>}
+          subtitle="Horario de la barbería"
+        />
+      </List>,
+    );
+    expect(screen.getByRole("link")).toHaveAccessibleName(
+      "Mario Gómez Tú Horario de la barbería",
+    );
+  });
 });
 
 describe("Steps", () => {
   it("tells screen readers the current step", () => {
     render(<Steps current={1} total={3} />);
     expect(screen.getByText("Paso 1 de 3")).toBeInTheDocument();
+  });
+
+  it("stays silent when a visible subtitle already says the step", () => {
+    render(<Steps current={2} total={3} announce={false} />);
+    expect(screen.queryByText("Paso 2 de 3")).not.toBeInTheDocument();
   });
 });
 
