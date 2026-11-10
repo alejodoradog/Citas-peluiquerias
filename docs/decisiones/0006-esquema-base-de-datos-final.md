@@ -1,6 +1,10 @@
 # 0006 Esquema de base de datos final
 
-Fecha: 2026-11-04, revisión 3 del 2026-11-05 · Tareas: 1.8, 1.9 (`docs/tareas/1.9-esquema-final.md`), 5.1, 5.4 y 5.5 · Estado: **Propuesta (revisión 3)**. Las decisiones del fundador están cerradas; faltan la aprobación del compañero de infraestructura y las dos decisiones abiertas de la sección 6.
+Fecha: 2026-11-04, revisión 3 del 2026-11-05 · Tareas: 1.8, 1.9 (`docs/tareas/1.9-esquema-final.md`), 5.1, 5.4 y 5.5 · Estado: **aceptada por el fundador** (2026-11-07) y aplicada en la tarea 1.9 (migraciones 2 a 8); las migraciones 9, 10 y 11 llegan en las tareas 5.4, 5.5 y 5.1. Siguen abiertas las tres decisiones de la sección 6.
+
+> **Numeración:** comparte el número 0006 con `0006-correo-unico-canal.md`; no se renombró ninguna (tarea 1.9). "Decisión 0006" sin más se refiere a este documento.
+>
+> **Nota de la 1.9:** el SQL de A.1 en este anexo difiere del que se aplicó en la tarea 1.8 (`20261105025014_email_as_only_channel.sql`) en nombres de constraints e índices (por ejemplo, `customers_barbershop_id_email_key` es una restricción única y no un índice parcial). Ninguna de las migraciones 2 a 11 depende de esos nombres, así que manda la migración aplicada.
 
 Reemplaza, en lo que toque, a las decisiones 0001 (puntos 2, 4, 7, 9 y 13), 0002 (tabla de permisos y punto 4) y 0004 (punto 1). Lo que este documento no menciona sigue igual.
 
@@ -2737,6 +2741,28 @@ El SQL exacto está en el anexo A. Cada archivo corre en una sola transacción y
 - **La spec frente a la revisión:** sin roles adicionales, sin `timezone` y sin excepciones de horario por fecha. Gana la spec.
 - **La revisión:** se rechaza el JWT con la membresía (punto 1). `rescheduled_from_id` se reemplaza por reprogramar en el sitio más un evento (punto 5). Los combos como servicios (punto 3) quedan reemplazados por la decisión del fundador.
 - **La nota de la 1.2 sobre `registered_by`:** no se aplica (ver revisión 1). La nota sobre quién puede poner `cancelled_by_customer` queda para la 4.2.
+
+## 7. Adenda de la tarea 1.9: endurecimiento tras las revisiones (2026-11-08)
+
+Las revisiones de seguridad (`revisor-seguridad`) y de integridad (`ingeniero-critico`) de las migraciones 2 a 8 no encontraron fugas entre barberías ni una forma de dejar una cita con totales incoherentes o con cruces. Sí encontraron reglas de esta decisión que la base de datos no exigía en todos los caminos. La migración `20261109042517_harden_appointment_writes.sql` las cierra sin agregar reglas de negocio. Sus pruebas están en `supabase/tests/database/14_hardening.test.sql`.
+
+| # | Hueco | Corrección |
+| --- | --- | --- |
+| 1 | Un super admin con una membresía por error podía **escribir** en esa barbería, no solo verla, como decía el riesgo aceptado. | `member_barbershop_ids()` y `current_barbershop_id()` excluyen a los super admins. |
+| 2 | El permiso de UPDATE sobre toda la tabla `appointments` dejaba a una sesión cambiar `source` (una cita manual pasaba a `web` sin correo), `manage_token_hash`, `created_at` y `barbershop_id`. | Permiso de UPDATE solo para `customer_id`, `barber_id`, `starts_at`, `ends_at`, `price_cop`, `status` y `deposit_received`. El trigger `check_appointment_source` (security invoker) impide que una sesión inserte una cita `web` por cualquier camino. |
+| 3 | Volver a confirmar una cita cancelada se saltaba las guardas: quedaba una cita activa de un barbero inactivo o con un servicio que el barbero ya no ofrece. | Pasar de cancelada a un estado que ocupa el espacio cuenta como ocupación nueva: exige barbero activo y que ofrezca todos los servicios. Cancelar sigue funcionando siempre. |
+| 4 | `create_appointment` identificaba al personal por `auth.uid()`. La reserva pública (3.3) habría fallado si quien reserva tiene una sesión abierta en el navegador. | Identifica al personal por el rol que llama (`current_user = 'authenticated'`). Suma solo servicios activos, con bloqueo compartido, y responde `service_inactive` si alguno no lo está. |
+| 5 | `change_appointment_services` leía la cita sin bloquearla: una edición en paralelo con una cancelación o con otra edición podía mezclar servicios. | Lee la cita con `for update`. |
+| 6 | Una línea de `appointment_services` se podía editar (precio, servicio o cita) con un rol interno sin que lo revisara nadie al confirmar. | El trigger `keep_appointment_line` solo deja cambiar la posición. |
+
+**Quedan para su tarea:**
+- **3.3 y 3.4:** las funciones de link deben llamarse sin sesión (cliente anónimo), para que el historial registre `customer` o `barber` y no la cuenta que el navegador tenga abierta.
+- **6.4:** quitar `graphql_public` de los esquemas expuestos en producción si la app no usa GraphQL.
+
+**Preguntas nuevas para el fundador:**
+1. **Tope de sedes por cuenta.** `create_barbershop` no tiene límite, así que una sola cuenta puede apartar muchos links públicos. Es distinto del abuso de pruebas gratis que se dejó fuera de alcance. ¿Se pone un tope, o se exige pagar la primera sede a partir de cierto número?
+2. **Transiciones de estado de una cita.** Hoy se puede pasar de `attended` a `confirmed`, o de cancelada a confirmada (ahora con las guardas). ¿Qué cambios se permiten?
+3. **Quitar un servicio a un barbero.** Sus citas futuras con ese servicio no se pueden reprogramar ni reasignar hasta quitarles el servicio. ¿Se acepta así?
 
 ## Anexo A. SQL de cada migración (en orden, validado)
 

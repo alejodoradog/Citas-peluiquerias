@@ -10,9 +10,11 @@ select plan(5);
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner-a@example.com');
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18');
-insert into public.profiles (id, barbershop_id, role, full_name) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10);
+insert into public.profiles (id, full_name) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A');
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner');
 
 select is(
   array(
@@ -23,7 +25,7 @@ select is(
     where n.nspname = 'public'
       and c.relkind = 'r'
       and a.attname = 'barbershop_id'
-      and c.relname not in ('barbershops', 'profiles', 'notifications', 'subscription_payments')
+      and c.relname not in ('barbershops', 'profiles', 'memberships', 'appointment_events', 'notifications', 'subscription_payments')
       and not exists (
         select 1 from pg_attrdef d where d.adrelid = c.oid and d.adnum = a.attnum
       )

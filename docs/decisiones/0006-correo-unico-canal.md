@@ -2,6 +2,8 @@
 
 Fecha: 2026-11-05 · Tarea: 1.8 · Estado: aceptada por el dueño del proyecto.
 
+> **Numeración:** comparte el número 0006 con `0006-esquema-base-de-datos-final.md`. Se decidió no renombrar ninguna de las dos (tarea 1.9), porque spec, plan, tareas y la decisión 0007 las citan por nombre completo. Cuando se diga "decisión 0006" sin más, se refiere al esquema final; esta es "0006 de correo único".
+
 ## Contexto
 
 La spec usaba WhatsApp Cloud API para confirmaciones y recordatorios. El dueño del proyecto decidió reducir costos y complejidad: el correo es el único canal de mensajes automáticos y no hay códigos OTP. WhatsApp queda solo como dato de contacto de la barbería.

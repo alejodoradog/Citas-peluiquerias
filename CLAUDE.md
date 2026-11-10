@@ -28,6 +28,8 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 
 ## Forma de trabajo
 - Empieza en modo plan; espera aprobación antes de editar.
-- Una tarea por rama; termina con lint, typecheck y pruebas en verde.
-- Marca las casillas de docs/*.md a medida que avanzas, en la misma rama de la tarea y solo lo comprobado.
+- Todo el trabajo va en la rama `desarrollo`, con commits convencionales por tarea; cada tarea termina con lint, typecheck y pruebas en verde.
+- Un PR por hito (una fase de docs/plan.md): se abre en borrador `desarrollo` → `main` al empezar el hito, para que el CI corra en cada push, y se marca listo al cumplir su puerta de calidad. Se fusiona con "Create a merge commit", nunca squash, y el hito se cierra probando sus funciones en la URL desplegada.
+- Marca las casillas de docs/*.md a medida que avanzas, en `desarrollo` y solo lo comprobado.
+- Sin coautoría ni marcas de Claude en commits, PR ni archivos.
 - Si la spec no responde algo, pregunta; no inventes reglas de negocio.

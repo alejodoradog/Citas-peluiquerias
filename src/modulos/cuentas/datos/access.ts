@@ -8,9 +8,9 @@ import { cameFromRecentRecovery } from "../dominio/recovery-session";
 
 type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
 
-// Who is using the app right now. Decided only from the profiles table, which
-// RLS filters (inactive profiles are invisible), never from user metadata,
-// which the user can change at will.
+// Who is using the app right now. Decided only from the profiles and
+// memberships tables, which RLS filters (inactive profiles see nothing), never
+// from user metadata, which the user can change at will.
 export type Access =
   | { kind: "anonymous" }
   | { kind: "no_access" }
@@ -43,7 +43,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   // hiccup never signs a valid owner out.
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, full_name, barbershop_id")
+    .select("full_name, is_super_admin")
     .eq("id", user.id)
     .maybeSingle();
   if (profileError) {
@@ -52,21 +52,32 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   if (!profile) {
     return { kind: "no_access" };
   }
-  if (profile.role === "super_admin") {
+  if (profile.is_super_admin) {
     return { kind: "super_admin", name: profile.full_name };
   }
-  if (profile.role !== "owner" || !profile.barbershop_id) {
-    return { kind: "no_access" };
-  }
 
-  const { data: barbershop, error: barbershopError } = await supabase
-    .from("barbershops")
-    .select("id, name, slug, subscription_status, expires_on")
-    .eq("id", profile.barbershop_id)
-    .maybeSingle();
-  if (barbershopError) {
-    throw barbershopError;
+  // An owner reaches their barbershops through memberships (decision 0006).
+  // Until the barbershop switcher exists, the active one is the oldest
+  // barbershop, the same one create_barbershop takes the company trial from;
+  // the switcher will validate its choice against this same list.
+  const { data: memberships, error: membershipsError } = await supabase
+    .from("memberships")
+    .select(
+      "barbershops(id, name, slug, subscription_status, expires_on, created_at)",
+    )
+    .eq("user_id", user.id)
+    .eq("role", "owner");
+  if (membershipsError) {
+    throw membershipsError;
   }
+  const barbershop = (memberships ?? [])
+    .flatMap((membership) =>
+      membership.barbershops ? [membership.barbershops] : [],
+    )
+    .sort(
+      (a, b) =>
+        a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id),
+    )[0];
   if (!barbershop) {
     return { kind: "no_access" };
   }

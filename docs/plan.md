@@ -84,7 +84,7 @@ barberias/
 - **Validación con Zod** en toda entrada del usuario, tanto en el cliente como en el servidor.
 - **Fechas:** se guardan en UTC, se calculan y muestran en `America/Bogota` con una sola utilidad de fechas; prohibido `new Date()` suelto en lógica de negocio.
 - **Dinero:** pesos enteros (`integer`), nunca decimales.
-- **Commits** en formato convencional (`feat:`, `fix:`, `chore:`), ramas `fase-N/tarea-corta`.
+- **Commits** en formato convencional (`feat:`, `fix:`, `chore:`), rama `desarrollo` y un PR por fase (desde el 2026-11-07; antes, ramas `fase-N/tarea-corta`).
 
 Nota: la especificación nombra las tablas en español; en el código se usan sus equivalentes en inglés (`barbershops`, `barbers`, `appointments`…), con el glosario en `docs/decisiones/0001-modelo-de-datos.md`.
 
@@ -196,6 +196,8 @@ Los plugins de tu organización en claude.ai se pueden usar también en Claude C
 
 Cada tarea es una sesión nueva de Claude Code que empieza en modo plan y termina en un pull request; tú apruebas dos veces: el plan antes del código y el resultado en tu celular antes del merge.
 
+> **Desde el 2026-11-07, por hitos** (decisión del fundador): todo el trabajo va en la rama `desarrollo`, con commits por tarea. Cada fase de este plan es un hito con un solo PR `desarrollo` → `main`, abierto en borrador al empezar para que el CI corra en cada push. Se marca listo cuando el hito cumple su puerta de calidad, se fusiona con "Create a merge commit" (la cuenta dueña del proyecto en Vercel, para que despliegue) y el hito se cierra probando sus funciones en la URL desplegada. Las funciones P2 entran en el hito de su pantalla.
+
 &#91;embedded content: ciclo de una tarea · 8 pasos, 2 aprobaciones tuyas\]
 
 Cuando un chequeo falla, Claude Code corrige solo; cuando algo falla en tu celular, se escribe una tarea de ajuste en vez de parchar sobre la marcha.
@@ -252,24 +254,27 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 1.6 Datos de prueba: 2 barberías, 4 barberos, servicios y citas.
 - [x] 1.7 Base para la fase 2: convenciones de capas, formularios, errores y rutas, tras la revisión de arquitectura de cierre de fase (`docs/decisiones/0005-convenciones-de-codigo.md`).
 - [x] 1.8 Correo como único canal: sin WhatsApp como canal de mensajes y sin códigos OTP; correo del cliente y del barbero, y confirmación del correo del dueño con un link (`docs/decisiones/0006-correo-unico-canal.md`).
+- [x] 1.9 Esquema final de la base de datos (`docs/decisiones/0006-esquema-base-de-datos-final.md`, `docs/tareas/1.9-esquema-final.md`): varias sedes por cuenta (`memberships`), varios servicios por cita (`appointment_services`), historial de citas, horarios sin cruces, barberos dados de baja, correo obligatorio en la reserva web y plan único. Migraciones 2 a 8 del anexo A.
 - [ ] 1.10 Infraestructura base: región `iad1` fija en `vercel.json`, lint que prohíbe los servicios exclusivos de Vercel y región de `barberias-dev` documentada (`docs/decisiones/0007-infraestructura.md`, `docs/tareas/1.10-infraestructura-base.md`).
 
 **Lista cuando:** `supabase test db` pasa, y entrar como dueño de la barbería A nunca muestra nada de la B.
 
 ### Fase 2 · Configuración de la barbería (semana 2)
 
+- [ ] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
 - [ ] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [ ] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [ ] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar.
 - [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento.
 - [ ] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
+- [ ] 2.6 Datos de abono (P2, D-63) y selector de sede con "Nueva sede" (`create_barbershop`, decisión 0006).
 
 **Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos.
 
 ### Fase 3 · Motor de disponibilidad y página pública (semana 3)
 
 - [ ] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible").
-- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicio, barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
+- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicios (uno o varios), barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
 - [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente.
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
 - [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor. Según la decisión 0007: Turnstile en modo Managed, captcha de Supabase Auth con Turnstile, límites propios con la IP que entrega Vercel y Vercel WAF para bloquear.
@@ -279,20 +284,21 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 ### Fase 4 · Agenda del panel y vista del barbero (semana 4)
 
 - [ ] 4.1 Agenda día (columnas por barbero) y semana; tocar un espacio crea cita.
-- [ ] 4.2 Cita manual (avisando que sin correo no hay confirmación ni recordatorio), bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
+- [ ] 4.2 Cita manual con uno o varios servicios (`create_appointment`, avisando que sin correo no hay confirmación ni recordatorio), cambio de servicios de una cita (`change_appointment_services`), reprogramar, bloqueos de horas, cambio de estado (atendida, no asistió, cancelada).
 - [ ] 4.3 Clientes: lista, búsqueda, ficha con historial y alerta de inasistencias, y borrar un cliente anonimizando sus datos (Ley 1581).
 - [ ] 4.4 Vista "Mi agenda" del barbero por link privado, con permisos limitados.
 - [ ] 4.5 Actualización de la agenda cuando entra una reserva, consultando cada 30–60 s en la vista de hoy, sin Realtime (decisión 0007).
+- [ ] 4.6 Cierre del día (P2, D-64): servicios atendidos, total y comisión por barbero.
 
 **Lista cuando:** el dueño maneja un día completo de trabajo solo desde el panel, y el barbero ve sus citas desde su link.
 
 ### Fase 5 · Notificaciones y suscripciones (semana 5)
 
-- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados: pg_cron cada minuto y una Edge Function que envía por SES (decisión 0007).
+- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados: pg_cron cada minuto y una Edge Function que envía por SES (decisión 0007). Incluye la migración 11 de la decisión 0006 (`add_notification_retention`, purga a los 90 días).
 - [ ] 5.2 Envío por correo con Amazon SES, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente. SES en `us-east-1`, plan Essentials, una llamada por destinatario y lista de supresión (decisión 0007).
 - [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero. Presupuesto de la decisión 0007: 2 correos por cita, uno al cliente y uno al barbero; esta tarea decide cuál recibe el cliente (decisión abierta 2).
-- [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", suspender, extender prueba.
-- [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea).
+- [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", anular un pago con rastro, suspender, Reactivar, extender prueba y métricas (P2, P-06). Incluye la migración 9 de la decisión 0006 (`add_subscription_payment_flow`) y la copia en TypeScript de la fórmula de fechas, con una prueba que compare las dos.
+- [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea). Incluye la migración 10 de la decisión 0006 (`read_only_when_suspended`), los avisos en la agenda (D-70 a D-72, sin pantalla de suscripción) y Mis citas (P2, C-19 a C-21).
 
 **Lista cuando:** una cita de prueba recibe confirmación y recordatorio reales por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
 
@@ -353,7 +359,7 @@ El objetivo de esta semana es cerrar la fase 0 y arrancar la 1; todo lo demás p
 
 - [ ] Crear las cuentas y preparar tu computador (sección Preparación del entorno).
 - [x] Exportar la especificación del MVP a Markdown y guardarla como `docs/spec.md`.
-- [ ] Elegir un nombre provisional para el repositorio y el producto (se puede cambiar después).
+- [x] Elegir un nombre provisional para el repositorio y el producto (se puede cambiar después): el producto es Yapoin, con dominio `yapoin.com`.
 - [x] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
 - [ ] Traer aquí el plan que proponga Claude Code para la fase 1 (el modelo de datos) antes de aprobarlo: es la decisión más difícil de cambiar después.
 - [ ] En paralelo, empezar el diseño de las 3 pantallas clave (reserva, agenda, registro); lo trabajamos juntos aquí.

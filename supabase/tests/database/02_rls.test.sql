@@ -19,15 +19,20 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000e', 'sin-perfil@example.com');
 
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18'),
-  ('cccccccc-0000-0000-0000-000000000000', 'Barbería C', 'barberia-c', '2026-11-18');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', current_date + 10),
+  ('cccccccc-0000-0000-0000-000000000000', 'Barbería C', 'barberia-c', current_date + 10);
 
-insert into public.profiles (id, barbershop_id, role, full_name, active) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A', true),
-  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner', 'Dueño B', true),
-  ('00000000-0000-0000-0000-00000000000c', 'cccccccc-0000-0000-0000-000000000000', 'owner', 'Dueño C', false),
-  ('00000000-0000-0000-0000-0000000000ad', null, 'super_admin', 'Admin', true);
+insert into public.profiles (id, full_name, active, is_super_admin) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A', true, false),
+  ('00000000-0000-0000-0000-00000000000b', 'Dueño B', true, false),
+  ('00000000-0000-0000-0000-00000000000c', 'Dueño C', false, false),
+  ('00000000-0000-0000-0000-0000000000ad', 'Admin', true, true);
+
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000c', 'cccccccc-0000-0000-0000-000000000000', 'owner');
 
 insert into public.barbers (id, barbershop_id, display_name, email, link_token_hash, active) values
   ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', 'barbero-a@example.com', repeat('a', 64), true),
@@ -65,23 +70,21 @@ insert into public.customers (id, barbershop_id, full_name, email, phone) values
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente-b@example.com', '+573002220002');
 
 insert into public.appointments (
-  id, barbershop_id, customer_id, barber_id, service_id,
+  id, barbershop_id, customer_id, barber_id,
   starts_at, ends_at, price_cop, source, manage_token_hash
 ) values
   ('aaaaaaaa-0000-0000-0000-0000000000e1', 'aaaaaaaa-0000-0000-0000-000000000000',
-   'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1',
-   'aaaaaaaa-0000-0000-0000-0000000000c1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web', repeat('e', 64)),
+   'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web', repeat('e', 64)),
   ('bbbbbbbb-0000-0000-0000-0000000000e1', 'bbbbbbbb-0000-0000-0000-000000000000',
-   'bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-0000000000b1',
-   'bbbbbbbb-0000-0000-0000-0000000000c1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 30000, 'web', repeat('f', 64));
+   'bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-0000000000b1', '2026-11-10 14:00Z', '2026-11-10 14:40Z', 30000, 'web', repeat('f', 64));
 
 insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:a'),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000e1', 'appointment_reminder', '2026-11-09 14:00Z', 'reminder:b');
 
-insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-A', '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'pro', 'monthly', 69900, 'nequi', 'REF-B', '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad');
+insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by) values
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-A', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad'),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-B', current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad');
 
 -- 1. Grants that hold for every table, including future ones -------------------
 
@@ -145,6 +148,7 @@ select is(
     order by n.nspname || '.' || p.proname || ':' || r.rolname collate "C"
   ),
   array[
+    'private.check_appointment_source:authenticated',
     'private.current_barbershop_id:authenticated',
     'private.current_profile_id:authenticated',
     'private.is_e164_phone:anon',
@@ -153,8 +157,12 @@ select is(
     'private.is_super_admin:authenticated',
     'private.is_token_hash:anon',
     'private.is_token_hash:authenticated',
+    'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
-    'private.set_updated_at:authenticated'
+    'private.set_updated_at:authenticated',
+    'public.change_appointment_services:authenticated',
+    'public.create_appointment:authenticated',
+    'public.create_barbershop:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
 );
@@ -374,9 +382,9 @@ select throws_ok(
   '42501', null, 'owner A cannot create customers in B'
 );
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
-            'bbbbbbbb-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-0000000000c1',
+            'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-11 14:00Z', '2026-11-11 14:40Z', 30000, 'manual')$$,
   '42501', null, 'owner A cannot create appointments in B'
 );
@@ -443,12 +451,12 @@ delete from public.barbers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000
 -- Owner A tries to give themselves more power.
 
 select throws_ok(
-  $$update public.profiles set role = 'super_admin' where id = '00000000-0000-0000-0000-00000000000a'$$,
+  $$update public.profiles set is_super_admin = true where id = '00000000-0000-0000-0000-00000000000a'$$,
   '42501', null, 'an owner cannot make themselves super admin'
 );
 select throws_ok(
-  $$update public.profiles set barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000' where id = '00000000-0000-0000-0000-00000000000a'$$,
-  '42501', null, 'an owner cannot move to another barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role) values ('00000000-0000-0000-0000-00000000000a', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner')$$,
+  '42501', null, 'an owner cannot join another barbershop'
 );
 select throws_ok(
   $$update public.profiles set active = true where id = '00000000-0000-0000-0000-00000000000a'$$,
@@ -459,12 +467,12 @@ select throws_ok(
   '42501', null, 'an owner cannot extend their subscription'
 );
 select throws_ok(
-  $$update public.barbershops set subscription_status = 'active', plan = 'pro' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
+  $$update public.barbershops set subscription_status = 'active', plan = 'standard' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
   '42501', null, 'an owner cannot activate their subscription'
 );
 select throws_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'pro', 'annual', 699000, 'nequi', 'FALSO', '2026-11-18', '2026-11-18', '2027-11-18', '00000000-0000-0000-0000-00000000000a')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'FALSO', current_date + 10, current_date + 10, current_date + 375, '00000000-0000-0000-0000-00000000000a')$$,
   '42501', null, 'an owner cannot register their own payment'
 );
 select throws_ok(

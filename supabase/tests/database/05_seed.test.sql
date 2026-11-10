@@ -25,10 +25,10 @@ select is(
 );
 
 select is(
-  (select p.role::text from public.profiles p
+  (select p.is_super_admin from public.profiles p
    join auth.users u on u.id = p.id
    where u.email = 'admin@barberias.test'),
-  'super_admin',
+  true,
   'the seed super admin has the super admin role'
 );
 
@@ -42,8 +42,8 @@ select is(
 
 select is(
   (select subscription_status::text || ':' || plan::text from public.barbershops where slug = 'barberia-don-jose'),
-  'active:basic',
-  'Barbería Don José is active on the basic plan'
+  'active:standard',
+  'Barbería Don José is active on the single plan'
 );
 
 select is(
@@ -55,9 +55,9 @@ select is(
 );
 
 select is(
-  (select count(*) from public.profiles p
-   join public.barbershops b on b.id = p.barbershop_id
-   where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose') and p.role = 'owner'),
+  (select count(*) from public.memberships m
+   join public.barbershops b on b.id = m.barbershop_id
+   where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose') and m.role = 'owner'),
   2::bigint,
   'each seed barbershop has its owner'
 );
@@ -131,13 +131,13 @@ select is(
 );
 
 select is(
-  (select array_agg(distinct a.price_cop = s.price_cop)
-   from public.appointments a
-   join public.services s on s.id = a.service_id
-   join public.barbershops b on b.id = a.barbershop_id
+  (select array_agg(distinct l.price_cop = s.price_cop)
+   from public.appointment_services l
+   join public.services s on s.id = l.service_id
+   join public.barbershops b on b.id = l.barbershop_id
    where b.slug in ('la-barberia-del-barrio', 'barberia-don-jose')),
   array[true],
-  'appointments keep the price of their service'
+  'appointment lines keep the price of their service'
 );
 
 select * from finish();

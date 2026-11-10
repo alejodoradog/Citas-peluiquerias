@@ -28,7 +28,7 @@ Los correos que envía Supabase local (por ejemplo, la recuperación de contrase
 | --- | --- | --- |
 | Link | `la-barberia-del-barrio` | `barberia-don-jose` |
 | Ciudad | Chapinero, Bogotá | Laureles, Medellín |
-| Suscripción | Prueba gratis de 20 días desde el `db reset` | Activa, plan Básico, con un pago por Nequi registrado |
+| Suscripción | Prueba gratis de 20 días desde el `db reset` | Activa en el plan único: su prueba venció hace 6 días y pagó por Nequi al día siguiente, así que el mes cuenta desde ese pago |
 | Horario | Lunes a sábado, 9:00 a 13:00 y 14:00 a 19:00 | Lunes a sábado, 8:00 a 18:00 |
 | Barberos | Carlos (el dueño, que también corta) y Andrés | José y Mateo (Mateo recibe avisos por correo) |
 | Servicios | Corte, barba, corte + barba, cejas y corte niños | Los mismos, con otros precios |
@@ -40,7 +40,9 @@ Los correos que envía Supabase local (por ejemplo, la recuperación de contrase
 
 Las fechas se calculan desde el día del `db reset`, en hora de Colombia, y saltan los domingos porque las dos barberías cierran ese día. Así siempre hay citas para "hoy" y "mañana".
 
-- **La Barbería del Barrio:** dos días con citas pasadas (atendidas y dos inasistencias de Juan), tres citas hoy (una cancelada por el cliente) y dos mañana.
+Las citas se crean con `create_appointment`, como lo hará la app (decisión 0006): la duración y el precio salen de sus servicios. Las cerradas (atendidas, inasistencias y canceladas) se pasan después a su estado, así que ya traen historial en `appointment_events`.
+
+- **La Barbería del Barrio:** dos días con citas pasadas (atendidas y dos inasistencias de Juan), tres citas hoy (una cancelada por el cliente) y tres mañana, una de ellas con dos servicios (corte + barba) en la misma cita.
 - **Barbería Don José:** una cita atendida ayer, dos hoy (una cancelada por la barbería) y una mañana.
 
 ## Links privados de los barberos

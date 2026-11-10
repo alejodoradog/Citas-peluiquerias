@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(72);
+select plan(73);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ select is(
     join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public'
       and c.relkind in ('r', 'p')
-      and c.relname not in ('barbershops', 'profiles')
+      and c.relname not in ('barbershops', 'profiles', 'plans')
       and not exists (
         select 1
         from pg_attribute a
@@ -71,13 +71,17 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a2', 'second-a@example.com');
 
 insert into public.barbershops (id, name, slug, expires_on) values
-  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', '2026-11-18'),
-  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', '2026-11-18');
+  ('aaaaaaaa-0000-0000-0000-000000000000', 'Barbería A', 'barberia-a', current_date + 10),
+  ('bbbbbbbb-0000-0000-0000-000000000000', 'Barbería B', 'barberia-b', current_date + 10);
 
-insert into public.profiles (id, barbershop_id, role, full_name) values
-  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Dueño A'),
-  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner', 'Dueño B'),
-  ('00000000-0000-0000-0000-0000000000ad', null, 'super_admin', 'Admin');
+insert into public.profiles (id, full_name, is_super_admin) values
+  ('00000000-0000-0000-0000-00000000000a', 'Dueño A', false),
+  ('00000000-0000-0000-0000-00000000000b', 'Dueño B', false),
+  ('00000000-0000-0000-0000-0000000000ad', 'Admin', true);
+
+insert into public.memberships (user_id, barbershop_id, role) values
+  ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner'),
+  ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner');
 
 insert into public.barbers (id, barbershop_id, display_name, link_token_hash) values
   ('aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Barbero A', repeat('a', 64)),
@@ -92,44 +96,51 @@ insert into public.customers (id, barbershop_id, full_name, email, phone) values
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente@example.com', '+573001112233');
 
 insert into public.appointments (
-  id, barbershop_id, customer_id, barber_id, service_id,
+  id, barbershop_id, customer_id, barber_id,
   starts_at, ends_at, price_cop, source
 ) values (
   'aaaaaaaa-0000-0000-0000-0000000000e1',
   'aaaaaaaa-0000-0000-0000-000000000000',
   'aaaaaaaa-0000-0000-0000-0000000000d1',
   'aaaaaaaa-0000-0000-0000-0000000000b1',
-  'aaaaaaaa-0000-0000-0000-0000000000c1',
   '2026-11-10 14:00Z', '2026-11-10 14:40Z', 25000, 'web'
 );
 
 -- 4. Nothing from barbershop A may point at barbershop B -----------------------
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'bbbbbbbb-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
-  '23503', null,
-  'an appointment cannot use a barber from another barbershop'
+  '23514', null,
+  'an appointment cannot use a barber from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
-  '23503', null,
-  'an appointment cannot use a customer from another barbershop'
+  '23514', null,
+  'an appointment cannot use a customer from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'bbbbbbbb-0000-0000-0000-0000000000c1',
-            '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'web')$$,
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
+            '2026-11-10 15:00Z', '2026-11-10 15:40Z', 25000, 'manual')$$,
   '23503', null,
-  'an appointment cannot use a service from another barbershop'
+  'a manual appointment with a customer from another barbershop hits the composite foreign key'
+);
+
+select throws_ok(
+  $$insert into public.appointment_services (barbershop_id, appointment_id, position, service_id)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000e1', 2,
+            'bbbbbbbb-0000-0000-0000-0000000000c1')$$,
+  '23514', null,
+  'an appointment cannot use a service from another barbershop (the line copy trigger rejects it, decision 0006)'
 );
 
 select throws_ok(
@@ -151,8 +162,8 @@ select throws_ok(
   $$insert into public.time_blocks (barbershop_id, barber_id, starts_at, ends_at)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000b1',
             '2026-11-10 17:00Z', '2026-11-10 18:00Z')$$,
-  '23503', null,
-  'a block cannot target a barber from another barbershop'
+  '23514', null,
+  'a block cannot target a barber from another barbershop (the guard trigger rejects it before the foreign key, decision 0006)'
 );
 
 select throws_ok(
@@ -166,25 +177,25 @@ select throws_ok(
 -- 5. Barbershops ----------------------------------------------------------------
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'barberia-a', '2026-11-18')$$,
+  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'barberia-a', current_date + 10)$$,
   '23505', null,
   'slugs are unique'
 );
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'Barberia Con Espacios', '2026-11-18')$$,
+  $$insert into public.barbershops (name, slug, expires_on) values ('Otra', 'Barberia Con Espacios', current_date + 10)$$,
   '23514', null,
   'slugs only allow lowercase letters, digits and single hyphens'
 );
 
 select throws_ok(
-  $$insert into public.barbershops (name, slug, expires_on, subscription_status) values ('Otra', 'otra', '2026-11-18', 'active')$$,
+  $$insert into public.barbershops (name, slug, expires_on, subscription_status) values ('Otra', 'otra', current_date + 10, 'active')$$,
   '23514', null,
   'an active subscription needs a plan'
 );
 
 select lives_ok(
-  $$insert into public.barbershops (name, slug, expires_on, subscription_status, plan) values ('Activa', 'activa', '2026-12-18', 'active', 'basic')$$,
+  $$insert into public.barbershops (name, slug, expires_on, subscription_status, plan) values ('Activa', 'activa', current_date + 40, 'active', 'standard')$$,
   'an active subscription with a plan is accepted'
 );
 
@@ -236,32 +247,35 @@ select throws_ok(
   'phones are stored in E.164 format'
 );
 
--- 6. Profiles -------------------------------------------------------------------
+-- 6. Profiles and memberships ----------------------------------------------------
+
+insert into public.profiles (id, full_name) values
+  ('00000000-0000-0000-0000-0000000000a2', 'Otro dueño');
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner', 'Otro dueño')$$,
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner')$$,
   '23505', null,
   'a barbershop has only one owner account'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', null, 'owner', 'Sin barbería')$$,
-  '23514', null,
-  'an owner must belong to a barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', null, 'owner')$$,
+  '23502', null,
+  'a membership must name a barbershop'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, barbershop_id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000a2', 'aaaaaaaa-0000-0000-0000-000000000000', 'super_admin', 'Admin con barbería')$$,
-  '23514', null,
-  'a super admin does not belong to a barbershop'
+  $$insert into public.memberships (user_id, barbershop_id, role)
+    values ('00000000-0000-0000-0000-0000000000a2', 'dddddddd-0000-0000-0000-000000000000', 'owner')$$,
+  '23503', null,
+  'a membership needs an existing barbershop'
 );
 
 select throws_ok(
-  $$insert into public.profiles (id, role, full_name)
-    values ('00000000-0000-0000-0000-0000000000ff', 'super_admin', 'Sin usuario')$$,
+  $$insert into public.profiles (id, full_name)
+    values ('00000000-0000-0000-0000-0000000000ff', 'Sin usuario')$$,
   '23503', null,
   'a profile needs an auth user'
 );
@@ -417,9 +431,9 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.appointments (barbershop_id, customer_id, barber_id, service_id, starts_at, ends_at, price_cop, source)
+  $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
-            'aaaaaaaa-0000-0000-0000-0000000000b1', 'aaaaaaaa-0000-0000-0000-0000000000c1',
+            'aaaaaaaa-0000-0000-0000-0000000000b1',
             '2026-11-10 15:00Z', '2026-11-10 15:00Z', 25000, 'web')$$,
   '23514', null,
   'an appointment ends after it starts'
@@ -469,17 +483,17 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-1',
-            '2026-11-18', '2026-12-18', '2026-11-18', '00000000-0000-0000-0000-0000000000ad')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
+            current_date + 10, current_date + 40, current_date + 10, '00000000-0000-0000-0000-0000000000ad')$$,
   '23514', null,
   'a payment covers a forward period'
 );
 
 select lives_ok(
-  $$insert into public.subscription_payments (barbershop_id, plan, billing_period, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'basic', 'monthly', 39900, 'nequi', 'REF-1',
-            '2026-11-18', '2026-11-18', '2026-12-18', '00000000-0000-0000-0000-0000000000ad')$$,
+  $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
+            current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad')$$,
   'a valid payment is recorded'
 );
 

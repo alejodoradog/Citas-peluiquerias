@@ -1,6 +1,6 @@
 # 0002 Políticas RLS y permisos
 
-Fecha: 2026-11-04 · Tareas: 1.2 y 1.5 · Estado: aceptada por el dueño del proyecto.
+Fecha: 2026-11-04 · Tareas: 1.2 y 1.5 · Estado: aceptada por el dueño del proyecto; **reemplazada en parte** por la decisión 0006 del esquema final (tabla de permisos y punto 4): las políticas `owner_*` de una barbería pasan a `member_*` sobre todas las sedes de la cuenta (`private.member_barbershop_ids()`), y se suman `memberships`, `plans`, `appointment_services` y `appointment_events`.
 
 ## Contexto
 

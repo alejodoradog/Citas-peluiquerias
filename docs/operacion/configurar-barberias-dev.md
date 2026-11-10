@@ -4,6 +4,8 @@ Hasta la tarea 6.4, la app desplegada en Vercel usa el proyecto `barberias-dev` 
 
 **Dónde se prueba:** en la URL fija de `main`, `https://citas-peluquerias-eta.vercel.app`, después de fusionar cada PR (decisión del fundador, 2026-11-06). Así la Site URL de Supabase no cambia con cada rama. El código sigue llegando a `main` solo por PR con los chequeos en verde, y los merges los hace la cuenta `alejodoradog`, porque en Hobby Vercel bloquea los despliegues cuyo autor no es el dueño del equipo.
 
+**Estado actual (2026-11-07):** `barberias-dev` ya existe, en **East US (North Virginia), `us-east-1`**, con cómputo Nano, dentro de una **organización gratis aparte de la de producción** (decisión 0007, puntos 2 y 4). Vercel sigue en el plan **Hobby** hasta la 6.4, y sus funciones corren en `iad1` (fijado en `vercel.json`).
+
 **En la 6.4, antes de recibir clientes,** las variables de Production se reemplazan por las de `barberias-prod` (`docs/operacion/infraestructura-produccion.md`, "Variables de producción en Vercel"). Desde ese momento, las pruebas vuelven a las vistas previas.
 
 ## 0. Crear el proyecto (si aún no existe)
@@ -50,7 +52,14 @@ Con la CLI 3, `db push` sin `--remote` apunta a la base local y responde "Local 
 
 **Nunca agregues `--include-seed`.** El seed crea un super admin con contraseña pública (`docs/operacion/datos-de-prueba.md`).
 
-Repite el `db push --remote` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo (fase 6).
+Repite el `db push --remote` cada vez que se fusione un PR con migraciones nuevas, hasta que GitHub Actions lo haga solo.
+
+**Migraciones automáticas desde el CI (2026-11-07):** el workflow `.github/workflows/migrate-dev.yml` aplica las migraciones a `barberias-dev` en cada push a `main` que traiga cambios en `supabase/migrations`, y también se puede correr a mano desde **Actions → Migrate barberias-dev → Run workflow**. Necesita un secreto del repositorio que crea un administrador en GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
+
+- **Nombre:** `SUPABASE_DEV_DB_URL`.
+- **Valor:** en Supabase → proyecto `barberias-dev` → **Connect** → **Session pooler**, la cadena `postgresql://postgres.TU_REF:[YOUR-PASSWORD]@…pooler.supabase.com:5432/postgres`, con la contraseña de la base de datos en lugar de `[YOUR-PASSWORD]`.
+
+Esa cadena solo abre `barberias-dev`: nunca sirve para producción. Mientras el secreto no exista, el workflow se salta con un aviso y el `db push --remote` sigue siendo a mano. La primera corrida con el secreto confirma que la CLI 3 acepta `db push --db-url`.
 
 ## 3. Auth en `barberias-dev`
 
