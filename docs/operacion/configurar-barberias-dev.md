@@ -87,6 +87,10 @@ En Supabase → **Authentication**:
 
 **Límite mientras no haya remitente propio:** el correo de prueba de Supabase solo envía a direcciones del equipo del proyecto, y unos 2 correos por hora ([documentación](https://supabase.com/docs/guides/auth/auth-smtp)). Para probar el registro en una vista previa, usa un correo de ese equipo. Con otro correo, Supabase rechaza el envío ("Email address not authorized") y la pantalla muestra "No pudimos completar la acción". Esto se resuelve al configurar Amazon SES (tarea 5.2), y entonces hay que subir también el límite de envíos de Auth, que por defecto es de 30 correos por hora.
 
+## Caché de compilación de Vercel
+
+`vercel.json` borra `.next/cache` antes de cada build (`buildCommand`). El 2026-11-09, el primer despliegue del sistema de diseño (PR #20) sirvió un CSS generado con el `globals.css` anterior, por la caché que Vercel restaura entre builds. El build limpio del CI sí traía los tokens nuevos. Borrar la caché alarga un poco cada build, pero el CSS siempre sale de los archivos actuales. El CI comprueba además que el CSS de producción traiga los tokens del diseño.
+
 ## 4. Volver a desplegar
 
 En Vercel → **Deployments** → el último despliegue de `main` → **Redeploy**, eligiendo **Production**. Las variables nuevas solo aplican a despliegues nuevos.
