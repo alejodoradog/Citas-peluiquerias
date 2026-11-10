@@ -32,7 +32,14 @@ const Context = createContext<DraftContext | null>(null);
 function readStored(): SetupDraft | null {
   try {
     const stored = window.sessionStorage.getItem(STORAGE_KEY);
-    return stored ? (JSON.parse(stored) as SetupDraft) : null;
+    if (!stored) return null;
+    const draft = JSON.parse(stored) as Partial<SetupDraft>;
+    // A broken or older draft is dropped: the wizard starts over.
+    const valid =
+      Array.isArray(draft.services) &&
+      Array.isArray(draft.barbers) &&
+      typeof draft.ownerCuts === "boolean";
+    return valid ? (draft as SetupDraft) : null;
   } catch {
     return null;
   }

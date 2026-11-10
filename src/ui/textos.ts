@@ -214,7 +214,8 @@ export const textos = {
       bajada:
         "Te sugerimos los típicos. Toca uno para cambiar precio o duración, o desmárcalo.",
       ofrecer: (nombre: string) => `Ofrecer ${nombre}`,
-      editar: (nombre: string) => `Editar ${nombre}`,
+      editar: (nombre: string, detalle: string) =>
+        `Editar ${nombre}, ${detalle}`,
       duracion: (minutos: number) => `${minutos} min`,
       agregar: "Agregar otro servicio",
       continuar: "Continuar",
@@ -244,6 +245,11 @@ export const textos = {
       terminar: "Terminar",
       terminando: "Guardando…",
       despues: "Lo hago después",
+      sinServicios: (nombres: string) =>
+        `${nombres} no tiene servicios. Tócalo y marca al menos uno.`,
+      sinServiciosTodos:
+        "Vuelve a tus servicios y marca al menos uno para terminar.",
+      volverServicios: "Volver a mis servicios",
     },
     barbero: {
       agregar: "Agregar barbero",

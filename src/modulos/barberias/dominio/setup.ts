@@ -241,7 +241,17 @@ const setupPayloadSchema = z
       }
     });
     const keys = new Set(payload.services.map((s) => s.key));
+    if (keys.size !== payload.services.length) {
+      ctx.addIssue({ code: "custom", path: ["services"], message: "invalid" });
+    }
     payload.barbers.forEach((barber, index) => {
+      if (new Set(barber.service_keys).size !== barber.service_keys.length) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["barbers", index, "service_keys"],
+          message: "invalid",
+        });
+      }
       if (barber.service_keys.some((key) => !keys.has(key))) {
         ctx.addIssue({
           code: "custom",

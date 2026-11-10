@@ -6,14 +6,21 @@
 -- 3. barbers.uses_barbershop_hours: by default a barber works the barbershop
 --    hours (spec, registration step 3); its own barber_schedules rows count
 --    only when this is false (D-55, task 2.2).
--- 4. complete_barbershop_setup saves the whole wizard in one transaction.
+-- 4. barbershops.setup_completed_at marks the wizard as done, once and for
+--    good: adding a service by hand does not block it, and deleting every
+--    service does not reopen it.
+-- 5. complete_barbershop_setup saves the whole wizard in one transaction.
 
 -- 1. Service durations ------------------------------------------------------------------
 
 alter table public.services
   drop constraint services_duration_minutes_check,
   add constraint services_duration_minutes_check
-    check (duration_minutes between 5 and 240 and duration_minutes % 5 = 0);
+    check (duration_minutes between 5 and 240 and duration_minutes % 5 = 0),
+  -- Whole pesos up to 9.999.999, as the app accepts (src/lib/dinero/pesos.ts).
+  drop constraint services_price_cop_check,
+  add constraint services_price_cop_check
+    check (price_cop between 0 and 9999999);
 
 -- 2 and 3. Barbers ------------------------------------------------------------------------
 
@@ -37,7 +44,38 @@ where exists (
 grant select (uses_barbershop_hours) on public.barbers to anon;
 grant select (is_owner, uses_barbershop_hours) on public.barbers to authenticated;
 
--- 4. The wizard ----------------------------------------------------------------------------
+-- 4. Setup mark ----------------------------------------------------------------------------
+
+alter table public.barbershops add column setup_completed_at timestamptz;
+
+-- Barbershops that already have services finished their setup another way.
+update public.barbershops b
+set setup_completed_at = b.created_at
+where exists (select 1 from public.services s where s.barbershop_id = b.id);
+
+-- Owners read it through the table grant; the function sets it.
+grant update (setup_completed_at) on public.barbershops to authenticated;
+
+create function private.keep_setup_completed()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if old.setup_completed_at is not null
+     and new.setup_completed_at is distinct from old.setup_completed_at then
+    raise exception 'setup already completed'
+      using errcode = 'check_violation', hint = 'setup_done';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger keep_setup_completed
+  before update of setup_completed_at on public.barbershops
+  for each row execute function private.keep_setup_completed();
+
+-- 5. The wizard ----------------------------------------------------------------------------
 -- Security invoker: RLS and the column grants of the caller apply to every
 -- insert. p_services and p_barbers come from the wizard draft:
 --   p_hours    [{weekday, start_time, end_time}]           used only without hours
@@ -59,9 +97,8 @@ as $$
 declare
   service_ids jsonb := '{}';
   item jsonb;
-  position bigint;
+  barber_position bigint;
   new_id uuid;
-  service_key text;
   owner_flag boolean;
 begin
   if not (p_barbershop_id = any (private.member_barbershop_ids())) then
@@ -69,10 +106,12 @@ begin
       using errcode = 'insufficient_privilege', hint = 'not_member';
   end if;
 
-  -- Two taps on "Terminar" run one after the other: the second one finds the
-  -- services of the first.
-  perform 1 from public.barbershops where id = p_barbershop_id for update;
-  if exists (select 1 from public.services s where s.barbershop_id = p_barbershop_id) then
+  -- The mark takes the row lock: two taps on "Terminar" run one after the
+  -- other, and the second one finds the mark of the first. A failure later
+  -- rolls the mark back with everything else.
+  update public.barbershops set setup_completed_at = now()
+  where id = p_barbershop_id and setup_completed_at is null;
+  if not found then
     raise exception 'the barbershop is already set up'
       using errcode = 'check_violation', hint = 'setup_done';
   end if;
@@ -89,6 +128,15 @@ begin
   end if;
   if exists (
     select 1 from jsonb_array_elements(p_services) s
+    where jsonb_typeof(s -> 'key') is distinct from 'string' or btrim(s ->> 'key') = ''
+  ) or (
+    select count(distinct s ->> 'key') from jsonb_array_elements(p_services) s
+  ) <> jsonb_array_length(p_services) then
+    raise exception 'each service needs its own key'
+      using errcode = 'check_violation', hint = 'setup_invalid';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements(p_services) s
     group by lower(btrim(s ->> 'name'))
     having count(*) > 1
   ) then
@@ -96,8 +144,13 @@ begin
       using errcode = 'check_violation', hint = 'service_name_taken';
   end if;
 
-  if not exists (select 1 from public.barbershop_hours h where h.barbershop_id = p_barbershop_id)
-     and jsonb_typeof(p_hours) = 'array' then
+  -- A barbershop without hours gets the ones of the setup: without them no
+  -- one could book.
+  if not exists (select 1 from public.barbershop_hours h where h.barbershop_id = p_barbershop_id) then
+    if jsonb_typeof(p_hours) is distinct from 'array' or jsonb_array_length(p_hours) = 0 then
+      raise exception 'opening hours required'
+        using errcode = 'check_violation', hint = 'hours_required';
+    end if;
     insert into public.barbershop_hours (barbershop_id, weekday, start_time, end_time)
     select p_barbershop_id, (h ->> 'weekday')::smallint, (h ->> 'start_time')::time, (h ->> 'end_time')::time
     from jsonb_array_elements(p_hours) h;
@@ -115,11 +168,12 @@ begin
     service_ids := service_ids || jsonb_build_object(item ->> 'key', new_id);
   end loop;
 
-  for item, position in
+  for item, barber_position in
     select value, ordinality from jsonb_array_elements(p_barbers) with ordinality
   loop
     if jsonb_typeof(item -> 'service_keys') is distinct from 'array'
-       or jsonb_array_length(item -> 'service_keys') = 0 then
+       or jsonb_array_length(item -> 'service_keys')
+          not between 1 and jsonb_array_length(p_services) then
       raise exception 'each barber does at least one service'
         using errcode = 'check_violation', hint = 'barber_services_required';
     end if;
@@ -134,20 +188,21 @@ begin
       owner_flag,
       -- The owner sees the whole agenda: no private link (D-53).
       not owner_flag,
-      position - 1,
+      barber_position - 1,
       encode(sha256(convert_to(gen_random_uuid()::text || gen_random_uuid()::text, 'UTF8')), 'hex')
     )
     returning id into new_id;
 
-    for service_key in select jsonb_array_elements_text(item -> 'service_keys') loop
-      if not service_ids ? service_key then
-        raise exception 'unknown service in the setup'
-          using errcode = 'check_violation', hint = 'unknown_service';
-      end if;
-      insert into public.barber_services (barbershop_id, barber_id, service_id)
-      values (p_barbershop_id, new_id, (service_ids ->> service_key)::uuid)
-      on conflict do nothing;
-    end loop;
+    if exists (
+      select 1 from jsonb_array_elements_text(item -> 'service_keys') k
+      where not service_ids ? k
+    ) then
+      raise exception 'unknown service in the setup'
+        using errcode = 'check_violation', hint = 'unknown_service';
+    end if;
+    insert into public.barber_services (barbershop_id, barber_id, service_id)
+    select distinct p_barbershop_id, new_id, (service_ids ->> k)::uuid
+    from jsonb_array_elements_text(item -> 'service_keys') k;
   end loop;
 end;
 $$;

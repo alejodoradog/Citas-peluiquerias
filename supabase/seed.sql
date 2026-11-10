@@ -148,6 +148,9 @@ begin
   from public.barbershop_hours h
   join public.barbers b on b.barbershop_id = h.barbershop_id
   where h.barbershop_id in (barrio, donjose);
+  -- The seed barbershops come configured: no setup wizard for their owners.
+  update public.barbershops set setup_completed_at = now()
+  where id in (barrio, donjose);
   -- Their own rows, copied from the barbershop: they count only with the flag off.
   update public.barbers set uses_barbershop_hours = false
   where barbershop_id in (barrio, donjose);

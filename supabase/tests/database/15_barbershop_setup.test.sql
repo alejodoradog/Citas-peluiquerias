@@ -5,10 +5,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(30);
+select plan(39);
 
 select has_column('public', 'barbers', 'is_owner', 'barbers marks the owner who also cuts');
 select has_column('public', 'barbers', 'uses_barbershop_hours', 'barbers says whether it uses the barbershop hours');
+select has_column('public', 'barbershops', 'setup_completed_at', 'barbershops marks when the setup wizard finished');
 select has_function(
   'public', 'complete_barbershop_setup', array['uuid', 'jsonb', 'jsonb', 'jsonb'],
   'complete_barbershop_setup exists'
@@ -63,6 +64,12 @@ select throws_ok(
   $$insert into public.services (barbershop_id, name, price_cop, duration_minutes)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'Largo', 1000, 245)$$,
   '23514', null, 'a duration over 240 minutes fails'
+);
+
+select throws_ok(
+  $$insert into public.services (barbershop_id, name, price_cop, duration_minutes)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Caro', 10000000, 30)$$,
+  '23514', null, 'a price over 9.999.999 fails'
 );
 
 -- Other barbershops, anonymous visitors and super admins cannot run it ------------------
@@ -121,9 +128,29 @@ select throws_ok(
       '[{"key": "s1", "name": "Corte", "price_cop": 1, "duration_minutes": 42}]', '[]') from setup_input$$,
   '23514', null, 'a service with an invalid duration fails'
 );
+select throws_ok(
+  $$select public.complete_barbershop_setup('aaaaaaaa-0000-0000-0000-000000000000', null, services, barbers) from setup_input$$,
+  '23514', null, 'a barbershop without hours needs the hours of the setup'
+);
+select throws_ok(
+  $$select public.complete_barbershop_setup('aaaaaaaa-0000-0000-0000-000000000000', hours,
+      '[{"key": "x", "name": "Corte", "price_cop": 1, "duration_minutes": 40},
+        {"key": "x", "name": "Barba", "price_cop": 1, "duration_minutes": 20}]', '[]') from setup_input$$,
+  '23514', null, 'two services cannot share a key'
+);
+select throws_ok(
+  $$select public.complete_barbershop_setup('aaaaaaaa-0000-0000-0000-000000000000', hours, services,
+      '[{"display_name": "Kevin", "email": null, "is_owner": false,
+         "service_keys": ["s1", "s1", "s1", "s1"]}]') from setup_input$$,
+  '23514', null, 'a barber cannot list more services than the setup has'
+);
 select is(
   (select count(*)::int from public.services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
   0, 'a failed setup leaves no services behind'
+);
+select is(
+  (select setup_completed_at from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000000'),
+  null, 'nor the mark'
 );
 select is(
   (select count(*)::int from public.barbershop_hours where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
@@ -181,11 +208,32 @@ select is(
   3, 'and the second try changes nothing'
 );
 
+select ok(
+  (select setup_completed_at is not null from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000000'),
+  'the setup leaves its mark'
+);
+reset role;
+delete from public.barber_services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000';
+delete from public.services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000';
+set local role authenticated;
+select throws_ok(
+  $$select public.complete_barbershop_setup('aaaaaaaa-0000-0000-0000-000000000000', hours, services, '[]') from setup_input$$,
+  '23514', null, 'deleting every service does not reopen the setup'
+);
+select throws_ok(
+  $$update public.barbershops set setup_completed_at = null where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
+  '23514', null, 'the mark cannot be cleared'
+);
+
 -- Existing hours are kept; no barbers is allowed -------------------------------------
 
+reset role;
+insert into public.services (barbershop_id, name, price_cop, duration_minutes)
+values ('cccccccc-0000-0000-0000-000000000000', 'Manual', 1000, 30);
+set local role authenticated;
 select lives_ok(
   $$select public.complete_barbershop_setup('cccccccc-0000-0000-0000-000000000000', hours, services, '[]') from setup_input$$,
-  'a barbershop can finish the setup without barbers'
+  'a service added by hand does not block the setup, and it can finish without barbers'
 );
 select is(
   (select array_agg(weekday || ' ' || start_time || '-' || end_time)

@@ -15,6 +15,10 @@ import {
 // agenda. Owners are created already confirmed, so no email is sent.
 const t = textos.asistente;
 const PASSWORD = "clave-segura-1";
+// The row button is named "Editar Corte, 40 min, $25.000"; tests find it by
+// its start, so a price change does not change how it is found.
+const editar = (nombre: string) =>
+  t.servicios.editar(nombre, "").replace(/,\s*$/, "");
 
 async function signInNewOwner(page: Page, tag: string) {
   const email = uniqueEmail(tag);
@@ -55,7 +59,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await checkScreen(page);
 
   // D-11: edit Corte.
-  await page.getByRole("button", { name: t.servicios.editar("Corte") }).click();
+  await page.getByRole("button", { name: editar("Corte") }).click();
   const sheet = page.getByRole("dialog", { name: t.servicio.editar });
   await expect(sheet).toBeVisible();
   await checkScreen(page);
@@ -63,12 +67,12 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await sheet.getByLabel(t.servicio.campos.duracion).selectOption("45");
   await sheet.getByRole("button", { name: t.servicio.guardar }).click();
   await expect(sheet).not.toBeVisible();
-  const corte = page.getByRole("button", { name: t.servicios.editar("Corte") });
+  const corte = page.getByRole("button", { name: editar("Corte") });
   await expect(corte).toContainText("$28.000");
   await expect(corte).toContainText("45 min");
 
   // A price with decimals is explained and focused.
-  await page.getByRole("button", { name: t.servicios.editar("Barba") }).click();
+  await page.getByRole("button", { name: editar("Barba") }).click();
   await sheet.getByLabel(t.servicio.campos.precio).fill("25,5");
   await sheet.getByRole("button", { name: t.servicio.guardar }).click();
   await expect(sheet.getByText(t.errores.service_price_invalid)).toBeVisible();
@@ -84,7 +88,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await nuevo.getByLabel(t.servicio.campos.duracion).selectOption("15");
   await nuevo.getByRole("button", { name: t.servicio.guardar }).click();
   await expect(
-    page.getByRole("button", { name: t.servicios.editar("Diseño") }),
+    page.getByRole("button", { name: editar("Diseño") }),
   ).toBeVisible();
   await page
     .getByRole("checkbox", { name: t.servicios.ofrecer("Cejas") })
