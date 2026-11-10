@@ -22,6 +22,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:coverage
       - run: pnpm build
+      - name: The production CSS carries the design tokens
+        run: |
+          for token in --color-brand-soft --color-line-strong --radius-button --text-title; do
+            grep -rlq -- "$token" .next/static --include=*.css || { echo "::error::$token is missing from the production CSS"; exit 1; }
+          done
       - name: The component catalog is not in the production build
         run: |
           pnpm start &
