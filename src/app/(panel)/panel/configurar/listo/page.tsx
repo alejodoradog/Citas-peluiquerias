@@ -10,7 +10,7 @@ import {
 } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BookingLinkCard } from "@/ui/booking-link-card";
-import { ButtonLink } from "@/ui/button";
+import { buttonClasses } from "@/ui/button";
 import { CheckIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { QrCode, qrMatrix } from "@/ui/qr-code";
@@ -69,7 +69,13 @@ async function SetupDone() {
         fileName={qrFileName(barbershop.slug)}
         label={t.descargarQr}
       />
-      <ButtonLink href={routes.panel}>{t.agenda}</ButtonLink>
+      {/* A full page load, not a client navigation: the panel's first visit
+          sent the owner here, and Next.js keeps that hidden page with its
+          pending redirect to the wizard. Coming back to it with a Link
+          would bounce the owner to the wizard and back. */}
+      <a href={routes.panel} className={buttonClasses({})}>
+        {t.agenda}
+      </a>
     </>
   );
 }
