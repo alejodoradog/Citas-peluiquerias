@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<title>Confirmar correo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#145a63}a:hover{color:#16211f}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f4f7f6; color: #16211f; font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 30px"><div style="display: flex; flex-direction: column; gap: 8px"><div aria-hidden="true" style="width: 72px; height: 12px; background: linear-gradient(#1e7f8c, #1e7f8c) top / 100% 4px no-repeat, repeating-linear-gradient(90deg, #1e7f8c 0 3px, transparent 3px 9px)"></div><span style="font-size: 20px; font-weight: 700">Silla</span></div><div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.15">Ya casi</h1><p style="margin: 0; font-size: 15px; color: #4c5c58; line-height: 1.45">Toca el botón para continuar.</p></div><a href="D05-Ingresar.dc.html" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; height: 54px; padding: 0 18px; box-sizing: border-box; border-radius: 14px; background: #1e7f8c; color: #ffffff; border: 0; font-family: inherit; font-size: 17px; font-weight: 700; text-decoration: none"><span>Continuar</span></a><div style="border: 1px dashed #1e7f8c; border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 1.45; color: #145a63; background: #f8fcfc"><strong>Nota de diseño · </strong>El link del correo abre esta pantalla y solo gasta el token al tocar (filtros de correo abren links solos). Confirmar no abre sesión: lleva a Ingresar con el aviso de correo confirmado.</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
