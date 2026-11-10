@@ -371,6 +371,8 @@ export const textos = {
     qrTitulo: "Reserva tu cita aquí",
     descargarQr: "Descargar QR",
     afiche: "Afiche",
+    // Under the QR card of the poster.
+    aficheAyuda: "Abre la cámara de tu celular y apunta al código",
     falloAfiche:
       "No pudimos crear el afiche. Intenta de nuevo o toma una captura de pantalla.",
     texto: {
