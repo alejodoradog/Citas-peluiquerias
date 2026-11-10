@@ -15,6 +15,8 @@ import {
 // Task 2.2b: the owner manages the team from Más (D-53 and D-54), photos
 // included. Owners are created already confirmed, so no email is sent.
 const t = textos.barberos;
+// Next.js keeps the previous page mounted and hidden: fields are found by
+// role, which skips hidden ones, and labels only among visible elements.
 const mas = textos.mas;
 const PASSWORD = "clave-segura-1";
 // The dev server compiles each page the first time it is opened.
@@ -121,10 +123,13 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(notices).toBeDisabled();
   await checkScreen(page);
 
-  await page.getByLabel(t.campos.nombre).fill("Kevin");
-  await page.getByLabel(t.campos.correo).fill("kevin@correo.com");
+  await page.getByRole("textbox", { name: t.campos.nombre }).fill("Kevin");
+  await page
+    .getByRole("textbox", { name: new RegExp(t.campos.correo) })
+    .fill("kevin@correo.com");
   await page
     .getByLabel(t.foto.agregar)
+    .filter({ visible: true })
     .setInputFiles(png("kevin.png", RED_PIXEL));
   await expect(page.getByText(t.foto.lista)).toBeVisible(FIRST_VISIT);
   // Visually hidden native input: its drawn switch takes the tap.
@@ -143,13 +148,14 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   // is deleted.
   await openBarber(page, "Kevin");
   await expect(page.locator("main img")).toHaveAttribute("src", storagePhoto);
-  await expect(page.getByLabel(t.campos.correo)).toHaveValue(
-    "kevin@correo.com",
-  );
+  await expect(
+    page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
+  ).toHaveValue("kevin@correo.com");
   await expect(notices).toBeChecked();
   await checkScreen(page);
   await page
     .getByLabel(t.foto.cambiar)
+    .filter({ visible: true })
     .setInputFiles(png("kevin-2.png", GREY_PIXEL));
   await expect(page.getByText(t.foto.lista)).toBeVisible(FIRST_VISIT);
   await save(page);
@@ -161,7 +167,9 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   // "Quitar foto" deletes it at once: no file and no photo left.
   await openBarber(page, "Kevin");
   await page.getByRole("button", { name: t.foto.quitar }).click();
-  await expect(page.getByLabel(t.foto.agregar)).toBeAttached(FIRST_VISIT);
+  await expect(
+    page.getByLabel(t.foto.agregar).filter({ visible: true }),
+  ).toBeAttached(FIRST_VISIT);
   await expect(page.locator("main img")).toHaveCount(0);
   await expect
     .poll(async () => (await barberPhotos(slug, "Kevin")).objects)
@@ -169,12 +177,16 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   expect((await barberPhotos(slug, "Kevin")).photoPath).toBeNull();
 
   // Notices without an email: explained on the email, which gets the focus.
-  await page.getByLabel(t.campos.correo).fill("");
+  await page
+    .getByRole("textbox", { name: new RegExp(t.campos.correo) })
+    .fill("");
   await page.getByRole("button", { name: t.guardar }).click();
   await expect(page.getByText(t.errores.notifications_need_email)).toBeVisible(
     FIRST_VISIT,
   );
-  await expect(page.getByLabel(t.campos.correo)).toBeFocused();
+  await expect(
+    page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
+  ).toBeFocused();
   await checkScreen(page);
   await notices.uncheck({ force: true });
   await save(page);
