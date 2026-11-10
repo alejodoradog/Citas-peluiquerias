@@ -1,4 +1,4 @@
-name: Auto-aprobar PRs de colaborador
+name: Aprobar y fusionar PRs de colaborador
 
 on:
   pull_request_target:
@@ -9,18 +9,18 @@ permissions:
   contents: write
 
 jobs:
-  approve:
+  approve-and-merge:
     if: github.event.pull_request.user.login == 'manuelalejo429@gmail.com'
     runs-on: ubuntu-latest
     steps:
-      - name: Aprobar PR
+      - name: Aprobar
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Activar auto-merge
-        run: gh pr merge --auto --squash "$PR_URL"
+      - name: Fusionar a main
+        run: gh pr merge --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
