@@ -168,3 +168,33 @@ export async function setupSnapshot(slug: string) {
     hourRows: hours.data?.length ?? 0,
   };
 }
+
+// A barber's photo as Storage and the database see it, read past RLS: every
+// object in the barbershop's barbers folder and the barber's photo_path, so a
+// test can check that replacing or removing a photo leaves no orphan.
+export async function barberPhotos(slug: string, barberName: string) {
+  const admin = adminClient();
+  const { data: shop, error } = await admin
+    .from("barbershops")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  const [objects, barber] = await Promise.all([
+    admin.storage.from("images").list(`${shop.id}/barbers`, { limit: 100 }),
+    admin
+      .from("barbers")
+      .select("photo_path")
+      .eq("barbershop_id", shop.id)
+      .eq("display_name", barberName)
+      .single(),
+  ]);
+  if (objects.error) throw objects.error;
+  if (barber.error) throw barber.error;
+  return {
+    objects: (objects.data ?? []).map(
+      (object) => `${shop.id}/barbers/${object.name}`,
+    ),
+    photoPath: barber.data.photo_path as string | null,
+  };
+}

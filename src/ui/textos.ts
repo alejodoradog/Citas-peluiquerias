@@ -1,4 +1,6 @@
+import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
+import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
@@ -377,6 +379,99 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ServiceActionErrorCode | "invalid", string>,
+  },
+  barberos: {
+    titulo: "Barberos",
+    cargando: "Cargando tu equipo…",
+    agregar: "Agregar barbero",
+    tu: "Tú",
+    inactivos: "Inactivos",
+    inactivo: "Inactivo",
+    horarioBarberia: "Horario de la barbería",
+    horarioPropio: "Horario propio",
+    conteoServicios: (total: number) =>
+      `${total} ${total === 1 ? "servicio" : "servicios"}`,
+    linkActivo: "Link activo",
+    linkDesactivado: "Link desactivado",
+    sinLink: "sin link (eres tú)",
+    seFue: (fecha: string) => `Se fue el ${fecha}`,
+    // Between the parts of a barber's line in D-53.
+    separador: " · ",
+    vacio: {
+      titulo: "Aún no tienes barberos",
+      cuerpo:
+        "Agrega a quienes cortan en tu barbería para que tus clientes reserven con ellos.",
+    },
+    nuevo: "Nuevo barbero",
+    editar: "Editar barbero",
+    foto: {
+      agregar: "Agregar foto",
+      cambiar: "Cambiar foto",
+      quitar: "Quitar foto",
+      quitando: "Quitando foto…",
+      subiendo: "Subiendo foto…",
+      lista: "Foto lista. Se guarda al tocar Guardar.",
+      falloQuitar: "No pudimos quitar la foto. Intenta de nuevo.",
+      ayuda: "Tus clientes la ven al elegir con quién reservar.",
+      errores: {
+        photo_not_image: "Ese archivo no es una foto. Elige una imagen.",
+        photo_unreadable:
+          "No pudimos abrir esa foto. Prueba con otra o toma una nueva.",
+        photo_too_big: "La foto es muy pesada. Prueba con otra.",
+        photo_upload_failed:
+          "No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.",
+      } satisfies Record<ImageUploadErrorCode, string>,
+    },
+    campos: { nombre: "Nombre visible", correo: "Correo" },
+    ayudas: {
+      nombre: "Así lo ven tus clientes al reservar.",
+      correo: "Para enviarle su link y, si quieres, avisarle de cada reserva.",
+    },
+    avisos: "Avisos por correo",
+    avisosAyuda: "Le llega un correo con cada nueva reserva o cancelación.",
+    avisosSinCorreo: "Escribe su correo arriba para poder activarlos.",
+    horario: "Horario",
+    linkPrivado: "Link privado",
+    linkNuevo: "Lo creamos al guardar.",
+    linkDueno: "No lo necesitas: ves toda la agenda desde tu cuenta.",
+    linkActivoChip: "Activo",
+    linkDesactivadoChip: "Desactivado",
+    servicios: "Servicios que hace",
+    sinServicios:
+      "Aún no tienes servicios activos. Los agregas en Más › Servicios.",
+    // Decision 6 of task 2.2: deactivating a barber does not turn off their
+    // link (spec), unlike the copy of the design.
+    desactivar: (nombre: string) => `Desactivar a ${nombre}`,
+    desactivarAyuda:
+      "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y su link sigue funcionando.",
+    confirmar: {
+      titulo: (nombre: string) => `¿Desactivar a ${nombre}?`,
+      cuerpo:
+        "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y con su link las sigue atendiendo. Puedes volver a activarlo cuando quieras.",
+      si: (nombre: string) => `Sí, desactivar a ${nombre}`,
+      desactivando: "Desactivando…",
+      no: "Cancelar",
+    },
+    inactivoAviso: (fecha: string) => `Inactivo desde el ${fecha}`,
+    inactivoDetalle: "No aparece al reservar ni recibe citas nuevas.",
+    reactivar: (nombre: string) => `Volver a activar a ${nombre}`,
+    reactivando: "Activando…",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      barber_name_required: "Escribe el nombre del barbero.",
+      barber_name_too_long: "El nombre es muy largo. Usa máximo 60 caracteres.",
+      barber_services_required: "Marca al menos un servicio.",
+      email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
+      notifications_need_email:
+        "Escribe su correo para enviarle avisos, o apaga los avisos.",
+      photo_invalid: "No pudimos guardar la foto. Elígela de nuevo.",
+      services_not_saved:
+        "Guardamos al barbero, pero no sus servicios. Ábrelo en Barberos y guárdalo de nuevo.",
+      owner_cannot_deactivate: "Tu propia agenda no se desactiva desde aquí.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<BarberActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

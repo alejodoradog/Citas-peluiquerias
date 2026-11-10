@@ -151,6 +151,7 @@ select is(
     'private.check_appointment_source:authenticated',
     'private.current_barbershop_id:authenticated',
     'private.current_profile_id:authenticated',
+    'private.images_under_quota:authenticated',
     'private.is_e164_phone:anon',
     'private.is_e164_phone:authenticated',
     'private.is_email:authenticated',
