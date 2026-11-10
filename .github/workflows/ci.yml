@@ -23,7 +23,14 @@ jobs:
       - run: pnpm test:coverage
       - run: pnpm build
       - name: The component catalog is not in the production build
-        run: test -d .next/server/app && ! grep -rlq _catalogo .next/server/app
+        run: |
+          pnpm start &
+          for i in $(seq 1 30); do
+            curl -s -o /dev/null http://localhost:3000/terminos && break
+            sleep 1
+          done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/terminos)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/_catalogo)" = 404
 
   database:
     runs-on: ubuntu-latest

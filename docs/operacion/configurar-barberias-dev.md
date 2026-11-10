@@ -67,7 +67,7 @@ Esa cadena solo abre `barberias-dev`: nunca sirve para producción. Mientras el 
 
 En Supabase → **Authentication**:
 
-- **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change** y pon la longitud del código (**Email OTP length**) en 10, como en `supabase/config.toml`.
+- **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change**, pon la longitud del código (**Email OTP length**) en 10 y la vigencia (**Email OTP Expiration**) en 86400 segundos (24 horas, decisión del fundador del 2026-11-09), como en `supabase/config.toml`. La app solo acepta los links de recuperación durante su primera hora.
 - **Password:** contraseña mínima de 8 caracteres.
 - **URL Configuration:**
   - **Site URL:** `https://citas-peluquerias-eta.vercel.app`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.

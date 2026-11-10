@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { ActionBar } from "@/ui/action-bar";
 import { BottomNav } from "@/ui/bottom-nav";
 import { BrandHeader } from "@/ui/brand";
@@ -20,6 +21,11 @@ import { TextLink } from "@/ui/text-link";
 // component here in a real browser: accessibility, touch size and keyboard.
 // Its sample copy is test data, not interface text.
 export default function Catalogo() {
+  // Second barrier: never on Vercel or in a production server, even if
+  // NODE_ENV were changed there.
+  if (process.env.VERCEL_ENV || process.env.NODE_ENV === "production") {
+    notFound();
+  }
   return (
     <main className="mx-auto flex w-full max-w-md flex-col gap-5.5 px-5 pt-7 pb-40">
       <BrandHeader />
