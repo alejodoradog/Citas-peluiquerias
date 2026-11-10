@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(19);
+select plan(21);
 
 select has_function('public', 'set_barbershop_hours', array['uuid', 'jsonb'], 'set_barbershop_hours exists');
 select is(
@@ -18,7 +18,8 @@ select is(
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner-a@example.com'),
   ('00000000-0000-0000-0000-00000000000b', 'owner-b@example.com'),
-  ('00000000-0000-0000-0000-00000000000c', 'nobody@example.com');
+  ('00000000-0000-0000-0000-00000000000c', 'nobody@example.com'),
+  ('00000000-0000-0000-0000-00000000000d', 'admin@example.com');
 insert into public.barbershops (id, name, slug, trial_ends_on, expires_on) values
   ('aaaaaaaa-0000-0000-0000-000000000000', 'Sede A', 'sede-a', current_date + 10, current_date + 10),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'Sede B', 'sede-b', current_date + 10, current_date + 10);
@@ -26,6 +27,9 @@ insert into public.profiles (id, full_name, phone) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A', '+573001112233'),
   ('00000000-0000-0000-0000-00000000000b', 'Dueño B', '+573001112244'),
   ('00000000-0000-0000-0000-00000000000c', 'Sin barbería', '+573001112255');
+-- The platform's super admin reads every barbershop but belongs to none.
+insert into public.profiles (id, full_name, phone, is_super_admin) values
+  ('00000000-0000-0000-0000-00000000000d', 'Super admin', '+573001112266', true);
 insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000000', 'owner'),
   ('00000000-0000-0000-0000-00000000000b', 'bbbbbbbb-0000-0000-0000-000000000000', 'owner');
@@ -128,6 +132,17 @@ select throws_ok(
   $$select public.set_barbershop_hours('aaaaaaaa-0000-0000-0000-000000000000',
       '[{"weekday": 1, "start": "06:00", "end": "07:00"}]')$$,
   '42501', null, 'a session without a barbershop cannot change any'
+);
+
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000d", "role": "authenticated"}';
+select throws_ok(
+  $$select public.set_barbershop_hours('aaaaaaaa-0000-0000-0000-000000000000',
+      '[{"weekday": 1, "start": "06:00", "end": "07:00"}]')$$,
+  '42501', null, 'the super admin, who belongs to no barbershop, cannot change its hours'
+);
+select is(
+  (select count(*)::int from public.barbershop_hours where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
+  3, 'and the super admin''s attempt leaves them as they were'
 );
 
 -- Anonymous visitors cannot run it --------------------------------------------------------------

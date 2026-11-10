@@ -19,6 +19,9 @@ export type PoliciesState = FormState<PoliciesField, PoliciesActionErrorCode>;
 
 const FIELDS = ["minBookingNotice", "cancellationNotice"] as const;
 
+// The options are a few digits; anything far longer is not echoed back.
+const MAX_ECHO_LENGTH = 10;
+
 // D-60, "Guardar". Both policies of the owner's barbershop: nothing the
 // browser sends picks the barbershop. Then back to Más, as the design does.
 export async function savePolicies(
@@ -33,7 +36,19 @@ export async function savePolicies(
     fields: FIELDS,
     parse: (input) => parsePoliciesForm(input, saved),
   });
-  if (!form.valid) return form.state;
+  if (!form.valid) {
+    // Only an invalid form echoes what was sent; a forged one could be long.
+    if (form.state.status !== "invalid") return form.state;
+    return {
+      ...form.state,
+      values: Object.fromEntries(
+        Object.entries(form.state.values).map(([field, value]) => [
+          field,
+          value !== undefined && value.length <= MAX_ECHO_LENGTH ? value : "",
+        ]),
+      ),
+    };
+  }
 
   if (!(await updatePolicies(barbershop.id, form.data))) {
     return { status: "failed", error: "unknown", values: form.values };

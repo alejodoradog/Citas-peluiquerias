@@ -4,6 +4,7 @@ import { routes } from "@/lib/routes";
 import { savePolicies } from "@/modulos/barberias/acciones/policies";
 import { getPolicies } from "@/modulos/barberias/datos/policies";
 import { FlowShell } from "@/ui/flow-shell";
+import { FreshOnReturn } from "@/ui/fresh-on-return";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
@@ -44,12 +45,15 @@ async function BarbershopPolicies() {
   const { barbershop } = await requireReadyOwner();
   const saved = await getPolicies(barbershop.id);
   // Keyed by what is saved, so the selects start from it when Next.js shows
-  // a payload it kept and then refreshes it.
+  // a payload it kept and then refreshes it; and they start from it again
+  // when the owner leaves a draft unsaved and comes back (FreshOnReturn).
   return (
-    <PoliciesForm
-      key={`${saved.minBookingNoticeMinutes}:${saved.cancellationNoticeHours}`}
-      action={savePolicies}
-      saved={saved}
-    />
+    <FreshOnReturn>
+      <PoliciesForm
+        key={`${saved.minBookingNoticeMinutes}:${saved.cancellationNoticeHours}`}
+        action={savePolicies}
+        saved={saved}
+      />
+    </FreshOnReturn>
   );
 }

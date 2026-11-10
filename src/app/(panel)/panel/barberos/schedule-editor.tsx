@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { formatWallClock } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import type { ScheduleState } from "@/modulos/barberias/acciones/barber-schedule";
@@ -14,6 +14,7 @@ import {
   type Weekday,
 } from "@/modulos/barberias/dominio/weekly-hours";
 import { FlowShell } from "@/ui/flow-shell";
+import { FreshOnReturn } from "@/ui/fresh-on-return";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
 import { Notice } from "@/ui/notice";
 import { Switch } from "@/ui/switch";
@@ -39,10 +40,22 @@ function shopShiftsOf(shop: readonly WeeklyShift[], weekday: Weekday) {
   return draftFromShifts(shop)[weekday].shifts;
 }
 
+// Back on this screen after leaving it, the editor starts from what is
+// saved, not from a draft that was never saved (FreshOnReturn).
+export function ScheduleEditor(
+  props: ComponentProps<typeof ScheduleForm>,
+) {
+  return (
+    <FreshOnReturn>
+      <ScheduleForm {...props} />
+    </FreshOnReturn>
+  );
+}
+
 // D-55: the barbershop's hours, or the barber's own week with up to two
 // shifts a day (decision 8 of task 2.2). The week lives in this screen's
 // state and travels as JSON in a hidden field; the server checks it again.
-export function ScheduleEditor({
+function ScheduleForm({
   action,
   barber,
   shopHours,
@@ -132,7 +145,7 @@ export function ScheduleEditor({
           </div>
           {shown ? (
             <>
-              <p className="text-help text-muted leading-[1.45]">{t.bajada}</p>
+              <p className="text-muted text-sm leading-[1.45]">{t.bajada}</p>
               <WeekEditor
                 week={shown}
                 labels={dayLabels}

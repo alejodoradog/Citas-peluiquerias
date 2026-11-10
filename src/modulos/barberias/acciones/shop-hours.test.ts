@@ -130,6 +130,14 @@ describe("saveShopHours", () => {
     expect(setBarbershopHours).not.toHaveBeenCalled();
   });
 
+  it("does not echo back a week longer than a screen could send", async () => {
+    expect(await run(form({ shifts: "x".repeat(5_000) }))).toEqual({
+      status: "failed",
+      error: "unknown",
+      values: { shifts: "" },
+    });
+  });
+
   it("explains what the database refuses", async () => {
     setBarbershopHours.mockResolvedValueOnce("overlap");
     expect(

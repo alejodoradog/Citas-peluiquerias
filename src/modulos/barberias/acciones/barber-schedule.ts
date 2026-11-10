@@ -16,7 +16,7 @@ import {
   type WeekErrorCode,
   type Weekday,
 } from "../dominio/weekly-hours";
-import { readWeek } from "./week-field";
+import { echoWeek, readWeek } from "./week-field";
 
 // - hours_*: what is wrong with a day (WeekErrorCode). hours_overlap also
 //   comes back as a form error when the database refuses two shifts that
@@ -45,7 +45,7 @@ export async function saveBarberSchedule(
   const sent = formData.get("shifts");
   const values = {
     usesBarbershopHours: usesBarbershopHours ? "on" : "",
-    shifts: typeof sent === "string" ? sent : "",
+    shifts: echoWeek(sent),
   };
 
   const id = formData.get("barberId");

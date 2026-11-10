@@ -110,6 +110,18 @@ describe("savePolicies", () => {
     expect(updatePolicies).not.toHaveBeenCalled();
   });
 
+  it("does not echo back values longer than an option", async () => {
+    const result = await run(
+      form({ minBookingNotice: "9".repeat(5_000), cancellationNotice: "2" }),
+    );
+    expect(result).toEqual({
+      status: "invalid",
+      fieldErrors: { minBookingNotice: "min_booking_notice_invalid" },
+      values: { minBookingNotice: "", cancellationNotice: "2" },
+    });
+    expect(updatePolicies).not.toHaveBeenCalled();
+  });
+
   it("says so when the database writes nothing", async () => {
     updatePolicies.mockResolvedValueOnce(false);
     expect(
