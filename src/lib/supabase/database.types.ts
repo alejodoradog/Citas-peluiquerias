@@ -155,14 +155,14 @@ isOneToOne: false
                   ]
                 },"barbers": {
                   Row: {
-                    "active": boolean,"barbershop_id": string,"created_at": string,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_token_hash": string,"photo_path": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
+                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_token_hash": string,"photo_path": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash": string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash": string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Update: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash"?: string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_token_hash"?: string,"photo_path"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Relationships: [
                     {
@@ -428,6 +428,15 @@ isOneToOne: false
                            },
 "create_barbershop":
 { Args: { "p_name": string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
+                           },
+"set_barber_schedule":
+{ Args: { "p_barber_id": string,"p_shifts"?: Json,"p_uses_barbershop_hours": boolean }; Returns: undefined
+                           },
+"set_barber_services":
+{ Args: { "p_barber_id": string,"p_service_ids": (string)[] }; Returns: undefined
+                           },
+"set_service_barbers":
+{ Args: { "p_barber_ids": (string)[],"p_service_id": string }; Returns: undefined
                            }
           }
           Enums: {
