@@ -3,7 +3,11 @@ import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-e
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
+import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
+import type { ClosureActionErrorCode } from "@/modulos/barberias/acciones/holidays";
+import type { HolidayKey } from "@/lib/fechas/festivos";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
 import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
@@ -11,6 +15,18 @@ import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
 import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
+
+// "1 hora", "2 horas", "1 día", "15 minutos": a span of time, from minutes,
+// in the largest whole unit (D-60).
+function duracion(minutos: number): string {
+  const [cantidad, una, varias] =
+    minutos % 1440 === 0
+      ? [minutos / 1440, "día", "días"]
+      : minutos % 60 === 0
+        ? [minutos / 60, "hora", "horas"]
+        : [minutos, "minuto", "minutos"];
+  return `${cantidad} ${cantidad === 1 ? una : varias}`;
+}
 
 // Error copy lives with each module and is keyed by the codes its actions
 // return (decision 0005), plus "invalid" for anything a schema did not name.
@@ -618,6 +634,157 @@ export const textos = {
       unknown: "No pudimos guardar el horario. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ScheduleActionErrorCode | "invalid", string>,
+  },
+  // D-58. The days, shifts and their buttons are in horario.
+  horarioBarberia: {
+    titulo: "Horario de la barbería",
+    cargando: "Cargando el horario…",
+    bajada: "Los barberos trabajan dentro de este horario.",
+    // The name of each day's switch; on screen it reads as the day alone.
+    abre: (dia: string) => `Abre el ${dia.toLocaleLowerCase("es-CO")}`,
+    cerrado: "Cerrado",
+    festivos: "Festivos y cierres especiales",
+    festivosDetalle: "Festivos cerrados, salvo los que abras",
+    guardar: "Guardar horario",
+    guardando: "Guardando…",
+    guardado: "Guardamos el horario.",
+    // Barbers with own hours beyond the barbershop's: theirs are not cut.
+    fuera: (nombres: readonly string[]) =>
+      `${new Intl.ListFormat("es-CO", { type: "conjunction" }).format(nombres)} ${
+        nombres.length === 1 ? "tiene" : "tienen"
+      } horas fuera de este horario`,
+    fueraDetalle: "En esas horas no recibirán citas. Revisa su horario:",
+    errores: {
+      hours_invalid: "Elige las horas de la lista, de 15 en 15 minutos.",
+      hours_too_many: "Máximo dos tramos por día.",
+      hours_order: "La hora de «Hasta» debe ser después de la de «Desde».",
+      hours_overlap:
+        "Los dos tramos se cruzan. El segundo debe empezar después de que termine el primero.",
+      hours_required: "Abre al menos un día de la semana.",
+      unknown: "No pudimos guardar el horario. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<ShopHoursActionErrorCode | "invalid", string>,
+  },
+  // D-59. Dates and hours arrive written ("jueves 24 de diciembre",
+  // "2:00 p. m.").
+  festivos: {
+    titulo: "Festivos y cierres",
+    cargando: "Cargando los festivos…",
+    festivos: "Festivos de Colombia",
+    bajada:
+      "Por defecto cerramos. Activa los que abres; usamos tu horario de ese día.",
+    // By the keys of src/lib/fechas/festivos.ts.
+    nombres: {
+      new_year: "Año Nuevo",
+      epiphany: "Reyes Magos",
+      saint_joseph: "San José",
+      holy_thursday: "Jueves Santo",
+      good_friday: "Viernes Santo",
+      labor_day: "Día del Trabajo",
+      ascension: "Ascensión del Señor",
+      corpus_christi: "Corpus Christi",
+      sacred_heart: "Sagrado Corazón",
+      saints_peter_and_paul: "San Pedro y San Pablo",
+      chiquinquira: "Virgen de Chiquinquirá",
+      independence_day: "Día de la Independencia",
+      battle_of_boyaca: "Batalla de Boyacá",
+      assumption: "Asunción de la Virgen",
+      columbus_day: "Día de la Raza",
+      all_saints: "Todos los Santos",
+      cartagena_independence: "Independencia de Cartagena",
+      immaculate_conception: "Inmaculada Concepción",
+      christmas: "Navidad",
+    } satisfies Record<HolidayKey, string>,
+    cierres: "Cierres especiales",
+    sinCierres: "No tienes cierres programados",
+    sinCierresDetalle:
+      "Agrega uno para cerrar la barbería un día, varios o unas horas.",
+    todaLaBarberia: "Toda la barbería",
+    // How a closure reads, by its kind (dominio/closures.ts).
+    cierre: {
+      day: (dia: string) => `${dia} · todo el día`,
+      days: (desde: string, hasta: string) => `Del ${desde} al ${hasta}`,
+      from: (dia: string, hora: string) => `${dia} · desde ${hora}`,
+      until: (dia: string, hora: string) => `${dia} · hasta ${hora}`,
+      between: (dia: string, desde: string, hasta: string) =>
+        `${dia} · ${desde} – ${hasta}`,
+      span: (dia: string, desde: string, otroDia: string, hasta: string) =>
+        `Del ${dia}, ${desde}, al ${otroDia}, ${hasta}`,
+    },
+    // 24:00, the end of a closure that runs to the end of the day.
+    medianoche: "medianoche",
+    opcionMedianoche: "12:00 a. m. (medianoche)",
+    borrar: (cierre: string) => `Borrar el cierre: ${cierre}`,
+    agregar: "Agregar cierre",
+    agregado: "Agregamos el cierre.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    guardado: "Guardamos los festivos.",
+    errores: {
+      unknown: "No pudimos guardar los festivos. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    },
+    // The sheet "Agregar cierre".
+    hoja: {
+      titulo: "Agregar cierre",
+      desdeFecha: "Desde el día",
+      hastaFecha: "Hasta el día",
+      todoElDia: "Todo el día",
+      desdeHora: "Desde la hora",
+      hastaHora: "Hasta la hora",
+      motivo: "Motivo",
+      motivoAyuda: "Por ejemplo, Nochebuena. Tus clientes no lo ven.",
+      citas: "Las citas que ya tienes en esas horas se mantienen.",
+      guardar: "Agregar cierre",
+      guardando: "Agregando…",
+      errores: {
+        closure_date_invalid: "Elige una fecha.",
+        closure_time_invalid: "Elige una hora de la lista.",
+        closure_order: "Debe terminar después de empezar.",
+        closure_past: "Ese cierre ya terminó. Elige una fecha que no haya pasado.",
+        closure_too_long: "Máximo 31 días seguidos.",
+        closure_reason_too_long: "Usa máximo 200 caracteres.",
+        unknown: "No pudimos agregar el cierre. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      } satisfies Record<ClosureActionErrorCode | "invalid", string>,
+    },
+    // Before removing a closure.
+    confirmar: {
+      titulo: "¿Borrar este cierre?",
+      cuerpo: "Tus clientes podrán volver a reservar en esas horas.",
+      si: "Sí, borrar",
+      borrando: "Borrando…",
+      no: "Cancelar",
+      fallo: "No pudimos borrar el cierre. Intenta de nuevo.",
+    },
+  },
+  // D-60.
+  politicas: {
+    titulo: "Reservas y cancelaciones",
+    cargando: "Cargando…",
+    anticipacion: "Anticipación mínima para reservar",
+    anticipacionAyuda: "Nadie puede reservar para dentro de menos tiempo.",
+    // An option of the select, from minutes: "1 hora antes".
+    anticipacionOpcion: (minutos: number) =>
+      minutos === 0 ? "Sin anticipación" : `${duracion(minutos)} antes`,
+    ventana: "Hasta cuándo pueden reservar",
+    ventanaValor: (dias: number) => `${dias} días hacia adelante`,
+    cancelar: "Pueden cancelar o cambiar hasta",
+    cancelarAyuda:
+      "Después, el link del correo ya no lo permite y les mostramos tu WhatsApp.",
+    // An option of the select, from hours: "2 horas antes".
+    cancelarOpcion: (horas: number) =>
+      horas === 0 ? "La hora de la cita" : `${duracion(horas * 60)} antes`,
+    siempre: "Tú siempre puedes cancelar o cambiar",
+    siempreDetalle: "Si tiene correo, le avisamos.",
+    guardar: "Guardar",
+    guardando: "Guardando…",
+    errores: {
+      min_booking_notice_invalid: "Elige una de las opciones de la lista.",
+      cancellation_notice_invalid: "Elige una de las opciones de la lista.",
+      unknown: "No pudimos guardar. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<PoliciesActionErrorCode | "invalid", string>,
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

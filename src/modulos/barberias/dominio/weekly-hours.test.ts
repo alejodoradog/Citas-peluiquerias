@@ -4,6 +4,7 @@ import {
   DEFAULT_DAY_SHIFT,
   TIME_OPTIONS,
   WEEK_DAYS,
+  barbersOutsideShop,
   dayField,
   daysOutsideShop,
   draftFromShifts,
@@ -13,6 +14,7 @@ import {
   splitShift,
   toMinutes,
   toRpcShifts,
+  validateShopWeek,
   validateWeek,
   type WeekDraft,
 } from "./weekly-hours";
@@ -416,5 +418,73 @@ describe("dayField", () => {
   it("names each day's field by its weekday", () => {
     expect(dayField(1)).toBe("day1");
     expect(dayField(0)).toBe("day0");
+  });
+});
+
+describe("validateShopWeek", () => {
+  it("passes a week with at least one open day", () => {
+    expect(validateShopWeek([shift(6, "08:00", "21:00")])).toEqual({
+      status: "valid",
+      shifts: [shift(6, "08:00", "21:00")],
+    });
+  });
+
+  it("refuses a barbershop closed every day", () => {
+    expect(validateShopWeek([])).toEqual({ status: "closed" });
+  });
+
+  it("reports each day's own errors first", () => {
+    expect(
+      validateShopWeek([
+        shift(1, "09:00", "13:00"),
+        shift(1, "12:00", "18:00"),
+      ]),
+    ).toEqual({ status: "invalid", errors: { 1: "hours_overlap" } });
+  });
+
+  it("passes malformed input through", () => {
+    expect(validateShopWeek({})).toEqual({ status: "malformed" });
+    expect(validateShopWeek([{ weekday: 1 }])).toEqual({
+      status: "malformed",
+    });
+  });
+});
+
+describe("barbersOutsideShop", () => {
+  const shop = [shift(1, "09:00", "18:00"), shift(2, "09:00", "18:00")];
+  const kevin = {
+    id: "k",
+    usesBarbershopHours: false,
+    shifts: [shift(1, "08:00", "12:00")],
+  };
+  const ana = {
+    id: "a",
+    usesBarbershopHours: false,
+    shifts: [shift(3, "10:00", "14:00")],
+  };
+  const inside = {
+    id: "i",
+    usesBarbershopHours: false,
+    shifts: [shift(2, "09:00", "18:00")],
+  };
+  const followsShop = { id: "s", usesBarbershopHours: true, shifts: [] };
+
+  it("lists the barbers with own hours beyond the barbershop's, in order", () => {
+    expect(barbersOutsideShop([kevin, inside, ana, followsShop], shop)).toEqual(
+      [kevin, ana],
+    );
+  });
+
+  it("leaves out those who follow the barbershop's hours", () => {
+    expect(
+      barbersOutsideShop(
+        [{ ...followsShop, shifts: [shift(0, "09:00", "10:00")] }],
+        shop,
+      ),
+    ).toEqual([]);
+  });
+
+  it("is empty when everyone fits", () => {
+    expect(barbersOutsideShop([inside], shop)).toEqual([]);
   });
 });

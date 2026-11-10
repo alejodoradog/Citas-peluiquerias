@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Activity } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { ScheduleState } from "@/modulos/barberias/acciones/barber-schedule";
 import {
@@ -309,5 +310,35 @@ describe("ScheduleEditor", () => {
     )[1];
     expect(formData.get("usesBarbershopHours")).toBe("on");
     expect(formData.get("shifts")).toBe("[]");
+  });
+});
+
+// Next.js keeps a page it leaves mounted and hidden (Activity) and shows the
+// same instance again on coming back.
+describe("ScheduleEditor, hidden and shown again", () => {
+  function inActivity(mode: "visible" | "hidden") {
+    return (
+      <Activity mode={mode}>
+        <ScheduleEditor
+          action={idle}
+          barber={kevin}
+          shopHours={DEFAULT_BARBERSHOP_HOURS}
+        />
+      </Activity>
+    );
+  }
+
+  it("starts again from what is saved, not from the draft", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(inActivity("visible"));
+    await user.click(screen.getByRole("switch", { name: t.usaBarberia }));
+    expect(screen.getByRole("group", { name: "Lunes" })).toBeInTheDocument();
+
+    rerender(inActivity("hidden"));
+    rerender(inActivity("visible"));
+
+    expect(screen.getByRole("switch", { name: t.usaBarberia })).toBeChecked();
+    expect(screen.queryByRole("group", { name: "Lunes" })).toBeNull();
+    expect(sentShifts()).toEqual([]);
   });
 });

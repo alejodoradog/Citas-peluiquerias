@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getColombianHolidays, isColombianHoliday } from "./festivos";
+import {
+  getColombianHolidayList,
+  getColombianHolidays,
+  isColombianHoliday,
+} from "./festivos";
 
 // Expected dates come from published calendars, not from these rules:
 // El Universal (2026 and 2027) and the Ministerio del Interior for 2026-07-13.
@@ -81,5 +85,57 @@ describe("isColombianHoliday", () => {
 
   it("is false for an ordinary day", () => {
     expect(isColombianHoliday("2026-11-03")).toBe(false);
+  });
+});
+
+describe("getColombianHolidayList", () => {
+  it("names each 2026 holiday with a stable key, in date order", () => {
+    expect(getColombianHolidayList(2026)).toEqual([
+      { date: "2026-01-01", keys: ["new_year"] },
+      { date: "2026-01-12", keys: ["epiphany"] },
+      { date: "2026-03-23", keys: ["saint_joseph"] },
+      { date: "2026-04-02", keys: ["holy_thursday"] },
+      { date: "2026-04-03", keys: ["good_friday"] },
+      { date: "2026-05-01", keys: ["labor_day"] },
+      { date: "2026-05-18", keys: ["ascension"] },
+      { date: "2026-06-08", keys: ["corpus_christi"] },
+      { date: "2026-06-15", keys: ["sacred_heart"] },
+      { date: "2026-06-29", keys: ["saints_peter_and_paul"] },
+      { date: "2026-07-13", keys: ["chiquinquira"] },
+      { date: "2026-07-20", keys: ["independence_day"] },
+      { date: "2026-08-07", keys: ["battle_of_boyaca"] },
+      { date: "2026-08-17", keys: ["assumption"] },
+      { date: "2026-10-12", keys: ["columbus_day"] },
+      { date: "2026-11-02", keys: ["all_saints"] },
+      { date: "2026-11-16", keys: ["cartagena_independence"] },
+      { date: "2026-12-08", keys: ["immaculate_conception"] },
+      { date: "2026-12-25", keys: ["christmas"] },
+    ]);
+  });
+
+  it("gives the 2027 dates the same keys", () => {
+    const list = getColombianHolidayList(2027);
+
+    expect(list.map((holiday) => holiday.date)).toEqual(HOLIDAYS_2027);
+    expect(list.find((holiday) => holiday.date === "2027-03-25")).toEqual({
+      date: "2027-03-25",
+      keys: ["holy_thursday"],
+    });
+    expect(list.find((holiday) => holiday.date === "2027-11-15")).toEqual({
+      date: "2027-11-15",
+      keys: ["cartagena_independence"],
+    });
+  });
+
+  it("keeps one row for two holidays moved to the same Monday", () => {
+    // 2025: Saints Peter and Paul (Sunday the 29th) and the Sacred Heart.
+    const list = getColombianHolidayList(2025);
+
+    expect(list.filter((holiday) => holiday.date === "2025-06-30")).toEqual([
+      { date: "2025-06-30", keys: ["saints_peter_and_paul", "sacred_heart"] },
+    ]);
+    expect(new Set(list.map((holiday) => holiday.date)).size).toBe(
+      list.length,
+    );
   });
 });

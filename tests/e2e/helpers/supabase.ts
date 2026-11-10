@@ -260,3 +260,76 @@ export async function setBarberActive(
     .eq("display_name", barberName);
   if (error) throw error;
 }
+
+// D-60's two columns of a barbershop, read or written past RLS.
+export async function policiesSnapshot(slug: string) {
+  const { data, error } = await adminClient()
+    .from("barbershops")
+    .select("min_booking_notice_minutes, cancellation_notice_hours")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  return {
+    minBookingNoticeMinutes: data.min_booking_notice_minutes as number,
+    cancellationNoticeHours: data.cancellation_notice_hours as number,
+  };
+}
+
+export async function setPolicies(
+  slug: string,
+  policies: {
+    minBookingNoticeMinutes: number;
+    cancellationNoticeHours: number;
+  },
+) {
+  const { error } = await adminClient()
+    .from("barbershops")
+    .update({
+      min_booking_notice_minutes: policies.minBookingNoticeMinutes,
+      cancellation_notice_hours: policies.cancellationNoticeHours,
+    })
+    .eq("slug", slug);
+  if (error) throw error;
+}
+
+// D-59: the holidays a barbershop opens and its closures of the whole
+// barbershop (time_blocks without barber), read or written past RLS.
+export async function holidayOpenings(slug: string): Promise<string[]> {
+  const { data, error } = await adminClient()
+    .from("holiday_openings")
+    .select("holiday_date")
+    .eq("barbershop_id", await barbershopIdOf(slug))
+    .order("holiday_date");
+  if (error) throw error;
+  return data.map((row) => row.holiday_date as string);
+}
+
+export async function shopClosures(slug: string) {
+  const { data, error } = await adminClient()
+    .from("time_blocks")
+    .select("starts_at, ends_at, reason")
+    .eq("barbershop_id", await barbershopIdOf(slug))
+    .is("barber_id", null)
+    .order("starts_at");
+  if (error) throw error;
+  return data.map((row) => ({
+    startsAt: new Date(row.starts_at as string).toISOString(),
+    endsAt: new Date(row.ends_at as string).toISOString(),
+    reason: row.reason as string | null,
+  }));
+}
+
+export async function insertShopClosure(
+  slug: string,
+  closure: { startsAt: Date; endsAt: Date; reason: string | null },
+) {
+  const { error } = await adminClient()
+    .from("time_blocks")
+    .insert({
+      barbershop_id: await barbershopIdOf(slug),
+      starts_at: closure.startsAt.toISOString(),
+      ends_at: closure.endsAt.toISOString(),
+      reason: closure.reason,
+    });
+  if (error) throw error;
+}

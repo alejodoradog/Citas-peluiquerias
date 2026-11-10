@@ -1,9 +1,19 @@
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  addDays,
+  fromBogota,
+  startOfBogotaDay,
+  toBogotaDate,
+} from "../../src/lib/fechas/fechas";
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
-import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
+import {
+  createConfirmedOwner,
+  insertShopClosure,
+  uniqueEmail,
+} from "./helpers/supabase";
 
 // Task 2.0: the app against the design (docs/diseno, copied from Claude
 // Design on 2026-11-09) at 390 × 844. Measured styles, with 1 px of slack,
@@ -350,5 +360,255 @@ test("D-62 matches the design", async ({ page }) => {
   ]);
 
   await attachSideBySide(page, design, "D-62");
+  await design.close();
+});
+
+// An owner past the wizard, signed in, for the panel's screens.
+async function signInReadyOwner(page: Page, prefix: string) {
+  const email = uniqueEmail(prefix);
+  const password = "clave-segura-1";
+  const { slug } = await createConfirmedOwner(email, password, {
+    ownerName: "Carlos Pérez",
+    barbershopName: "Barbería La Esquina",
+  });
+  await page.goto("/ingresar");
+  await page
+    .getByRole("textbox", { name: textos.cuentas.ingreso.campos.email })
+    .fill(email);
+  await page
+    .getByLabel(textos.cuentas.ingreso.campos.password)
+    .filter({ visible: true })
+    .fill(password);
+  await page
+    .getByRole("button", { name: textos.cuentas.ingreso.enviar })
+    .click();
+  await finishSetup(page);
+  return slug;
+}
+
+const primaryButton = [
+  "height",
+  "border-radius",
+  "background-color",
+  "color",
+  "font-size",
+  "font-weight",
+] as const;
+
+test("D-58 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  await signInReadyOwner(page, "fidelidad-horario");
+  await page.goto("/panel/horario");
+  const hb = textos.horarioBarberia;
+  await expect(
+    page.getByRole("heading", { level: 1, name: hb.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D58-Horario-barberia.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Horario de la barbería", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "bajada",
+    page.getByText(hb.bajada),
+    design.getByText("Los barberos trabajan dentro de este horario"),
+    ["font-size", "line-height", "color"],
+  );
+  // The week's card. Its rows differ on purpose: the seven days are open to
+  // edit, as in D-55 (docs/tareas/2.4-configuracion.md).
+  await compare(
+    "tarjeta de la semana",
+    page.getByRole("group", { name: "Lunes" }).locator(".."),
+    design.getByText("Lunes", { exact: true }).locator("../.."),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "festivos",
+    page.getByText(hb.festivos, { exact: true }),
+    design.getByText("Festivos y cierres especiales", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "detalle de festivos",
+    page.getByText(hb.festivosDetalle, { exact: true }),
+    design.getByText("Festivos cerrados, salvo los que abras", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: hb.guardar }),
+    design.getByRole("link", { name: "Guardar horario" }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-58");
+  await design.close();
+});
+
+test("D-60 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  await signInReadyOwner(page, "fidelidad-politicas");
+  await page.goto("/panel/reservas");
+  const p = textos.politicas;
+  await expect(
+    page.getByRole("heading", { level: 1, name: p.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D60-Politicas.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Reservas y cancelaciones", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  // A native select instead of the design's button with a sheet
+  // (docs/tareas/2.4-configuracion.md); it is drawn the same.
+  await compare(
+    "selector",
+    page.getByRole("combobox", { name: p.anticipacion }),
+    design.locator("#po1"),
+    ["height", "border-radius", "background-color", "font-size", "color"],
+  );
+  await compare(
+    "etiqueta",
+    page.getByText(p.anticipacion, { exact: true }),
+    design.getByText("Anticipación mínima para reservar", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "ayuda",
+    page.getByText(p.anticipacionAyuda, { exact: true }),
+    design.getByText("Nadie puede reservar para dentro de menos tiempo.", {
+      exact: true,
+    }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "dato fijo",
+    page.getByText(p.ventanaValor(30), { exact: true }),
+    design.getByText("30 días hacia adelante", { exact: true }),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "aviso",
+    page.getByRole("status").filter({ hasText: p.siempre }),
+    design.locator('[role="status"]'),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "título del aviso",
+    page.getByText(p.siempre, { exact: true }),
+    design.getByText("Tú siempre puedes cancelar o cambiar", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: p.guardar, exact: true }),
+    design.getByRole("link", { name: "Guardar", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-60");
+  await design.close();
+});
+
+test("D-59 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  const slug = await signInReadyOwner(page, "fidelidad-festivos");
+  // The design's closure: from 2:00 p. m. to the end of a day, three days
+  // from now so it has not ended.
+  const day = addDays(toBogotaDate(new Date()), 3);
+  await insertShopClosure(slug, {
+    startsAt: fromBogota(day, "14:00"),
+    endsAt: startOfBogotaDay(addDays(day, 1)),
+    reason: "Nochebuena",
+  });
+  await page.goto("/panel/horario/festivos");
+  const f = textos.festivos;
+  await expect(
+    page.getByRole("heading", { level: 1, name: f.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const design = await openDesign(page, "D59-Festivos-cierres.dc.html");
+  const firstHoliday = page.getByRole("switch").first();
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Festivos y cierres", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "título de sección",
+    page.getByRole("heading", { level: 2, name: f.festivos }),
+    design.getByRole("heading", { level: 2, name: "Festivos de Colombia" }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "bajada",
+    page.getByText(f.bajada),
+    design.getByText("Por defecto cerramos."),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "tarjeta de festivos",
+    page.locator("ul").filter({ has: firstHoliday }),
+    design.getByText("Independencia de Cartagena").locator("../../../.."),
+    ["border-radius", "background-color"],
+  );
+  // The switch is named by the day; its row draws the day and the holiday.
+  await compare(
+    "día del festivo",
+    page.locator(`[id="${await firstHoliday.getAttribute("aria-labelledby")}"]`),
+    design.getByText("Lunes 16 de noviembre", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "nombre del festivo",
+    page.locator(
+      `[id="${await firstHoliday.getAttribute("aria-describedby")}"]`,
+    ),
+    design.getByText("Independencia de Cartagena", { exact: true }),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "cierre",
+    page.getByText(/ · desde 2:00 p\. m\.$/),
+    design.getByText("Jueves 24 de diciembre · desde 2:00 p. m.", {
+      exact: true,
+    }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "detalle del cierre",
+    page.getByText(`${f.todaLaBarberia} · Nochebuena`, { exact: true }),
+    design.getByText("Toda la barbería · Nochebuena", { exact: true }),
+    ["font-size", "line-height", "color"],
+  );
+  await compare(
+    "agregar cierre",
+    page.getByRole("button", { name: f.agregar }),
+    design.getByRole("button", { name: "Agregar cierre" }),
+    ["height", "border-radius", "background-color", "font-size", "font-weight"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: f.guardar, exact: true }),
+    design.getByRole("link", { name: "Guardar", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-59");
   await design.close();
 });

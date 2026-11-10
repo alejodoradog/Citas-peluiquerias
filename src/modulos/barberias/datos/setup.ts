@@ -49,6 +49,30 @@ export async function getBarbershopHours(
   }));
 }
 
+export type ShopHoursWriteResult = "saved" | "overlap" | "closed" | "failed";
+
+// D-58: the whole week in one transaction (set_barbershop_hours). The
+// function checks membership itself, and refuses a week without open days
+// (hours_required) and shifts that overlap (23P01, barbershop_hours_no_overlap).
+export async function setBarbershopHours(
+  barbershopId: string,
+  shifts: ReadonlyArray<{ weekday: number; start: string; end: string }>,
+): Promise<ShopHoursWriteResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_barbershop_hours", {
+    p_barbershop_id: barbershopId,
+    p_shifts: shifts.map(({ weekday, start, end }) => ({
+      weekday,
+      start,
+      end,
+    })),
+  });
+  if (!error) return "saved";
+  if (error.code === "23P01") return "overlap";
+  if (error.hint === "hours_required") return "closed";
+  return "failed";
+}
+
 export type SetupSaveResult = "saved" | "already_done" | "failed";
 
 // Saves the whole wizard in one transaction (complete_barbershop_setup).

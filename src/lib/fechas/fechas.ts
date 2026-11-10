@@ -60,6 +60,16 @@ export function fromBogota(date: string, time: string): Date {
   );
 }
 
+// A calendar date as forms send it ("2026-11-16"), and one that exists.
+export function isBogotaDate(value: string): boolean {
+  try {
+    parseDateToUtcMs(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function startOfBogotaDay(date: string): Date {
   return fromBogota(date, "00:00");
 }
@@ -92,6 +102,18 @@ const dayMonthFormatter = new Intl.DateTimeFormat(LOCALE, {
 // "24 de noviembre", as D-14 writes the end of the trial.
 export function formatBogotaDayMonth(instant: Date): string {
   return dayMonthFormatter.format(instant);
+}
+
+const weekdayFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  weekday: "long",
+});
+
+// A calendar date as a day of the week, the day and the month: "jueves 24 de
+// diciembre" (D-59). Read at noon in Bogotá, so it is that day anywhere.
+export function formatCalendarDay(date: BogotaDate): string {
+  const noon = fromBogota(date, "12:00");
+  return `${weekdayFormatter.format(noon)} ${dayMonthFormatter.format(noon)}`;
 }
 
 // A wall clock time of a weekly schedule ("09:00" or "09:00:00") as people
