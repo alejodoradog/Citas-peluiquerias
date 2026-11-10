@@ -33,6 +33,9 @@ export function useFormAction<S extends FormState<string, string, string>>(
 
   return {
     formAction,
+    // A new object after every submit, for screens that keep state of their
+    // own next to the form (an uploaded photo, D-54).
+    state,
     // Changes on every submit with errors, so ActionForm can move focus.
     invalidFields: state.status === "invalid" ? state.fieldErrors : undefined,
     notice: state.status === "done" ? state.notice : undefined,
@@ -79,19 +82,23 @@ export function ActionForm({
   );
 }
 
+// disabled holds the form back while something it needs is not ready (a
+// photo still uploading, D-54).
 export function SubmitButton({
   children,
   pendingText,
+  disabled = false,
 }: {
   children: ReactNode;
   pendingText: string;
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
-      aria-disabled={pending}
+      disabled={pending || disabled}
+      aria-disabled={pending || disabled}
       className={buttonClasses()}
     >
       {pending ? pendingText : children}
