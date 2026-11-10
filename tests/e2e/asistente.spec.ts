@@ -110,7 +110,9 @@ test("an owner sets up services and team, and gets the link to share", async ({
   // D-13: add a barber; a bad email is explained.
   await page.getByRole("link", { name: t.equipo.agregar }).click();
   await expect(page).toHaveURL(/\/equipo\/barbero$/, { timeout: 20_000 });
-  await page.getByLabel(t.barbero.campos.nombre).fill("Kevin");
+  await page
+    .getByRole("textbox", { name: t.barbero.campos.nombre })
+    .fill("Kevin");
   await page
     // Next.js keeps the previous page mounted and hidden: only visible ones.
     .getByRole("textbox", { name: new RegExp(t.barbero.campos.correo) })
@@ -119,7 +121,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await expect(page.getByText(t.errores.email_invalid)).toBeVisible();
   await checkScreen(page);
   await page
-    .getByLabel(new RegExp(t.barbero.campos.correo))
+    .getByRole("textbox", { name: new RegExp(t.barbero.campos.correo) })
     .fill("Kevin@Correo.com");
   await page.getByRole("checkbox", { name: "Barba" }).uncheck({ force: true });
   await page.getByRole("button", { name: t.barbero.guardar }).click();
