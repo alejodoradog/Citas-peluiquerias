@@ -1,26 +1,79 @@
 name: Aprobar y fusionar PRs de colaborador
 
+# Fusiona a main los PR de manuel-alejandro429 solo cuando se cumplen todas
+# estas condiciones:
+# - el PR no está en borrador (se marca listo al cumplir la puerta del hito);
+# - el workflow CI (checks, database y e2e) terminó en verde sobre el último
+#   commit del PR;
+# - nadie subió otro commit mientras tanto (--match-head-commit).
+# Corre al terminar cada CI y al marcar el PR como listo. Fusiona con merge
+# commit, nunca squash. Usa el token de alejodoradog (secreto MERGE_TOKEN): el
+# merge commit sale a su nombre, así Vercel (Hobby) despliega y GitHub corre
+# "Migrate barberias-dev". Nunca hace checkout del código del PR.
 on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   pull_request_target:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [ready_for_review]
 
 permissions:
-  pull-requests: write
-  contents: write
+  contents: read
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
 
 jobs:
   approve-and-merge:
-    if: github.event.pull_request.user.login == 'manuelalejo429@gmail.com'
     runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.user.login == 'manuel-alejandro429' &&
+       github.event.pull_request.base.ref == 'main')
+    env:
+      GH_TOKEN: ${{ secrets.MERGE_TOKEN }}
+      REPO: ${{ github.repository }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref }}
     steps:
-      - name: Aprobar
-        run: gh pr review --approve "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Revisar el PR y su CI
+        id: check
+        run: |
+          pr=$(gh pr list --repo "$REPO" --base main --head "$HEAD_BRANCH" --state open \
+            --json number,author,isDraft,headRefOid --jq '.[0] // empty')
+          if [ -z "$pr" ]; then
+            echo "No hay un PR abierto desde $HEAD_BRANCH hacia main."
+            exit 0
+          fi
+          number=$(jq -r .number <<<"$pr")
+          author=$(jq -r .author.login <<<"$pr")
+          draft=$(jq -r .isDraft <<<"$pr")
+          sha=$(jq -r .headRefOid <<<"$pr")
+          if [ "$author" != "manuel-alejandro429" ]; then
+            echo "PR #$number es de $author: no se fusiona solo."
+            exit 0
+          fi
+          if [ "$draft" = "true" ]; then
+            echo "PR #$number sigue en borrador: espera."
+            exit 0
+          fi
+          ci=$(gh run list --repo "$REPO" --workflow CI --event pull_request --commit "$sha" \
+            --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"')
+          if [ "$ci" != "completed success" ]; then
+            echo "El CI del commit $sha está en '$ci': espera a que termine en verde."
+            exit 0
+          fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
-      - name: Fusionar a main
-        run: gh pr merge --squash "$PR_URL"
+      - name: Aprobar y fusionar con merge commit
+        if: steps.check.outputs.number != ''
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ steps.check.outputs.number }}
+          SHA: ${{ steps.check.outputs.sha }}
+        run: |
+          gh pr review --repo "$REPO" "$NUMBER" --approve
+          gh pr merge --repo "$REPO" "$NUMBER" --merge --match-head-commit "$SHA"
