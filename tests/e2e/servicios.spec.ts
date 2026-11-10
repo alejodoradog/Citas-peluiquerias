@@ -58,7 +58,10 @@ test("an owner adds, edits and deactivates a service", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: mas.titulo }),
   ).toBeVisible();
-  await expect(page.getByText("Barbería El Parche")).toBeVisible();
+  // Next.js keeps the previous page mounted and hidden: only visible text.
+  await expect(
+    page.getByText("Barbería El Parche").filter({ visible: true }),
+  ).toBeVisible();
   const servicesRow = page.getByRole("link", {
     name: new RegExp(`^${mas.servicios}`),
   });
@@ -91,8 +94,8 @@ test("an owner adds, edits and deactivates a service", async ({ page }) => {
   await expect(page.getByRole("switch")).toHaveCount(0);
   await checkScreen(page);
 
-  const name = page.getByLabel(t.campos.nombre);
-  const price = page.getByLabel(t.campos.precio);
+  const name = page.getByRole("textbox", { name: t.campos.nombre });
+  const price = page.getByRole("textbox", { name: t.campos.precio });
   const save = page.getByRole("button", { name: t.guardar });
 
   // Errors are explained and focused: no name, a price with decimals, and a
@@ -119,7 +122,9 @@ test("an owner adds, edits and deactivates a service", async ({ page }) => {
   await expect(name).toBeFocused();
 
   await name.fill("Tinte");
-  await page.getByLabel(t.campos.duracion).selectOption("60");
+  await page
+    .getByRole("combobox", { name: t.campos.duracion })
+    .selectOption("60");
   await save.click();
   await expect(page).toHaveURL(/\/panel\/servicios$/, FIRST_VISIT);
   const tinte = serviceRow(page, "Tinte");
@@ -135,10 +140,12 @@ test("an owner adds, edits and deactivates a service", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: t.editar }),
   ).toBeVisible();
-  await expect(page.getByLabel(t.campos.precio)).toHaveValue("45.000");
+  await expect(
+    page.getByRole("textbox", { name: t.campos.precio }),
+  ).toHaveValue("45.000");
   await expect(page.getByRole("switch", { name: t.activo })).toBeChecked();
   await checkScreen(page);
-  await page.getByLabel(t.campos.precio).fill("50.000");
+  await page.getByRole("textbox", { name: t.campos.precio }).fill("50.000");
   await page.getByRole("button", { name: t.guardar }).click();
   await expect(page).toHaveURL(/\/panel\/servicios$/, FIRST_VISIT);
   await expect(serviceRow(page, "Tinte")).toContainText("$50.000");
