@@ -14,7 +14,7 @@ export default function Home() {
       <main className="flex flex-col gap-5.5 px-5 pt-10 pb-7.5">
         <BrandHeader large />
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-display text-balance">{t.titulo}</h1>
+          <h1 className="text-display">{t.titulo}</h1>
           <p className="text-body text-muted">{t.bajada}</p>
         </div>
         <ul className="flex flex-col gap-2.5">

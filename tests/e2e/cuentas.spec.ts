@@ -302,7 +302,9 @@ test("the owner's panel has its bottom bar", async ({ page }) => {
   await expectTouchTargets(page);
 
   await nav.getByRole("link", { name: textos.ui.navegacion.clientes }).click();
-  await expect(page).toHaveURL(/\/panel\/clientes$/);
+  // The dev server compiles a page the first time it is opened; in CI that
+  // can take longer than the default 5 seconds.
+  await expect(page).toHaveURL(/\/panel\/clientes$/, { timeout: 20_000 });
   await expect(
     page.getByRole("heading", { name: textos.panel.secciones.clientes }),
   ).toBeVisible();

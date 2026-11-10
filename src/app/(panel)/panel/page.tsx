@@ -28,7 +28,7 @@ async function OwnerHome() {
   return (
     <>
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-title text-balance">{t.saludo(name)}</h1>
+        <h1 className="text-title">{t.saludo(name)}</h1>
         <p className="text-section text-brand-strong">{barbershop.name}</p>
       </div>
       <Notice tone="info" title={t.prueba(trialEnd)} />

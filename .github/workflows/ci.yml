@@ -22,6 +22,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:coverage
       - run: pnpm build
+      - name: The production CSS carries the design tokens
+        run: |
+          for token in --color-brand-soft --color-line-strong --radius-button --text-title; do
+            grep -rlq -- "$token" .next/static --include=*.css || { echo "::error::$token is missing from the production CSS"; exit 1; }
+          done
       - name: The component catalog is not in the production build
         run: |
           pnpm start &
@@ -64,7 +69,20 @@ jobs:
       - run: pnpm supabase start
       - name: Point the app at the local Supabase
         run: node scripts/ci/supabase-env.mjs >> "$GITHUB_ENV"
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Cache the Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      # The system packages come from apt, which is sometimes very slow: each
+      # try gets 8 minutes and a second try before the job gives up.
+      - name: Install the browsers
+        run: |
+          for try in 1 2; do
+            timeout 480 pnpm exec playwright install --with-deps chromium webkit && exit 0
+            echo "::warning::Browser install try $try did not finish"
+          done
+          exit 1
       - run: pnpm test:e2e
       - name: Keep the report, with the side-by-side screenshots
         if: always()

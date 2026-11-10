@@ -28,7 +28,7 @@ export function AuthHeading({
     <>
       {icon ? <span className="text-brand flex">{icon}</span> : null}
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-title text-balance">{title}</h1>
+        <h1 className="text-title">{title}</h1>
         {intro ? <p className="text-body text-muted">{intro}</p> : null}
       </div>
     </>
