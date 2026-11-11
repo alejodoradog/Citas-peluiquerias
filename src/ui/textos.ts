@@ -3,7 +3,12 @@ import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-e
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
+import type { BookingLinkActionErrorCode } from "@/modulos/barberias/acciones/booking-link";
 import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
+import {
+  SLUG_CHANGE_LIMIT,
+  SLUG_CHANGE_WINDOW_DAYS,
+} from "@/modulos/barberias/dominio/slug";
 import type { ShopProfileActionErrorCode } from "@/modulos/barberias/acciones/shop-profile";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
 import type { ShopHoursActionErrorCode } from "@/modulos/barberias/acciones/shop-hours";
@@ -880,6 +885,40 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ShopProfileActionErrorCode | "invalid", string>,
+  },
+  // D-61, Más › Link de reservas. The old link keeps leading to the new one
+  // (decision P1 of task 2.4), so the design's warning that it stops working
+  // became a notice that it keeps working.
+  link: {
+    titulo: "Link de reservas",
+    cargando: "Cargando tu link…",
+    actual: "Link actual",
+    nuevo: "Link nuevo",
+    revisando: "Revisando…",
+    disponible: "Disponible",
+    // When what was typed becomes another link ("La Esquina" → la-esquina).
+    disponibleComo: (link: string) => `Disponible: ${link}`,
+    sinRevisar:
+      "No pudimos revisar si está libre. Puedes intentar cambiarlo igual.",
+    aviso: "Tu link anterior seguirá funcionando",
+    avisoDetalle:
+      "Los QR y afiches que ya imprimiste llevarán a tu link nuevo.",
+    cambiar: "Cambiar link",
+    cambiando: "Cambiando…",
+    cambiado: (link: string) => `Listo, tu link ahora es ${link}`,
+    cambiadoDetalle:
+      "El QR que descargaste antes sigue sirviendo: lleva a este link.",
+    compartir: "Compartir el link nuevo",
+    errores: {
+      slug_invalid:
+        "Usa de 3 a 60 letras o números, sin tildes, y separa las palabras con guiones.",
+      slug_reserved: "Ese link lo usa Yapoin. Elige otro.",
+      slug_same: "Ese ya es tu link.",
+      slug_taken: "Ya está en uso. Prueba con otro.",
+      slug_change_limit: `Ya cambiaste tu link ${SLUG_CHANGE_LIMIT} veces en los últimos ${SLUG_CHANGE_WINDOW_DAYS} días. Podrás cambiarlo de nuevo más adelante.`,
+      unknown: "No pudimos cambiar el link. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<BookingLinkActionErrorCode | "invalid", string>,
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

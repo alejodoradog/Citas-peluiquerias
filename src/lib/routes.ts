@@ -22,6 +22,7 @@ export const routes = {
   panelHolidays: "/panel/horario/festivos",
   panelPolicies: "/panel/reservas",
   panelShopProfile: "/panel/datos",
+  panelBookingLink: "/panel/link",
   panelServices: "/panel/servicios",
   panelServiceNew: "/panel/servicios/nuevo",
   panelServiceEdit: (id: string) => `/panel/servicios/${id}`,

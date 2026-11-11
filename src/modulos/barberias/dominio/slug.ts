@@ -59,3 +59,39 @@ export function slugFromName(name: string): string {
 export function slugCandidate(base: string, attempt: number): string {
   return attempt <= 1 ? base : `${base}-${attempt}`;
 }
+
+// D-61, "Link nuevo": what the owner types after "yapoin.com/", turned into a
+// link the way the sign-up turns a name into one (accents dropped, spaces and
+// symbols as hyphens), but never cut, padded nor numbered: the owner gets
+// exactly the link the screen shows.
+export type NewSlugErrorCode = "slug_invalid" | "slug_reserved" | "slug_same";
+
+export type NewSlugResult =
+  { ok: true; slug: string } | { ok: false; error: NewSlugErrorCode };
+
+export function normalizeSlugInput(input: string): string {
+  return input
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function parseNewSlug(input: string, current: string): NewSlugResult {
+  const slug = normalizeSlugInput(input);
+  if (!isSlug(slug)) return { ok: false, error: "slug_invalid" };
+  if ((RESERVED_SLUGS as readonly string[]).includes(slug)) {
+    return { ok: false, error: "slug_reserved" };
+  }
+  if (slug === current) return { ok: false, error: "slug_same" };
+  return { ok: true, slug };
+}
+
+// Provisional decision P11 of task 2.4: a barbershop holds at most
+// SLUG_CHANGE_LIMIT links left in the last SLUG_CHANGE_WINDOW_DAYS days. The
+// database enforces it (guard_barbershop_slug); slug.test.ts fails if the two
+// copies drift apart.
+export const SLUG_CHANGE_LIMIT = 3;
+export const SLUG_CHANGE_WINDOW_DAYS = 30;
