@@ -35,7 +35,11 @@ jobs:
             sleep 1
           done
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/terminos)" = 200
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/_catalogo)" = 404
+          # /_catalogo now falls on the barbershop link ([slug]), which streams
+          # "not found" with a 200: what matters is that the catalog is not there.
+          page="$(curl -s http://localhost:3000/_catalogo)"
+          if echo "$page" | grep -q "Catálogo de F-01"; then echo "::error::the component catalog is in the production build"; exit 1; fi
+          echo "$page" | grep -q "No encontramos"
 
   database:
     runs-on: ubuntu-latest

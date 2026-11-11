@@ -881,10 +881,28 @@ export const textos = {
       invalid: "Revisa este dato.",
     } satisfies Record<ShopProfileActionErrorCode | "invalid", string>,
   },
+  // The links that already circulate (the QR, the poster, the barber's
+  // link) while their pages are built: tasks 3.2 and 4.4.
+  proximamente: {
+    reservas: {
+      tituloPestana: "Reservas",
+      cargando: "Cargando…",
+      titulo: (barberia: string) => `Muy pronto podrás reservar en ${barberia}`,
+      bajada:
+        "Estamos terminando la página de reservas. Vuelve en unos días o escríbele a la barbería.",
+    },
+    barbero: {
+      titulo: "Muy pronto verás tus citas aquí",
+      bajada:
+        "Guarda este link: con él vas a ver tus citas del día sin crear una cuenta.",
+    },
+    conoceYapoin: "¿Tienes una barbería? Conoce Yapoin",
+  },
   noEncontrado: {
     titulo: "No encontramos esta página",
     bajada: "Puede que el link esté incompleto o que ya no exista.",
     volver: "Volver a la agenda",
+    inicio: "Ir al inicio",
   },
   errorGeneral: {
     titulo: "Algo salió mal",

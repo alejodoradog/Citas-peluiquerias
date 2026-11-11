@@ -26,7 +26,7 @@ describe("Notice", () => {
       <Notice
         tone="warning"
         title="Tu prueba gratis vence en 3 días"
-        action={<a href="/pagar">Ver cómo pagar</a>}
+        action={<button type="button">Ver cómo pagar</button>}
       >
         Paga para seguir recibiendo reservas.
       </Notice>,
@@ -34,7 +34,7 @@ describe("Notice", () => {
     const notice = screen.getByRole("status");
     expect(notice).toHaveTextContent("Paga para seguir recibiendo reservas.");
     expect(
-      screen.getByRole("link", { name: "Ver cómo pagar" }),
+      screen.getByRole("button", { name: "Ver cómo pagar" }),
     ).toBeInTheDocument();
   });
 
