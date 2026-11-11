@@ -6,7 +6,9 @@ import {
   publicBookingUrl,
   qrFileName,
 } from "@/lib/sitio";
+import { publicImageUrl } from "@/lib/imagenes/keys";
 import { countActiveBarbers } from "@/modulos/barberias/datos/setup";
+import { getShopProfile } from "@/modulos/barberias/datos/shop-profile";
 import { BookingLinkCard } from "@/ui/booking-link-card";
 import { Card } from "@/ui/card";
 import { CopyButton } from "@/ui/copy-button";
@@ -38,7 +40,11 @@ export default function SharePage() {
 
 async function Share() {
   const { barbershop } = await requireReadyOwner();
-  const hasBarbers = (await countActiveBarbers(barbershop.id)) > 0;
+  const [activeBarbers, profile] = await Promise.all([
+    countActiveBarbers(barbershop.id),
+    getShopProfile(barbershop.id),
+  ]);
+  const hasBarbers = activeBarbers > 0;
   const url = publicBookingUrl(barbershop.slug);
   const matrix = qrMatrix(url);
   const message = t.mensaje(
@@ -81,6 +87,10 @@ async function Share() {
             matrix={matrix}
             caption={t.qrTitulo}
             name={barbershop.name}
+            link={displayBookingUrl(barbershop.slug)}
+            logoUrl={
+              profile.logoPath ? publicImageUrl(profile.logoPath) : null
+            }
             fileName={posterFileName(barbershop.slug)}
             label={t.afiche}
           />

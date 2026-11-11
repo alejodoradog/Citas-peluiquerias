@@ -32,20 +32,35 @@ const PROPERTIES = [
 
 type Styles = Record<(typeof PROPERTIES)[number], string>;
 
+// The development server mounts every component twice (React's Strict
+// Mode), so FreshOnReturn remounts the form of D-57 and D-58 right after the
+// page loads. An element found just before that is no longer in the page and
+// has no styles (empty strings): it is looked up again until it is.
 async function stylesOf(locator: Locator): Promise<Styles> {
-  return locator.evaluate(
-    (element, properties) => {
-      const style = getComputedStyle(element);
-      const height = `${Math.round(element.getBoundingClientRect().height)}px`;
-      return Object.fromEntries(
-        properties.map((p) => [
-          p,
-          p === "height" ? height : style.getPropertyValue(p),
-        ]),
-      ) as Styles;
-    },
-    PROPERTIES as unknown as string[],
-  );
+  let styles: Styles | null = null;
+  await expect
+    .poll(
+      async () => {
+        styles = await locator.evaluate(
+          (element, properties) => {
+            if (!element.isConnected) return null;
+            const style = getComputedStyle(element);
+            const height = `${Math.round(element.getBoundingClientRect().height)}px`;
+            return Object.fromEntries(
+              properties.map((p) => [
+                p,
+                p === "height" ? height : style.getPropertyValue(p),
+              ]),
+            ) as Styles;
+          },
+          PROPERTIES as unknown as string[],
+        );
+        return styles !== null;
+      },
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+  return styles!;
 }
 
 function close(a: string, b: string): boolean {
