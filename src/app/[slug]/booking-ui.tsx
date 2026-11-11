@@ -171,7 +171,8 @@ export function SummaryBar({
   children: ReactNode;
 }) {
   return (
-    <div className="sticky bottom-0 mx-auto w-full max-w-md">
+    // Above the step's content, so the list of hours never covers the button.
+    <div className="sticky bottom-0 z-10 mx-auto w-full max-w-md">
       <div className="border-line flex flex-col gap-2.5 border-t bg-white px-5 pt-3.5 pb-5.5">
         <div className="flex items-center justify-between gap-3 text-[0.9375rem]">
           <span className="text-muted">{summary}</span>

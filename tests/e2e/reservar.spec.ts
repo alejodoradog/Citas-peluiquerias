@@ -69,6 +69,9 @@ async function chooseTomorrowAt(page: Page, time: string) {
     .filter({ visible: true });
   await hour.click();
   await expect(hour).toHaveAttribute("aria-current", "true", FIRST_VISIT);
+  // To the end of the list of hours, as a person would, where the bar with
+  // "Continuar" rests.
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page
     .getByRole("link", { name: t.continuar })
     .filter({ visible: true })

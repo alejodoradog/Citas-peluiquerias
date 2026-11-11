@@ -931,6 +931,12 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
   // "Continuar" was where "Confirmar reserva" is now: move the pointer off,
   // or the button is measured in its hover color.
   await page.mouse.move(0, 0);
+  // and wait for the button to fade back from it.
+  await expect(
+    page
+      .getByRole("button", { name: r.datos.confirmar })
+      .filter({ visible: true }),
+  ).toHaveCSS("background-color", "rgb(30, 127, 140)");
   await compare(
     "campo",
     page
