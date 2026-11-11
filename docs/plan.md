@@ -265,9 +265,9 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [x] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [x] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar. (El envío por correo pasa a la 5.2, con SES; ver docs/tareas/2.3-link-privado.md.)
-- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono son P2 en la spec y quedan para después del lanzamiento. Construida (2.4a a 2.4e); pendiente del CI: pgTAP, tipos generados y pruebas de punta a punta (docs/tareas/2.4-configuracion.md).
+- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono (P2, D-63) salen del hito 2 y quedan para después del lanzamiento (decisión del fundador, 2026-11-10). Construida (2.4a a 2.4e); pendiente del CI: pgTAP, tipos generados y pruebas de punta a punta (docs/tareas/2.4-configuracion.md).
 - [x] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
-- [ ] 2.6 Datos de abono (P2, D-63) y selector de sede con "Nueva sede" (`create_barbershop`, decisión 0006).
+- [ ] 2.6 Selector de sede arriba en Más (D-50) y "Nueva sede" (`create_barbershop`, decisión 0006), sin abonos: los datos de abono (D-63) pasan a después del lanzamiento (decisión del fundador, 2026-11-10). Construida; pendiente del CI: pgTAP y pruebas de punta a punta (docs/tareas/2.6-sedes.md).
 
 **Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos.
 

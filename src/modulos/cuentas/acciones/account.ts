@@ -8,6 +8,7 @@ import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
 import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasRecentRecoverySession } from "../datos/access";
+import { forgetActiveBarbershop } from "../datos/active-barbershop";
 import { recoveryLinkIsFresh } from "../dominio/recovery-session";
 import {
   parseNewPassword,
@@ -64,6 +65,7 @@ export async function signIn(
 export async function signOut(): Promise<void> {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut({ scope: "local" });
+  await forgetActiveBarbershop();
   redirect(routes.signIn);
 }
 

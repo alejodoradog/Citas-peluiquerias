@@ -133,10 +133,11 @@ test("an owner changes the data, the logo, the cover and the location", async ({
   ).toHaveAttribute("href", /query=3\.451647%2C-76\.532013$/);
   await save(page);
 
-  // Más names the barbershop by its new name; the link stays (D-61, 2.4e).
+  // Más names the barbershop by its new name, in its top bar and in the card
+  // of the active sede (task 2.6); the link stays (D-61, 2.4e).
   await expect(
     page.getByText("Barbería El Parche Norte").filter({ visible: true }),
-  ).toBeVisible();
+  ).toHaveCount(2);
   const first = await shopProfileSnapshot(slug);
   expect(first).toMatchObject({
     name: "Barbería El Parche Norte",

@@ -221,9 +221,11 @@ test("D-62 and D-50 meet the F-01 rules @ui", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: textos.mas.titulo }),
   ).toBeVisible(FIRST_VISIT);
+  // The top bar names the barbershop; so does the card of the active sede
+  // (task 2.6).
   await expect(
     page.getByText(BARBERSHOP, { exact: true }).filter({ visible: true }),
-  ).toBeVisible();
+  ).toHaveCount(2);
   await expect(
     page
       .getByRole("button", { name: textos.cuentas.salir })

@@ -24,18 +24,23 @@ import { SignOutButton } from "@/ui/sign-out-button";
 import { LoadingState } from "@/ui/states";
 import { TabShell } from "@/ui/tab-shell";
 import { textos } from "@/ui/textos";
+import { switchBarbershop } from "@/modulos/cuentas/acciones/active-barbershop";
 import { summarizeHours } from "../configurar/hours-summary";
 import { requireReadyOwner } from "../ready-owner";
+import { BarbershopSwitcher } from "../sedes/barbershop-switcher";
+import { switcherBarbershops } from "../sedes/switcher-barbershops";
 
 const t = textos.mas;
 
 export const metadata: Metadata = { title: t.titulo };
 
-// D-50: the owner's settings. Servicios, Barberos, Datos y fotos (2.4d),
-// Horario (2.4a), Festivos y cierres (2.4c), Reservas y cancelaciones (2.4b)
-// and Link de reservas (2.4e) work now; the other rows arrive with tasks 2.6
-// and 4.6 and show "Pronto" without a link (decision 9 of task 2.2). Its top bar names the barbershop, as the design
-// does, so the whole frame waits for it; "Cerrar sesión" is in "Tu cuenta".
+// D-50: the owner's settings, for the active sede, with the sede switcher
+// on top (task 2.6). Servicios, Barberos, Datos y fotos (2.4d), Horario
+// (2.4a), Festivos y cierres (2.4c), Reservas y cancelaciones (2.4b) and Link
+// de reservas (2.4e) work now; Datos de abono (after launch, D-63) and Cierre
+// del día (4.6) show "Pronto" without a link (decision 9 of task 2.2). Its
+// top bar names the active sede, as the design does, so the whole frame
+// waits for it; "Cerrar sesión" is in "Tu cuenta".
 export default function MorePage() {
   return (
     <Suspense
@@ -62,7 +67,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 const soon = <Chip tone="warning">{t.pronto}</Chip>;
 
 async function More() {
-  const { email, barbershop } = await requireReadyOwner();
+  const { email, barbershop, barbershops } = await requireReadyOwner();
   const [counts, hours] = await Promise.all([
     countActive(barbershop.id),
     getBarbershopHours(barbershop.id),
@@ -72,6 +77,14 @@ async function More() {
   return (
     <TabShell title={t.titulo} subtitle={barbershop.name}>
       <div className="flex flex-col gap-4">
+        {/* Keyed by the active sede: after a switch the page loads again in
+            full anyway, but a stale sheet never survives a new sede. */}
+        <BarbershopSwitcher
+          key={barbershop.id}
+          barbershops={switcherBarbershops(barbershops)}
+          activeId={barbershop.id}
+          switchTo={switchBarbershop}
+        />
         {barbershop.subscriptionStatus === "trial" ? (
           <Notice tone="info" title={t.prueba(trialEnd)}>
             {t.pruebaDetalle}

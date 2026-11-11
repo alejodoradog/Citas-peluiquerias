@@ -23,6 +23,7 @@ export const routes = {
   panelPolicies: "/panel/reservas",
   panelShopProfile: "/panel/datos",
   panelBookingLink: "/panel/link",
+  panelNewBarbershop: "/panel/sedes/nueva",
   panelServices: "/panel/servicios",
   panelServiceNew: "/panel/servicios/nuevo",
   panelServiceEdit: (id: string) => `/panel/servicios/${id}`,
