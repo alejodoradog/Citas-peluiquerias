@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Activity } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -78,9 +78,10 @@ describe("HolidaysEditor", () => {
 
   it("sends the holidays switched on with Guardar", async () => {
     const user = userEvent.setup();
-    const action = vi.fn<
-      (previous: HolidaysState, formData: FormData) => Promise<HolidaysState>
-    >(idle);
+    const action =
+      vi.fn<
+        (previous: HolidaysState, formData: FormData) => Promise<HolidaysState>
+      >(idle);
     renderEditor({ action });
     await user.click(
       screen.getByRole("switch", { name: "Viernes 25 de diciembre" }),
@@ -262,6 +263,8 @@ describe("HolidaysEditor, hidden and shown again", () => {
       screen.getByRole("switch", { name: "Viernes 25 de diciembre" }),
     );
     rerender(inActivity("hidden"));
+    // Coming back is a later navigation, never the same task.
+    await act(async () => {});
     rerender(inActivity("visible"));
     expect(
       screen.getByRole("switch", { name: "Viernes 25 de diciembre" }),

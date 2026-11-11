@@ -439,6 +439,10 @@ describe("ShopProfileForm, hidden and shown again", () => {
     await waitFor(() => expect(hidden("logoPath")).toHaveValue(LOGO_KEY));
 
     rerender(inActivity("hidden"));
+
+    // Coming back is a later navigation, never the same task.
+
+    await act(async () => {});
     rerender(inActivity("visible"));
 
     expect(screen.getByRole("textbox", { name: t.campos.nombre })).toHaveValue(

@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Activity, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { Activity, StrictMode, useEffect, useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 import { FreshOnReturn } from "./fresh-on-return";
 
 function Counter() {
@@ -35,7 +35,38 @@ describe("FreshOnReturn", () => {
     const { rerender } = render(page("visible"));
     await user.click(screen.getByRole("button"));
     rerender(page("hidden"));
+    // Coming back is a later navigation, never the same task.
+    await act(async () => {});
     rerender(page("visible"));
     expect(screen.getByRole("button")).toHaveTextContent("Cuenta 0");
+  });
+
+  it("keeps what the person started under Strict Mode's double setup", async () => {
+    const user = userEvent.setup();
+    render(<StrictMode>{page("visible")}</StrictMode>);
+    await user.click(screen.getByRole("button"));
+    await act(async () => {});
+    expect(screen.getByRole("button")).toHaveTextContent("Cuenta 1");
+  });
+
+  it("does not mount the children again for Strict Mode's double setup", async () => {
+    const setups = vi.fn();
+    function Probe() {
+      useEffect(() => {
+        setups();
+      }, []);
+      return null;
+    }
+    render(
+      <StrictMode>
+        <FreshOnReturn>
+          <Probe />
+        </FreshOnReturn>
+      </StrictMode>,
+    );
+    await act(async () => {});
+    // Strict Mode sets an effect up twice on the first mount; a new key
+    // would mount the children again and set it up twice more.
+    expect(setups).toHaveBeenCalledTimes(2);
   });
 });

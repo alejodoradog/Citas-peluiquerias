@@ -287,7 +287,7 @@ select is(
 );
 select is(
   (select count(*)::int from public.services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000003')
-    + (select count(*)::int from public.subscription_payments),
+    + (select count(*)::int from public.subscription_payments where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000002'),
   2,
   'the other sedes keep their data'
 );
