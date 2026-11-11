@@ -8,7 +8,10 @@ import {
   setBarberActive,
   updateBarber,
 } from "@/modulos/barberias/acciones/barbers";
-import { requestImageUpload } from "@/modulos/barberias/acciones/images";
+import {
+  discardImageUpload,
+  requestImageUpload,
+} from "@/modulos/barberias/acciones/images";
 import {
   getBarber,
   listActiveServiceOptions,
@@ -77,6 +80,7 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
         barber.shifts,
       )}
       requestUpload={requestImageUpload}
+      discardUpload={discardImageUpload}
       setActive={setBarberActive}
       removePhoto={removeBarberPhoto}
     />

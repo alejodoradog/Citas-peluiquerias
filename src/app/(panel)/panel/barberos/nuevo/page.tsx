@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createBarber } from "@/modulos/barberias/acciones/barbers";
-import { requestImageUpload } from "@/modulos/barberias/acciones/images";
+import {
+  discardImageUpload,
+  requestImageUpload,
+} from "@/modulos/barberias/acciones/images";
 import { listActiveServiceOptions } from "@/modulos/barberias/datos/barbers";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../../ready-owner";
@@ -32,6 +35,7 @@ async function NewBarber() {
       services={services}
       hoursSummary={t.horarioBarberia}
       requestUpload={requestImageUpload}
+      discardUpload={discardImageUpload}
     />
   );
 }

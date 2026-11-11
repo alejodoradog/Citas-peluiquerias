@@ -53,6 +53,7 @@ export function BarberEditor({
   services,
   hoursSummary,
   requestUpload,
+  discardUpload,
   setActive,
   removePhoto,
 }: {
@@ -61,6 +62,7 @@ export function BarberEditor({
   services: ReadonlyArray<{ id: string; name: string }>;
   hoursSummary: string;
   requestUpload: (kind: "barbers", mime: string) => Promise<ImageUploadTicket>;
+  discardUpload: (kind: "barbers", path: string) => Promise<void>;
   setActive?: (
     barberId: string,
     active: boolean,
@@ -159,6 +161,7 @@ export function BarberEditor({
             onPendingChange={setPending}
             onUploadingChange={setUploading}
             requestUpload={requestUpload}
+            discardUpload={discardUpload}
             removeSaved={removeSaved}
           />
           <Field

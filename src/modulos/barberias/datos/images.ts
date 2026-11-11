@@ -11,9 +11,33 @@ async function bucket() {
   return supabase.storage.from(IMAGES_BUCKET);
 }
 
+// Reserves `path` for one upload (migration add_image_upload_tickets). The
+// database holds the quota of the barbershop here, under a lock, and the
+// insert policy of Storage refuses to sign or upload a path not reserved in
+// the last 5 minutes.
+export type ImageReservation = "reserved" | "quota" | "failed";
+
+type DatabaseError = { code?: string; hint?: string | null };
+
+export function imageReservationError(error: DatabaseError): ImageReservation {
+  return error.code === "23514" && error.hint === "image_quota"
+    ? "quota"
+    : "failed";
+}
+
+export async function reserveImageUpload(
+  path: string,
+): Promise<ImageReservation> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("reserve_image_upload", {
+    p_path: path,
+  });
+  return error ? imageReservationError(error) : "reserved";
+}
+
 // A signed URL to upload one new image at `path` (decision 0007). Storage
-// checks the insert policy now, with the session, so a key outside the
-// owner's folders gets no URL.
+// checks the insert policy now, with the session: a key outside the owner's
+// folders, or not reserved first, gets no URL.
 export async function signImageUpload(path: string): Promise<string | null> {
   const { data, error } = await (await bucket()).createSignedUploadUrl(path);
   return error ? null : data.token;
@@ -27,6 +51,24 @@ export async function imageExists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// Whether a barber, or the logo or cover of a barbershop, points at `path`.
+// Read with the owner's session: RLS shows the rows of their barbershops,
+// which is where their keys live. When it cannot tell, it says yes, so an
+// image in use is never deleted.
+export async function imageInUse(path: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const found = await Promise.all([
+    supabase.from("barbers").select("id").eq("photo_path", path).limit(1),
+    supabase.from("barbershops").select("id").eq("logo_path", path).limit(1),
+    supabase
+      .from("barbershops")
+      .select("id")
+      .eq("cover_photo_path", path)
+      .limit(1),
+  ]);
+  return found.some(({ data, error }) => error !== null || data.length > 0);
 }
 
 // Deletes images that nothing points at any more. A failure leaves an

@@ -1,11 +1,12 @@
--- Task 2.2b, migration add_photo_rules: an image quota per barbershop, one
--- photo per barber, and the owner's barber always active.
+-- Task 2.2b, migration add_photo_rules: one photo per barber, and the
+-- owner's barber always active. The image quota is checked when a path is
+-- reserved since migration add_image_upload_tickets (27_image_quota).
 begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(8);
+select plan(6);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'owner-a@example.com');
@@ -22,20 +23,6 @@ insert into public.barbers (id, barbershop_id, display_name, link_token_hash, is
 
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
-
--- Quota: 2 barbers give 2 * 2 + 10 = 14 images ------------------------------------------------
-
-select lives_ok(
-  $$insert into storage.objects (bucket_id, name)
-    select 'images', 'aaaaaaaa-0000-0000-0000-000000000000/barbers/' || gen_random_uuid() || '.webp'
-    from generate_series(1, 14)$$,
-  'a barbershop uploads up to its quota'
-);
-select throws_ok(
-  $$insert into storage.objects (bucket_id, name)
-    values ('images', 'aaaaaaaa-0000-0000-0000-000000000000/barbers/99999999-9999-4999-8999-999999999999.webp')$$,
-  '42501', null, 'and not one image more'
-);
 
 -- One photo, one barber ---------------------------------------------------------------------
 

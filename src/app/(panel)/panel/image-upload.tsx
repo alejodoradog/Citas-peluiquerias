@@ -36,11 +36,14 @@ export type ImageTexts = {
 // shrinks it in the browser, asks the server for a signed URL in the folder
 // of `kind` and uploads it; the form's "Guardar" then saves the key, and its
 // action checks it again. remove() drops an image not saved yet, or deletes
-// the saved one right away (removeSaved).
+// the saved one right away (removeSaved). An image uploaded and dropped
+// before "Guardar" (another one chosen, or removed) is deleted from the
+// bucket right away (discardUpload).
 export function useImageUpload<Kind extends ImageKind>({
   kind,
   compress,
   requestUpload,
+  discardUpload,
   pending,
   onPendingChange,
   onUploadingChange,
@@ -49,6 +52,7 @@ export function useImageUpload<Kind extends ImageKind>({
   kind: Kind;
   compress: (file: File) => Promise<{ blob: Blob; mime: ImageMime }>;
   requestUpload: (kind: Kind, mime: string) => Promise<ImageUploadTicket>;
+  discardUpload: (kind: Kind, path: string) => Promise<void>;
   pending: PendingImage | null;
   onPendingChange: (image: PendingImage | null) => void;
   onUploadingChange: (uploading: boolean) => void;
@@ -59,7 +63,12 @@ export function useImageUpload<Kind extends ImageKind>({
   const [removing, startRemoving] = useTransition();
 
   function replacePending(image: PendingImage | null) {
-    if (pending) URL.revokeObjectURL(pending.previewUrl);
+    if (pending) {
+      URL.revokeObjectURL(pending.previewUrl);
+      // Nothing saved it: it leaves the bucket. A failure leaves an orphan
+      // for the monthly cleanup, so it does not stop the owner.
+      discardUpload(kind, pending.path).catch(() => undefined);
+    }
     onPendingChange(image);
   }
 
@@ -74,9 +83,9 @@ export function useImageUpload<Kind extends ImageKind>({
     if (compressed.blob.size > IMAGE_MAX_BYTES) return "photo_too_big";
 
     const ticket = await requestUpload(kind, compressed.mime).catch(
-      () => ({ ok: false }) as const,
+      () => ({ ok: false, error: "photo_upload_failed" }) as const,
     );
-    if (!ticket.ok) return "photo_upload_failed";
+    if (!ticket.ok) return ticket.error;
     const stored = await uploadToSignedImageUrl(
       ticket.path,
       ticket.token,

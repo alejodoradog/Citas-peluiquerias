@@ -25,6 +25,7 @@ type ShopImageProps = {
     kind: "logo" | "cover",
     mime: string,
   ) => Promise<ImageUploadTicket>;
+  discardUpload: (kind: "logo" | "cover", path: string) => Promise<void>;
   // Deletes the saved image right away; false when it could not.
   removeSaved: () => Promise<boolean>;
 };
@@ -39,12 +40,14 @@ export function LogoField({
   onPendingChange,
   onUploadingChange,
   requestUpload,
+  discardUpload,
   removeSaved,
 }: ShopImageProps & { barbershopName: string }) {
   const upload = useImageUpload({
     kind: "logo",
     compress: (file) => compressPhoto(file),
     requestUpload,
+    discardUpload,
     pending,
     onPendingChange,
     onUploadingChange,
@@ -121,12 +124,14 @@ export function CoverField({
   onPendingChange,
   onUploadingChange,
   requestUpload,
+  discardUpload,
   removeSaved,
 }: ShopImageProps) {
   const upload = useImageUpload({
     kind: "cover",
     compress: (file) => compressPhoto(file, COVER_COMPRESSION),
     requestUpload,
+    discardUpload,
     pending,
     onPendingChange,
     onUploadingChange,

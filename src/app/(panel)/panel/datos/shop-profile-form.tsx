@@ -44,6 +44,7 @@ export function ShopProfileForm({
   action,
   saved,
   requestUpload,
+  discardUpload,
   removeImage,
   footer,
 }: {
@@ -53,6 +54,7 @@ export function ShopProfileForm({
   ) => Promise<ShopProfileState>;
   saved: EditableShopProfile;
   requestUpload: (kind: ShopImage, mime: string) => Promise<ImageUploadTicket>;
+  discardUpload: (kind: ShopImage, path: string) => Promise<void>;
   removeImage: (kind: ShopImage) => Promise<ShopImageCommandResult>;
   // After the fields: "Eliminar esta sede" (task 2.6b). Its buttons do not
   // submit this form.
@@ -113,6 +115,7 @@ export function ShopProfileForm({
           onPendingChange={setLogo}
           onUploadingChange={setUploadingLogo}
           requestUpload={requestUpload}
+          discardUpload={discardUpload}
           removeSaved={async () => (await removeImage("logo")).ok}
         />
         <CoverField
@@ -121,6 +124,7 @@ export function ShopProfileForm({
           onPendingChange={setCover}
           onUploadingChange={setUploadingCover}
           requestUpload={requestUpload}
+          discardUpload={discardUpload}
           removeSaved={async () => (await removeImage("cover")).ok}
         />
         <Field

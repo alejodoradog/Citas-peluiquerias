@@ -475,6 +475,8 @@ export const textos = {
         photo_unreadable:
           "No pudimos abrir esa foto. Prueba con otra o toma una nueva.",
         photo_too_big: "La foto es muy pesada. Prueba con otra.",
+        photo_quota:
+          "Llegaste al máximo de fotos. Quita alguna que no uses o intenta más tarde.",
         photo_upload_failed:
           "No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.",
       } satisfies Record<ImageUploadErrorCode, string>,
@@ -821,6 +823,8 @@ export const textos = {
         photo_unreadable:
           "No pudimos abrir esa imagen. Prueba con otra o toma una foto.",
         photo_too_big: "La imagen es muy pesada. Prueba con otra.",
+        photo_quota:
+          "Llegaste al máximo de imágenes. Quita alguna que no uses o intenta más tarde.",
         photo_upload_failed:
           "No pudimos subir la imagen. Revisa tu conexión e intenta de nuevo.",
       } satisfies Record<ImageUploadErrorCode, string>,
@@ -838,6 +842,8 @@ export const textos = {
         photo_unreadable:
           "No pudimos abrir esa foto. Prueba con otra o toma una nueva.",
         photo_too_big: "La foto es muy pesada. Prueba con otra.",
+        photo_quota:
+          "Llegaste al máximo de fotos. Quita alguna que no uses o intenta más tarde.",
         photo_upload_failed:
           "No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.",
       } satisfies Record<ImageUploadErrorCode, string>,

@@ -22,6 +22,12 @@ vi.mock("@/lib/imagenes/upload", () => ({
 
 const KEY =
   "aaaaaaaa-0000-4000-8000-000000000000/barbers/11111111-1111-4111-8111-111111111111.webp";
+const OTHER_KEY =
+  "aaaaaaaa-0000-4000-8000-000000000000/barbers/22222222-2222-4222-8222-222222222222.webp";
+
+const discardUpload = vi.fn<(kind: "barbers", path: string) => Promise<void>>(
+  async () => {},
+);
 
 function Harness({
   requestUpload,
@@ -43,6 +49,7 @@ function Harness({
         onPendingChange={setPending}
         onUploadingChange={() => {}}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         removeSaved={removeSaved}
       />
     </form>
@@ -105,10 +112,47 @@ describe("PhotoField", () => {
     );
     expect(screen.getByLabelText(t.cambiar)).toBeInTheDocument();
 
-    // "Quitar foto" drops a photo that is not saved yet.
+    expect(discardUpload).not.toHaveBeenCalled();
+
+    // "Quitar foto" drops a photo that is not saved yet, and the bucket
+    // drops it too.
     await user.click(screen.getByRole("button", { name: t.quitar }));
     expect(hiddenPath()).toHaveValue("");
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:vista-previa");
+    expect(discardUpload).toHaveBeenCalledExactlyOnceWith("barbers", KEY);
+  });
+
+  it("discards the photo not saved yet when another one is chosen", async () => {
+    const user = userEvent.setup();
+    const requestUpload = vi
+      .fn<(kind: "barbers", mime: string) => Promise<ImageUploadTicket>>()
+      .mockResolvedValueOnce({ ok: true, path: KEY, token: "firma" })
+      .mockResolvedValueOnce({ ok: true, path: OTHER_KEY, token: "firma" });
+    render(<Harness requestUpload={requestUpload} />);
+    await user.upload(screen.getByLabelText(t.agregar), photo);
+    await waitFor(() => expect(hiddenPath()).toHaveValue(KEY));
+
+    await user.upload(screen.getByLabelText(t.cambiar), photo);
+    await waitFor(() => expect(hiddenPath()).toHaveValue(OTHER_KEY));
+    expect(discardUpload).toHaveBeenCalledExactlyOnceWith("barbers", KEY);
+  });
+
+  it("keeps the photo not saved yet when the new one fails", async () => {
+    const user = userEvent.setup();
+    const requestUpload = vi
+      .fn<(kind: "barbers", mime: string) => Promise<ImageUploadTicket>>()
+      .mockResolvedValueOnce({ ok: true, path: KEY, token: "firma" })
+      .mockResolvedValueOnce({ ok: false, error: "photo_upload_failed" });
+    render(<Harness requestUpload={requestUpload} />);
+    await user.upload(screen.getByLabelText(t.agregar), photo);
+    await waitFor(() => expect(hiddenPath()).toHaveValue(KEY));
+
+    await user.upload(screen.getByLabelText(t.cambiar), photo);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      t.errores.photo_upload_failed,
+    );
+    expect(hiddenPath()).toHaveValue(KEY);
+    expect(discardUpload).not.toHaveBeenCalled();
   });
 
   it("refuses a file that is not an image", async () => {
@@ -167,10 +211,31 @@ describe("PhotoField", () => {
 
   it("explains when the server gives no upload URL", async () => {
     const user = userEvent.setup();
-    render(<Harness requestUpload={async () => ({ ok: false })} />);
+    render(
+      <Harness
+        requestUpload={async () => ({
+          ok: false,
+          error: "photo_upload_failed",
+        })}
+      />,
+    );
     await user.upload(screen.getByLabelText(t.agregar), photo);
     expect(await screen.findByRole("alert")).toHaveTextContent(
       t.errores.photo_upload_failed,
+    );
+    expect(uploadToSignedImageUrl).not.toHaveBeenCalled();
+  });
+
+  it("says so when the barbershop reached its image quota", async () => {
+    const user = userEvent.setup();
+    render(
+      <Harness
+        requestUpload={async () => ({ ok: false, error: "photo_quota" })}
+      />,
+    );
+    await user.upload(screen.getByLabelText(t.agregar), photo);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      t.errores.photo_quota,
     );
     expect(uploadToSignedImageUrl).not.toHaveBeenCalled();
   });

@@ -442,3 +442,47 @@ export async function addReadySedes(
   }
   return added;
 }
+
+// A client signed in as an account, straight against the local Supabase
+// (no browser): a test can call Storage and the RPCs the way an account
+// could without the app (security review of task 2.4, image quota).
+export async function signedInClient(email: string, password: string) {
+  const client = createClient(
+    requireLocalSupabaseUrl(),
+    requireEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return client;
+}
+
+// The id of a barbershop and its image quota (migration
+// add_image_upload_tickets: 2 per barber plus 10), read past RLS.
+export async function imageQuotaOf(slug: string) {
+  const admin = adminClient();
+  const id = await barbershopIdOf(slug);
+  const { count, error } = await admin
+    .from("barbers")
+    .select("id", { count: "exact", head: true })
+    .eq("barbershop_id", id);
+  if (error) throw error;
+  return { id, quota: 2 * (count ?? 0) + 10 };
+}
+
+// Images uploaded past the policies (service key) into a barbershop's
+// barbers folder, as old images that hold no ticket.
+export async function uploadImagesPastPolicies(
+  barbershopId: string,
+  count: number,
+) {
+  const images = adminClient().storage.from("images");
+  for (let index = 0; index < count; index += 1) {
+    const { error } = await images.upload(
+      `${barbershopId}/barbers/${crypto.randomUUID()}.webp`,
+      new Blob(["webp"], { type: "image/webp" }),
+      { contentType: "image/webp" },
+    );
+    if (error) throw error;
+  }
+}

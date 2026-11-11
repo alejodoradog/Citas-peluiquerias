@@ -472,6 +472,9 @@ isOneToOne: false
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
                            },
+"reserve_image_upload":
+{ Args: { "p_path": string }; Returns: undefined
+                           },
 "set_barber_schedule":
 { Args: { "p_barber_id": string,"p_shifts"?: Json,"p_uses_barbershop_hours": boolean }; Returns: undefined
                            },

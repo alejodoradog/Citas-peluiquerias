@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
 import { deleteBarbershop } from "@/modulos/barberias/acciones/barbershops";
-import { requestImageUpload } from "@/modulos/barberias/acciones/images";
+import {
+  discardImageUpload,
+  requestImageUpload,
+} from "@/modulos/barberias/acciones/images";
 import {
   removeShopImage,
   saveShopProfile,
@@ -80,6 +83,7 @@ async function ShopProfile() {
           coverUrl: saved.coverPath ? publicImageUrl(saved.coverPath) : null,
         }}
         requestUpload={requestImageUpload}
+        discardUpload={discardImageUpload}
         removeImage={removeShopImage}
         footer={
           canDeleteBarbershop(barbershops.length) ? (

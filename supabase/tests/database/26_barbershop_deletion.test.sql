@@ -106,6 +106,11 @@ insert into public.subscription_payments (barbershop_id, plan, amount_cop, metho
 -- Uploaded by the owner, as the app does.
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
+select public.reserve_image_upload(path) from (values
+  ('aaaaaaaa-0000-0000-0000-000000000002/logo/11111111-1111-4111-8111-111111111111.webp'),
+  ('aaaaaaaa-0000-0000-0000-000000000002/barbers/22222222-2222-4222-8222-222222222222.webp'),
+  ('aaaaaaaa-0000-0000-0000-000000000001/logo/33333333-3333-4333-8333-333333333333.webp')
+) as reserved (path);
 insert into storage.objects (bucket_id, name) values
   ('images', 'aaaaaaaa-0000-0000-0000-000000000002/logo/11111111-1111-4111-8111-111111111111.webp'),
   ('images', 'aaaaaaaa-0000-0000-0000-000000000002/barbers/22222222-2222-4222-8222-222222222222.webp'),

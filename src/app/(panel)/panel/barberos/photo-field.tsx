@@ -32,6 +32,7 @@ export function PhotoField({
   onPendingChange,
   onUploadingChange,
   requestUpload,
+  discardUpload,
   removeSaved,
 }: {
   name: string;
@@ -42,12 +43,14 @@ export function PhotoField({
   onPendingChange: (photo: PendingPhoto | null) => void;
   onUploadingChange: (uploading: boolean) => void;
   requestUpload: (kind: "barbers", mime: string) => Promise<ImageUploadTicket>;
+  discardUpload: (kind: "barbers", path: string) => Promise<void>;
   removeSaved?: () => Promise<boolean>;
 }) {
   const { uploading, removing, busy, error, choose, remove } = useImageUpload({
     kind: "barbers",
     compress: (file) => compressPhoto(file),
     requestUpload,
+    discardUpload,
     pending,
     onPendingChange,
     onUploadingChange,
