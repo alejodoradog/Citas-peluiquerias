@@ -138,7 +138,10 @@ test("a customer books from the link and the appointment is a web one", async ({
       name: t.confirmada.titulo("Camila"),
     }),
   ).toBeVisible(FIRST_VISIT);
-  await expect(page.getByText("Corte · 30 min")).toBeVisible();
+  // Its summary names the services (the hidden choice screens say it too).
+  await expect(
+    page.getByText("Corte · 30 min", { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
   await expectAccessible(page);
   await expectTouchTargets(page);
 
