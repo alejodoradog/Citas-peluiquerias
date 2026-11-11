@@ -136,7 +136,10 @@ test("an owner changes the link, and the old one leads to the new one", async ({
   await expect(oldLinks.getByRole("listitem")).toHaveCount(1, FIRST_VISIT);
   await page.goto(`/${expiredSlug}`);
   await expect(
-    page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
+    page.getByRole("heading", {
+      level: 1,
+      name: textos.reservas.noExiste.titulo,
+    }),
   ).toBeVisible(FIRST_VISIT);
   await page.goto(`/panel/link?guardado=1`);
   await expect(
@@ -170,7 +173,7 @@ test("an owner changes the link, and the old one leads to the new one", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: textos.proximamente.reservas.titulo(name),
+      name,
     }),
   ).toBeVisible(FIRST_VISIT);
 

@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   addDays,
+  formatCalendarDay,
   fromBogota,
   startOfBogotaDay,
   toBogotaDate,
@@ -10,6 +11,7 @@ import {
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
 import {
+  createBookableShop,
   createConfirmedOwner,
   insertShopClosure,
   uniqueEmail,
@@ -790,5 +792,182 @@ test("D-61 matches the design", async ({ page }) => {
   ]);
 
   await attachSideBySide(page, design, "D-61");
+  await design.close();
+});
+
+// Tasks 3.2 and 3.3: the public booking against C-01 to C-08. The design
+// shows times every 5 minutes (10:40); the app offers quarter hours (task
+// 3.1), so the times compared are other ones.
+const r = textos.reservas;
+const PRIMARY = [
+  "height",
+  "border-radius",
+  "background-color",
+  "color",
+  "font-size",
+  "font-weight",
+] as const;
+
+test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
+  test.setTimeout(150_000);
+  const shop = await createBookableShop("fidelidad-reservas");
+
+  await page.goto(`/${shop.slug}`);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({
+    timeout: 20_000,
+  });
+  let design = await openDesign(page, "C01-Perfil.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "reservar",
+    page.getByRole("link", { name: r.perfil.reservar }),
+    design.getByRole("link", { name: "Reservar cita" }),
+    PRIMARY,
+  );
+  await compare(
+    "cómo llegar",
+    page.getByRole("link", { name: r.perfil.comoLlegar }),
+    design.getByRole("link", { name: "Cómo llegar" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-01");
+  await design.close();
+
+  await page.getByRole("link", { name: r.perfil.reservar }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: r.servicios.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "C02-Servicios.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }).filter({ visible: true }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await page
+    .getByRole("checkbox", { name: /Corte/ })
+    .filter({ visible: true })
+    .check({ force: true });
+  await compare(
+    "servicio elegido",
+    page.locator("label", { hasText: "Corte" }).filter({ visible: true }),
+    design.getByRole("checkbox").first(),
+    ["border-radius", "background-color"],
+  );
+  await compare(
+    "continuar",
+    page.getByRole("button", { name: r.continuar }).filter({ visible: true }),
+    design.getByRole("link", { name: "Continuar" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-02");
+  await design.close();
+
+  await page
+    .getByRole("button", { name: r.continuar })
+    .filter({ visible: true })
+    .click();
+  await page
+    .getByRole("link", { name: /^Ana/ })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: r.hora.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  const day = formatCalendarDay(addDays(toBogotaDate(new Date()), 1));
+  await page
+    .getByRole("link", {
+      name: day.charAt(0).toLocaleUpperCase("es-CO") + day.slice(1),
+    })
+    .filter({ visible: true })
+    .click();
+  await page
+    .getByRole("link", { name: "10:00 a. m.", exact: true })
+    .filter({ visible: true })
+    .click();
+  design = await openDesign(page, "C04-Hora.dc.html");
+  await compare(
+    "hora",
+    page
+      .getByRole("link", { name: "11:00 a. m.", exact: true })
+      .filter({ visible: true }),
+    design.getByRole("button", { name: "11:00" }),
+    ["height", "border-radius", "background-color", "font-size", "font-weight"],
+  );
+  await compare(
+    "hora elegida",
+    page
+      .getByRole("link", { name: "10:00 a. m.", exact: true })
+      .filter({ visible: true }),
+    design.getByRole("button", { name: "10:40" }),
+    ["height", "border-radius", "background-color", "color", "font-weight"],
+  );
+  await attachSideBySide(page, design, "C-04");
+  await design.close();
+
+  await page
+    .getByRole("link", { name: r.continuar })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: r.datos.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "C06-Datos.dc.html");
+  await compare(
+    "campo",
+    page
+      .getByRole("textbox", { name: r.datos.nombre })
+      .filter({ visible: true }),
+    design.locator("input[type=text]"),
+    ["height", "border-radius", "background-color", "font-size", "color"],
+  );
+  await compare(
+    "confirmar",
+    page
+      .getByRole("button", { name: r.datos.confirmar })
+      .filter({ visible: true }),
+    design.getByRole("link", { name: "Confirmar reserva" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-06");
+  await design.close();
+
+  await page
+    .getByRole("textbox", { name: r.datos.nombre })
+    .filter({ visible: true })
+    .fill("Camila Rojas");
+  await page
+    .getByRole("textbox", { name: r.datos.correo })
+    .filter({ visible: true })
+    .fill("camila@correo.com");
+  await page
+    .getByRole("button", { name: r.datos.confirmar })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: r.confirmada.titulo("Camila"),
+    }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "C08-Confirmada.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }).filter({ visible: true }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "calendario",
+    page.getByRole("link", { name: r.confirmada.calendario }),
+    design.getByRole("button", { name: "Agregar a mi calendario" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-08");
   await design.close();
 });
