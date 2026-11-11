@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshPublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
@@ -54,6 +55,7 @@ export async function savePolicies(
     return { status: "failed", error: "unknown", values: form.values };
   }
 
+  refreshPublicProfile(barbershop.id);
   revalidatePath(routes.panelMore);
   revalidatePath(routes.panelPolicies);
   redirect(routes.panelMore);

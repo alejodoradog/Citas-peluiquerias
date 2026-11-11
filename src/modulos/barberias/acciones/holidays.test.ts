@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // stand-ins, so the test sees exactly what would be written.
 vi.mock("server-only", () => ({}));
 const revalidatePath = vi.fn();
-vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath, revalidateTag }));
+const revalidateTag = vi.fn();
 class Redirect extends Error {
   constructor(readonly to: string) {
     super(`redirect ${to}`);

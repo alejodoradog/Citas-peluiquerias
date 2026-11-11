@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshPublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
@@ -109,6 +110,7 @@ export async function changeBookingLink(
     return { status: "failed", error: result, values };
   }
 
+  refreshPublicProfile(barbershop.id);
   revalidateLink(barbershop.slug, form.data);
   redirect(`${routes.panelBookingLink}?${SAVED_PARAM}=1`);
 }

@@ -5,7 +5,8 @@ import type { BookingLinkWriteResult } from "../datos/booking-link";
 // stand-ins, so the test sees exactly what would be looked up and written.
 vi.mock("server-only", () => ({}));
 const revalidatePath = vi.fn();
-vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath, revalidateTag }));
+const revalidateTag = vi.fn();
 class Redirect extends Error {
   constructor(readonly to: string) {
     super(`redirect ${to}`);

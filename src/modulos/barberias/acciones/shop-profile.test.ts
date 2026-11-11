@@ -6,7 +6,8 @@ import type { ShopProfile } from "../dominio/profile";
 // are stand-ins, so the test sees exactly what would be written and deleted.
 vi.mock("server-only", () => ({}));
 const revalidatePath = vi.fn();
-vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath, revalidateTag }));
+const revalidateTag = vi.fn();
 class Redirect extends Error {
   constructor(readonly to: string) {
     super(`redirect ${to}`);

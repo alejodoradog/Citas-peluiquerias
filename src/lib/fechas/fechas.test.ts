@@ -13,6 +13,8 @@ import {
   formatBogotaDayMonth,
   formatBogotaDayMonthYear,
   formatCalendarDay,
+  formatMonthYear,
+  formatShortWallClock,
   formatWallClock,
   formatBogotaTime,
   fromBogota,
@@ -225,5 +227,20 @@ describe("formatCalendarDay", () => {
     ["2027-01-01", "viernes 1 de enero"],
   ])("writes %s as %s, whatever the server zone", (date, text) => {
     expect(formatCalendarDay(date)).toBe(text);
+  });
+});
+
+describe("formatShortWallClock", () => {
+  it("drops the a. m. or p. m.", () => {
+    expect(formatShortWallClock("09:15")).toBe("9:15");
+    expect(formatShortWallClock("14:00")).toBe("2:00");
+    expect(formatShortWallClock("00:30")).toBe("12:30");
+  });
+});
+
+describe("formatMonthYear", () => {
+  it("names the month and the year of a Bogotá date", () => {
+    expect(formatMonthYear("2026-11-01")).toBe("noviembre de 2026");
+    expect(formatMonthYear("2027-01-31")).toBe("enero de 2027");
   });
 });

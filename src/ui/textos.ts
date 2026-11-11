@@ -1,4 +1,5 @@
 import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
+import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
@@ -1016,6 +1017,161 @@ export const textos = {
         invalid: "Revisa este dato.",
       } satisfies Record<DeleteBarbershopErrorCode | "invalid", string>,
     },
+  },
+  // The public booking page (tasks 3.2 and 3.3, C-01 to C-08, C-17, C-18).
+  reservas: {
+    tituloPestana: (barberia: string) => `Reservar en ${barberia}`,
+    cargando: "Cargando…",
+    perfil: {
+      portada: "Foto de portada de la barbería",
+      logo: (barberia: string) => `Logo de ${barberia}`,
+      abiertoHoy: (desde: string, hasta: string) =>
+        `Abierto hoy · ${desde} – ${hasta}`,
+      cerradoHoy: "Cerrado hoy",
+      reservar: "Reservar cita",
+      whatsapp: "WhatsApp",
+      comoLlegar: "Cómo llegar",
+      servicios: "Servicios",
+      verServicios: (cantidad: number) => `Ver los ${cantidad} servicios`,
+      horario: "Horario",
+      cerrado: "Cerrado",
+      rango: (desde: string, hasta: string) =>
+        `${desde} a ${String(hasta).toLocaleLowerCase("es-CO")}`,
+      festivos: "Festivos",
+      festivosCerrado: "Cerrado, salvo los que la barbería abre",
+      ubicacion: "Ubicación",
+      reservasCon: "Reservas con",
+      politicaDatos: "Política de datos de la barbería",
+    },
+    dias: [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ],
+    diasCortos: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+    hoy: "Hoy",
+    suspendida: {
+      titulo: "Por ahora no recibimos reservas en línea",
+      bajada:
+        "Escríbenos por WhatsApp y te agendamos. Si ya tienes una cita, sigue en pie.",
+      bajadaSinWhatsapp:
+        "Comunícate directamente con la barbería. Si ya tienes una cita, sigue en pie.",
+      whatsapp: "Escribir por WhatsApp",
+    },
+    noExiste: {
+      titulo: "No encontramos esta barbería",
+      bajada: "Revisa el link. Puede que la barbería lo haya cambiado.",
+      conoceYapoin: "¿Tienes una barbería? Conoce Yapoin",
+    },
+    volver: "Volver",
+    continuar: "Continuar",
+    minutos: (minutos: number) => `${minutos} min`,
+    servicios: {
+      titulo: "¿Qué te vas a hacer?",
+      bajada: "Puedes elegir varios. La cita dura lo que sumen.",
+      resumen: (cantidad: number, minutos: number) =>
+        `${cantidad} ${cantidad === 1 ? "servicio" : "servicios"} · ${minutos} min`,
+      ninguno: "Elige al menos un servicio",
+      maximo: "Puedes elegir hasta 5 servicios por cita.",
+      vacio: "Esta barbería todavía no tiene servicios para reservar.",
+    },
+    barbero: {
+      titulo: "¿Con quién?",
+      bajada:
+        "Solo aparecen los barberos que hacen todos los servicios que elegiste.",
+      primero: "El primero disponible",
+      primeroDetalle: "Te mostramos más horas",
+      hoyDesde: (hora: string) => `Hoy desde las ${hora}`,
+      desde: (dia: string, hora: string) => `${dia} desde las ${hora}`,
+      sinHoras: "Sin horas libres en los próximos 30 días",
+      nadie: {
+        titulo: "Nadie hace todos estos servicios en una sola cita",
+        bajada: "Cambia los servicios para ver los barberos.",
+        accion: "Cambiar servicios",
+      },
+    },
+    hora: {
+      titulo: "¿Cuándo?",
+      dias: "Días con horas libres",
+      partes: { morning: "Mañana", afternoon: "Tarde", evening: "Noche" },
+      cerrado: (dia: string) => `${dia}, sin horas libres`,
+      eligeHora: "elige una hora",
+      elDia: (dia: string) => `el ${dia}`,
+      sinHoras: (quien: string, dia: string) =>
+        `${quien} no tiene horas libres ${dia}`,
+      sinHorasNadie: (dia: string) => `No hay horas libres ${dia}`,
+      proxima: (dia: string, hora: string) =>
+        `La próxima hora libre es el ${dia} a las ${hora}.`,
+      ninguna: "No hay horas libres en los próximos 30 días.",
+      ir: (dia: string) => `Ir al ${dia}`,
+      otroBarbero: "Ver otro barbero",
+      tomada: {
+        titulo: "Esa hora ya la tomaron. Elige otra, por favor.",
+        detalle: (hora: string) =>
+          `Alguien reservó las ${hora} mientras llenabas tus datos. Tus datos quedan guardados.`,
+      },
+    },
+    datos: {
+      titulo: "Tus datos",
+      cambiar: "Cambiar",
+      guardados: "Usamos los datos que guardaste en este celular",
+      noEres: (nombre: string) => `¿No eres ${nombre}?`,
+      borrar: "Borrar mis datos",
+      nombre: "Nombre",
+      correo: "Correo",
+      correoAyuda: "Con tu correo la barbería reconoce tus citas.",
+      celular: "Celular",
+      celularAyuda: "Solo para que la barbería te pueda llamar.",
+      celularEjemplo: "300 123 4567",
+      aceptas: "Al reservar aceptas la",
+      politica: "política de datos",
+      deLaBarberia: "de la barbería.",
+      total: "Total en la barbería",
+      confirmar: "Confirmar reserva",
+      confirmando: "Reservando…",
+      serviciosCambiaron: "Elegir los servicios de nuevo",
+    },
+    confirmada: {
+      titulo: (nombre: string | null) =>
+        nombre ? `¡Listo, ${nombre}!` : "¡Listo!",
+      bajada:
+        "Tu cita quedó reservada. Toma una captura de esta pantalla para tenerla a mano.",
+      cuando: "Cuándo",
+      servicios: "Servicios",
+      con: "Con",
+      asignado: (barbero: string) =>
+        `El primero disponible: te asignamos a ${barbero}`,
+      donde: "Dónde",
+      pagas: "Pagas en la barbería",
+      abono: "Abono",
+      abonoBajada:
+        "Si la barbería te pide un abono para apartar tu cita, estos son sus datos.",
+      metodos: {
+        nequi: "Nequi",
+        daviplata: "Daviplata",
+        bre_b: "Llave Bre-B",
+        bank_transfer: "Transferencia",
+      } as Record<string, string>,
+      calendario: "Agregar a mi calendario",
+      cancelar:
+        "¿No puedes ir? Escríbele a la barbería por WhatsApp para cancelar o cambiar tu cita.",
+      calendarioTitulo: (barberia: string) => `Cita en ${barberia}`,
+      reservarOtra: "Reservar otra cita",
+    },
+    errores: {
+      name_required: "Escribe tu nombre.",
+      name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
+      email_invalid: "Escribe un correo válido, como nombre@correo.com.",
+      phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
+      services_changed:
+        "La barbería cambió sus servicios. Elígelos de nuevo, por favor.",
+      unknown: "No pudimos reservar tu cita. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<BookingActionErrorCode | "invalid", string>,
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

@@ -35,6 +35,10 @@ export const routes = {
   // A barber's private agenda (task 4.4). The token is the whole credential:
   // only the owner's screen right after issuing it ever holds this path.
   barberAgenda: (token: string) => `/b/${token}`,
+  // The public booking page of a barbershop (tasks 3.2 and 3.3).
+  booking: (slug: string) => `/${slug}`,
+  bookingFlow: (slug: string) => `/${slug}/reservar`,
+  bookingConfirmed: (slug: string) => `/${slug}/reservar/confirmada`,
   admin: "/admin",
 } as const;
 

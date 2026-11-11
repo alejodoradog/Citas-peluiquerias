@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // The actions run on the server; here the session and the database are
 // stand-ins, so the test sees exactly what would be written.
 vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
 
 const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const KEVIN = "11111111-1111-4111-8111-111111111111";

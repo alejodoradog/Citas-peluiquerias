@@ -141,3 +141,20 @@ export function formatWallClock(time: string): string {
   const hour12 = hours % 12 === 0 ? 12 : hours % 12;
   return `${hour12}:${minutes} ${suffix}`;
 }
+
+// The hour of a wall clock time without "a. m." or "p. m.", for the time
+// buttons of C-04, which sit under "Mañana", "Tarde" or "Noche": "2:15".
+export function formatShortWallClock(time: string): string {
+  return formatWallClock(time).replace(/ [ap]\. m\.$/, "");
+}
+
+const monthYearFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  month: "long",
+  year: "numeric",
+});
+
+// "noviembre de 2026", the month over the days of C-04.
+export function formatMonthYear(date: BogotaDate): string {
+  return monthYearFormatter.format(fromBogota(date, "12:00"));
+}
