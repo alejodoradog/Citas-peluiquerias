@@ -236,12 +236,12 @@ test("an owner deletes a second sede and goes back to the first one", async ({
   // Its link leads nowhere, and the first one still works.
   await page.goto(`/${sede.slug}`);
   await expect(
-    page.getByRole("heading", { name: textos.noEncontrado.titulo }),
+    page.getByRole("heading", { name: textos.reservas.noExiste.titulo }),
   ).toBeVisible(FIRST_VISIT);
   await page.goto(`/${slug}`);
   await expect(
     page.getByRole("heading", {
-      name: textos.proximamente.reservas.titulo("Barbería El Parche"),
+      name: "Barbería El Parche",
     }),
   ).toBeVisible(FIRST_VISIT);
 });

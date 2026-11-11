@@ -5,7 +5,8 @@ import type { Policies } from "../dominio/policies";
 // stand-ins, so the test sees exactly what would be written.
 vi.mock("server-only", () => ({}));
 const revalidatePath = vi.fn();
-vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath, revalidateTag }));
+const revalidateTag = vi.fn();
 class Redirect extends Error {
   constructor(readonly to: string) {
     super(`redirect ${to}`);
@@ -70,6 +71,8 @@ describe("savePolicies", () => {
     expect(paths).toEqual(
       expect.arrayContaining(["/panel/mas", "/panel/reservas"]),
     );
+    // The booking page shows the new notice at once (task 3.2).
+    expect(revalidateTag).toHaveBeenCalledWith(`public-profile:${SHOP}`, "max");
   });
 
   it("ignores any barbershop the browser sends", async () => {

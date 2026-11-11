@@ -8,6 +8,9 @@ import type {
 // cookie are stand-ins, so the test sees exactly what would be written.
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+const revalidateTag = vi.fn();
+vi.mock("next/cache", () => ({ revalidateTag, updateTag }));
+const updateTag = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));

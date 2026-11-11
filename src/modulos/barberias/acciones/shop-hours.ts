@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshPublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/lib/formularios/form-state";
@@ -84,6 +85,7 @@ export async function saveShopHours(
     return { status: "failed", error, values };
   }
 
+  refreshPublicProfile(barbershop.id);
   revalidatePath(routes.panelMore);
   revalidatePath(routes.panelShopHours);
   // The team and each barber's screens show the barbershop's hours.

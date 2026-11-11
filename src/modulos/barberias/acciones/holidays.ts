@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshPublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
@@ -49,6 +50,7 @@ export async function saveHolidayOpenings(
   if (!(await setHolidayOpenings(barbershopId, window, sent.dates))) {
     return { status: "failed", error: "unknown", values: {} };
   }
+  refreshPublicProfile(barbershopId);
   revalidatePath(routes.panelHolidays);
   redirect(`${routes.panelHolidays}?${SAVED_PARAM}=1`);
 }
@@ -87,6 +89,7 @@ export async function addClosure(
   if (!(await insertClosure(barbershopId, form.data))) {
     return { status: "failed", error: "unknown", values: form.values };
   }
+  refreshPublicProfile(barbershopId);
   revalidatePath(routes.panelHolidays);
   return { status: "done", notice: "closure_added" };
 }
@@ -104,6 +107,7 @@ export async function removeClosure(
   if (!(await deleteClosure(barbershopId, closureId))) {
     return { ok: false, error: "unknown" };
   }
+  refreshPublicProfile(barbershopId);
   revalidatePath(routes.panelHolidays);
   return { ok: true };
 }

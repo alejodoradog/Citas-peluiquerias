@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // stand-ins. Only what the action echoes back is checked here; the rules of
 // the week have their own tests (dominio/weekly-hours).
 vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
 vi.mock("next/navigation", () => ({
   redirect: (to: string) => {
     throw new Error(`redirect ${to}`);

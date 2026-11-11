@@ -1,5 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { addDays, toBogotaDate } from "../../../src/lib/fechas/fechas";
+import { getColombianHolidays } from "../../../src/lib/fechas/festivos";
 
 // Local Supabase only: Mailpit catches every email the local Auth sends.
 const MAILPIT_URL = "http://127.0.0.1:44324";
@@ -485,4 +487,140 @@ export async function uploadImagesPastPolicies(
     );
     if (error) throw error;
   }
+}
+
+// A barbershop ready to take bookings (tasks 3.2 and 3.3), written past RLS:
+// open every day 06:00-22:00, on every holiday of the next weeks too, with
+// Corte (30 min) and Barba (15 min) done by Ana and Beto, in that order.
+export async function createBookableShop(
+  tag: string,
+  barbershopName = "Barbería La Esquina",
+): Promise<{
+  slug: string;
+  id: string;
+  services: { corte: string; barba: string };
+  barbers: { ana: string; beto: string };
+}> {
+  const { slug } = await createConfirmedOwner(
+    uniqueEmail(tag),
+    "clave-segura-1",
+    { ownerName: "Carlos Pérez", barbershopName },
+  );
+  const admin = adminClient();
+  const id = await barbershopIdOf(slug);
+  const { error: setupError } = await admin
+    .from("barbershops")
+    .update({
+      setup_completed_at: new Date().toISOString(),
+      address: "Cra. 15 # 82-40",
+      locality: "Chapinero, Bogotá",
+    })
+    .eq("id", id);
+  if (setupError) throw setupError;
+
+  const { error: hoursError } = await admin.from("barbershop_hours").insert(
+    [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
+      barbershop_id: id,
+      weekday,
+      start_time: "06:00",
+      end_time: "22:00",
+    })),
+  );
+  if (hoursError) throw hoursError;
+  const today = toBogotaDate(new Date());
+  const holidays = [0, 1]
+    .flatMap((offset) =>
+      getColombianHolidays(Number(today.slice(0, 4)) + offset),
+    )
+    .filter((date) => date >= today && date <= addDays(today, 40));
+  if (holidays.length > 0) {
+    const { error } = await admin.from("holiday_openings").upsert(
+      [...new Set(holidays)].map((holiday_date) => ({
+        barbershop_id: id,
+        holiday_date,
+      })),
+    );
+    if (error) throw error;
+  }
+
+  const { data: services, error: servicesError } = await admin
+    .from("services")
+    .insert([
+      {
+        barbershop_id: id,
+        name: "Corte",
+        price_cop: 25000,
+        duration_minutes: 30,
+      },
+      {
+        barbershop_id: id,
+        name: "Barba",
+        price_cop: 15000,
+        duration_minutes: 15,
+      },
+    ])
+    .select("id, name");
+  if (servicesError) throw servicesError;
+  const { data: barbers, error: barbersError } = await admin
+    .from("barbers")
+    .insert(
+      ["Ana", "Beto"].map((display_name, index) => ({
+        barbershop_id: id,
+        display_name,
+        sort_order: 100 + index,
+        link_token_hash: randomBytes(32).toString("hex"),
+      })),
+    )
+    .select("id, display_name");
+  if (barbersError) throw barbersError;
+  const { error: linesError } = await admin.from("barber_services").insert(
+    barbers.flatMap((barber) =>
+      services.map((service) => ({
+        barbershop_id: id,
+        barber_id: barber.id,
+        service_id: service.id,
+      })),
+    ),
+  );
+  if (linesError) throw linesError;
+  const named = <T extends { id: string }>(
+    rows: T[],
+    key: keyof T,
+    value: string,
+  ) => rows.find((row) => row[key] === value)!.id;
+  return {
+    slug,
+    id,
+    services: {
+      corte: named(services, "name", "Corte"),
+      barba: named(services, "name", "Barba"),
+    },
+    barbers: {
+      ana: named(barbers, "display_name", "Ana"),
+      beto: named(barbers, "display_name", "Beto"),
+    },
+  };
+}
+
+// The web appointments of a barbershop, read past RLS (anon reads none).
+export async function webAppointments(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("appointments")
+    .select(
+      "barber_id, starts_at, status, source, manage_token_hash, customers(full_name, email)",
+    )
+    .eq("barbershop_id", barbershopId)
+    .eq("source", "web")
+    .order("created_at");
+  if (error) throw error;
+  return data;
+}
+
+// Suspends a barbershop by hand, as the super admin will (task 5.4).
+export async function suspendBarbershop(barbershopId: string) {
+  const { error } = await adminClient()
+    .from("barbershops")
+    .update({ subscription_status: "suspended" })
+    .eq("id", barbershopId);
+  if (error) throw error;
 }

@@ -5,39 +5,14 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
-import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
 
-// The links that already circulate, before their pages exist: the booking
-// link of the QR and the poster (task 3.2) and a barber's private link
-// (task 4.4) say they are on their way instead of "not found".
+// The links that already circulate, before their pages exist: a barber's
+// private link (task 4.4) says it is on its way instead of "not found". The
+// booking link of the QR and the poster is the booking page now (tasks 3.2
+// and 3.3, reservar.spec.ts); a link that is no barbershop's is C-18.
 const t = textos.proximamente;
 // The dev server compiles each page the first time it is opened.
 const FIRST_VISIT = { timeout: 20_000 };
-
-test("the booking link says booking is on its way, with the barbershop's name", async ({
-  page,
-}) => {
-  const barbershop = "Barbería El Parche";
-  const { slug } = await createConfirmedOwner(
-    uniqueEmail("proximamente"),
-    "clave-segura-1",
-    { ownerName: "Carlos Pérez", barbershopName: barbershop },
-  );
-  await page.goto(`/${slug}`);
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: t.reservas.titulo(barbershop),
-    }),
-  ).toBeVisible(FIRST_VISIT);
-  await expect(page.getByText(t.reservas.bajada)).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: t.conoceYapoin }),
-  ).toHaveAttribute("href", "/");
-  await expectAccessible(page);
-  await expectTouchTargets(page);
-  await expectNoZoomOnFocus(page);
-});
 
 test("a link that is no barbershop's is not found", async ({ page }) => {
   await page.goto("/no-existe-esta-barberia-xyz");
@@ -45,7 +20,10 @@ test("a link that is no barbershop's is not found", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: /Muy pronto/ }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
+    page.getByRole("heading", {
+      level: 1,
+      name: textos.reservas.noExiste.titulo,
+    }),
   ).toBeVisible(FIRST_VISIT);
 });
 

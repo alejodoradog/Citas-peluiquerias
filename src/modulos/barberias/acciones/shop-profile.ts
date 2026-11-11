@@ -1,5 +1,6 @@
 "use server";
 
+import { refreshPublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
@@ -194,6 +195,7 @@ export async function saveShopProfile(
   );
   if (replaced.length > 0) await removeImages(replaced);
 
+  refreshPublicProfile(barbershop.id);
   revalidatePanel();
   redirect(routes.panelMore);
 }
@@ -214,6 +216,7 @@ export async function removeShopImage(
     }
     if (isOwnImageKey(path, barbershop.id, image)) await removeImages([path]);
   }
+  refreshPublicProfile(barbershop.id);
   revalidatePanel();
   return { ok: true };
 }

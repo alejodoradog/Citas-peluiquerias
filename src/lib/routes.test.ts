@@ -42,6 +42,8 @@ describe("routes", () => {
       // Routes with a parameter are functions; a sample value stands in.
       const path = typeof route === "function" ? route("muestra") : route;
       const first = path.split("/")[1];
+      // The booking routes start with the barbershop's own link.
+      if (first === "muestra") continue;
       if (first) expect(reserved, path).toContain(first);
     }
   });
