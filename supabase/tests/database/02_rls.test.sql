@@ -163,6 +163,13 @@ select is(
     'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
+    -- Task 3.3: the public booking page, for anyone.
+    'public.barbershop_accepts_bookings:anon',
+    'public.barbershop_accepts_bookings:authenticated',
+    'public.book_appointment:anon',
+    'public.book_appointment:authenticated',
+    'public.booking_busy_ranges:anon',
+    'public.booking_busy_ranges:authenticated',
     'public.change_appointment_services:authenticated',
     'public.complete_barbershop_setup:authenticated',
     'public.create_appointment:authenticated',
