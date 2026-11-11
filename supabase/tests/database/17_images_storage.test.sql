@@ -36,6 +36,12 @@ insert into public.barbers (id, barbershop_id, display_name, link_token_hash) va
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
 
+-- Every upload reserves its path first (migration add_image_upload_tickets).
+select public.reserve_image_upload(path) from (values
+  ('aaaaaaaa-0000-0000-0000-000000000000/barbers/11111111-1111-4111-8111-111111111111.webp'),
+  ('aaaaaaaa-0000-0000-0000-000000000000/barbers/22222222-2222-4222-8222-222222222222.jpg')
+) as reserved (path);
+
 select lives_ok(
   $$insert into storage.objects (bucket_id, name)
     values ('images', 'aaaaaaaa-0000-0000-0000-000000000000/barbers/11111111-1111-4111-8111-111111111111.webp')$$,

@@ -9,6 +9,7 @@ import { AppShell } from "@/ui/app-shell";
 import { Notice } from "@/ui/notice";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
+import { DeletedBarbershopNotice } from "./sedes/deleted-notice";
 
 const t = textos.panel;
 
@@ -34,6 +35,8 @@ async function OwnerHome() {
 
   return (
     <>
+      {/* After "Eliminar sede" (task 2.6b), which sede went away. */}
+      <DeletedBarbershopNotice />
       <div className="flex flex-col gap-1.5">
         <h1 className="text-title">{t.saludo(name)}</h1>
         <p className="text-section text-brand-strong">{barbershop.name}</p>

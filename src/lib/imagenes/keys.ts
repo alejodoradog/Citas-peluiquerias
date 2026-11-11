@@ -9,17 +9,21 @@ export const IMAGES_BUCKET = "images";
 
 export type ImageKind = "barbers" | "logo" | "cover";
 
-const KINDS: readonly ImageKind[] = ["barbers", "logo", "cover"];
+export const IMAGE_KINDS: readonly ImageKind[] = ["barbers", "logo", "cover"];
 
 // A kind of the bucket. Kinds come back from the browser too.
 export function isImageKind(value: unknown): value is ImageKind {
-  return KINDS.includes(value as ImageKind);
+  return IMAGE_KINDS.includes(value as ImageKind);
 }
 
 // What the first step of an upload hands the browser: the key to upload to
-// and the token of its signed URL.
+// and the token of its signed URL, or why there is none (see
+// ImageUploadErrorCode).
 export type ImageUploadTicket =
-  { ok: true; path: string; token: string } | { ok: false };
+  | { ok: true; path: string; token: string }
+  | { ok: false; error: ImageUploadRefusal };
+
+export type ImageUploadRefusal = "photo_quota" | "photo_upload_failed";
 export type ImageExtension = "webp" | "jpg";
 export type ImageMime = "image/webp" | "image/jpeg";
 
@@ -83,9 +87,11 @@ export function publicImageUrl(path: string): string {
 // - photo_not_image: the file is not an image;
 // - photo_unreadable: the browser cannot open or shrink it;
 // - photo_too_big: even shrunk, it passes IMAGE_MAX_BYTES;
+// - photo_quota: the barbershop reached its image quota (migration
+//   add_image_upload_tickets: 2 per barber plus 10);
 // - photo_upload_failed: no signed URL or the upload failed (the network).
 export type ImageUploadErrorCode =
   | "photo_not_image"
   | "photo_unreadable"
   | "photo_too_big"
-  | "photo_upload_failed";
+  | ImageUploadRefusal;

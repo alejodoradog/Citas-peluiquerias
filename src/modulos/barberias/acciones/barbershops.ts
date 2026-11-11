@@ -7,8 +7,13 @@ import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { rememberActiveBarbershop } from "@/modulos/cuentas/datos/active-barbershop";
 import { requireOwner } from "@/modulos/cuentas/guards";
-import { createBarbershopRow } from "../datos/barbershops";
+import { createBarbershopRow, deleteBarbershopRow } from "../datos/barbershops";
+import { removeBarbershopImages } from "../datos/images";
 import { findFreeSlug } from "../datos/slugs";
+import {
+  canDeleteBarbershop,
+  confirmsBarbershopName,
+} from "../dominio/barbershop-rules";
 import {
   parseNewBarbershop,
   type NewBarbershopErrorCode,
@@ -78,7 +83,8 @@ export async function registerBarbershop(
 
 export type NewBarbershopField = "name" | "whatsappPhone";
 
-export type NewBarbershopActionErrorCode = NewBarbershopErrorCode | "unknown";
+export type NewBarbershopActionErrorCode =
+  NewBarbershopErrorCode | "barbershop_limit" | "unknown";
 
 export type NewBarbershopState = FormState<
   NewBarbershopField,
@@ -102,6 +108,9 @@ export async function createBarbershop(
   _previous: NewBarbershopState,
   formData: FormData,
 ): Promise<NewBarbershopState> {
+  // The limit of 4 sedes (task 2.6b) is the database's to check: the screen
+  // does not offer the form at the limit, but a retried request of the sede
+  // that reached it must still get that sede back, not an error.
   await requireOwner();
   const form = readForm(formData, {
     fields: ["name", "whatsappPhone"],
@@ -127,15 +136,77 @@ export async function createBarbershop(
     created = await create();
   }
   if (!created.ok) {
-    return created.code === "phone_invalid"
-      ? {
-          status: "invalid",
-          fieldErrors: { whatsappPhone: "phone_invalid" },
-          values: form.values,
-        }
-      : { status: "failed", error: "unknown", values: form.values };
+    if (created.code === "phone_invalid") {
+      return {
+        status: "invalid",
+        fieldErrors: { whatsappPhone: "phone_invalid" },
+        values: form.values,
+      };
+    }
+    return {
+      status: "failed",
+      error:
+        created.code === "barbershop_limit" ? "barbershop_limit" : "unknown",
+      values: form.values,
+    };
   }
 
   await rememberActiveBarbershop(created.id);
   return { status: "done", notice: "created" };
+}
+
+export type DeleteBarbershopField = "confirmName";
+
+export type DeleteBarbershopErrorCode =
+  | "name_mismatch"
+  | "barbershop_changed"
+  | "last_barbershop"
+  | "has_upcoming_appointments"
+  | "unknown";
+
+export type DeleteBarbershopState = FormState<
+  DeleteBarbershopField,
+  DeleteBarbershopErrorCode,
+  "deleted"
+>;
+
+// "Eliminar esta sede" (task 2.6b, D-57). It deletes the ACTIVE sede, as the
+// server knows it, never an id from the browser. The form still sends the id
+// the screen showed: if another tab switched sede meanwhile, the two differ
+// and nothing is deleted. The owner writes the sede's name to confirm, and
+// the database checks the rest (owner, another sede left, no upcoming
+// appointments). Then its images leave Storage, the oldest sede left becomes
+// the active one and the screen loads the panel in full.
+export async function deleteBarbershop(
+  _previous: DeleteBarbershopState,
+  formData: FormData,
+): Promise<DeleteBarbershopState> {
+  const { barbershop, barbershops } = await requireOwner();
+  const typed = formData.get("confirmName");
+  const values = { confirmName: typeof typed === "string" ? typed : "" };
+
+  if (formData.get("barbershopId") !== barbershop.id) {
+    return { status: "failed", error: "barbershop_changed", values };
+  }
+  if (!canDeleteBarbershop(barbershops.length)) {
+    return { status: "failed", error: "last_barbershop", values };
+  }
+  if (!confirmsBarbershopName(typed, barbershop.name)) {
+    return {
+      status: "invalid",
+      fieldErrors: { confirmName: "name_mismatch" },
+      values,
+    };
+  }
+
+  const deleted = await deleteBarbershopRow(barbershop.id);
+  if (!deleted.ok) {
+    return { status: "failed", error: deleted.code, values };
+  }
+
+  await removeBarbershopImages(barbershop.id);
+  // Oldest first: the one getCurrentAccess would pick without a cookie.
+  const next = barbershops.find((other) => other.id !== barbershop.id);
+  if (next) await rememberActiveBarbershop(next.id);
+  return { status: "done", notice: "deleted" };
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { routes } from "@/lib/routes";
 import { displayBookingUrl } from "@/lib/sitio";
+import { canAddBarbershop } from "@/modulos/barberias/dominio/barbershop-rules";
 import type { SwitchBarbershopResult } from "@/modulos/cuentas/acciones/active-barbershop";
 import { Button, ButtonLink, buttonClasses } from "@/ui/button";
 import { CheckIcon, PlusIcon, StoreIcon } from "@/ui/icons";
@@ -49,6 +50,35 @@ function ShopMark({ logoUrl }: { logoUrl: string | null }) {
 
 function fullPageLoad(path: string) {
   window.location.assign(path);
+}
+
+// "+ Nueva sede" in the sheet. A full page load: the sheet is a modal
+// dialog, and a page Next.js kept hidden with it open would leave the next
+// page inert. At the limit of 4 sedes (task 2.6b) it is off and says why.
+function NewBarbershopButton({ count }: { count: number }) {
+  const limitId = useId();
+  if (!canAddBarbershop(count)) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Button variant="secondary" disabled aria-describedby={limitId}>
+          <PlusIcon size={18} />
+          {t.nueva}
+        </Button>
+        <p id={limitId} className="text-help text-muted">
+          {t.limite}
+        </p>
+      </div>
+    );
+  }
+  return (
+    <a
+      href={routes.panelNewBarbershop}
+      className={buttonClasses({ variant: "secondary" })}
+    >
+      <PlusIcon size={18} />
+      {t.nueva}
+    </a>
+  );
 }
 
 // "Tus sedes": every sede of the owner, a check on the active one, and
@@ -140,15 +170,7 @@ function BarbershopsSheet({
       <p aria-live="polite" className="text-help text-muted empty:hidden">
         {switching ? t.hoja.cambiando : null}
       </p>
-      {/* A full page load: the sheet is a modal dialog, and a page Next.js
-          kept hidden with it open would leave the next page inert. */}
-      <a
-        href={routes.panelNewBarbershop}
-        className={buttonClasses({ variant: "secondary" })}
-      >
-        <PlusIcon size={18} />
-        {t.nueva}
-      </a>
+      <NewBarbershopButton count={barbershops.length} />
     </Sheet>
   );
 }

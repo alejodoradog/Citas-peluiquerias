@@ -6,7 +6,11 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
-import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
+import {
+  addReadySedes,
+  createConfirmedOwner,
+  uniqueEmail,
+} from "./helpers/supabase";
 
 // Task 2.6: an owner opens a second sede from Más, sets it up, and moves
 // between both; each sede sees only its own data. Owners are created already
@@ -158,4 +162,118 @@ test("an owner opens a second sede and each sede keeps its own services", async 
   await switchTo(page, second);
   await page.goto("/panel/servicios");
   await expect(serviceRow(page, "Tinte")).toBeVisible(FIRST_VISIT);
+});
+
+async function signInReady(page: Page, email: string) {
+  await page.goto("/ingresar");
+  await page.getByLabel(textos.cuentas.ingreso.campos.email).fill(email);
+  await page.getByLabel(textos.cuentas.ingreso.campos.password).fill(PASSWORD);
+  await page
+    .getByRole("button", { name: textos.cuentas.ingreso.enviar })
+    .click();
+  await finishSetup(page);
+}
+
+// Task 2.6b: the owner deletes a sede from Datos y fotos, and is left on the
+// other one; the deleted sede's link no longer leads anywhere.
+test("an owner deletes a second sede and goes back to the first one", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const email = uniqueEmail("sedes-eliminar");
+  const { slug } = await createConfirmedOwner(email, PASSWORD, {
+    ownerName: "Carlos Pérez",
+    barbershopName: "Barbería El Parche",
+  });
+  const second = `Sede Norte ${Date.now().toString(36)}`;
+  await signInReady(page, email);
+  const [sede] = await addReadySedes(slug, [second]);
+  if (!sede) throw new Error("No second sede");
+
+  await switchTo(page, second);
+  await page.goto("/panel/datos");
+  await expect(
+    page.getByRole("heading", { level: 1, name: textos.datos.titulo }),
+  ).toBeVisible(FIRST_VISIT);
+  await page
+    .getByRole("button", { name: t.eliminar.boton })
+    .filter({ visible: true })
+    .click();
+  const sheet = page.getByRole("dialog", { name: t.eliminar.titulo });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByText(t.eliminar.bajada(second))).toBeVisible();
+  const confirm = sheet.getByRole("button", { name: t.eliminar.confirmar });
+  await expect(confirm).toBeDisabled();
+  await checkScreen(page);
+
+  await sheet.getByRole("textbox", { name: t.eliminar.campo }).fill(second);
+  await expect(confirm).toBeEnabled();
+  await confirm.click();
+
+  // A full page load to the agenda of the first sede, which says so.
+  await expect(page).toHaveURL(/\/panel$/, FIRST_VISIT);
+  await expect(
+    page.getByText(t.eliminada(second)).filter({ visible: true }),
+  ).toBeVisible(FIRST_VISIT);
+
+  // A single sede again: no switch, and nothing to delete.
+  const card = await openMore(page);
+  await expect(
+    card.getByText("Barbería El Parche").filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    card.getByRole("button", { name: t.cambiarEtiqueta }),
+  ).toHaveCount(0);
+  await expect(card.getByRole("link", { name: t.nueva })).toBeVisible();
+  await page.goto("/panel/datos");
+  await expect(
+    page.getByRole("heading", { level: 1, name: textos.datos.titulo }),
+  ).toBeVisible(FIRST_VISIT);
+  await expect(
+    page.getByRole("button", { name: t.eliminar.boton }),
+  ).toHaveCount(0);
+
+  // Its link leads nowhere, and the first one still works.
+  await page.goto(`/${sede.slug}`);
+  await expect(
+    page.getByRole("heading", { name: textos.noEncontrado.titulo }),
+  ).toBeVisible(FIRST_VISIT);
+  await page.goto(`/${slug}`);
+  await expect(
+    page.getByRole("heading", {
+      name: textos.proximamente.reservas.titulo("Barbería El Parche"),
+    }),
+  ).toBeVisible(FIRST_VISIT);
+});
+
+// Task 2.6b: with 4 sedes, "Nueva sede" is off and its screen says why.
+test("an owner with 4 sedes cannot open a fifth one", async ({ page }) => {
+  test.setTimeout(120_000);
+  const email = uniqueEmail("sedes-tope");
+  const { slug } = await createConfirmedOwner(email, PASSWORD, {
+    ownerName: "Carlos Pérez",
+    barbershopName: "Barbería El Parche",
+  });
+  await signInReady(page, email);
+  await addReadySedes(slug, ["Sede Dos", "Sede Tres", "Sede Cuatro"]);
+
+  const card = await openMore(page);
+  await card.getByRole("button", { name: t.cambiarEtiqueta }).click();
+  const sheet = page.getByRole("dialog", { name: t.hoja.titulo });
+  await expect(
+    sheet.getByRole("button", { name: /yapoin\.com\// }),
+  ).toHaveCount(4);
+  await expect(sheet.getByRole("link", { name: t.nueva })).toHaveCount(0);
+  await expect(sheet.getByRole("button", { name: t.nueva })).toBeDisabled();
+  await expect(sheet.getByText(t.limite)).toBeVisible();
+  await checkScreen(page);
+
+  await page.goto("/panel/sedes/nueva");
+  await expect(page.getByText(t.nuevaSede.limiteTitulo)).toBeVisible(
+    FIRST_VISIT,
+  );
+  await expect(
+    page.getByRole("button", { name: t.nuevaSede.crear }),
+  ).toHaveCount(0);
+  await checkScreen(page);
 });

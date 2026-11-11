@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Activity } from "react";
 import { describe, expect, it } from "vitest";
@@ -230,6 +230,10 @@ describe("ShopHoursEditor, hidden and shown again", () => {
     );
 
     rerender(inActivity("hidden"));
+
+    // Coming back is a later navigation, never the same task.
+
+    await act(async () => {});
     rerender(inActivity("visible"));
 
     expect(

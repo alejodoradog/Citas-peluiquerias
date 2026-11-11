@@ -43,6 +43,7 @@ const kevin: EditableBarber = {
 
 const requestUpload = async () =>
   ({ ok: true, path: KEY, token: "firma" }) as const;
+const discardUpload = async () => {};
 
 // A fake Server Action that echoes the form like the real one.
 function answer(
@@ -77,6 +78,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     expect(
@@ -114,6 +116,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary="Lun a sáb 9:00 a. m. – 6:00 p. m."
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         setActive={vi.fn()}
       />,
     );
@@ -144,6 +147,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         setActive={setActive}
       />,
     );
@@ -173,6 +177,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         setActive={async () => ({ ok: false, error: "unknown" })}
       />,
     );
@@ -198,6 +203,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         setActive={setActive}
       />,
     );
@@ -227,6 +233,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
         setActive={vi.fn()}
       />,
     );
@@ -247,6 +254,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     const row = screen.getByRole("link", {
@@ -265,6 +273,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     const row = () =>
@@ -278,6 +287,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     expect(row()).toHaveTextContent(t.linkDesactivadoChip);
@@ -296,6 +306,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     await user.clear(screen.getByLabelText(/Correo/));
@@ -324,6 +335,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     await user.click(screen.getByRole("checkbox", { name: "Corte" }));
@@ -361,6 +373,7 @@ describe("BarberEditor", () => {
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
+        discardUpload={discardUpload}
       />,
     );
     await user.upload(

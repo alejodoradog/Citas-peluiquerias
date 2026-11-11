@@ -401,3 +401,88 @@ export async function insertLeftSlug(
     });
   if (error) throw error;
 }
+
+// More sedes for the owner of a barbershop (task 2.6b), written past RLS as
+// create_barbershop would leave them, with their setup already done so the
+// whole panel opens on them. Newer than the first one, in the given order.
+export async function addReadySedes(
+  slug: string,
+  names: readonly string[],
+): Promise<{ id: string; slug: string }[]> {
+  const admin = adminClient();
+  const { data: first, error } = await admin
+    .from("barbershops")
+    .select("id, trial_ends_on, memberships(user_id)")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  const owner = first.memberships[0]?.user_id;
+  if (!owner) throw new Error(`No owner for ${slug}`);
+  const added: { id: string; slug: string }[] = [];
+  for (const [index, name] of names.entries()) {
+    const sedeSlug = `${slug}-sede-${index + 2}`;
+    const { data: sede, error: sedeError } = await admin
+      .from("barbershops")
+      .insert({
+        name,
+        slug: sedeSlug,
+        whatsapp_phone: "+573001234567",
+        trial_ends_on: first.trial_ends_on,
+        expires_on: first.trial_ends_on,
+        setup_completed_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (sedeError) throw sedeError;
+    const { error: membershipError } = await admin
+      .from("memberships")
+      .insert({ user_id: owner, barbershop_id: sede.id, role: "owner" });
+    if (membershipError) throw membershipError;
+    added.push({ id: sede.id, slug: sedeSlug });
+  }
+  return added;
+}
+
+// A client signed in as an account, straight against the local Supabase
+// (no browser): a test can call Storage and the RPCs the way an account
+// could without the app (security review of task 2.4, image quota).
+export async function signedInClient(email: string, password: string) {
+  const client = createClient(
+    requireLocalSupabaseUrl(),
+    requireEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return client;
+}
+
+// The id of a barbershop and its image quota (migration
+// add_image_upload_tickets: 2 per barber plus 10), read past RLS.
+export async function imageQuotaOf(slug: string) {
+  const admin = adminClient();
+  const id = await barbershopIdOf(slug);
+  const { count, error } = await admin
+    .from("barbers")
+    .select("id", { count: "exact", head: true })
+    .eq("barbershop_id", id);
+  if (error) throw error;
+  return { id, quota: 2 * (count ?? 0) + 10 };
+}
+
+// Images uploaded past the policies (service key) into a barbershop's
+// barbers folder, as old images that hold no ticket.
+export async function uploadImagesPastPolicies(
+  barbershopId: string,
+  count: number,
+) {
+  const images = adminClient().storage.from("images");
+  for (let index = 0; index < count; index += 1) {
+    const { error } = await images.upload(
+      `${barbershopId}/barbers/${crypto.randomUUID()}.webp`,
+      new Blob(["webp"], { type: "image/webp" }),
+      { contentType: "image/webp" },
+    );
+    if (error) throw error;
+  }
+}

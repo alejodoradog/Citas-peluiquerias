@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
-import { requestImageUpload } from "@/modulos/barberias/acciones/images";
+import { deleteBarbershop } from "@/modulos/barberias/acciones/barbershops";
+import {
+  discardImageUpload,
+  requestImageUpload,
+} from "@/modulos/barberias/acciones/images";
 import {
   removeShopImage,
   saveShopProfile,
 } from "@/modulos/barberias/acciones/shop-profile";
 import { getShopProfile } from "@/modulos/barberias/datos/shop-profile";
+import { canDeleteBarbershop } from "@/modulos/barberias/dominio/barbershop-rules";
 import { displayWhatsapp } from "@/modulos/barberias/dominio/profile";
 import { FlowShell } from "@/ui/flow-shell";
 import { FreshOnReturn } from "@/ui/fresh-on-return";
@@ -15,13 +20,15 @@ import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import { requireReadyOwner } from "../ready-owner";
+import { DeleteBarbershop } from "./delete-barbershop";
 import { ShopProfileForm } from "./shop-profile-form";
 
 const t = textos.datos;
 
 export const metadata: Metadata = { title: t.titulo };
 
-// D-57, Más › Datos y fotos.
+// D-57, Más › Datos y fotos. With another sede in the account, it ends with
+// "Eliminar esta sede" (task 2.6b).
 export default function ShopProfilePage() {
   return (
     <Suspense fallback={<ShopProfileLoading />}>
@@ -48,7 +55,7 @@ function ShopProfileLoading() {
 }
 
 async function ShopProfile() {
-  const { barbershop } = await requireReadyOwner();
+  const { barbershop, barbershops } = await requireReadyOwner();
   const saved = await getShopProfile(barbershop.id);
   // Keyed by the saved texts and location, so the fields start from them
   // when Next.js shows a payload it kept and then refreshes it; and start
@@ -76,7 +83,18 @@ async function ShopProfile() {
           coverUrl: saved.coverPath ? publicImageUrl(saved.coverPath) : null,
         }}
         requestUpload={requestImageUpload}
+        discardUpload={discardImageUpload}
         removeImage={removeShopImage}
+        footer={
+          canDeleteBarbershop(barbershops.length) ? (
+            <DeleteBarbershop
+              key={barbershop.id}
+              barbershopId={barbershop.id}
+              name={barbershop.name}
+              action={deleteBarbershop}
+            />
+          ) : null
+        }
       />
     </FreshOnReturn>
   );

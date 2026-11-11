@@ -48,6 +48,9 @@ function renderForm({
     path: kind === "logo" ? LOGO_KEY : COVER_KEY,
     token: "firma",
   })),
+  discardUpload = vi.fn<
+    (kind: "logo" | "cover", path: string) => Promise<void>
+  >(async () => {}),
   removeImage = vi.fn(async () => ({ ok: true }) as const),
 }: {
   action?: (
@@ -59,6 +62,7 @@ function renderForm({
     kind: "logo" | "cover",
     mime: string,
   ) => Promise<ImageUploadTicket>;
+  discardUpload?: (kind: "logo" | "cover", path: string) => Promise<void>;
   removeImage?: (
     kind: "logo" | "cover",
   ) => Promise<{ ok: true } | { ok: false }>;
@@ -68,10 +72,11 @@ function renderForm({
       action={action}
       saved={profile}
       requestUpload={requestUpload}
+      discardUpload={discardUpload}
       removeImage={removeImage}
     />,
   );
-  return { requestUpload, removeImage };
+  return { requestUpload, discardUpload, removeImage };
 }
 
 const hidden = (name: string) =>
@@ -147,7 +152,7 @@ describe("ShopProfileForm", () => {
 
   it("uploads a logo at 400 px into the logo folder", async () => {
     const user = userEvent.setup();
-    const { requestUpload } = renderForm();
+    const { requestUpload, discardUpload, removeImage } = renderForm();
     await user.upload(screen.getByLabelText(t.logo.agregar), picture);
 
     await waitFor(() => expect(hidden("logoPath")).toHaveValue(LOGO_KEY));
@@ -161,9 +166,25 @@ describe("ShopProfileForm", () => {
     );
     expect(hidden("coverPath")).toHaveValue("");
 
-    // A pending logo is dropped without asking the server.
+    // A pending logo is dropped, and only the upload leaves the bucket:
+    // the saved logo stays.
     await user.click(screen.getByRole("button", { name: t.logo.quitar }));
     expect(hidden("logoPath")).toHaveValue("");
+    expect(discardUpload).toHaveBeenCalledExactlyOnceWith("logo", LOGO_KEY);
+    expect(removeImage).not.toHaveBeenCalled();
+  });
+
+  it("says so when the barbershop reached its image quota", async () => {
+    const user = userEvent.setup();
+    renderForm({
+      requestUpload: async () => ({ ok: false, error: "photo_quota" }),
+    });
+    await user.upload(screen.getByLabelText(t.portada.agregar), picture);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      t.portada.errores.photo_quota,
+    );
+    expect(uploadToSignedImageUrl).not.toHaveBeenCalled();
+    expect(hidden("coverPath")).toHaveValue("");
   });
 
   it("uploads the cover at 1200 px into the cover folder", async () => {
@@ -400,6 +421,7 @@ describe("ShopProfileForm, hidden and shown again", () => {
               path: LOGO_KEY,
               token: "firma",
             })}
+            discardUpload={async () => {}}
             removeImage={async () => ({ ok: true })}
           />
         </FreshOnReturn>
@@ -417,6 +439,10 @@ describe("ShopProfileForm, hidden and shown again", () => {
     await waitFor(() => expect(hidden("logoPath")).toHaveValue(LOGO_KEY));
 
     rerender(inActivity("hidden"));
+
+    // Coming back is a later navigation, never the same task.
+
+    await act(async () => {});
     rerender(inActivity("visible"));
 
     expect(screen.getByRole("textbox", { name: t.campos.nombre })).toHaveValue(

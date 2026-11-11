@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Activity } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -335,6 +335,10 @@ describe("ScheduleEditor, hidden and shown again", () => {
     expect(screen.getByRole("group", { name: "Lunes" })).toBeInTheDocument();
 
     rerender(inActivity("hidden"));
+
+    // Coming back is a later navigation, never the same task.
+
+    await act(async () => {});
     rerender(inActivity("visible"));
 
     expect(screen.getByRole("switch", { name: t.usaBarberia })).toBeChecked();
