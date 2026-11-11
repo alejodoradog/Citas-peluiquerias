@@ -17,8 +17,11 @@ import {
 
 // The wizard draft lives in the browser until the owner finishes (task 2.1).
 // The layout keeps it while the owner moves between steps; sessionStorage keeps
-// it through a reload or a phone that drops the tab.
-const STORAGE_KEY = "yapoin:asistente";
+// it through a reload or a phone that drops the tab. Each sede has its own
+// (task 2.6): the half-made wizard of one sede never fills another's.
+function storageKey(barbershopId: string) {
+  return `yapoin:asistente:${barbershopId}`;
+}
 
 // ready: the stored draft, if any, is restored. Forms that start from it wait.
 type DraftContext = {
@@ -29,9 +32,9 @@ type DraftContext = {
 
 const Context = createContext<DraftContext | null>(null);
 
-function readStored(): SetupDraft | null {
+function readStored(barbershopId: string): SetupDraft | null {
   try {
-    const stored = window.sessionStorage.getItem(STORAGE_KEY);
+    const stored = window.sessionStorage.getItem(storageKey(barbershopId));
     if (!stored) return null;
     const draft = JSON.parse(stored) as Partial<SetupDraft>;
     // A broken or older draft is dropped: the wizard starts over.
@@ -45,9 +48,9 @@ function readStored(): SetupDraft | null {
   }
 }
 
-export function clearStoredDraft() {
+export function clearStoredDraft(barbershopId: string) {
   try {
-    window.sessionStorage.removeItem(STORAGE_KEY);
+    window.sessionStorage.removeItem(storageKey(barbershopId));
   } catch {
     // Storage can be blocked; the draft simply is not kept.
   }
@@ -65,7 +68,13 @@ function reducer(state: State, action: Action): State {
   return { ...state, draft: setupReducer(state.draft, action) };
 }
 
-export function SetupDraftProvider({ children }: { children: ReactNode }) {
+export function SetupDraftProvider({
+  barbershopId,
+  children,
+}: {
+  barbershopId: string;
+  children: ReactNode;
+}) {
   const [state, dispatchAction] = useReducer(reducer, undefined, () => ({
     draft: initialDraft(),
     ready: false,
@@ -74,17 +83,20 @@ export function SetupDraftProvider({ children }: { children: ReactNode }) {
 
   // Restore after mounting, so the server and the first render match.
   useEffect(() => {
-    dispatchAction({ type: "restore", draft: readStored() });
-  }, []);
+    dispatchAction({ type: "restore", draft: readStored(barbershopId) });
+  }, [barbershopId]);
 
   useEffect(() => {
     if (!state.ready) return;
     try {
-      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state.draft));
+      window.sessionStorage.setItem(
+        storageKey(barbershopId),
+        JSON.stringify(state.draft),
+      );
     } catch {
       // Storage can be blocked; the draft lives only in memory then.
     }
-  }, [state]);
+  }, [state, barbershopId]);
 
   return (
     <Context value={{ draft: state.draft, dispatch, ready: state.ready }}>

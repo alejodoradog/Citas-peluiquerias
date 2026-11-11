@@ -467,7 +467,7 @@ isOneToOne: false
 { Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_id": string,"p_manage_token_hash"?: string,"p_service_ids": (string)[],"p_source"?: Database["public"]['Enums']["appointment_source"],"p_starts_at": string }; Returns: string
                            },
 "create_barbershop":
-{ Args: { "p_name": string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
+{ Args: { "p_name": string,"p_request_id"?: string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
                            },
 "set_barber_schedule":
 { Args: { "p_barber_id": string,"p_shifts"?: Json,"p_uses_barbershop_hours": boolean }; Returns: undefined

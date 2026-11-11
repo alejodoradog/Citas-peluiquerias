@@ -4,6 +4,7 @@ import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barbe
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { BookingLinkActionErrorCode } from "@/modulos/barberias/acciones/booking-link";
+import type { NewBarbershopActionErrorCode } from "@/modulos/barberias/acciones/barbershops";
 import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
 import {
   SLUG_CHANGE_LIMIT,
@@ -925,6 +926,53 @@ export const textos = {
       unknown: "No pudimos cambiar el link. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BookingLinkActionErrorCode | "invalid", string>,
+  },
+  // Task 2.6: the sede switcher at the top of Más (D-50) and "Nueva sede".
+  sedes: {
+    // The card with the active sede.
+    activa: "Sede activa",
+    cambiar: "Cambiar",
+    cambiarEtiqueta: "Cambiar de sede",
+    nueva: "Nueva sede",
+    // The sheet with every sede.
+    hoja: {
+      titulo: "Tus sedes",
+      // Read after the name of the sede the panel shows.
+      actual: "sede activa",
+      cambiando: "Cambiando de sede…",
+      fallo: "No pudimos cambiar de sede. Intenta de nuevo.",
+    },
+    nuevaSede: {
+      titulo: "Nueva sede",
+      cargando: "Cargando…",
+      bajada:
+        "Tendrá su propio link de reservas, horario, servicios y barberos. Después de crearla la configuras.",
+      campos: {
+        nombre: "Nombre de la sede",
+        whatsapp: "WhatsApp de la sede",
+      },
+      ayudas: {
+        nombre: "Con él armamos el link de reservas de la sede.",
+        whatsapp: "Si lo dejas vacío, usamos tu celular.",
+      },
+      prueba: "La sede nueva comparte tu prueba gratis",
+      pruebaHasta: (fecha: string) => `Tu prueba va hasta el ${fecha}.`,
+      pruebaVencida:
+        "Podrás configurarla, pero recibirá citas desde su primer pago",
+      pruebaVencidaDetalle: (fecha: string) =>
+        `Tu prueba gratis terminó el ${fecha}.`,
+      crear: "Crear sede",
+      creando: "Creando sede…",
+      errores: {
+        barbershop_name_required: "Escribe el nombre de la sede.",
+        barbershop_name_too_long:
+          "El nombre es muy largo. Usa máximo 100 caracteres.",
+        phone_invalid:
+          "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+        unknown: "No pudimos crear la sede. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      } satisfies Record<NewBarbershopActionErrorCode | "invalid", string>,
+    },
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

@@ -9,3 +9,10 @@ export const TRIAL_DAYS = 20;
 export function trialEndsOn(signupDate: string): string {
   return addDays(signupDate, TRIAL_DAYS);
 }
+
+// The trial runs through its last day in Bogotá: it has ended from the next
+// day on. A sede created after that takes no bookings until its first
+// payment (spec, Registro y configuración; create_barbershop).
+export function trialHasEnded(trialEndsOn: string, today: string): boolean {
+  return today > trialEndsOn;
+}

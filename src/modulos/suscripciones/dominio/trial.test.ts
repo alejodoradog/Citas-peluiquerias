@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { TRIAL_DAYS, trialEndsOn } from "./trial";
+import { TRIAL_DAYS, trialEndsOn, trialHasEnded } from "./trial";
 
 describe("trialEndsOn", () => {
   it("lasts 20 days", () => {
@@ -15,6 +15,15 @@ describe("trialEndsOn", () => {
   it("crosses months and years", () => {
     expect(trialEndsOn("2026-12-20")).toBe("2027-01-09");
     expect(trialEndsOn("2028-02-15")).toBe("2028-03-06");
+  });
+});
+
+describe("trialHasEnded", () => {
+  it("keeps the trial through its last day and ends it the next one", () => {
+    expect(trialHasEnded("2026-11-24", "2026-11-23")).toBe(false);
+    expect(trialHasEnded("2026-11-24", "2026-11-24")).toBe(false);
+    expect(trialHasEnded("2026-11-24", "2026-11-25")).toBe(true);
+    expect(trialHasEnded("2026-12-31", "2027-01-01")).toBe(true);
   });
 });
 

@@ -45,7 +45,7 @@ async function SetupDone() {
 
   return (
     <>
-      <ClearSetupDraft />
+      <ClearSetupDraft barbershopId={barbershop.id} />
       <span className="bg-success-soft text-success flex size-16 items-center justify-center rounded-full">
         <CheckIcon size={34} />
       </span>

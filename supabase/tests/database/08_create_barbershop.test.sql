@@ -8,7 +8,7 @@ set local search_path = public, extensions;
 select plan(19);
 
 select has_column('public', 'barbershops', 'trial_ends_on', 'barbershops keeps the last day of the trial');
-select has_function('public', 'create_barbershop', array['text', 'text', 'text'], 'create_barbershop exists');
+select has_function('public', 'create_barbershop', array['text', 'text', 'text', 'uuid'], 'create_barbershop exists');
 
 -- Fixtures, inserted as the table owner -------------------------------------------
 

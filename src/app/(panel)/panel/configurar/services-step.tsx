@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
 import { offeredServices } from "@/modulos/barberias/dominio/setup";
@@ -18,13 +18,14 @@ import { useSetupDraft } from "./setup-draft";
 
 const t = textos.asistente.servicios;
 
-export function ServicesStep() {
+// topAction: the right of the top bar ("Cambiar de sede", task 2.6).
+export function ServicesStep({ topAction }: { topAction?: ReactNode }) {
   const { ready } = useSetupDraft();
   // The list starts from the draft: wait until a reload restored it.
-  return ready ? <ServicesList /> : <LoadingState />;
+  return ready ? <ServicesList topAction={topAction} /> : <LoadingState />;
 }
 
-function ServicesList() {
+function ServicesList({ topAction }: { topAction?: ReactNode }) {
   const { draft, dispatch } = useSetupDraft();
   // null: closed; "new": adding one; otherwise the key being edited.
   const [editing, setEditing] = useState<string | null>(null);
@@ -40,7 +41,7 @@ function ServicesList() {
 
   return (
     <FlowShell
-      header={<TopBar title={t.barra} subtitle={t.paso} />}
+      header={<TopBar title={t.barra} subtitle={t.paso} action={topAction} />}
       actions={
         <>
           {noneOffered ? (
