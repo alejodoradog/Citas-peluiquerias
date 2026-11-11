@@ -149,7 +149,7 @@ export function BookingLinkForm({
           <div
             data-field="slug"
             className={cx(
-              "rounded-field text-ink flex h-12.5 items-center overflow-hidden border bg-white focus-within:outline-2 focus-within:outline-offset-2",
+              "rounded-field text-ink flex h-13 items-center overflow-hidden border bg-white focus-within:outline-2 focus-within:outline-offset-2",
               invalid
                 ? "border-danger border-2"
                 : "border-line-strong focus-within:border-brand",
