@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { RESERVED_SLUGS, slugCandidate, slugFromName } from "./slug";
+import { isSlug, RESERVED_SLUGS, slugCandidate, slugFromName } from "./slug";
 
 describe("slugFromName", () => {
   it.each([
@@ -65,5 +65,30 @@ describe("RESERVED_SLUGS", () => {
     );
 
     expect(inDatabase.sort()).toEqual([...RESERVED_SLUGS].sort());
+  });
+});
+
+describe("isSlug", () => {
+  it("accepts the links the database accepts", () => {
+    for (const slug of ["la-esquina", "abc", "barberia-2", "a".repeat(60)]) {
+      expect(isSlug(slug)).toBe(true);
+    }
+  });
+
+  it("rejects anything else", () => {
+    for (const value of [
+      "ab",
+      "a".repeat(61),
+      "La-Esquina",
+      "la_esquina",
+      "-esquina",
+      "esquina-",
+      "la--esquina",
+      "la esquina",
+      "barbería",
+      "",
+    ]) {
+      expect(isSlug(value)).toBe(false);
+    }
   });
 });

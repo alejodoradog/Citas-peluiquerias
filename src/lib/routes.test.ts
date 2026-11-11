@@ -9,12 +9,14 @@ function topLevelSegments(dir: string): string[] {
   return (
     readdirSync(dir, { withFileTypes: true })
       // "_x" folders are private; "%5Fx" ones serve /_x, which no link can take
-      // (slugs start with a letter or digit).
+      // (slugs start with a letter or digit). "[slug]" is the barbershop's
+      // link itself, the one every other folder must not shadow.
       .filter(
         (entry) =>
           entry.isDirectory() &&
           !entry.name.startsWith("_") &&
-          !entry.name.startsWith("%5F"),
+          !entry.name.startsWith("%5F") &&
+          entry.name !== "[slug]",
       )
       .flatMap((entry) =>
         entry.name.startsWith("(")
