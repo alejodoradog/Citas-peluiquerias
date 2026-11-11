@@ -104,6 +104,19 @@ export function formatBogotaDayMonth(instant: Date): string {
   return dayMonthFormatter.format(instant);
 }
 
+const dayMonthYearFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+// "10 de febrero de 2027": a day months away, when the year matters (D-61,
+// until when an old link keeps leading to the new one).
+export function formatBogotaDayMonthYear(instant: Date): string {
+  return dayMonthYearFormatter.format(instant);
+}
+
 const weekdayFormatter = new Intl.DateTimeFormat(LOCALE, {
   timeZone: TIME_ZONE,
   weekday: "long",

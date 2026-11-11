@@ -700,3 +700,95 @@ test("D-59 matches the design", async ({ page }) => {
   await attachSideBySide(page, design, "D-59");
   await design.close();
 });
+
+test("D-61 matches the design", async ({ page }) => {
+  test.setTimeout(120_000);
+  const slug = await signInReadyOwner(page, "fidelidad-link");
+  await page.goto("/panel/link");
+  const l = textos.link;
+  await expect(
+    page.getByRole("heading", { level: 1, name: l.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  // A free link, so "Disponible" shows and the button is enabled, as drawn.
+  // Typed again if the development server remounted the form meanwhile.
+  await expect(async () => {
+    await page.getByRole("textbox", { name: l.nuevo }).fill(`${slug}-x`);
+    await expect(
+      page.getByText(l.disponible, { exact: true }).filter({ visible: true }),
+    ).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
+  const design = await openDesign(page, "D61-Cambiar-link.dc.html");
+
+  await compare(
+    "título de la barra",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Link de reservas", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "etiqueta del link actual",
+    page.getByText(l.actual, { exact: true }),
+    design.getByText("Link actual", { exact: true }),
+    ["font-size", "color"],
+  );
+  // The design's provisional brand (silla.co) is yapoin.com.
+  await compare(
+    "link actual",
+    page.getByText(`yapoin.com/${slug}`, { exact: true }),
+    design.getByText("silla.co/barberia-la-esquina", { exact: true }),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "etiqueta del campo",
+    page.locator("label", { hasText: l.nuevo }),
+    design.locator("label[for=lk]"),
+    ["font-size", "font-weight", "color"],
+  );
+  // The border color differs on purpose, as in every field: darker for
+  // contrast (founder, 2026-11-09).
+  await compare(
+    "campo",
+    page.locator('[data-field="slug"]'),
+    design.locator("#lk").locator(".."),
+    ["height", "border-radius", "background-color"],
+  );
+  await compare(
+    "prefijo",
+    page.getByText("yapoin.com/", { exact: true }),
+    design.getByText("silla.co/", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "texto del campo",
+    page.getByRole("textbox", { name: l.nuevo }),
+    design.locator("#lk"),
+    ["font-size", "color"],
+  );
+  await compare(
+    "disponible",
+    page.getByText(l.disponible, { exact: true }),
+    design.getByText("Disponible", { exact: true }),
+    ["font-size", "color"],
+  );
+  // The design warns that the old link stops working; it keeps working
+  // (decision P1 of task 2.4), so the notice informs instead of warning:
+  // only its shape is the design's.
+  await compare(
+    "aviso",
+    page.getByRole("status").filter({ hasText: l.aviso }),
+    design.locator('[role="status"]'),
+    ["border-radius"],
+  );
+  await compare(
+    "botón principal",
+    page.getByRole("button", { name: l.cambiar, exact: true }),
+    design.getByRole("link", { name: "Cambiar link", exact: true }),
+    primaryButton,
+  );
+  await compare("fondo", page.locator("body"), design.locator("x-dc > div"), [
+    "background-color",
+  ]);
+
+  await attachSideBySide(page, design, "D-61");
+  await design.close();
+});

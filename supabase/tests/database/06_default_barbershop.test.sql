@@ -25,7 +25,8 @@ select is(
     where n.nspname = 'public'
       and c.relkind = 'r'
       and a.attname = 'barbershop_id'
-      and c.relname not in ('barbershops', 'profiles', 'memberships', 'appointment_events', 'notifications', 'subscription_payments')
+      -- Written only by triggers or the platform, never by an owner's session.
+      and c.relname not in ('barbershops', 'profiles', 'memberships', 'appointment_events', 'notifications', 'subscription_payments', 'barbershop_slug_changes', 'barbershop_slug_history')
       and not exists (
         select 1 from pg_attrdef d where d.adrelid = c.oid and d.adnum = a.attnum
       )

@@ -193,6 +193,46 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"barbershop_slug_changes": {
+                  Row: {
+                    "barbershop_id": string,"changed_at": string,"id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "barbershop_id": string,"changed_at"?: string,"id"?: never
+                  }
+                  Update: {
+                    "barbershop_id"?: string,"changed_at"?: string,"id"?: never
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "barbershop_slug_changes_barbershop_id_fkey"
+      columns: ["barbershop_id"]
+isOneToOne: false
+      referencedRelation: "barbershops"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"barbershop_slug_history": {
+                  Row: {
+                    "barbershop_id": string,"retired_at": string,"slug": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "barbershop_id": string,"retired_at"?: string,"slug": string
+                  }
+                  Update: {
+                    "barbershop_id"?: string,"retired_at"?: string,"slug"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "barbershop_slug_history_barbershop_id_fkey"
+      columns: ["barbershop_id"]
+isOneToOne: false
+      referencedRelation: "barbershops"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"barbershops": {
                   Row: {
                     "address": string | null,"cancellation_notice_hours": number,"cover_photo_path": string | null,"created_at": string,"deposit_account": string | null,"deposit_method": Database["public"]['Enums']["payment_method"] | null,"expires_on": string,"id": string,"latitude": number | null,"locality": string | null,"logo_path": string | null,"longitude": number | null,"min_booking_notice_minutes": number,"name": string,"plan": string | null,"setup_completed_at": string | null,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string,"updated_at": string,"whatsapp_phone": string | null

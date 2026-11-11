@@ -32,9 +32,9 @@ const t = textos.mas;
 export const metadata: Metadata = { title: t.titulo };
 
 // D-50: the owner's settings. Servicios, Barberos, Datos y fotos (2.4d),
-// Horario (2.4a), Festivos y cierres (2.4c) and Reservas y cancelaciones
-// (2.4b) work now; the other rows arrive with tasks 2.4e, 2.6 and 4.6 and
-// show "Pronto" without a link (decision 9 of task 2.2). Its top bar names the barbershop, as the design
+// Horario (2.4a), Festivos y cierres (2.4c), Reservas y cancelaciones (2.4b)
+// and Link de reservas (2.4e) work now; the other rows arrive with tasks 2.6
+// and 4.6 and show "Pronto" without a link (decision 9 of task 2.2). Its top bar names the barbershop, as the design
 // does, so the whole frame waits for it; "Cerrar sesión" is in "Tu cuenta".
 export default function MorePage() {
   return (
@@ -117,7 +117,7 @@ async function More() {
             icon={<LinkIcon />}
             title={t.link}
             subtitle={displayBookingUrl(barbershop.slug)}
-            trailing={soon}
+            href={routes.panelBookingLink}
           />
         </Section>
         <Section title={t.secciones.dinero}>
