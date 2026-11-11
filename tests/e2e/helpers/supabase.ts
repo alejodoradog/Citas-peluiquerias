@@ -401,3 +401,44 @@ export async function insertLeftSlug(
     });
   if (error) throw error;
 }
+
+// More sedes for the owner of a barbershop (task 2.6b), written past RLS as
+// create_barbershop would leave them, with their setup already done so the
+// whole panel opens on them. Newer than the first one, in the given order.
+export async function addReadySedes(
+  slug: string,
+  names: readonly string[],
+): Promise<{ id: string; slug: string }[]> {
+  const admin = adminClient();
+  const { data: first, error } = await admin
+    .from("barbershops")
+    .select("id, trial_ends_on, memberships(user_id)")
+    .eq("slug", slug)
+    .single();
+  if (error) throw error;
+  const owner = first.memberships[0]?.user_id;
+  if (!owner) throw new Error(`No owner for ${slug}`);
+  const added: { id: string; slug: string }[] = [];
+  for (const [index, name] of names.entries()) {
+    const sedeSlug = `${slug}-sede-${index + 2}`;
+    const { data: sede, error: sedeError } = await admin
+      .from("barbershops")
+      .insert({
+        name,
+        slug: sedeSlug,
+        whatsapp_phone: "+573001234567",
+        trial_ends_on: first.trial_ends_on,
+        expires_on: first.trial_ends_on,
+        setup_completed_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (sedeError) throw sedeError;
+    const { error: membershipError } = await admin
+      .from("memberships")
+      .insert({ user_id: owner, barbershop_id: sede.id, role: "owner" });
+    if (membershipError) throw membershipError;
+    added.push({ id: sede.id, slug: sedeSlug });
+  }
+  return added;
+}

@@ -97,6 +97,26 @@ describe("BarbershopSwitcher", () => {
     ).toHaveAttribute("href", "/panel/sedes/nueva");
   });
 
+  it("turns Nueva sede off at the limit of 4 sedes and says why", async () => {
+    const more = [3, 4].map((n) => ({
+      id: `cccccccc-0000-4000-8000-00000000000${n}`,
+      name: `Sede ${n}`,
+      slug: `sede-${n}`,
+      logoUrl: null,
+    }));
+    setup([norte, sur, ...more]);
+    await userEvent.click(
+      screen.getByRole("button", { name: t.cambiarEtiqueta }),
+    );
+    expect(
+      within(sheet()).queryByRole("link", { name: t.nueva }),
+    ).not.toBeInTheDocument();
+    const button = within(sheet()).getByRole("button", { name: t.nueva });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleDescription(t.limite);
+    expect(t.limite).toBe("Puedes tener hasta 4 sedes.");
+  });
+
   it("switches through the server and then loads the panel in full", async () => {
     const { switchTo, goTo } = setup([norte, sur]);
     await userEvent.click(

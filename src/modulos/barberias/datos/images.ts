@@ -1,5 +1,5 @@
 import "server-only";
-import { IMAGES_BUCKET } from "@/lib/imagenes/keys";
+import { IMAGE_KINDS, IMAGES_BUCKET } from "@/lib/imagenes/keys";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Images of the bucket "images", always through the owner's session: the
@@ -37,6 +37,35 @@ export async function removeImages(paths: readonly string[]): Promise<void> {
   try {
     const { error } = await (await bucket()).remove([...paths]);
     if (error) console.error("Could not delete images", error.message);
+  } catch (error) {
+    console.error("Could not delete images", error);
+  }
+}
+
+// Task 2.6b: every image of a deleted sede (logo, cover, barber photos). The
+// owner no longer belongs to it; the policies of migration
+// add_barbershop_limit_and_deletion let the account that deleted it list and
+// delete that folder only. Best effort, like removeImages: what fails stays
+// as an orphan for the monthly cleanup.
+const LIST_PAGE = 1000;
+
+export async function removeBarbershopImages(
+  barbershopId: string,
+): Promise<void> {
+  try {
+    const images = await bucket();
+    const folders = await Promise.all(
+      IMAGE_KINDS.map(async (kind) => {
+        const folder = `${barbershopId.toLowerCase()}/${kind}`;
+        const { data, error } = await images.list(folder, { limit: LIST_PAGE });
+        if (error) {
+          console.error("Could not list images", error.message);
+          return [];
+        }
+        return data.map((file) => `${folder}/${file.name}`);
+      }),
+    );
+    await removeImages(folders.flat());
   } catch (error) {
     console.error("Could not delete images", error);
   }

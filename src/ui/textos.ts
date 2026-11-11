@@ -4,7 +4,11 @@ import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barbe
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
 import type { BookingLinkActionErrorCode } from "@/modulos/barberias/acciones/booking-link";
-import type { NewBarbershopActionErrorCode } from "@/modulos/barberias/acciones/barbershops";
+import type {
+  DeleteBarbershopErrorCode,
+  NewBarbershopActionErrorCode,
+} from "@/modulos/barberias/acciones/barbershops";
+import { MAX_BARBERSHOPS_PER_ACCOUNT } from "@/modulos/barberias/dominio/barbershop-rules";
 import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/policies";
 import {
   SLUG_CHANGE_LIMIT,
@@ -934,6 +938,10 @@ export const textos = {
     cambiar: "Cambiar",
     cambiarEtiqueta: "Cambiar de sede",
     nueva: "Nueva sede",
+    // Task 2.6b: "Nueva sede" is off at the limit.
+    limite: `Puedes tener hasta ${MAX_BARBERSHOPS_PER_ACCOUNT} sedes.`,
+    // On the agenda after a deletion.
+    eliminada: (nombre: string) => `Eliminamos la sede ${nombre}`,
     // The sheet with every sede.
     hoja: {
       titulo: "Tus sedes",
@@ -963,7 +971,12 @@ export const textos = {
         `Tu prueba gratis terminó el ${fecha}.`,
       crear: "Crear sede",
       creando: "Creando sede…",
+      // At the limit, instead of the form.
+      limiteTitulo: `Ya tienes ${MAX_BARBERSHOPS_PER_ACCOUNT} sedes`,
+      limiteDetalle: `Es el máximo por cuenta. Si quieres abrir otra, elimina una desde Más › Datos y fotos.`,
+      volver: "Volver a Más",
       errores: {
+        barbershop_limit: `Ya tienes ${MAX_BARBERSHOPS_PER_ACCOUNT} sedes, el máximo por cuenta.`,
         barbershop_name_required: "Escribe el nombre de la sede.",
         barbershop_name_too_long:
           "El nombre es muy largo. Usa máximo 100 caracteres.",
@@ -972,6 +985,30 @@ export const textos = {
         unknown: "No pudimos crear la sede. Intenta de nuevo.",
         invalid: "Revisa este dato.",
       } satisfies Record<NewBarbershopActionErrorCode | "invalid", string>,
+    },
+    // Task 2.6b, at the end of Datos y fotos (D-57).
+    eliminar: {
+      seccion: "Zona de peligro",
+      boton: "Eliminar esta sede",
+      titulo: "Eliminar sede",
+      bajada: (nombre: string) =>
+        `Se borran de ${nombre} sus servicios, barberos, horarios, clientes y citas. No se puede deshacer.`,
+      link: "Su link de reservas deja de funcionar. Por 3 meses nadie más podrá usarlo.",
+      campo: "Escribe el nombre de la sede para confirmar",
+      confirmar: "Eliminar",
+      eliminando: "Eliminando sede…",
+      cancelar: "Cancelar",
+      errores: {
+        name_mismatch: "El nombre no coincide. Escríbelo como aparece arriba.",
+        barbershop_changed:
+          "Cambiaste de sede en otra pestaña. Recarga la página y revisa cuál vas a eliminar.",
+        last_barbershop:
+          "Es tu única sede. Para eliminarla necesitas tener otra.",
+        has_upcoming_appointments:
+          "Esta sede tiene citas próximas. Cancélalas antes de eliminarla.",
+        unknown: "No pudimos eliminar la sede. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      } satisfies Record<DeleteBarbershopErrorCode | "invalid", string>,
     },
   },
   // The links that already circulate (the QR, the poster, the barber's

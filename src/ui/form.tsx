@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { IDLE, type FormState } from "@/lib/formularios/form-state";
-import { buttonClasses } from "./button";
+import { buttonClasses, type ButtonVariant } from "./button";
 
 // Wires a form to its Server Action: the state, the copy for each error code
 // and the values to show again. Field names are typed, so a typo in
@@ -83,15 +83,18 @@ export function ActionForm({
 }
 
 // disabled holds the form back while something it needs is not ready (a
-// photo still uploading, D-54).
+// photo still uploading, D-54). variant: dangerSolid for a submit that
+// deletes (task 2.6b).
 export function SubmitButton({
   children,
   pendingText,
   disabled = false,
+  variant = "primary",
 }: {
   children: ReactNode;
   pendingText: string;
   disabled?: boolean;
+  variant?: ButtonVariant;
 }) {
   const { pending } = useFormStatus();
   return (
@@ -99,7 +102,7 @@ export function SubmitButton({
       type="submit"
       disabled={pending || disabled}
       aria-disabled={pending || disabled}
-      className={buttonClasses()}
+      className={buttonClasses({ variant })}
     >
       {pending ? pendingText : children}
     </button>

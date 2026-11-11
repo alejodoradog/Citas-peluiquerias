@@ -9,11 +9,11 @@ export const IMAGES_BUCKET = "images";
 
 export type ImageKind = "barbers" | "logo" | "cover";
 
-const KINDS: readonly ImageKind[] = ["barbers", "logo", "cover"];
+export const IMAGE_KINDS: readonly ImageKind[] = ["barbers", "logo", "cover"];
 
 // A kind of the bucket. Kinds come back from the browser too.
 export function isImageKind(value: unknown): value is ImageKind {
-  return KINDS.includes(value as ImageKind);
+  return IMAGE_KINDS.includes(value as ImageKind);
 }
 
 // What the first step of an upload hands the browser: the key to upload to

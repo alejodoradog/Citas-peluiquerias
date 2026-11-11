@@ -8,9 +8,12 @@ import {
 } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { createBarbershop } from "@/modulos/barberias/acciones/barbershops";
+import { canAddBarbershop } from "@/modulos/barberias/dominio/barbershop-rules";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { trialHasEnded } from "@/modulos/suscripciones/dominio/trial";
+import { ButtonLink } from "@/ui/button";
 import { FlowShell } from "@/ui/flow-shell";
+import { Notice } from "@/ui/notice";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
@@ -31,25 +34,43 @@ export default function NewBarbershopPage() {
   );
 }
 
+const header = (
+  <TopBar
+    title={t.titulo}
+    titleAs="h1"
+    back={{ href: routes.panelMore, label: textos.ui.volver }}
+  />
+);
+
 // Its bar, so the owner can leave, while the page loads.
 function NewBarbershopLoading() {
   return (
-    <FlowShell
-      header={
-        <TopBar
-          title={t.titulo}
-          titleAs="h1"
-          back={{ href: routes.panelMore, label: textos.ui.volver }}
-        />
-      }
-    >
+    <FlowShell header={header}>
       <LoadingState label={t.cargando} />
     </FlowShell>
   );
 }
 
 async function NewBarbershop() {
-  const { companyTrialEndsOn } = await requireOwner();
+  const { companyTrialEndsOn, barbershops } = await requireOwner();
+  // Task 2.6b: at the limit of 4 sedes, why there is no form. The database
+  // refuses a fifth one anyway.
+  if (!canAddBarbershop(barbershops.length)) {
+    return (
+      <FlowShell
+        header={header}
+        actions={
+          <ButtonLink href={routes.panelMore} variant="secondary">
+            {t.volver}
+          </ButtonLink>
+        }
+      >
+        <Notice tone="warning" title={t.limiteTitulo}>
+          {t.limiteDetalle}
+        </Notice>
+      </FlowShell>
+    );
+  }
   return (
     <NewBarbershopForm
       action={createBarbershop}
