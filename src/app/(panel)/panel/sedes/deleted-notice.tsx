@@ -34,9 +34,12 @@ function reducer(_state: string | null, name: string | null) {
 
 export function DeletedBarbershopNotice() {
   const [name, show] = useReducer(reducer, null);
-  // After mounting, so the server and the first render match.
+  // After mounting, so the server and the first render match. The name is
+  // taken once: a second run of this effect (React's Strict Mode runs it
+  // twice in development) finds nothing and must not hide it again.
   useEffect(() => {
-    show(takeDeletedBarbershop());
+    const deleted = takeDeletedBarbershop();
+    if (deleted) show(deleted);
   }, []);
   if (!name) return null;
   return <Notice tone="success" title={textos.sedes.eliminada(name)} />;

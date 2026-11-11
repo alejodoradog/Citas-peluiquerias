@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { textos } from "@/ui/textos";
 import {
@@ -23,6 +24,18 @@ describe("DeletedBarbershopNotice", () => {
     unmount();
     render(<DeletedBarbershopNotice />);
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("keeps saying it under Strict Mode, which runs the effect twice", async () => {
+    rememberDeletedBarbershop("El Parche Sur");
+    render(
+      <StrictMode>
+        <DeletedBarbershopNotice />
+      </StrictMode>,
+    );
+    expect(
+      await screen.findByText(textos.sedes.eliminada("El Parche Sur")),
+    ).toBeInTheDocument();
   });
 
   it("shows nothing without a deletion", () => {
