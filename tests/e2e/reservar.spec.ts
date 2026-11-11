@@ -57,14 +57,18 @@ async function chooseServicesAndBarber(page: Page, barber: string) {
 }
 
 async function chooseTomorrowAt(page: Page, time: string) {
-  await page
+  // Each choice is a navigation: wait for it to land before the next one,
+  // or the next tap lands on the page that is going away.
+  const day = page
     .getByRole("link", { name: capitalize(formatCalendarDay(tomorrow())) })
-    .filter({ visible: true })
-    .click();
-  await page
+    .filter({ visible: true });
+  await day.click();
+  await expect(day).toHaveAttribute("aria-current", "date", FIRST_VISIT);
+  const hour = page
     .getByRole("link", { name: formatWallClock(time), exact: true })
-    .filter({ visible: true })
-    .click();
+    .filter({ visible: true });
+  await hour.click();
+  await expect(hour).toHaveAttribute("aria-current", "true", FIRST_VISIT);
   await page
     .getByRole("link", { name: t.continuar })
     .filter({ visible: true })

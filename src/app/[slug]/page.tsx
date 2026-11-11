@@ -53,6 +53,10 @@ async function BookingProfile({
   params,
 }: Pick<PageProps<"/[slug]">, "params">) {
   const { slug } = await params;
+  // This page reads the moment of the request ("Abierto hoy", and how long
+  // an old link stays set aside): the profile itself is cached, the time is
+  // not.
+  await connection();
   const profile = await loadPublicProfile(slug);
   if (!profile) {
     const current = await resolveRetiredSlug(slug);
@@ -61,9 +65,6 @@ async function BookingProfile({
     if (current) permanentRedirect(routes.booking(current));
     notFound();
   }
-  // "Abierto hoy" depends on the moment of the request: the profile itself
-  // is cached, today is not.
-  await connection();
   return profile.acceptsBookings ? (
     <Profile profile={profile} today={toBogotaDate(now())} />
   ) : (

@@ -880,12 +880,16 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: r.hora.titulo }),
   ).toBeVisible({ timeout: 20_000 });
   const day = formatCalendarDay(addDays(toBogotaDate(new Date()), 1));
-  await page
+  const dayLink = page
     .getByRole("link", {
       name: day.charAt(0).toLocaleUpperCase("es-CO") + day.slice(1),
     })
-    .filter({ visible: true })
-    .click();
+    .filter({ visible: true });
+  await dayLink.click();
+  // A navigation: the hour below must be tomorrow's, not today's.
+  await expect(dayLink).toHaveAttribute("aria-current", "date", {
+    timeout: 20_000,
+  });
   await page
     .getByRole("link", { name: "10:00 a. m.", exact: true })
     .filter({ visible: true })
