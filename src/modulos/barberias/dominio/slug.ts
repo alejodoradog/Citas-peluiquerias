@@ -95,3 +95,23 @@ export function parseNewSlug(input: string, current: string): NewSlugResult {
 // copies drift apart.
 export const SLUG_CHANGE_LIMIT = 3;
 export const SLUG_CHANGE_WINDOW_DAYS = 30;
+
+// Decision P12 of task 2.4 (founder, 2026-11-10): a link a barbershop left
+// stays set aside for it, leading to its new one, for SLUG_SET_ASIDE_DAYS
+// days (3 months). From then on any barbershop may take it and it leads
+// nowhere. The database frees it (guard_barbershop_slug); slug.test.ts fails
+// if the two copies drift apart.
+export const SLUG_SET_ASIDE_DAYS = 90;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// When a link left at `retiredAt` stops being set aside.
+export function slugSetAsideUntil(retiredAt: Date): Date {
+  return new Date(retiredAt.getTime() + SLUG_SET_ASIDE_DAYS * DAY_MS);
+}
+
+// Links left at or before this instant are no longer set aside: what is
+// still set aside was left after it.
+export function slugSetAsideSince(now: Date): Date {
+  return new Date(now.getTime() - SLUG_SET_ASIDE_DAYS * DAY_MS);
+}

@@ -4,29 +4,46 @@
 -- link, the old one stays set aside for it and leads to the new one, so the
 -- QR codes and posters already printed keep working. No other barbershop
 -- can take it, neither by changing its link nor by signing up.
+-- Decision P12 of the founder (2026-11-10): a link stays set aside for 90
+-- days (3 months) after it was left; then any barbershop may take it and it
+-- no longer leads anywhere. SLUG_SET_ASIDE_DAYS in
+-- src/modulos/barberias/dominio/slug.ts is the copy the app reads (the
+-- redirect, the availability chip, the sign-up) and the notice of D-61
+-- shows; slug.test.ts fails if the two drift apart.
 --
 -- 1. barbershop_slug_history keeps every link a barbershop left. Only the
 --    trigger below writes it: sessions and anon have no write privilege.
 -- 2. private.guard_barbershop_slug runs before any insert of a barbershop
 --    and any update of its slug, whoever writes (the panel, the sign-up
 --    trigger, create_barbershop, the API directly):
+--    - a link left 90 days ago or more (P12) leaves the history, whoever
+--      left it, and stops counting for anything below;
 --    - a link set aside for another barbershop is taken (23505, slug_taken);
---    - provisional decision P11: a barbershop holds at most 3 links retired
---      in the last 30 days (23514, slug_change_limit), so nobody hoards
---      links by changing theirs over and over;
+--    - decision P11 (confirmed 2026-11-10): a barbershop holds at most 3
+--      links retired in the last 30 days (23514, slug_change_limit), so
+--      nobody hoards links by changing theirs over and over;
+--    - provisional: going back to a link of its own that is still set aside
+--      does not wait for the limit (it sets no new link aside: one row
+--      leaves the history, one comes in). An own link that is no longer set
+--      aside is a new link like any other and waits for it;
 --    - going back to a link of its own takes it out of the history.
 --    Security definer: it must see the links of other barbershops, which RLS
 --    hides from a session, and write the history, which sessions cannot.
--- 3. Races: the trigger takes a transaction lock on every link it reads or
---    sets aside (the old and the new one, in a fixed order so two changes
---    never wait on each other). A sign-up that wants the link another
---    barbershop is leaving waits for that change to commit and then sees
---    the history row. Two changes of the same barbershop already run one
---    after the other on its row lock.
+-- 3. Races: the trigger takes a transaction lock on every link it reads,
+--    frees or sets aside (the old and the new one, in a fixed order so two
+--    changes never wait on each other). A sign-up that wants the link
+--    another barbershop is leaving waits for that change to commit and then
+--    sees the history row; two barbershops that want the same expired link
+--    take it one after the other, and the second one hits barbershops_slug_key.
+--    Two changes of the same barbershop already run one after the other on
+--    its row lock.
 --
 -- The page behind an old link looks the history up with the anonymous key
--- (anon reads slug and barbershop_id, as the links were public on the
--- posters), joined to barbershops for the current slug: no function needed.
+-- (anon reads slug, barbershop_id and retired_at, as the links were public
+-- on the posters; retired_at lets it skip the links no longer set aside),
+-- joined to barbershops for the current slug: no function needed. Expired
+-- rows are not swept: they are harmless (nothing reads them as set aside)
+-- and leave the history as soon as a barbershop takes the link.
 
 create table public.barbershop_slug_history (
   slug text primary key
@@ -42,7 +59,7 @@ create index barbershop_slug_history_barbershop_id_idx
 
 alter table public.barbershop_slug_history enable row level security;
 
-grant select (slug, barbershop_id) on public.barbershop_slug_history to anon;
+grant select (slug, barbershop_id, retired_at) on public.barbershop_slug_history to anon;
 grant select on public.barbershop_slug_history to authenticated;
 
 create policy public_read on public.barbershop_slug_history
@@ -63,6 +80,9 @@ as $$
 declare
   new_key integer := hashtext('barbershop_slug:' || new.slug);
   old_key integer;
+  -- Decision P12: a link left at or before this instant is no longer set
+  -- aside (SLUG_SET_ASIDE_DAYS).
+  set_aside_since timestamptz := now() - interval '90 days';
 begin
   if tg_op = 'UPDATE' then
     if new.slug = old.slug then
@@ -77,6 +97,11 @@ begin
     perform pg_advisory_xact_lock(new_key);
   end if;
 
+  -- P12: whoever left it, an expired link is free again.
+  delete from public.barbershop_slug_history h
+  where h.slug = new.slug
+    and h.retired_at <= set_aside_since;
+
   if exists (
     select 1 from public.barbershop_slug_history h
     where h.slug = new.slug and h.barbershop_id <> new.id
@@ -89,7 +114,13 @@ begin
     return new;
   end if;
 
-  if (
+  -- What is left of the new link in the history is the barbershop's own and
+  -- still set aside: going back to it does not wait for the limit
+  -- (provisional).
+  if not exists (
+    select 1 from public.barbershop_slug_history h
+    where h.slug = new.slug and h.barbershop_id = new.id
+  ) and (
     select count(*) from public.barbershop_slug_history h
     where h.barbershop_id = new.id
       and h.retired_at > now() - interval '30 days'

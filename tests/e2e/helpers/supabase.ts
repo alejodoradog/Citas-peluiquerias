@@ -366,3 +366,38 @@ export async function insertShopClosure(
     });
   if (error) throw error;
 }
+
+// D-61: when each link a barbershop left was left, read past RLS, so a test
+// knows until which day the screen must say it keeps leading to the new one.
+export async function slugHistory(slug: string) {
+  const { data, error } = await adminClient()
+    .from("barbershop_slug_history")
+    .select("slug, retired_at")
+    .eq("barbershop_id", await barbershopIdOf(slug))
+    .order("retired_at", { ascending: false });
+  if (error) throw error;
+  return data.map((row) => ({
+    slug: row.slug as string,
+    retiredAt: new Date(row.retired_at as string),
+  }));
+}
+
+// A link the barbershop on `slug` left `daysAgo` days ago, written past the
+// app (only the trigger writes the history), so a test has a link that is no
+// longer set aside without moving the clock.
+export async function insertLeftSlug(
+  slug: string,
+  leftSlug: string,
+  daysAgo: number,
+) {
+  const { error } = await adminClient()
+    .from("barbershop_slug_history")
+    .insert({
+      slug: leftSlug,
+      barbershop_id: await barbershopIdOf(slug),
+      retired_at: new Date(
+        Date.now() - daysAgo * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+    });
+  if (error) throw error;
+}

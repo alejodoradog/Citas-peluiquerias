@@ -1,5 +1,7 @@
 import "server-only";
+import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { slugSetAsideSince, slugSetAsideUntil } from "../dominio/slug";
 
 // D-61. Sessions update the slug of their own barbershops (column grant of
 // task 1.2, member_update); the filter by id keeps a second barbershop of
@@ -36,4 +38,28 @@ export async function updateBookingLink(
     .select("id");
   if (error) return bookingLinkWriteError(error);
   return data.length === 1 ? "changed" : "unknown";
+}
+
+// A link the barbershop left that still leads to its current one, and until
+// when (decision P12).
+export type SetAsideLink = { slug: string; until: Date };
+
+// D-61: the barbershop's links still set aside, the most recently left
+// first. Read with the owner's session (member_read): only its own.
+export async function listSetAsideLinks(
+  barbershopId: string,
+): Promise<SetAsideLink[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("barbershop_slug_history")
+    .select("slug, retired_at")
+    .eq("barbershop_id", barbershopId)
+    .gt("retired_at", slugSetAsideSince(now()).toISOString())
+    .order("retired_at", { ascending: false })
+    .order("slug");
+  if (error) throw error;
+  return data.map((row) => ({
+    slug: row.slug,
+    until: slugSetAsideUntil(new Date(row.retired_at)),
+  }));
 }

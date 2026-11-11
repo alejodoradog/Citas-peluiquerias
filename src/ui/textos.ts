@@ -8,6 +8,7 @@ import type { PoliciesActionErrorCode } from "@/modulos/barberias/acciones/polic
 import {
   SLUG_CHANGE_LIMIT,
   SLUG_CHANGE_WINDOW_DAYS,
+  SLUG_SET_ASIDE_DAYS,
 } from "@/modulos/barberias/dominio/slug";
 import type { ShopProfileActionErrorCode } from "@/modulos/barberias/acciones/shop-profile";
 import type { ServiceActionErrorCode } from "@/modulos/barberias/acciones/services";
@@ -900,14 +901,19 @@ export const textos = {
     disponibleComo: (link: string) => `Disponible: ${link}`,
     sinRevisar:
       "No pudimos revisar si está libre. Puedes intentar cambiarlo igual.",
-    aviso: "Tu link anterior seguirá funcionando",
+    // Decision P12: 90 days, said as months.
+    aviso: `Tu link anterior seguirá funcionando ${SLUG_SET_ASIDE_DAYS / 30} meses`,
     avisoDetalle:
-      "Los QR y afiches que ya imprimiste llevarán a tu link nuevo.",
+      "Los QR y afiches que ya imprimiste llevarán a tu link nuevo. Después, otra barbería podrá tomarlo.",
     cambiar: "Cambiar link",
     cambiando: "Cambiando…",
     cambiado: (link: string) => `Listo, tu link ahora es ${link}`,
     cambiadoDetalle:
-      "El QR que descargaste antes sigue sirviendo: lleva a este link.",
+      "El QR que descargaste antes sigue sirviendo: lleva a este link hasta la fecha que ves abajo.",
+    // Each link the barbershop left that still leads to the new one.
+    anteriores: "Tus links anteriores",
+    apartado: (link: string, fecha: string) =>
+      `Tu link anterior ${link} seguirá llevando al nuevo hasta el ${fecha}. Después, otra barbería podrá tomarlo.`,
     compartir: "Compartir el link nuevo",
     errores: {
       slug_invalid:

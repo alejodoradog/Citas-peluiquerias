@@ -11,6 +11,7 @@ import {
   addDays,
   formatBogotaDate,
   formatBogotaDayMonth,
+  formatBogotaDayMonthYear,
   formatCalendarDay,
   formatWallClock,
   formatBogotaTime,
@@ -185,17 +186,36 @@ describe("formatBogotaDayMonth", () => {
   });
 });
 
+describe("formatBogotaDayMonthYear", () => {
+  it("writes the day, the month and the year in Bogotá", () => {
+    expect(formatBogotaDayMonthYear(startOfBogotaDay("2027-02-10"))).toBe(
+      "10 de febrero de 2027",
+    );
+  });
+
+  it("takes the day of Bogotá, not of UTC", () => {
+    // 2027-01-01 03:00 UTC is still the last day of 2026 in Bogotá.
+    expect(formatBogotaDayMonthYear(new Date("2027-01-01T03:00:00Z"))).toBe(
+      "31 de diciembre de 2026",
+    );
+  });
+});
+
 describe("isBogotaDate", () => {
   it.each(["2026-11-16", "2028-02-29"])("takes %s", (date) => {
     expect(isBogotaDate(date)).toBe(true);
   });
 
-  it.each(["2026-02-30", "2027-02-29", "2026-13-01", "16/11/2026", "", "2026-11-16T00:00"])(
-    "refuses %s",
-    (date) => {
-      expect(isBogotaDate(date)).toBe(false);
-    },
-  );
+  it.each([
+    "2026-02-30",
+    "2027-02-29",
+    "2026-13-01",
+    "16/11/2026",
+    "",
+    "2026-11-16T00:00",
+  ])("refuses %s", (date) => {
+    expect(isBogotaDate(date)).toBe(false);
+  });
 });
 
 describe("formatCalendarDay", () => {

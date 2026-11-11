@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type {
@@ -26,6 +26,7 @@ function renderForm({
   action = idle,
   check = lookup,
   changed = false,
+  setAside = [],
 }: {
   action?: (
     previous: BookingLinkState,
@@ -33,12 +34,14 @@ function renderForm({
   ) => Promise<BookingLinkState>;
   check?: (input: string) => Promise<SlugCheck>;
   changed?: boolean;
+  setAside?: { slug: string; until: string }[];
 } = {}) {
   render(
     <BookingLinkForm
       action={action}
       check={check}
       current="la-esquina"
+      setAside={setAside}
       changed={changed}
     />,
   );
@@ -183,5 +186,27 @@ describe("BookingLinkForm", () => {
       "href",
       "/panel/compartir",
     );
+  });
+
+  it("says until when each old link keeps leading to the new one (P12)", () => {
+    renderForm({
+      setAside: [
+        { slug: "la-esquina-norte", until: "10 de febrero de 2027" },
+        { slug: "la-esquina-vieja", until: "2 de enero de 2027" },
+      ],
+    });
+    const list = screen.getByRole("region", { name: t.anteriores });
+    const items = within(list).getAllByRole("listitem");
+    expect(items.map((item) => item.textContent)).toEqual([
+      t.apartado("yapoin.com/la-esquina-norte", "10 de febrero de 2027"),
+      t.apartado("yapoin.com/la-esquina-vieja", "2 de enero de 2027"),
+    ]);
+  });
+
+  it("lists no old links when none is set aside", () => {
+    renderForm();
+    expect(
+      screen.queryByRole("region", { name: t.anteriores }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -1,4 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { formatBogotaDayMonthYear } from "../../src/lib/fechas/fechas";
+import {
+  SLUG_SET_ASIDE_DAYS,
+  slugSetAsideUntil,
+} from "../../src/modulos/barberias/dominio/slug";
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
 import {
@@ -6,10 +11,16 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
-import { createConfirmedOwner, uniqueEmail } from "./helpers/supabase";
+import {
+  createConfirmedOwner,
+  insertLeftSlug,
+  slugHistory,
+  uniqueEmail,
+} from "./helpers/supabase";
 
 // Task 2.4e: changing the booking link (D-61). The old link keeps leading to
-// the new one and no other barbershop can take it (decision P1 of 2.4).
+// the new one and no other barbershop can take it (decision P1 of 2.4), for
+// 3 months: then it is free again and leads nowhere (decision P12).
 const t = textos.link;
 const mas = textos.mas;
 const PASSWORD = "clave-segura-1";
@@ -100,6 +111,38 @@ test("an owner changes the link, and the old one leads to the new one", async ({
   ).toBeVisible(FIRST_VISIT);
   await expect(newLink(page)).toHaveValue(newSlug);
 
+  // Until when the old link leads to the new one, as a day in Bogotá, from
+  // the instant the database stamped.
+  const history = await slugHistory(newSlug);
+  expect(history.map((row) => row.slug)).toEqual([oldSlug]);
+  const left = history[0];
+  if (!left) throw new Error("The old link was not set aside");
+  const oldLinks = page
+    .getByRole("region", { name: t.anteriores })
+    .filter({ visible: true });
+  await expect(oldLinks.getByRole("listitem")).toHaveText([
+    t.apartado(
+      `yapoin.com/${oldSlug}`,
+      formatBogotaDayMonthYear(slugSetAsideUntil(left.retiredAt)),
+    ),
+  ]);
+  await expectAccessible(page);
+
+  // A link left more than 3 months ago (written past the app, without moving
+  // the clock) is no longer listed and leads nowhere.
+  const expiredSlug = `${oldSlug}-vencido`;
+  await insertLeftSlug(newSlug, expiredSlug, SLUG_SET_ASIDE_DAYS + 1);
+  await page.reload();
+  await expect(oldLinks.getByRole("listitem")).toHaveCount(1, FIRST_VISIT);
+  await page.goto(`/${expiredSlug}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
+  ).toBeVisible(FIRST_VISIT);
+  await page.goto(`/panel/link?guardado=1`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: t.titulo }),
+  ).toBeVisible(FIRST_VISIT);
+
   // "Compartir el link nuevo" goes to D-62, with the new link.
   await page
     .getByRole("link", { name: t.compartir })
@@ -141,4 +184,15 @@ test("an owner changes the link, and the old one leads to the new one", async ({
   await typeAndSee(page, `${oldSlug}-sur`, t.disponible);
   await typeAndSee(page, newSlug, t.errores.slug_taken);
   await expect(page.getByRole("button", { name: t.cambiar })).toBeDisabled();
+
+  // The link the first barbershop left more than 3 months ago is free: the
+  // second one takes it, and the database lets it.
+  await typeAndSee(page, expiredSlug, t.disponible);
+  await page.getByRole("button", { name: t.cambiar }).click();
+  await expect(page).toHaveURL(/\/panel\/link\?guardado=1$/, FIRST_VISIT);
+  await expect(
+    page.getByText(t.cambiado(`yapoin.com/${expiredSlug}`)).filter({
+      visible: true,
+    }),
+  ).toBeVisible(FIRST_VISIT);
 });

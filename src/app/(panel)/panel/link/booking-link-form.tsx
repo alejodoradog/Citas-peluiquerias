@@ -35,12 +35,14 @@ type Status = { tone: "muted" | "success" | "danger"; text: string } | null;
 
 // D-61: the current link, the new one after a fixed "yapoin.com/", whether
 // it is free while the owner types, and that the old link keeps leading to
-// the new one (decision P1 of task 2.4). The server checks everything again
+// the new one for 3 months (decisions P1 and P12 of task 2.4), with the day
+// each link already left stops doing so. The server checks everything again
 // and the database has the last word.
 export function BookingLinkForm({
   action,
   check,
   current,
+  setAside,
   changed,
 }: {
   action: (
@@ -49,6 +51,9 @@ export function BookingLinkForm({
   ) => Promise<BookingLinkState>;
   check: (input: string) => Promise<SlugCheck>;
   current: string;
+  // The links left that still lead to the current one, the most recently
+  // left first, with the day in Bogotá until which they do.
+  setAside: readonly { slug: string; until: string }[];
   // Back from "Cambiar link".
   changed: boolean;
 }) {
@@ -63,6 +68,7 @@ export function BookingLinkForm({
   const lastRequest = useRef(0);
   const id = useId();
   const statusId = `${id}-estado`;
+  const setAsideId = `${id}-anteriores`;
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -202,6 +208,23 @@ export function BookingLinkForm({
         <Notice tone="info" title={t.aviso}>
           {t.avisoDetalle}
         </Notice>
+        {setAside.length > 0 ? (
+          <section
+            aria-labelledby={setAsideId}
+            className="flex flex-col gap-1.5"
+          >
+            <h2 id={setAsideId} className="text-help text-muted">
+              {t.anteriores}
+            </h2>
+            <ul className="flex flex-col gap-1.5">
+              {setAside.map((link) => (
+                <li key={link.slug} className="text-help">
+                  {t.apartado(displayBookingUrl(link.slug), link.until)}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </FlowShell>
     </ActionForm>
   );

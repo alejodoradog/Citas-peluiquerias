@@ -7,8 +7,11 @@ import {
   RESERVED_SLUGS,
   SLUG_CHANGE_LIMIT,
   SLUG_CHANGE_WINDOW_DAYS,
+  SLUG_SET_ASIDE_DAYS,
   slugCandidate,
   slugFromName,
+  slugSetAsideSince,
+  slugSetAsideUntil,
 } from "./slug";
 
 function latestMigrationWith(text: string): string | undefined {
@@ -85,6 +88,32 @@ describe("SLUG_CHANGE_LIMIT", () => {
     );
     expect(Number(rule?.[1])).toBe(SLUG_CHANGE_WINDOW_DAYS);
     expect(Number(rule?.[2])).toBe(SLUG_CHANGE_LIMIT);
+  });
+});
+
+describe("SLUG_SET_ASIDE_DAYS", () => {
+  it("is the 3 months of decision P12", () => {
+    expect(SLUG_SET_ASIDE_DAYS).toBe(90);
+  });
+
+  it("matches the time the database keeps a link set aside", () => {
+    const sql = latestMigrationWith("set_aside_since");
+    const rule = sql?.match(
+      /set_aside_since timestamptz := now\(\) - interval '(\d+) days';/,
+    );
+    expect(Number(rule?.[1])).toBe(SLUG_SET_ASIDE_DAYS);
+    // And the database frees the links with that instant, nothing else.
+    expect(sql).toMatch(/h\.retired_at <= set_aside_since;/);
+  });
+
+  it("keeps a link set aside 90 days after it was left, not a moment more", () => {
+    const left = new Date("2026-11-10T22:00:00Z");
+    const until = slugSetAsideUntil(left);
+    expect(until.toISOString()).toBe("2027-02-08T22:00:00.000Z");
+    // Still set aside a moment before, free from that instant on: the
+    // database frees links left at or before slugSetAsideSince.
+    expect(left > slugSetAsideSince(new Date(until.getTime() - 1))).toBe(true);
+    expect(left > slugSetAsideSince(until)).toBe(false);
   });
 });
 

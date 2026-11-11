@@ -1,14 +1,16 @@
 -- Task 2.4e, migration add_slug_history (D-61, Link de reservas): a link a
 -- barbershop leaves stays set aside for it and leads to the new one; no other
 -- barbershop takes it, by changing its link or by signing up; going back to
--- an own link is allowed; at most 3 links retired in 30 days (P11); only the
--- trigger writes the history.
+-- an own link is allowed, and does not wait for the limit while that link is
+-- still set aside (provisional); at most 3 links retired in 30 days (P11); a
+-- link left 90 days ago or more is free again for any barbershop and leaves
+-- the history (P12); only the trigger writes the history.
 begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(42);
+select plan(56);
 
 -- The code and the hint of the error a statement raises, or 'ok'. Run as the
 -- table owner: the trigger behaves the same for every role (security
@@ -50,8 +52,8 @@ select col_is_pk('public', 'barbershop_slug_history', 'slug', 'a link is set asi
 select ok(
   has_column_privilege('anon', 'public.barbershop_slug_history', 'slug', 'SELECT')
   and has_column_privilege('anon', 'public.barbershop_slug_history', 'barbershop_id', 'SELECT')
-  and not has_column_privilege('anon', 'public.barbershop_slug_history', 'retired_at', 'SELECT'),
-  'anon reads where an old link leads, not when it was left'
+  and has_column_privilege('anon', 'public.barbershop_slug_history', 'retired_at', 'SELECT'),
+  'anon reads where an old link leads, and since when, to skip the expired ones (P12)'
 );
 select ok(
   not has_any_column_privilege('anon', 'public.barbershop_slug_history', 'INSERT')
@@ -181,9 +183,14 @@ select is(
   0::bigint,
   'a link never used leads nowhere'
 );
-select throws_ok(
-  $$select retired_at from public.barbershop_slug_history$$,
-  '42501', null, 'anon does not read when a link was left'
+select is(
+  (
+    select b.slug from public.barbershop_slug_history h
+    join public.barbershops b on b.id = h.barbershop_id
+    where h.slug = 'sede-a-norte' and h.retired_at > now() - interval '90 days'
+  ),
+  'sede-a',
+  'anon filters by when a link was left, as the booking page does'
 );
 select throws_ok(
   $$insert into public.barbershop_slug_history (slug, barbershop_id)
@@ -243,14 +250,22 @@ select is(
   'a fourth link in 30 days is refused'
 );
 select is(
-  pg_temp.error_of($$update public.barbershops set slug = 'sede-a-norte' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
-  '23514 slug_change_limit',
-  'going back to an own link also waits for the limit (P11, provisional)'
-);
-select is(
   (select slug from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000000'),
   'sede-a',
   'the link stays as it was'
+);
+select is(
+  pg_temp.error_of($$update public.barbershops set slug = 'sede-a-norte' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
+  'ok',
+  'going back to an own link still set aside does not wait for the limit (provisional)'
+);
+select is(
+  (
+    select count(*) from public.barbershop_slug_history
+    where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'
+  ),
+  3::bigint,
+  'and sets no new link aside: one leaves the history, the one left comes in'
 );
 
 update public.barbershop_slug_history
@@ -268,6 +283,117 @@ select is(
   ),
   array['sede-a', 'sede-a-norte', 'sede-a-vieja-1', 'sede-a-vieja-2'],
   'and stay set aside'
+);
+
+-- P12: a link left 90 days ago or more is free again --------------------------------------------
+
+-- A uses sede-a-nueva; sede-a and sede-a-norte were left today. One link
+-- expires exactly now, one is a day short, and three more expired long ago.
+update public.barbershop_slug_history
+set retired_at = now() - interval '90 days'
+where slug = 'sede-a-vieja-1';
+update public.barbershop_slug_history
+set retired_at = now() - interval '89 days'
+where slug = 'sede-a-vieja-2';
+insert into public.barbershop_slug_history (slug, barbershop_id, retired_at) values
+  ('vencido-crear', 'aaaaaaaa-0000-0000-0000-000000000000', now() - interval '100 days'),
+  ('vencido-registro', 'aaaaaaaa-0000-0000-0000-000000000000', now() - interval '100 days'),
+  ('vencido-redirige', 'aaaaaaaa-0000-0000-0000-000000000000', now() - interval '100 days');
+
+set local role anon;
+set local request.jwt.claims to '';
+
+select is(
+  (
+    select b.slug from public.barbershop_slug_history h
+    join public.barbershops b on b.id = h.barbershop_id
+    where h.slug = 'vencido-redirige' and h.retired_at > now() - interval '90 days'
+  ),
+  null::text,
+  'the booking page skips an expired link: it leads nowhere'
+);
+select is(
+  (
+    select b.slug from public.barbershop_slug_history h
+    join public.barbershops b on b.id = h.barbershop_id
+    where h.slug = 'sede-a-vieja-2' and h.retired_at > now() - interval '90 days'
+  ),
+  'sede-a-nueva',
+  'one a day short of 90 still leads to the current link'
+);
+
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000b", "role": "authenticated"}';
+
+select throws_ok(
+  $$update public.barbershops set slug = 'sede-a-vieja-2' where id = 'bbbbbbbb-0000-0000-0000-000000000000'$$,
+  '23505', null, 'a link left 89 days ago still blocks another barbershop'
+);
+select lives_ok(
+  $$update public.barbershops set slug = 'sede-a-vieja-1' where id = 'bbbbbbbb-0000-0000-0000-000000000000'$$,
+  'another barbershop takes a link left 90 days ago'
+);
+select lives_ok(
+  $$select public.create_barbershop('Sede B Sur', 'vencido-crear')$$,
+  'and opens a new barbershop on another expired one'
+);
+
+reset role;
+
+select is(
+  (
+    select count(*) from public.barbershop_slug_history
+    where slug in ('sede-a-vieja-1', 'vencido-crear')
+  ),
+  0::bigint,
+  'the links taken leave the history of A'
+);
+select is(
+  (select barbershop_id from public.barbershop_slug_history where slug = 'sede-b-centro'),
+  'bbbbbbbb-0000-0000-0000-000000000000'::uuid,
+  'and B sets aside the one it left, as with any change'
+);
+select lives_ok(
+  $$insert into auth.users (id, email, raw_user_meta_data) values (
+      '00000000-0000-0000-0000-0000000000c2', 'vencido@example.com',
+      '{"owner_name": "Vencido", "barbershop_name": "Sede Vencida", "barbershop_slug": "vencido-registro", "phone": "+573001112266"}')$$,
+  'a sign-up takes an expired link'
+);
+select is(
+  (
+    select count(*) from public.barbershops b
+    join public.memberships m on m.barbershop_id = b.id
+    where b.slug = 'vencido-registro'
+      and m.user_id = '00000000-0000-0000-0000-0000000000c2'
+  ),
+  1::bigint,
+  'and its owner gets the barbershop on it'
+);
+select is(
+  (select count(*) from public.barbershop_slug_history where slug = 'vencido-registro'),
+  0::bigint,
+  'which left the history'
+);
+
+-- A is at the limit again: sede-a, sede-a-norte and one more left today.
+insert into public.barbershop_slug_history (slug, barbershop_id, retired_at) values
+  ('sede-a-reciente', 'aaaaaaaa-0000-0000-0000-000000000000', now()),
+  ('sede-a-vencida', 'aaaaaaaa-0000-0000-0000-000000000000', now() - interval '120 days');
+
+select is(
+  pg_temp.error_of($$update public.barbershops set slug = 'sede-a-vencida' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
+  '23514 slug_change_limit',
+  'an own link no longer set aside is a new link: it waits for the limit'
+);
+select is(
+  (select barbershop_id from public.barbershop_slug_history where slug = 'sede-a-vencida'),
+  'aaaaaaaa-0000-0000-0000-000000000000'::uuid,
+  'and the refused change frees nothing'
+);
+select is(
+  pg_temp.error_of($$update public.barbershops set slug = 'sede-a-vieja-2' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
+  'ok',
+  'going back to one still set aside does not wait for it'
 );
 
 -- Deleting a barbershop frees its links.
