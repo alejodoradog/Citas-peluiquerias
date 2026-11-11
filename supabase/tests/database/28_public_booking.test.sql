@@ -23,7 +23,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(97);
+select plan(101);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -516,6 +516,11 @@ select is(
   'customer_name_invalid', 'a name of 101 characters is refused'
 );
 select is(
+  pg_temp.hint_of(pg_temp.book('ba000000-0000-0000-0000-000000000001', pg_temp.at(9, '10:00'), customer_name => E'Ana
+Bcc: x@y.co')),
+  'customer_name_invalid', 'a name with control characters is refused'
+);
+select is(
   pg_temp.hint_of(pg_temp.book('ba000000-0000-0000-0000-000000000001', pg_temp.at(9, '10:00'), customer_email => 'no-es-correo')),
   'customer_email_invalid', 'an invalid email is refused'
 );
@@ -588,6 +593,18 @@ select is(
 select is(
   pg_temp.hint_of($$select * from public.booking_busy_ranges('aaaaaaaa-0000-0000-0000-000000000001', now(), now() - interval '1 day')$$),
   'range_invalid', 'a range that ends before it starts is refused'
+);
+select is(
+  pg_temp.hint_of($$select * from public.booking_busy_ranges('aaaaaaaa-0000-0000-0000-000000000001', now() - interval '40 days', now() - interval '10 days')$$),
+  'range_invalid', 'the past of a barbershop is refused'
+);
+select is(
+  pg_temp.hint_of($$select * from public.booking_busy_ranges('aaaaaaaa-0000-0000-0000-000000000001', now() + interval '10 days', now() + interval '40 days')$$),
+  'range_invalid', 'and so is what lies after the booking window'
+);
+select is(
+  pg_temp.hint_of($$select * from public.booking_busy_ranges('aaaaaaaa-0000-0000-0000-000000000001', pg_temp.at(0, '00:00'), pg_temp.at(31, '00:00'))$$),
+  'no error', 'today 00:00 to the end of today + 30 (what the app asks) is allowed'
 );
 select is_empty(
   $$select * from public.booking_busy_ranges('dddddddd-0000-0000-0000-000000000001', now(), now() + interval '30 days')$$,

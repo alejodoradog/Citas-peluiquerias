@@ -29,6 +29,16 @@ describe("parseCustomerDetails", () => {
     ).toMatchObject({ success: true, data: { phone: null } });
   });
 
+  it("refuses control characters in the name", () => {
+    expect(
+      parseCustomerDetails({
+        name: "Ana\nBcc: x@y.co",
+        email: "ana@correo.com",
+        phone: "",
+      }),
+    ).toMatchObject({ success: false, errors: { name: "name_invalid" } });
+  });
+
   it("refuses what the database would refuse", () => {
     expect(
       parseCustomerDetails({

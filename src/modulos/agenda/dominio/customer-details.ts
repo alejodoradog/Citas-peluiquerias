@@ -11,7 +11,11 @@ import { normalizeColombianMobile } from "@/modulos/barberias/dominio/phone";
 export const CUSTOMER_NAME_MAX = 100;
 
 export type CustomerDetailsErrorCode =
-  "name_required" | "name_too_long" | "email_invalid" | "phone_invalid";
+  | "name_required"
+  | "name_too_long"
+  | "name_invalid"
+  | "email_invalid"
+  | "phone_invalid";
 
 export type CustomerDetails = {
   name: string;
@@ -24,7 +28,10 @@ const schema = z.object({
     .string({ error: "name_required" })
     .trim()
     .min(1, "name_required")
-    .max(CUSTOMER_NAME_MAX, "name_too_long"),
+    .max(CUSTOMER_NAME_MAX, "name_too_long")
+    // No control characters: the name reaches the panel and, from phase 5,
+    // emails (security review of 3.2).
+    .regex(/^[^\p{Cc}]*$/u, "name_invalid"),
   email: emailSchema,
   phone: z
     .string({ error: "phone_invalid" })

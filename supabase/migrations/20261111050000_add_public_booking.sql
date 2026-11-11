@@ -355,7 +355,8 @@ revoke all on function private.barber_slot_problem(uuid, uuid, timestamptz, time
 -- 4. booking_busy_ranges ------------------------------------------------------------------
 -- What the availability engine needs and nothing more: barber and range of
 -- each appointment that takes the time (confirmed, attended, no_show) of the
--- active barbers. At most 32 days per call. Empty when the barbershop takes
+-- active barbers. At most 32 days per call, between yesterday and the end of
+-- the booking window (+ 1 day). Empty when the barbershop takes
 -- no bookings, so a suspended or deleted barbershop shows nothing.
 
 create function public.booking_busy_ranges(
@@ -370,9 +371,17 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- Only around the booking window: from yesterday (the appointments of
+  -- today that started before midnight count for "el primero disponible")
+  -- to the end of today + 30 in Bogotá, with a day of margin. The past and
+  -- the far future of a barbershop are nobody's business (security review
+  -- of 3.2: anyone could walk the whole history 32 days at a time).
   if p_from is null or p_until is null or p_until <= p_from
-    or p_until - p_from > interval '32 days' then
-    raise exception 'between 1 second and 32 days'
+    or p_until - p_from > interval '32 days'
+    or p_from < now() - interval '1 day'
+    or p_until > (private.today_bogota() + private.booking_window_days() + 2)::timestamp
+                 at time zone 'America/Bogota' then
+    raise exception 'between 1 second and 32 days, around the booking window'
       using errcode = 'invalid_parameter_value', hint = 'range_invalid';
   end if;
   if not public.barbershop_accepts_bookings(p_barbershop_id) then
@@ -451,7 +460,10 @@ begin
     raise exception 'barbershop and start required'
       using errcode = 'invalid_parameter_value', hint = 'slot_invalid';
   end if;
-  if customer_name is null or char_length(customer_name) not between 1 and 100 then
+  -- No control characters: the name goes to the panel and, from phase 5, to
+  -- emails.
+  if customer_name is null or char_length(customer_name) not between 1 and 100
+    or customer_name ~ '[[:cntrl:]]' then
     raise exception 'name of 1 to 100 characters'
       using errcode = 'invalid_parameter_value', hint = 'customer_name_invalid';
   end if;

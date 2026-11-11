@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { expirePublicProfile } from "@/lib/cache-tags";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
@@ -205,6 +206,9 @@ export async function deleteBarbershop(
   }
 
   await removeBarbershopImages(barbershop.id);
+  // The cached public profile still holds the WhatsApp, the deposit account
+  // and the images the deletion cleared (Ley 1581): drop it now.
+  expirePublicProfile(barbershop.id);
   // Oldest first: the one getCurrentAccess would pick without a cookie.
   const next = barbershops.find((other) => other.id !== barbershop.id);
   if (next) await rememberActiveBarbershop(next.id);

@@ -1,5 +1,5 @@
 import "server-only";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, updateTag } from "next/cache";
 
 // The public profile of a barbershop (task 3.2) is cached for a short time.
 // Every action that changes what it shows (data, logo, services, barbers,
@@ -12,4 +12,10 @@ export function publicProfileTag(barbershopId: string): string {
 
 export function refreshPublicProfile(barbershopId: string): void {
   revalidateTag(publicProfileTag(barbershopId), "max");
+}
+
+// For data that must stop being served at once (a deleted barbershop: its
+// WhatsApp, deposit account and images, Ley 1581). Server Actions only.
+export function expirePublicProfile(barbershopId: string): void {
+  updateTag(publicProfileTag(barbershopId));
 }

@@ -1165,6 +1165,7 @@ export const textos = {
     errores: {
       name_required: "Escribe tu nombre.",
       name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
+      name_invalid: "Escribe tu nombre en una sola línea.",
       email_invalid: "Escribe un correo válido, como nombre@correo.com.",
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:
