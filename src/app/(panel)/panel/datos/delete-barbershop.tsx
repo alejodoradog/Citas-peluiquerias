@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { routes } from "@/lib/routes";
 import type { DeleteBarbershopState } from "@/modulos/barberias/acciones/barbershops";
@@ -41,17 +41,22 @@ function DeleteForm({
   onCancel: () => void;
   onDeleted: () => void;
 }) {
-  const form = useFormAction(action, t.errores);
+  // Setting the active sede re-renders the page for the sede left, which
+  // unmounts this form before its state could say "deleted". So the page
+  // goes away from the action's own answer, which runs either way.
+  const deleteAndLeave = useCallback<DeleteAction>(
+    async (previous, formData) => {
+      const result = await action(previous, formData);
+      if (result.status === "done" && result.notice === "deleted") {
+        onDeleted();
+      }
+      return result;
+    },
+    [action, onDeleted],
+  );
+  const form = useFormAction(deleteAndLeave, t.errores);
   const [typed, setTyped] = useState("");
   const deleted = form.notice === "deleted";
-  const left = useRef(false);
-
-  // Once: the page is going away.
-  useEffect(() => {
-    if (!deleted || left.current) return;
-    left.current = true;
-    onDeleted();
-  }, [deleted, onDeleted]);
 
   return (
     <ActionForm form={form}>

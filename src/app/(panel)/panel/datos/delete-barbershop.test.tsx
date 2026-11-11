@@ -39,6 +39,32 @@ afterEach(() => {
 });
 
 describe("DeleteBarbershop", () => {
+  it("still loads the agenda when the page re-renders the form away before the answer", async () => {
+    let answer: (state: DeleteBarbershopState) => void = () => {};
+    const goTo = vi.fn();
+    const { unmount } = render(
+      <DeleteBarbershop
+        barbershopId={SUR}
+        name="El Parche Sur"
+        action={() => new Promise((resolve) => (answer = resolve))}
+        goTo={goTo}
+      />,
+    );
+    const dialog = await openSheet();
+    await userEvent.type(
+      within(dialog).getByRole("textbox", { name: t.campo }),
+      "El Parche Sur",
+    );
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: t.confirmar }),
+    );
+    // The server sets the sede left as active and the page renders it: this
+    // form is gone before the action answers.
+    unmount();
+    answer({ status: "done", notice: "deleted" });
+    await waitFor(() => expect(goTo).toHaveBeenCalledWith("/panel"));
+  });
+
   it("is a danger button that opens the sheet, rendered only once open", async () => {
     setup();
     expect(
