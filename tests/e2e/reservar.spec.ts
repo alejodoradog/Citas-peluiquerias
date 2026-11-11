@@ -69,13 +69,28 @@ async function chooseTomorrowAt(page: Page, time: string) {
     .filter({ visible: true });
   await hour.click();
   await expect(hour).toHaveAttribute("aria-current", "true", FIRST_VISIT);
-  // To the end of the list of hours, as a person would, where the bar with
-  // "Continuar" rests.
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page
+  // "Continuar" rests in the bar at the bottom of the screen. A finger lands
+  // on what is on top at that point: it must be the button, not the list of
+  // hours under it. Checked where it is drawn, without scrolling.
+  const next = page
     .getByRole("link", { name: t.continuar })
-    .filter({ visible: true })
-    .click();
+    .filter({ visible: true });
+  await expect(next).toBeInViewport();
+  expect(
+    await next.evaluate((link) => {
+      const box = link.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        box.x + box.width / 2,
+        box.y + box.height / 2,
+      );
+      return hit !== null && link.contains(hit);
+    }),
+    "Continuar is on top where it is drawn",
+  ).toBe(true);
+  // Playwright's own click scrolls a sticky bar "into view" and then finds
+  // the page moved under it; the keyboard follows the same link.
+  await next.focus();
+  await page.keyboard.press("Enter");
   await expect(
     page.getByRole("heading", { level: 1, name: t.datos.titulo }),
   ).toBeVisible(FIRST_VISIT);
