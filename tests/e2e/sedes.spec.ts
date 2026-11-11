@@ -76,8 +76,12 @@ test("an owner opens a second sede and each sede keeps its own services", async 
 
   // Más with a single sede: the card shows it and offers a new one.
   let card = await openMore(page);
-  await expect(card.getByText("Barbería El Parche")).toBeVisible();
-  await expect(card.getByText(`yapoin.com/${slug}`)).toBeVisible();
+  await expect(
+    card.getByText("Barbería El Parche").filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    card.getByText(`yapoin.com/${slug}`).filter({ visible: true }),
+  ).toBeVisible();
   await expect(
     card.getByRole("button", { name: t.cambiarEtiqueta }),
   ).toHaveCount(0);
@@ -111,7 +115,7 @@ test("an owner opens a second sede and each sede keeps its own services", async 
   await finishSetup(page);
 
   card = await openMore(page);
-  await expect(card.getByText(second)).toBeVisible();
+  await expect(card.getByText(second).filter({ visible: true })).toBeVisible();
   await expect(page.getByText(second).filter({ visible: true })).toHaveCount(2);
 
   // A service of the second sede only.
@@ -143,7 +147,9 @@ test("an owner opens a second sede and each sede keeps its own services", async 
   // The first sede does not see it.
   await switchTo(page, "Barbería El Parche");
   card = await openMore(page);
-  await expect(card.getByText("Barbería El Parche")).toBeVisible();
+  await expect(
+    card.getByText("Barbería El Parche").filter({ visible: true }),
+  ).toBeVisible();
   await page.goto("/panel/servicios");
   await expect(serviceRow(page, "Corte")).toBeVisible(FIRST_VISIT);
   await expect(serviceRow(page, "Tinte")).toHaveCount(0);

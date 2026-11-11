@@ -155,12 +155,13 @@ test("an owner changes the link, and the old one leads to the new one", async ({
     }),
   ).toBeVisible(FIRST_VISIT);
 
-  // Más shows it too.
+  // Más shows it too, in the card of the active sede (task 2.6).
   await page.goto("/panel/mas");
   await expect(
-    page.getByText(`yapoin.com/${newSlug}`, { exact: true }).filter({
-      visible: true,
-    }),
+    page
+      .getByRole("region", { name: textos.sedes.activa })
+      .filter({ visible: true })
+      .getByText(`yapoin.com/${newSlug}`, { exact: true }),
   ).toBeVisible(FIRST_VISIT);
 
   // The old link of the QR and the posters opens the barbershop's page.

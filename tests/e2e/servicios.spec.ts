@@ -60,7 +60,7 @@ test("an owner adds, edits and deactivates a service", async ({ page }) => {
   ).toBeVisible();
   // Next.js keeps the previous page mounted and hidden: only visible text.
   await expect(
-    page.getByText("Barbería El Parche").filter({ visible: true }),
+    page.getByText("Barbería El Parche").filter({ visible: true }).first(),
   ).toBeVisible();
   const servicesRow = page.getByRole("link", {
     name: new RegExp(`^${mas.servicios}`),
