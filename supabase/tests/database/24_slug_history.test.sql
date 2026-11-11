@@ -1,8 +1,8 @@
 -- Task 2.4e, migration add_slug_history (D-61, Link de reservas): a link a
 -- barbershop leaves stays set aside for it and leads to the new one; no other
 -- barbershop takes it, by changing its link or by signing up; going back to
--- an own link is allowed, and does not wait for the limit while that link is
--- still set aside (provisional); at most 3 links retired in 30 days (P11); a
+-- an own link is allowed; at most 3 changes in 30 days, going back included,
+-- counted in barbershop_slug_changes (P11); a
 -- link left 90 days ago or more is free again for any barbershop and leaves
 -- the history (P12); only the trigger writes the history.
 begin;
@@ -10,7 +10,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(56);
+select plan(60);
 
 -- The code and the hint of the error a statement raises, or 'ok'. Run as the
 -- table owner: the trigger behaves the same for every role (security
@@ -64,6 +64,15 @@ select ok(
   and not has_table_privilege('authenticated', 'public.barbershop_slug_history', 'DELETE'),
   'nobody writes the history directly'
 );
+select has_table('public', 'barbershop_slug_changes', 'barbershop_slug_changes exists');
+select ok(
+  not has_table_privilege('anon', 'public.barbershop_slug_changes', 'SELECT')
+  and not has_any_column_privilege('anon', 'public.barbershop_slug_changes', 'INSERT')
+  and not has_any_column_privilege('authenticated', 'public.barbershop_slug_changes', 'INSERT')
+  and not has_any_column_privilege('authenticated', 'public.barbershop_slug_changes', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.barbershop_slug_changes', 'DELETE'),
+  'only the trigger writes the changes, and anon does not read them'
+);
 select ok(
   not has_function_privilege('anon', 'private.guard_barbershop_slug()', 'EXECUTE')
   and not has_function_privilege('authenticated', 'private.guard_barbershop_slug()', 'EXECUTE'),
@@ -98,6 +107,11 @@ select is(
   1::bigint,
   'sets nothing aside'
 );
+select is(
+  (select count(*) from public.barbershop_slug_changes where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
+  1::bigint,
+  'and is no change: only the first one counts'
+);
 select lives_ok(
   $$update public.barbershops set slug = 'sede-a' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
   'the owner goes back to the old link'
@@ -109,6 +123,11 @@ select is(
   ),
   array['sede-a-norte'],
   'going back takes it out of the history and sets aside the one it left'
+);
+select is(
+  (select count(*) from public.barbershop_slug_changes where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
+  2::bigint,
+  'and counts as a change (P11)'
 );
 select throws_ok(
   $$insert into public.barbershop_slug_history (slug, barbershop_id)
@@ -239,10 +258,12 @@ select is(
   'the owner of A never changed the link of B'
 );
 
--- A holds sede-a-norte; two more links left today make 3 in 30 days.
+-- A holds sede-a-norte and two more links left today; with one change more
+-- it has changed its link 3 times in 30 days.
 insert into public.barbershop_slug_history (slug, barbershop_id) values
   ('sede-a-vieja-1', 'aaaaaaaa-0000-0000-0000-000000000000'),
   ('sede-a-vieja-2', 'aaaaaaaa-0000-0000-0000-000000000000');
+insert into public.barbershop_slug_changes (barbershop_id) values ('aaaaaaaa-0000-0000-0000-000000000000');
 
 select is(
   pg_temp.error_of($$update public.barbershops set slug = 'sede-a-nueva' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
@@ -256,8 +277,8 @@ select is(
 );
 select is(
   pg_temp.error_of($$update public.barbershops set slug = 'sede-a-norte' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
-  'ok',
-  'going back to an own link still set aside does not wait for the limit (provisional)'
+  '23514 slug_change_limit',
+  'going back to an own link waits for the limit too: every change counts (P11)'
 );
 select is(
   (
@@ -265,16 +286,19 @@ select is(
     where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'
   ),
   3::bigint,
-  'and sets no new link aside: one leaves the history, the one left comes in'
+  'and the refused change sets nothing aside'
 );
 
 update public.barbershop_slug_history
 set retired_at = now() - interval '31 days'
 where slug in ('sede-a-vieja-1', 'sede-a-vieja-2');
+update public.barbershop_slug_changes
+set changed_at = now() - interval '31 days'
+where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000';
 
 select lives_ok(
   $$update public.barbershops set slug = 'sede-a-nueva' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
-  'links left more than 30 days ago do not count'
+  'changes made more than 30 days ago do not count'
 );
 select is(
   array(
@@ -375,7 +399,9 @@ select is(
   'which left the history'
 );
 
--- A is at the limit again: sede-a, sede-a-norte and one more left today.
+-- A is at the limit again: 3 changes today.
+insert into public.barbershop_slug_changes (barbershop_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000000'), ('aaaaaaaa-0000-0000-0000-000000000000'), ('aaaaaaaa-0000-0000-0000-000000000000');
 insert into public.barbershop_slug_history (slug, barbershop_id, retired_at) values
   ('sede-a-reciente', 'aaaaaaaa-0000-0000-0000-000000000000', now()),
   ('sede-a-vencida', 'aaaaaaaa-0000-0000-0000-000000000000', now() - interval '120 days');
@@ -383,7 +409,7 @@ insert into public.barbershop_slug_history (slug, barbershop_id, retired_at) val
 select is(
   pg_temp.error_of($$update public.barbershops set slug = 'sede-a-vencida' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
   '23514 slug_change_limit',
-  'an own link no longer set aside is a new link: it waits for the limit'
+  'an own link no longer set aside waits for the limit'
 );
 select is(
   (select barbershop_id from public.barbershop_slug_history where slug = 'sede-a-vencida'),
@@ -392,8 +418,8 @@ select is(
 );
 select is(
   pg_temp.error_of($$update public.barbershops set slug = 'sede-a-vieja-2' where id = 'aaaaaaaa-0000-0000-0000-000000000000'$$),
-  'ok',
-  'going back to one still set aside does not wait for it'
+  '23514 slug_change_limit',
+  'and so does one still set aside'
 );
 
 -- Deleting a barbershop frees its links.

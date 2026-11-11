@@ -89,8 +89,9 @@ export function parseNewSlug(input: string, current: string): NewSlugResult {
   return { ok: true, slug };
 }
 
-// Provisional decision P11 of task 2.4: a barbershop holds at most
-// SLUG_CHANGE_LIMIT links left in the last SLUG_CHANGE_WINDOW_DAYS days. The
+// Decision P11 of task 2.4 (founder, 2026-11-10): a barbershop changes its
+// link at most SLUG_CHANGE_LIMIT times in SLUG_CHANGE_WINDOW_DAYS days, going
+// back to an old link included. The
 // database enforces it (guard_barbershop_slug); slug.test.ts fails if the two
 // copies drift apart.
 export const SLUG_CHANGE_LIMIT = 3;

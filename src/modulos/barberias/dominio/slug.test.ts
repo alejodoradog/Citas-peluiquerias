@@ -84,7 +84,7 @@ describe("SLUG_CHANGE_LIMIT", () => {
   it("matches the limit the database enforces", () => {
     const sql = latestMigrationWith("slug_change_limit");
     const rule = sql?.match(
-      /h\.retired_at > now\(\) - interval '(\d+) days'\s*\)\s*>= (\d+) then/,
+      /c\.changed_at > now\(\) - interval '(\d+) days'\s*\)\s*>= (\d+) then/,
     );
     expect(Number(rule?.[1])).toBe(SLUG_CHANGE_WINDOW_DAYS);
     expect(Number(rule?.[2])).toBe(SLUG_CHANGE_LIMIT);

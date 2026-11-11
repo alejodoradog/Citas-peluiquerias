@@ -193,6 +193,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"barbershop_slug_changes": {
+                  Row: {
+                    "barbershop_id": string,"changed_at": string,"id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "barbershop_id": string,"changed_at"?: string,"id"?: never
+                  }
+                  Update: {
+                    "barbershop_id"?: string,"changed_at"?: string,"id"?: never
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "barbershop_slug_changes_barbershop_id_fkey"
+      columns: ["barbershop_id"]
+isOneToOne: false
+      referencedRelation: "barbershops"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"barbershop_slug_history": {
                   Row: {
                     "barbershop_id": string,"retired_at": string,"slug": string

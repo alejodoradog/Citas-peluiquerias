@@ -71,6 +71,32 @@ create policy super_admin_read on public.barbershop_slug_history
   for select to authenticated
   using ((select private.is_super_admin()));
 
+-- Decision P11 (confirmed by the founder, 2026-11-10): every change of link
+-- counts, going back to an old one too. The history cannot count them (going
+-- back takes a row out and puts one in), so each change leaves a row here.
+-- At most 3 changes in 30 days, each leaving one link set aside for 90 days:
+-- a barbershop holds at most about 9 links aside.
+create table public.barbershop_slug_changes (
+  id bigint generated always as identity primary key,
+  barbershop_id uuid not null references public.barbershops (id) on delete cascade,
+  changed_at timestamptz not null default now()
+);
+
+create index barbershop_slug_changes_barbershop_id_idx
+  on public.barbershop_slug_changes (barbershop_id, changed_at);
+
+alter table public.barbershop_slug_changes enable row level security;
+
+-- Only the trigger writes it; owners may read their own.
+grant select on public.barbershop_slug_changes to authenticated;
+
+create policy member_read on public.barbershop_slug_changes
+  for select to authenticated
+  using (barbershop_id = any ((select private.member_barbershop_ids())::uuid[]));
+create policy super_admin_read on public.barbershop_slug_changes
+  for select to authenticated
+  using ((select private.is_super_admin()));
+
 create function private.guard_barbershop_slug()
 returns trigger
 language plpgsql
@@ -114,20 +140,17 @@ begin
     return new;
   end if;
 
-  -- What is left of the new link in the history is the barbershop's own and
-  -- still set aside: going back to it does not wait for the limit
-  -- (provisional).
-  if not exists (
-    select 1 from public.barbershop_slug_history h
-    where h.slug = new.slug and h.barbershop_id = new.id
-  ) and (
-    select count(*) from public.barbershop_slug_history h
-    where h.barbershop_id = new.id
-      and h.retired_at > now() - interval '30 days'
+  -- P11: every change counts, going back to an own link too.
+  if (
+    select count(*) from public.barbershop_slug_changes c
+    where c.barbershop_id = new.id
+      and c.changed_at > now() - interval '30 days'
   ) >= 3 then
     raise exception 'too many link changes in the last 30 days'
       using errcode = 'check_violation', hint = 'slug_change_limit';
   end if;
+
+  insert into public.barbershop_slug_changes (barbershop_id) values (new.id);
 
   delete from public.barbershop_slug_history h
   where h.slug = new.slug and h.barbershop_id = new.id;
