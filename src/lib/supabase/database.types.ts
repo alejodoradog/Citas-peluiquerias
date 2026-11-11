@@ -461,10 +461,14 @@ isOneToOne: false
 { Args: { "p_barbershop_id": string }; Returns: boolean
                            },
 "book_appointment":
-{ Args: { "p_barber_id"?: string,"p_barbershop_id": string,"p_customer_email": string,"p_customer_name": string,"p_customer_phone"?: string,"p_manage_token_hash": string,"p_service_ids": (string)[],"p_starts_at": string }; Returns: { "appointment_id": string,"barber_id": string }[]
+{ Args: { "p_barber_id"?: string,"p_barbershop_id": string,"p_customer_email": string,"p_customer_name": string,"p_customer_phone"?: string,"p_manage_token_hash": string,"p_service_ids": (string)[],"p_starts_at": string }; Returns: {
+              "appointment_id": string,"barber_id": string
+            }[]
                            },
 "booking_busy_ranges":
-{ Args: { "p_barbershop_id": string,"p_from": string,"p_until": string }; Returns: { "barber_id": string,"ends_at": string,"starts_at": string }[]
+{ Args: { "p_barbershop_id": string,"p_from": string,"p_until": string }; Returns: {
+              "barber_id": string,"ends_at": string,"starts_at": string
+            }[]
                            },
 "change_appointment_services":
 { Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined

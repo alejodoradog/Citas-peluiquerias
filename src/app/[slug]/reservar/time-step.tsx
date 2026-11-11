@@ -113,9 +113,14 @@ export function TimeStep({
                 const number = Number(d.date.slice(8));
                 const selected = d.date === date;
                 const free = d.slots.length > 0;
+                // The chip shows "jue 12"; screen readers hear the whole date.
+                // Its name comes from its content, never from an aria-label
+                // that would not contain the visible text (WCAG 2.5.3).
+                const fullDate = capitalize(formatCalendarDay(d.date));
                 const content = (
                   <>
                     <span
+                      aria-hidden="true"
                       className={cx(
                         "text-xs",
                         !selected && free && "text-muted",
@@ -123,7 +128,10 @@ export function TimeStep({
                     >
                       {label}
                     </span>
-                    <span className="text-lg font-bold">{number}</span>
+                    <span aria-hidden="true" className="text-lg font-bold">
+                      {number}
+                    </span>
+                    <span className="sr-only">{fullDate}</span>
                   </>
                 );
                 const box =
@@ -137,7 +145,6 @@ export function TimeStep({
                           bookingQuery({ ...base, date: d.date, step: "hora" })
                         }
                         aria-current={selected ? "date" : undefined}
-                        aria-label={capitalize(formatCalendarDay(d.date))}
                         className={cx(
                           box,
                           selected

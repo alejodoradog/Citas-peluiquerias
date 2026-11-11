@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
@@ -59,6 +60,8 @@ async function BookingFlow({
   // Services the barbershop no longer offers: choose them again.
   if (!chosenServices(profile, selection.serviceIds)) redirect(flow);
 
+  // Availability is always live (task 3.2): the moment is the request's.
+  await connection();
   const instant = now();
   if (selection.step === "barbero") {
     const availability = (await loadPublicAvailability(

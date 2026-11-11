@@ -890,6 +890,12 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     .getByRole("link", { name: "10:00 a. m.", exact: true })
     .filter({ visible: true })
     .click();
+  // The chosen hour is a navigation: measure once it has landed.
+  await expect(
+    page
+      .getByRole("link", { name: "10:00 a. m.", exact: true })
+      .filter({ visible: true }),
+  ).toHaveAttribute("aria-current", "true", { timeout: 20_000 });
   design = await openDesign(page, "C04-Hora.dc.html");
   await compare(
     "hora",
@@ -918,6 +924,9 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: r.datos.titulo }),
   ).toBeVisible({ timeout: 20_000 });
   design = await openDesign(page, "C06-Datos.dc.html");
+  // "Continuar" was where "Confirmar reserva" is now: move the pointer off,
+  // or the button is measured in its hover color.
+  await page.mouse.move(0, 0);
   await compare(
     "campo",
     page

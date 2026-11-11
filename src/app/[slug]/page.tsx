@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
@@ -60,6 +61,9 @@ async function BookingProfile({
     if (current) permanentRedirect(routes.booking(current));
     notFound();
   }
+  // "Abierto hoy" depends on the moment of the request: the profile itself
+  // is cached, today is not.
+  await connection();
   return profile.acceptsBookings ? (
     <Profile profile={profile} today={toBogotaDate(now())} />
   ) : (
