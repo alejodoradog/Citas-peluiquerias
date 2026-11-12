@@ -59,8 +59,13 @@ async function chooseServicesAndBarber(page: Page, barber: string) {
 async function chooseTomorrowAt(page: Page, time: string) {
   // Each choice is a navigation: wait for it to land before the next one,
   // or the next tap lands on the page that is going away.
+  // Exact: after closing time today has no hours left, and the button
+  // "Ir al jueves 12 de noviembre" also contains the day's name.
   const day = page
-    .getByRole("link", { name: capitalize(formatCalendarDay(tomorrow())) })
+    .getByRole("link", {
+      name: capitalize(formatCalendarDay(tomorrow())),
+      exact: true,
+    })
     .filter({ visible: true });
   await day.click();
   await expect(day).toHaveAttribute("aria-current", "date", FIRST_VISIT);
