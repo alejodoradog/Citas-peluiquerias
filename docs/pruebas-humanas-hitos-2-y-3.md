@@ -1,7 +1,7 @@
 # Pruebas humanas: hitos 2 y 3
 
 Pruebas que hacen **el fundador y su socio, en persona y con dos celulares reales**. Las automáticas del CI ya pasan (Playwright con Android, iPhone y fidelidad al diseño, pgTAP y unitarias), pero no reemplazan esto: tiempos reales, dedos reales, red real, QR impreso.
-URL: `citas-peluquerias-eta.vercel.app` (base de datos de desarrollo `barberias-dev`).
+URL: `citas-peluiquerias.vercel.app` (base de datos de desarrollo `barberias-dev`).
 
 **Cómo reportar cada hallazgo:** pantalla, qué hicieron, qué esperaban, qué pasó y una captura. Al terminar, marquen las casillas y avisen para cerrar los hitos en `docs/plan.md`.
 
