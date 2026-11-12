@@ -15,6 +15,9 @@ export const routes = {
   setupTeam: "/panel/configurar/equipo",
   setupBarber: "/panel/configurar/equipo/barbero",
   setupDone: "/panel/configurar/listo",
+  // D-34, an appointment of the agenda, and D-38, a new one (task 4.2).
+  panelAppointment: (id: string) => `/panel/citas/${id}`,
+  panelAppointmentNew: "/panel/citas/nueva",
   panelClients: "/panel/clientes",
   panelClient: (id: string) => `/panel/clientes/${id}`,
   panelShare: "/panel/compartir",
@@ -49,3 +52,42 @@ export const routes = {
 // The query a screen reads after its own save sent the owner back to it, to
 // say it was saved (D-58, D-60): "?guardado=1".
 export const SAVED_PARAM = "guardado";
+
+export type AgendaQueryParams = {
+  vista?: "semana";
+  dia?: string;
+  barbero?: string;
+};
+// A free space of the agenda: the barber, the day (YYYY-MM-DD) and the time
+// (HH:MM, Bogotá) the new appointment starts from.
+export type NewAppointmentParams = {
+  barbero?: string;
+  dia?: string;
+  hora?: string;
+};
+
+function withQuery(
+  path: string,
+  query: Record<string, string | undefined>,
+): string {
+  // Times keep their colon ("hora=10:30"): it is valid in a query.
+  const search = Object.entries(query)
+    .filter((entry): entry is [string, string] => entry[1] !== undefined)
+    .map(
+      ([key, value]) =>
+        `${key}=${encodeURIComponent(value).replaceAll("%3A", ":")}`,
+    )
+    .join("&");
+  return search === "" ? path : `${path}?${search}`;
+}
+
+// The agenda (task 4.1, D-30 to D-32) says in its query what it shows, so
+// "back" and reloading keep it; without one it is today, by day, everyone.
+export function agendaHref(query: AgendaQueryParams = {}): string {
+  return withQuery(routes.panel, query);
+}
+
+// D-38 from a free space of the agenda, or from its "+" button.
+export function newAppointmentHref(query: NewAppointmentParams = {}): string {
+  return withQuery(routes.panelAppointmentNew, query);
+}

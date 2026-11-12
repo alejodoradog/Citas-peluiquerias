@@ -19,13 +19,13 @@ export async function finishSetup(page: Page) {
   await page.getByRole("link", { name: t.listo.agenda }).click();
   await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
   // "Ir a la agenda" loads the whole page (see configurar/listo/page.tsx):
-  // its greeting means the agenda is the page now, so the next page.goto()
+  // its title, today, means the agenda is the page now, so the next page.goto()
   // has nothing in flight to interrupt it.
   await expect(
     page
       .getByRole("heading", {
         level: 1,
-        name: new RegExp(`^${textos.panel.saludo("")}`),
+        name: new RegExp(`^${textos.agenda.hoy("")}`),
       })
       .filter({ visible: true }),
   ).toBeVisible({ timeout: 20_000 });

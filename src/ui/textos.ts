@@ -103,6 +103,117 @@ export const textos = {
     volver: "Volver al inicio",
   },
   agenda: {
+    // The owner's agenda (task 4.1): D-30 to D-33.
+    cargando: "Cargando tu agenda…",
+    // By weekday: 0 is Sunday.
+    dias: [
+      "domingo",
+      "lunes",
+      "martes",
+      "miércoles",
+      "jueves",
+      "viernes",
+      "sábado",
+    ],
+    diasCortos: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+    meses: [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ],
+    mesesCortos: [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sept",
+      "oct",
+      "nov",
+      "dic",
+    ],
+    // "sábado 7 de nov"; today goes "Hoy, sábado 7 de nov".
+    fecha: (dia: string, numero: number, mes: string) =>
+      `${dia} ${numero} de ${mes}`,
+    hoy: (fecha: string) => `Hoy, ${fecha}`,
+    // "2 – 8 de noviembre", "30 de noviembre – 6 de diciembre".
+    semana: (desde: string, hasta: string) => `${desde} – ${hasta}`,
+    diaSemana: (dia: string, numero: number) => `${dia} ${numero}`,
+    diaHoy: (dia: string) => `${dia} · hoy`,
+    vistas: { etiqueta: "Vista", dia: "Día", semana: "Semana" },
+    anterior: { dia: "Día anterior", semana: "Semana anterior" },
+    siguiente: { dia: "Día siguiente", semana: "Semana siguiente" },
+    irAHoy: "Hoy",
+    barberos: {
+      etiqueta: "Barbero",
+      todos: "Todos",
+      // The name of the filter button: what it shows now.
+      boton: (actual: string) => `Barbero: ${actual}`,
+      agendaDe: (nombre: string) => `Agenda de ${nombre}`,
+      inactivo: "Inactivo",
+    },
+    citas: (cantidad: number) =>
+      cantidad === 1 ? "1 cita" : `${cantidad} citas`,
+    ayudaEspacio: "toca un espacio libre para crear una cita",
+    resumen: (citas: string, ayuda: string) => `${citas} · ${ayuda}`,
+    sinCitasHoy: "Aún no tienes citas hoy",
+    sinCitas: "Sin citas este día",
+    cerrado: "Cerrado",
+    diaCerrado: "La barbería no abre este día.",
+    // "Mario 2 · Andrés 3" under each day of D-32.
+    porBarbero: (nombre: string, cantidad: number) => `${nombre} ${cantidad}`,
+    ocupacion: (porcentaje: number) => `${porcentaje} % ocupado`,
+    estados: {
+      new: "Nueva",
+      confirmed: "Confirmada",
+      manual: "Manual",
+      attended: "Atendida",
+      no_show: "No asistió",
+    },
+    manual: "manual",
+    minutos: (minutos: number) => `${minutos} min`,
+    // What a card of the grid of D-30 has no room for, read after the
+    // customer and the services: "10:00 a. m., Nueva".
+    cita: (hora: string, estado: string) => `${hora}, ${estado}`,
+    bloqueo: "Bloqueado",
+    cierre: "Barbería cerrada",
+    libre: (hasta: string) => `Libre hasta las ${hasta}`,
+    libreDesde: (hora: string, barbero: string) =>
+      `Crear cita a las ${hora} con ${barbero}`,
+    ahora: (hora: string) => `Ahora, ${hora}`,
+    columnas: "Citas del día por barbero",
+    vacia: {
+      compartir: {
+        titulo: "Comparte tu link para recibir la primera cita",
+        cuerpo:
+          "Ponlo en tu Instagram, en tu estado de WhatsApp y en el espejo de la barbería.",
+        boton: "Compartir mi link",
+      },
+      barberos: {
+        titulo: "Envía a tus barberos su link privado",
+        cuerpo: "Así ven su agenda y marcan las citas desde su celular.",
+        boton: "Ir a barberos",
+      },
+      manual: {
+        titulo: "¿Alguien llamó o llegó sin cita?",
+        boton: "Crear cita manual",
+      },
+    },
+    sinBarberos: "Aún no tienes barberos activos. Agrégalos en Más › Barberos.",
+    // D-34 and D-38 arrive with task 4.2.
+    detalle: "Detalle de la cita",
     errores: {
       slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
       unknown: "No pudimos guardar la cita. Intenta de nuevo.",
@@ -236,11 +347,7 @@ export const textos = {
   },
   panel: {
     cargando: "Cargando tu barbería…",
-    saludo: (nombre: string) => `Hola, ${nombre}`,
     prueba: (fecha: string) => `Tu prueba gratis va hasta el ${fecha}.`,
-    tuLink: "Link de reservas",
-    proximo:
-      "Aquí vas a ver tu agenda del día. Mientras tanto, comparte tu link con tus clientes.",
     secciones: {
       clientes: "Clientes",
       mas: "Más",

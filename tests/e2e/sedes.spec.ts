@@ -43,13 +43,13 @@ async function switchTo(page: Page, name: string) {
   const sheet = page.getByRole("dialog", { name: t.hoja.titulo });
   await expect(sheet).toBeVisible();
   await sheet.getByRole("button", { name: new RegExp(`^${name} `) }).click();
-  // A full page load to the agenda: its greeting means it is the page now.
+  // A full page load to the agenda: its title, today, means it is the page now.
   await expect(page).toHaveURL(/\/panel$/, FIRST_VISIT);
   await expect(
     page
       .getByRole("heading", {
         level: 1,
-        name: new RegExp(`^${textos.panel.saludo("")}`),
+        name: new RegExp(`^${textos.agenda.hoy("")}`),
       })
       .filter({ visible: true }),
   ).toBeVisible(FIRST_VISIT);

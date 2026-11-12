@@ -500,7 +500,7 @@ export async function createBookableShop(
   id: string;
   services: { corte: string; barba: string };
   barbers: { ana: string; beto: string };
-  // The owner's account, to sign in to the panel (task 4.3).
+  // The owner's account, to sign in to the panel (tasks 4.1 and 4.3).
   owner: { email: string; password: string };
 }> {
   const owner = { email: uniqueEmail(tag), password: "clave-segura-1" };
