@@ -22,7 +22,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(87);
+select plan(90);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -82,7 +82,9 @@ select ok(
      'private.owner_reaches(uuid)',
      'private.owner_time_problem(uuid, timestamptz, integer)',
      'private.owner_slot_problem(uuid, uuid, timestamptz, timestamptz, uuid)',
-     'private.lock_booking_day(uuid, date)'
+     'private.lock_booking_day(uuid, date)',
+     'private.check_owner_barber(uuid, uuid, uuid[])',
+     'private.owner_services_minutes(uuid, uuid[])'
    ]) f),
   'nobody calls the helpers directly'
 );
@@ -129,7 +131,8 @@ insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000004'),
   ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000002', '5e000000-0000-0000-0000-000000000001'),
   ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000003', '5e000000-0000-0000-0000-000000000001'),
-  ('aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000004', '5e000000-0000-0000-0000-000000000006');
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000004', '5e000000-0000-0000-0000-000000000006'),
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000005');
 update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000003';
 
 insert into public.customers (id, barbershop_id, full_name, email) values
@@ -213,10 +216,29 @@ insert into public.appointment_services (barbershop_id, appointment_id, position
   ('aaaaaaaa-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000004', 1, '5e000000-0000-0000-0000-000000000006', 20000, 30),
   ('aaaaaaaa-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000005', 1, '5e000000-0000-0000-0000-000000000001', 25000, 30);
 
--- k1: Uno, wd1 14:00-15:00. k2: Dos, ended two hours ago. k3: Tres in B.
+-- a6: Uno, wd1 18:00, a Corte booked when it took 50 minutes (its line
+-- keeps them). a7: Uno, wd1 20:00, the "Viejo" service, deactivated since.
+insert into public.appointments (id, barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source, status) values
+  ('a0000000-0000-0000-0000-000000000006', 'aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001',
+   'ba000000-0000-0000-0000-000000000001', pg_temp.at(1, '18:00'), pg_temp.at(1, '18:50'), 25000, 'manual', 'confirmed'),
+  ('a0000000-0000-0000-0000-000000000007', 'aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001',
+   'ba000000-0000-0000-0000-000000000001', pg_temp.at(1, '20:00'), pg_temp.at(1, '20:30'), 9000, 'manual', 'confirmed');
+-- A line copies the service as it is when written, so the service is
+-- changed for the moment.
+update public.services set duration_minutes = 50 where id = '5e000000-0000-0000-0000-000000000001';
+update public.services set active = true where id = '5e000000-0000-0000-0000-000000000005';
+insert into public.appointment_services (barbershop_id, appointment_id, position, service_id, price_cop, duration_minutes) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000006', 1, '5e000000-0000-0000-0000-000000000001', 25000, 50),
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000007', 1, '5e000000-0000-0000-0000-000000000005', 9000, 30);
+update public.services set duration_minutes = 30 where id = '5e000000-0000-0000-0000-000000000001';
+update public.services set active = false where id = '5e000000-0000-0000-0000-000000000005';
+
+-- k1: Uno, wd1 14:00-15:00. k4: Uno, wd1 19:00-19:30. k2: Dos, ended two hours ago. k3: Tres in B.
 insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
   ('b0000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001',
    pg_temp.at(1, '14:00'), pg_temp.at(1, '15:00'), 'Almuerzo'),
+  ('b0000000-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001',
+   pg_temp.at(1, '19:00'), pg_temp.at(1, '19:30'), null),
   ('b0000000-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000002',
    now() - interval '3 hours', now() - interval '2 hours', 'Permiso'),
   ('b0000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000004',
@@ -511,6 +533,25 @@ select is(
     array['5e000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000002']::uuid[]) $$),
   'blocked',
   'an appointment that has not started does not grow over a block'
+);
+select is(
+  pg_temp.hint_of($$ select public.change_appointment_services_checked(
+    'a0000000-0000-0000-0000-000000000006',
+    array['5e000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000002']::uuid[]) $$),
+  'blocked',
+  'a kept service counts with the length of its line, not today''s'
+);
+select lives_ok(
+  $$ select public.change_appointment_services_checked(
+       'a0000000-0000-0000-0000-000000000007',
+       array['5e000000-0000-0000-0000-000000000005', '5e000000-0000-0000-0000-000000000002']::uuid[]) $$,
+  'a deactivated service the appointment had stays'
+);
+select is(
+  (select row(a.ends_at - a.starts_at, a.price_cop)::text from public.appointments a
+   where a.id = 'a0000000-0000-0000-0000-000000000007'),
+  row(interval '45 minutes', 24000)::text,
+  'with its own price and length'
 );
 select lives_ok(
   $$ select public.change_appointment_services_checked(

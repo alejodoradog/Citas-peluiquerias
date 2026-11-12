@@ -151,7 +151,7 @@ export async function createOwnerAppointment(
     parse: parseSlot,
   });
   const customer = readForm(formData, {
-    fields: ["cliente", "nombre", "correo", "celular"],
+    fields: ["cliente", "nombre", "correo"],
     parse: parseManualCustomer,
   });
   const values = {
@@ -195,7 +195,6 @@ export async function createOwnerAppointment(
     {
       customer_name_invalid: "nombre",
       customer_email_invalid: "correo",
-      customer_phone_invalid: "celular",
     } as Partial<Record<OwnerRefusal, string>>
   )[result.error];
   if (field) {
@@ -210,9 +209,11 @@ export async function createOwnerAppointment(
 
 // D-38: the customers that match what the owner types (at most 5).
 export async function searchCustomers(
-  search: string,
+  search: unknown,
 ): Promise<CustomerMatch[]> {
   const barbershop = await readyBarbershop();
+  // Anyone can call a server action with anything: only text is searched.
+  if (typeof search !== "string") return [];
   const query = search.trim().slice(0, 100);
   if (query.length < 2) return [];
   return findCustomers(barbershop.id, query);

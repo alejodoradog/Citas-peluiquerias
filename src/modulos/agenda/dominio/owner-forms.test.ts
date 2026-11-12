@@ -46,7 +46,7 @@ describe("parseServiceIds", () => {
 });
 
 describe("parseManualCustomer", () => {
-  const empty = { cliente: "", nombre: "", correo: "", celular: "" };
+  const empty = { cliente: "", nombre: "", correo: "" };
 
   it("takes a chosen customer by id", () => {
     expect(parseManualCustomer({ ...empty, cliente: ID })).toEqual({
@@ -62,21 +62,20 @@ describe("parseManualCustomer", () => {
   it("creates one with only a name", () => {
     expect(parseManualCustomer({ ...empty, nombre: "  Juan  " })).toEqual({
       success: true,
-      data: { name: "Juan", email: null, phone: null },
+      data: { name: "Juan", email: null },
     });
   });
 
-  it("keeps an email in lowercase and a mobile in E.164", () => {
+  it("keeps an email in lowercase", () => {
     expect(
       parseManualCustomer({
         ...empty,
         nombre: "Juan",
         correo: " Juan@Correo.com ",
-        celular: "300 765 4321",
       }),
     ).toEqual({
       success: true,
-      data: { name: "Juan", email: "juan@correo.com", phone: "+573007654321" },
+      data: { name: "Juan", email: "juan@correo.com" },
     });
   });
 
@@ -86,14 +85,12 @@ describe("parseManualCustomer", () => {
         cliente: "",
         nombre: " ",
         correo: "no-es",
-        celular: "123",
       }),
     ).toEqual({
       success: false,
       errors: {
         nombre: "customer_name_invalid",
         correo: "customer_email_invalid",
-        celular: "customer_phone_invalid",
       },
     });
     expect(

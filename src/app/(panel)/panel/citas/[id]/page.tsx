@@ -106,9 +106,15 @@ async function Appointment({
   const instant = now();
   const today = toBogotaDate(instant);
   const actions = appointmentActions(appointment, instant);
-  const options = actions.editServices
+  // What the barber offers today, plus what the appointment already has
+  // (kept with its own price and length, even if deactivated since, M11).
+  const offered = actions.editServices
     ? await loadBarberServices(barbershop.id, appointment.barber.id)
     : [];
+  const options = [
+    ...appointment.services,
+    ...offered.filter((s) => !appointment.services.some((c) => c.id === s.id)),
+  ];
   const done = parseDone(query[DONE_PARAM]);
   const back = agendaHref({
     dia:

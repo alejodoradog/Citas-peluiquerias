@@ -168,7 +168,8 @@ export function EditServicesButton({
   chosen,
 }: {
   appointmentId: string;
-  // The active services the barber offers.
+  // The appointment's services, then the other active ones the barber
+  // offers.
   options: readonly Service[];
   // The lines of the appointment, with the price and length they keep.
   chosen: readonly Service[];
@@ -211,9 +212,7 @@ function ServicesForm({
   chosen: readonly Service[];
 }) {
   const form = useFormAction(changeAppointmentServices, t.rechazos);
-  const [ids, setIds] = useState<string[]>(() =>
-    chosen.filter((s) => options.some((o) => o.id === s.id)).map((s) => s.id),
-  );
+  const [ids, setIds] = useState<string[]>(() => chosen.map((s) => s.id));
   // A line the appointment keeps keeps its price; a new one takes today's.
   const lines = ids.map(
     (id) =>

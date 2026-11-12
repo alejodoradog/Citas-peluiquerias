@@ -2,7 +2,6 @@ import { fromBogota, isBogotaDate } from "@/lib/fechas/fechas";
 import { emailSchema } from "@/lib/validacion/credentials";
 import type { ParseResult } from "@/lib/validacion/parse";
 import { isId } from "@/modulos/barberias/dominio/service";
-import { normalizeColombianMobile } from "@/modulos/barberias/dominio/phone";
 import { CUSTOMER_NAME_MAX } from "./customer-details";
 
 // Task 4.2: the forms of D-37 and D-38, as the database checks them again
@@ -45,18 +44,15 @@ export function parseServiceIds(values: readonly unknown[]): string[] | null {
   return ids;
 }
 
-export type CustomerField = "cliente" | "nombre" | "correo" | "celular";
+export type CustomerField = "cliente" | "nombre" | "correo";
 export type CustomerCode =
-  | "customer_not_found"
-  | "customer_name_invalid"
-  | "customer_email_invalid"
-  | "customer_phone_invalid";
+  "customer_not_found" | "customer_name_invalid" | "customer_email_invalid";
 
 export type ManualCustomer =
-  { id: string } | { name: string; email: string | null; phone: string | null };
+  { id: string } | { name: string; email: string | null };
 
 // D-38: a chosen customer (its id), or a new one with a name and, if given,
-// an email and a Colombian mobile.
+// an email. D-38 asks for no phone.
 export function parseManualCustomer(
   input: Record<CustomerField, string>,
 ): ParseResult<ManualCustomer, CustomerCode> {
@@ -75,13 +71,11 @@ export function parseManualCustomer(
     errors.nombre = "customer_name_invalid";
   }
   const email = input.correo.trim().toLowerCase();
-  if (email !== "" && !emailSchema.safeParse(email).success) errors.correo = "customer_email_invalid";
-  const rawPhone = input.celular.trim();
-  const phone = rawPhone === "" ? null : normalizeColombianMobile(rawPhone);
-  if (rawPhone !== "" && !phone) errors.celular = "customer_phone_invalid";
+  if (email !== "" && !emailSchema.safeParse(email).success)
+    errors.correo = "customer_email_invalid";
   if (Object.keys(errors).length > 0) return { success: false, errors };
   return {
     success: true,
-    data: { name, email: email === "" ? null : email, phone },
+    data: { name, email: email === "" ? null : email },
   };
 }

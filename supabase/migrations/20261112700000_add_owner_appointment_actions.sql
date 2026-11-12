@@ -19,10 +19,11 @@
 -- - reschedule_appointment: a confirmed appointment keeps its duration and
 --   moves to a barber who offers its services, with the same rules; it never
 --   clashes with itself (decision M1: services change with the next one).
--- - change_appointment_services_checked: change_appointment_services plus the
---   barber offering the new services, 480 minutes at most and, while the
---   appointment has not started, its hours and blocks (decision M5: once in
---   the chair, adding the beard is what happened).
+-- - change_appointment_services_checked: change_appointment_services plus,
+--   for the services it adds, active ones the barber offers; the ones it
+--   keeps keep their line (price and length, decision M11). 480 minutes at
+--   most and, while the appointment has not started, its hours and blocks
+--   (decision M5: once in the chair, adding the beard is what happened).
 -- - set_appointment_status: attended or no_show once it started, and
 --   corrected between them (founder, 2026-11-12); cancelled_by_barbershop
 --   while confirmed, at any time (spec: "La barbería puede cancelar
@@ -430,6 +431,10 @@ as $$
 declare
   appt record;
   total_minutes integer;
+  kept_minutes integer;
+  new_minutes integer;
+  new_count integer;
+  new_ids uuid[];
   problem text;
 begin
   select a.id, a.barbershop_id, a.barber_id, a.status, a.starts_at into appt
@@ -446,13 +451,46 @@ begin
       using errcode = 'check_violation', hint = 'appointment_closed';
   end if;
 
-  total_minutes := private.owner_services_minutes(appt.barbershop_id, p_service_ids);
+  if coalesce(cardinality(p_service_ids), 0) not between 1 and 5
+    or array_position(p_service_ids, null) is not null then
+    raise exception 'between 1 and 5 services'
+      using errcode = 'invalid_parameter_value', hint = 'services_required';
+  end if;
+  if (select count(distinct sid) from unnest(p_service_ids) as t (sid)) <> cardinality(p_service_ids) then
+    raise exception 'repeated service'
+      using errcode = 'invalid_parameter_value', hint = 'services_repeated';
+  end if;
 
-  -- The barber offers every new service, even if inactive since (they keep
-  -- the appointments they had).
+  -- A service the appointment keeps keeps its line: its price and length
+  -- (change_appointment_services never edits a line), even if it was
+  -- deactivated since (decision M11). Only the new ones are checked: active
+  -- services of this barbershop that the barber offers.
+  select coalesce(sum(l.duration_minutes), 0) into kept_minutes
+  from public.appointment_services l
+  where l.barbershop_id = appt.barbershop_id
+    and l.appointment_id = appt.id
+    and l.service_id = any (p_service_ids);
+  select coalesce(array_agg(t.sid), '{}') into new_ids
+  from unnest(p_service_ids) as t (sid)
+  where not exists (
+    select 1 from public.appointment_services l
+    where l.barbershop_id = appt.barbershop_id
+      and l.appointment_id = appt.id
+      and l.service_id = t.sid
+  );
+  select count(*), coalesce(sum(sv.duration_minutes), 0)
+  into new_count, new_minutes
+  from public.services sv
+  where sv.barbershop_id = appt.barbershop_id
+    and sv.id = any (new_ids)
+    and sv.active;
+  if new_count <> cardinality(new_ids) then
+    raise exception 'service is inactive or unknown'
+      using errcode = 'invalid_parameter_value', hint = 'service_inactive';
+  end if;
   if exists (
     select 1
-    from unnest(p_service_ids) as t (sid)
+    from unnest(new_ids) as t (sid)
     where not exists (
       select 1 from public.barber_services bs
       where bs.barbershop_id = appt.barbershop_id
@@ -462,6 +500,12 @@ begin
   ) then
     raise exception 'the barber does not offer every service'
       using errcode = 'P0001', hint = 'barber_does_not_offer_service';
+  end if;
+  -- The length change_appointment_services will give the appointment.
+  total_minutes := kept_minutes + new_minutes;
+  if total_minutes > 480 then
+    raise exception 'appointment longer than 480 minutes'
+      using errcode = 'invalid_parameter_value', hint = 'too_long';
   end if;
 
   -- Not started yet: the new length is a booking decision (decision M5).

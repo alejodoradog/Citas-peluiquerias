@@ -11,6 +11,7 @@ import {
 } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { loadOwnerAgenda } from "@/modulos/agenda/datos/owner-agenda";
+import { shortCustomerName } from "@/modulos/agenda/dominio/owner-agenda";
 import {
   blockDayOptions,
   blockTimeOptions,
@@ -114,7 +115,8 @@ async function Block({
         barberId: a.barberId,
         start: a.start,
         end: a.end,
-        customerName: a.customerName,
+        // The warning shows "Mateo R.": the short name is all that leaves.
+        customerName: shortCustomerName(a.customerName),
       }))}
       defaults={{
         // A barber by default: closing the whole barbershop is a choice.

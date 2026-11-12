@@ -191,9 +191,7 @@ export type ManualAppointmentRequest = {
   barberId: string;
   start: Date;
   serviceIds: string[];
-  customer:
-    | { id: string }
-    | { name: string; email: string | null; phone: string | null };
+  customer: { id: string } | { name: string; email: string | null };
 };
 
 export function createManualAppointment(
@@ -212,7 +210,6 @@ export function createManualAppointment(
         : {
             p_customer_name: customer.name,
             ...(customer.email ? { p_customer_email: customer.email } : {}),
-            ...(customer.phone ? { p_customer_phone: customer.phone } : {}),
           }),
     }),
   );
@@ -298,7 +295,9 @@ export async function loadBarberServices(
     .eq("barber_id", barberId);
   if (error) throw error;
   return data
-    .flatMap((row) => (row.services && row.services.active ? [row.services] : []))
+    .flatMap((row) =>
+      row.services && row.services.active ? [row.services] : [],
+    )
     .map((service) => ({
       id: service.id,
       name: service.name,

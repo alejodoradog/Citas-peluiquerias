@@ -5,7 +5,6 @@ import { fromBogota } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { createOwnerBlockAction } from "@/modulos/agenda/acciones/owner-appointment";
 import { BLOCK_REASONS } from "@/modulos/agenda/dominio/barber-agenda";
-import { shortCustomerName } from "@/modulos/agenda/dominio/owner-agenda";
 import { appointmentsInBlock } from "@/modulos/agenda/dominio/owner-slots";
 import { cx } from "@/ui/cx";
 import { FlowShell } from "@/ui/flow-shell";
@@ -72,9 +71,7 @@ export function OwnerBlockForm({
   const who =
     barbers.find((barber) => barber.id === values.quien)?.name ?? null;
   const listed = inTheWay
-    .map((a) =>
-      t.citaCorta(shortCustomerName(a.customerName), timeLabel(a.start)),
-    )
+    .map((a) => t.citaCorta(a.customerName, timeLabel(a.start)))
     .join(", ");
   const reasonError = form.fieldError("motivo");
 
