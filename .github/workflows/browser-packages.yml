@@ -1,0 +1,54 @@
+name: Browser packages
+
+# Downloads, from main, the system packages the Playwright browsers need and
+# keeps them in a cache that the e2e job of every pull request restores
+# (scripts/ci/browser-packages.sh). A cache saved on main is readable from
+# every branch; one saved by a pull request is not. The key changes with the
+# Playwright version and the runner image, so a new one is collected when
+# either changes: on a merge that touches the dependencies, every Monday
+# (the images update about weekly) or by hand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - pnpm-lock.yaml
+      - scripts/ci/browser-packages.sh
+      - .github/workflows/browser-packages.yml
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Name the cache
+        id: key
+        run: echo "key=browser-debs-${ImageOS}-${ImageVersion}-$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Look for it
+        id: found
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/browser-debs
+          key: ${{ steps.key.outputs.key }}
+          lookup-only: true
+      - name: Download the packages
+        if: steps.found.outputs.cache-hit != 'true'
+        run: bash scripts/ci/browser-packages.sh collect
+      - name: Keep them
+        if: steps.found.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/browser-debs
+          key: ${{ steps.key.outputs.key }}
