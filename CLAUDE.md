@@ -28,6 +28,7 @@ Vercel, Vitest, Playwright, Zod, pnpm.
 
 ## Forma de trabajo
 - Empieza en modo plan; espera aprobación antes de editar.
+- Dos personas trabajan en paralelo, cada una con su Claude Code: antes de empezar una tarea, lee `docs/trabajo-en-paralelo.md` (quién hace qué y cómo no pisarse).
 - Una rama por tarea, creada desde `main` actualizado: `hito-<fase>-<tema>` para tareas del plan, `docs-<tema>` o `ci-<tema>` para lo demás. Commits convencionales que terminan en `(tarea N.N)`; cada tarea termina con lint, typecheck y pruebas en verde.
 - Un PR por tarea hacia `main`: se abre en borrador con el primer push, para que el CI corra en cada push, y se marca listo con el CI en verde. Para ponerse al día con `main` se mete `main` en la rama ("Update branch" o merge), sin rebase.
 - Solo la cuenta `alejodoradog` fusiona, con "Create a merge commit", nunca squash: en Vercel Hobby solo despliegan sus commits. La rama se borra al fusionar.
