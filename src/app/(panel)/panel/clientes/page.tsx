@@ -134,7 +134,7 @@ function Search({
 }) {
   return (
     <Form action={routes.panelClients} role="search">
-      <div className="rounded-field border-line text-muted focus-within:border-brand flex h-12.5 items-center gap-2 border bg-white px-3.5">
+      <div className="rounded-field border-line text-muted focus-within:border-brand flex h-13 items-center gap-2 border bg-white px-3.5">
         <SearchIcon size={18} />
         <label htmlFor="buscar-cliente" className="sr-only">
           {t.buscar.etiqueta}

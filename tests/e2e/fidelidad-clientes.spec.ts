@@ -108,6 +108,9 @@ const BUTTON = [
   "font-size",
   "font-weight",
 ] as const;
+// A filter is a pill too: rounded-full against the design's 18 px draw the
+// same at 36 px, so its radius is not compared.
+const PILL = BUTTON.filter((property) => property !== "border-radius");
 // A pill: 9999px against the design's 12 px draw the same at 24 px.
 const CHIP = ["height", "background-color", "color", "font-size"] as const;
 
@@ -154,13 +157,13 @@ test("D-40 to D-42 match the design", async ({ page }) => {
     "filtro elegido",
     page.locator("[data-filter=todos]").filter({ visible: true }),
     design.getByRole("button", { name: "Todos" }),
-    BUTTON,
+    PILL,
   );
   await compare(
     "filtro",
     page.locator("[data-filter=nuevos]").filter({ visible: true }),
     design.getByRole("button", { name: "Nuevos" }),
-    BUTTON,
+    PILL,
   );
   await compare(
     "nombre",

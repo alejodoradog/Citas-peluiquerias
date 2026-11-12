@@ -79,7 +79,12 @@ function Frame({
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3.5 px-5 pt-1 pb-28">
         {children}
       </main>
-      <BottomNav />
+      {/* The bar reads the pathname, which a route with an [id] only knows
+          at request time: it waits in its own boundary, also while this
+          frame is the page's loading state. */}
+      <Suspense fallback={null}>
+        <BottomNav />
+      </Suspense>
     </div>
   );
 }
