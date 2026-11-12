@@ -31,7 +31,7 @@ export default defineConfig({
     {
       name: "android",
       use: devices["Pixel 7"],
-      testIgnore: /fidelidad\.spec\.ts/,
+      testIgnore: /fidelidad.*\.spec\.ts/,
     },
     // Screens tagged @ui on an iPhone (WebKit). The account flows stay on
     // Android: running them twice would hit the Auth rate limits.
@@ -39,7 +39,7 @@ export default defineConfig({
       name: "iphone",
       use: devices["iPhone 13"],
       grep: /@ui/,
-      testIgnore: /fidelidad\.spec\.ts/,
+      testIgnore: /fidelidad.*\.spec\.ts/,
     },
     // Side by side with the design, at the 390 × 844 of its artboards.
     {
@@ -48,7 +48,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         viewport: { width: 390, height: 844 },
       },
-      testMatch: /fidelidad\.spec\.ts/,
+      testMatch: /fidelidad.*\.spec\.ts/,
     },
   ],
   webServer: {

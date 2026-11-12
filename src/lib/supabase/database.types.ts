@@ -255,14 +255,14 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"updated_at": string
+                    "anonymized_at": string | null,"barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -457,7 +457,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "barbershop_accepts_bookings":
+            "anonymize_customer":
+{ Args: { "p_barbershop_id": string,"p_customer_id": string }; Returns: undefined
+                           },
+"barbershop_accepts_bookings":
 { Args: { "p_barbershop_id": string }; Returns: boolean
                            },
 "book_appointment":
@@ -492,6 +495,11 @@ isOneToOne: false
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
+                           },
+"list_customers":
+{ Args: { "p_barbershop_id": string,"p_filter"?: string,"p_limit"?: number,"p_search"?: string }; Returns: {
+              "created_at": string,"email": string,"full_name": string,"id": string,"last_visit_at": string,"next_appointment_at": string,"no_shows": number,"phone": string,"visits": number
+            }[]
                            },
 "managed_appointment":
 { Args: { "p_token_hash": string }; Returns: {

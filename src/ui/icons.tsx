@@ -137,6 +137,16 @@ export function TrashIcon(props: IconProps) {
   );
 }
 
+// The search field of D-40.
+export function SearchIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.3-4.3" />
+    </Icon>
+  );
+}
+
 export function ChevronLeftIcon(props: IconProps) {
   return (
     <Icon {...props}>
