@@ -6,11 +6,11 @@ import {
   expectTouchTargets,
 } from "./helpers/pantalla";
 
-// The links that already circulate, before their pages exist: a barber's
-// private link (task 4.4) says it is on its way instead of "not found". The
-// booking link of the QR and the poster is the booking page now (tasks 3.2
-// and 3.3, reservar.spec.ts); a link that is no barbershop's is C-18.
-const t = textos.proximamente;
+// The links that already circulate. The booking link of the QR and the
+// poster is the booking page now (tasks 3.2 and 3.3, reservar.spec.ts); a
+// link that is no barbershop's is C-18. A barber's private link is "Mi
+// agenda" now (task 4.4, barbero.spec.ts): a token that is no barber's gets
+// B-05, the same for any token.
 // The dev server compiles each page the first time it is opened.
 const FIRST_VISIT = { timeout: 20_000 };
 
@@ -27,7 +27,7 @@ test("a link that is no barbershop's is not found", async ({ page }) => {
   ).toBeVisible(FIRST_VISIT);
 });
 
-test("a barber's link says the agenda is on its way, whatever the token", async ({
+test("a barber's link that is no one's shows B-05, whatever the token", async ({
   page,
 }) => {
   for (const token of ["a".repeat(43), "cualquier-cosa"]) {
@@ -35,7 +35,10 @@ test("a barber's link says the agenda is on its way, whatever the token", async 
     expect(response?.headers()["cache-control"]).toContain("no-store");
     expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
     await expect(
-      page.getByRole("heading", { level: 1, name: t.barbero.titulo }),
+      page.getByRole("heading", {
+        level: 1,
+        name: textos.barbero.vencido.titulo,
+      }),
     ).toBeVisible(FIRST_VISIT);
   }
   await expectAccessible(page);
