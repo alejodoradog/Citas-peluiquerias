@@ -70,8 +70,8 @@ En Supabase → **Authentication**:
 - **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change**, pon la longitud del código (**Email OTP length**) en 10 y la vigencia (**Email OTP Expiration**) en 86400 segundos (24 horas, decisión del fundador del 2026-11-09), como en `supabase/config.toml`. La app solo acepta los links de recuperación durante su primera hora.
 - **Password:** contraseña mínima de 8 caracteres.
 - **URL Configuration:**
-  - **Site URL:** `https://citas-peluiquerias.vercel.app`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
-  - **Redirect URLs:** `https://citas-peluiquerias.vercel.app/**` y `https://citas-peluiquerias-*-yapoin.vercel.app/**`.
+  - **Site URL:** `https://www.yapoin.com`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
+  - **Redirect URLs:** `https://www.yapoin.com/**` y `https://citas-peluiquerias-*-yapoin.vercel.app/**`.
 - **Plantillas de correo: esperan a la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), y el nuestro será Amazon SES (decisión 0007). Cuando esté:
   - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
   - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
@@ -86,6 +86,18 @@ En Supabase → **Authentication**:
 **Estado observado (2026-11-09):** Auth de `barberias-dev` ya envía por un SMTP propio con Amazon SES, que sigue en modo de prueba en la región `us-east-2`. En ese modo, SES solo entrega a correos verificados uno por uno: con cualquier otro correo, el registro falla con `554 Email address is not verified` y la pantalla muestra "No pudimos completar la acción". Mientras tanto, para probar el registro hay que verificar el correo de prueba en **SES → Identities**. Los links de los correos apuntan a `https://yapoin.com`, que ya sirve esta misma app en Vercel. La decisión 0007 pide SES en `us-east-1`, así que está pendiente confirmar la región con el fundador.
 
 **Límite mientras no haya remitente propio:** el correo de prueba de Supabase solo envía a direcciones del equipo del proyecto, y unos 2 correos por hora ([documentación](https://supabase.com/docs/guides/auth/auth-smtp)). Para probar el registro en una vista previa, usa un correo de ese equipo. Con otro correo, Supabase rechaza el envío ("Email address not authorized") y la pantalla muestra "No pudimos completar la acción". Esto se resuelve al configurar Amazon SES (tarea 5.2), y entonces hay que subir también el límite de envíos de Auth, que por defecto es de 30 correos por hora.
+
+## 3b. Turnstile (tarea 3.5)
+- **Widget en Cloudflare → Turnstile:** "Yapoin", modo **Managed**, sin pre-clearance, con hostnames `www.yapoin.com`, `yapoin.com` y `citas-peluiquerias.vercel.app`. La Site Key es pública y está en el código (`src/lib/turnstile/keys.ts`).
+- **Vercel → Environment Variables:**
+  - **Production:** `TURNSTILE_SECRET_KEY` = la Secret Key del widget.
+  - **Preview** (las URLs de vista previa no están en los hostnames): `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `1x00000000000000000000AA` y `TURNSTILE_SECRET_KEY` = `1x0000000000000000000000000000000AA`. Son las llaves de prueba públicas de Cloudflare, que siempre aceptan.
+- **`SUPABASE_SECRET_KEY` debe existir en Production y Preview.** Desde la 3.5, solo el servidor reserva (`book_appointment_from_app`, con la llave de servidor).
+- **Supabase → Authentication → Attack Protection → Enable CAPTCHA protection:** proveedor Turnstile, con la misma Secret Key. **Se activa solo después de desplegar la 3.5**; antes, el registro y el ingreso fallan porque la app todavía no manda el token.
+- **Para comprobarlo:**
+  - una reserva en `www.yapoin.com` funciona;
+  - con el captcha de Auth activo, el registro, el ingreso y "Recuperar clave" funcionan;
+  - en el registro de Vercel no aparece `captcha_failed`.
 
 ## Caché de compilación de Vercel
 

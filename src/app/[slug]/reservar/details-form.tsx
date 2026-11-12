@@ -8,7 +8,8 @@ import {
   type BookingState,
 } from "@/modulos/agenda/acciones/booking";
 import { Field } from "@/ui/field";
-import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
+import { ActionForm, useFormAction } from "@/ui/form";
+import { ProtectedSubmit } from "@/ui/turnstile-field";
 import { InfoIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { textos } from "@/ui/textos";
@@ -157,7 +158,9 @@ export function DetailsForm({
       </main>
       <SummaryBar summary={t.total} priceCop={priceCop}>
         <SaveDraftOnSubmit />
-        <SubmitButton pendingText={t.confirmando}>{t.confirmar}</SubmitButton>
+        <ProtectedSubmit state={form.state} pendingText={t.confirmando}>
+          {t.confirmar}
+        </ProtectedSubmit>
       </SummaryBar>
     </ActionForm>
   );

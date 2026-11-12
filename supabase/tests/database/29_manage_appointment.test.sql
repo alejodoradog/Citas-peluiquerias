@@ -127,6 +127,10 @@ insert into public.appointments (barbershop_id, customer_id, barber_id, starts_a
 values ('aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001',
         'ba000000-0000-0000-0000-000000000001', pg_temp.at(2, '11:00'), pg_temp.at(2, '11:30'), 25000, 'manual');
 
+-- From task 3.5 only the app server books; this test books as anon, the most
+-- untrusted caller, so it grants it back inside this transaction only.
+grant execute on function public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text) to anon;
+
 -- The customer books as anon: Corte + Barba (45 min) with Uno, day 2 at 10:00.
 set local role anon;
 set local request.jwt.claims to '{"role": "anon"}';

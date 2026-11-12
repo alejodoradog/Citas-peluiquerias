@@ -15,7 +15,5 @@ export function readWeek(sent: FormDataEntryValue | null): unknown {
 // longer than any screen could send, so a forged request cannot make the
 // response carry it back.
 export function echoWeek(sent: FormDataEntryValue | null): string {
-  return typeof sent === "string" && sent.length <= MAX_WEEK_LENGTH
-    ? sent
-    : "";
+  return typeof sent === "string" && sent.length <= MAX_WEEK_LENGTH ? sent : "";
 }

@@ -54,6 +54,16 @@ vi.mock("@/lib/tokens/link-token", async () => {
   };
 });
 
+// Turnstile and the visitor's IP (task 3.5).
+const verifyTurnstile = vi.fn<
+  (token: string, ip: string | null) => Promise<boolean>
+>(async () => true);
+vi.mock("@/lib/turnstile/verify", () => ({ verifyTurnstile }));
+vi.mock("@/lib/turnstile/client-ip", () => ({
+  clientIp: async () => "200.1.2.3",
+  hashClientIp: (ip: string) => `hash-de-${ip}`,
+}));
+
 const { bookAppointment } = await import("./booking");
 
 function form(fields: Record<string, string | string[]>) {
@@ -137,6 +147,38 @@ describe("bookAppointment", () => {
     });
     await run(form(VALID));
     expect(setCookie).not.toHaveBeenCalled();
+  });
+
+  it("checks Turnstile with the visitor's IP and sends only the IP's hash", async () => {
+    await run(form({ ...VALID, "cf-turnstile-response": "token-turnstile" }));
+    expect(verifyTurnstile).toHaveBeenCalledWith(
+      "token-turnstile",
+      "200.1.2.3",
+    );
+    expect(createPublicBooking.mock.calls[0]![0].clientIpHash).toBe(
+      "hash-de-200.1.2.3",
+    );
+    expect(JSON.stringify(createPublicBooking.mock.calls[0]![0])).not.toContain(
+      '"200.1.2.3"',
+    );
+  });
+
+  it("books nothing when Turnstile does not confirm a person", async () => {
+    verifyTurnstile.mockResolvedValueOnce(false);
+    const result = await run(form(VALID));
+    expect(createPublicBooking).not.toHaveBeenCalled();
+    expect(setCookie).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ status: "failed", error: "captcha_failed" });
+  });
+
+  it("says which limit stopped the booking", async () => {
+    for (const hint of ["too_many_upcoming", "too_many_from_ip"]) {
+      createPublicBooking.mockResolvedValueOnce({ ok: false, error: { hint } });
+      expect(await run(form(VALID))).toMatchObject({
+        status: "failed",
+        error: hint,
+      });
+    }
   });
 
   it("a new token on every booking", async () => {

@@ -33,3 +33,8 @@ if (missing.length > 0) {
 for (const [name, value] of Object.entries(variables)) {
   console.log(`${name}=${value}`);
 }
+// Cloudflare's public test keys for Turnstile (task 3.5): an invisible widget
+// that always passes, and a secret that always accepts.
+// https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+console.log("NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000BB");
+console.log("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");

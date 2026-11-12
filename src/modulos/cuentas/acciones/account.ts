@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { safeNextPath } from "@/lib/auth/safe-next";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
+import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
 import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
 import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -45,12 +46,17 @@ export async function signIn(
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword(form.data);
+  // Supabase Auth checks the Turnstile token itself (task 3.5).
+  const { error } = await supabase.auth.signInWithPassword({
+    ...form.data,
+    options: { captchaToken: captchaTokenOf(formData) },
+  });
   if (error) {
     const accountError = toAccountError(error);
     // Only reached with the right password. The first link lasts 24 hours, so
     // this is how an owner who was late gets another. Limits may skip the
-    // send; the message stays the same.
+    // send; the message stays the same. With the captcha of Auth on, the
+    // token is already spent and Auth refuses this send too (task 3.5).
     if (accountError === "email_not_confirmed") {
       await supabase.auth.resend({ type: "signup", email: form.data.email });
     }
@@ -84,7 +90,13 @@ export async function requestPasswordRecovery(
   }
 
   const supabase = await createSupabaseServerClient();
-  await supabase.auth.resetPasswordForEmail(form.data.email);
+  const { error } = await supabase.auth.resetPasswordForEmail(form.data.email, {
+    captchaToken: captchaTokenOf(formData),
+  });
+  // Turnstile's refusal says nothing about the email, so it can be shown.
+  if (error && toAccountError(error) === "captcha_failed") {
+    return { status: "failed", error: "captcha_failed", values: form.values };
+  }
   return { status: "done", notice: "recovery_sent" };
 }
 
@@ -175,4 +187,10 @@ export async function setNewPassword(
     };
   }
   redirect(routes.panel);
+}
+
+// The token of the Turnstile widget (src/ui/turnstile-field.tsx), for Auth.
+function captchaTokenOf(formData: FormData): string | undefined {
+  const token = String(formData.get(TURNSTILE_FIELD) ?? "");
+  return token || undefined;
 }

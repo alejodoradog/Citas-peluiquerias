@@ -57,10 +57,16 @@ select ok(
     and has_function_privilege('authenticated', 'public.barbershop_accepts_bookings(uuid)', 'EXECUTE')
     and has_function_privilege('anon', 'public.booking_busy_ranges(uuid, timestamptz, timestamptz)', 'EXECUTE')
     and has_function_privilege('authenticated', 'public.booking_busy_ranges(uuid, timestamptz, timestamptz)', 'EXECUTE')
-    and has_function_privilege('anon', 'public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text)', 'EXECUTE')
-    and has_function_privilege('authenticated', 'public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text)', 'EXECUTE'),
-  'anon and authenticated call the three public functions'
+    and not has_function_privilege('anon', 'public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text)', 'EXECUTE')
+    and not has_function_privilege('authenticated', 'public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text)', 'EXECUTE')
+    and has_function_privilege('service_role', 'public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text)', 'EXECUTE'),
+  'anon and authenticated read availability; since task 3.5 only the app server books'
 );
+
+-- From task 3.5 the app's server books (book_appointment_from_app, test 31).
+-- This test keeps calling book_appointment as the most untrusted caller,
+-- anon, so it grants it back inside this transaction only.
+grant execute on function public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text) to anon, authenticated;
 select ok(
   not has_function_privilege('anon', 'private.booking_time_problem(uuid, timestamptz, integer, timestamptz)', 'EXECUTE')
     and not has_function_privilege('anon', 'private.barber_slot_problem(uuid, uuid, timestamptz, timestamptz)', 'EXECUTE')
@@ -541,7 +547,10 @@ select is(
   'token_invalid', 'something that is not a SHA-256 hex digest is refused as the token'
 );
 select is(
-  pg_temp.hint_of(pg_temp.book('ba000000-0000-0000-0000-000000000001', pg_temp.at(9, '10:00'), token_hash => repeat('ab', 32))),
+  -- Its own email: the 5 upcoming appointments of the default one (task 3.5)
+  -- would answer first.
+  pg_temp.hint_of(pg_temp.book('ba000000-0000-0000-0000-000000000001', pg_temp.at(9, '10:00'),
+    customer_email => 'token-reusado@example.com', token_hash => repeat('ab', 32))),
   'token_invalid', 'a token hash already used is refused'
 );
 select is(

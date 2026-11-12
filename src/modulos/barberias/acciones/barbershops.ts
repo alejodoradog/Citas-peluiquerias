@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { expirePublicProfile } from "@/lib/cache-tags";
+import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
@@ -51,10 +52,13 @@ export async function registerBarbershop(
   const registration = form.data;
 
   const supabase = await createSupabaseServerClient();
+  const token = String(formData.get(TURNSTILE_FIELD) ?? "");
   const { data, error } = await supabase.auth.signUp({
     email: registration.email,
     password: registration.password,
     options: {
+      // Supabase Auth checks the Turnstile token itself (task 3.5).
+      captchaToken: token || undefined,
       data: {
         owner_name: registration.ownerName,
         barbershop_name: registration.barbershopName,

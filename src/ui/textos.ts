@@ -221,6 +221,8 @@ export const textos = {
       weak_password: "Esa contraseña es muy fácil de adivinar. Usa otra.",
       same_password: "Usa una contraseña distinta a la anterior.",
       link_expired: "Ese link venció o ya se usó. Pide uno nuevo.",
+      captcha_failed:
+        "No pudimos confirmar que no eres un robot. Intenta de nuevo en un momento.",
       unknown: "No pudimos completar la acción. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<AccountErrorCode | "invalid", string>,
@@ -1244,6 +1246,12 @@ export const textos = {
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:
         "La barbería cambió sus servicios. Elígelos de nuevo, por favor.",
+      captcha_failed:
+        "No pudimos confirmar que no eres un robot. Intenta de nuevo en un momento.",
+      too_many_upcoming:
+        "Ya tienes 5 citas por venir en esta barbería. Cancela una o escríbele a la barbería.",
+      too_many_from_ip:
+        "Se hicieron muchas reservas seguidas desde esta conexión. Intenta de nuevo en un rato.",
       unknown: "No pudimos reservar tu cita. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BookingActionErrorCode | "invalid", string>,

@@ -10,9 +10,7 @@ describe("week field", () => {
 
   it("echoes back only what a screen could have sent", () => {
     expect(echoWeek("[]")).toBe("[]");
-    expect(echoWeek("x".repeat(MAX_WEEK_LENGTH))).toHaveLength(
-      MAX_WEEK_LENGTH,
-    );
+    expect(echoWeek("x".repeat(MAX_WEEK_LENGTH))).toHaveLength(MAX_WEEK_LENGTH);
     expect(echoWeek("x".repeat(MAX_WEEK_LENGTH + 1))).toBe("");
     expect(echoWeek(null)).toBe("");
     expect(echoWeek(new File(["[]"], "week.json"))).toBe("");

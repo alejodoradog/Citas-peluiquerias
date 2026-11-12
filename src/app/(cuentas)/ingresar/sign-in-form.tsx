@@ -5,7 +5,8 @@ import {
   type AccountErrorCode,
 } from "@/modulos/cuentas/acciones/account";
 import { Field } from "@/ui/field";
-import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
+import { ActionForm, useFormAction } from "@/ui/form";
+import { ProtectedSubmit } from "@/ui/turnstile-field";
 import { Notice, type NoticeTone } from "@/ui/notice";
 import { textos } from "@/ui/textos";
 
@@ -44,7 +45,9 @@ export function SignInForm() {
         error={form.fieldError("password")}
         required
       />
-      <SubmitButton pendingText={t.enviando}>{t.enviar}</SubmitButton>
+      <ProtectedSubmit state={form.state} pendingText={t.enviando}>
+        {t.enviar}
+      </ProtectedSubmit>
     </ActionForm>
   );
 }

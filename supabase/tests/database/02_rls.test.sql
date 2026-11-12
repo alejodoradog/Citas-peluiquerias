@@ -166,8 +166,6 @@ select is(
     -- Task 3.3: the public booking page, for anyone.
     'public.barbershop_accepts_bookings:anon',
     'public.barbershop_accepts_bookings:authenticated',
-    'public.book_appointment:anon',
-    'public.book_appointment:authenticated',
     'public.booking_busy_ranges:anon',
     'public.booking_busy_ranges:authenticated',
     -- Task 3.4: the link to manage an appointment, for anyone who has it.

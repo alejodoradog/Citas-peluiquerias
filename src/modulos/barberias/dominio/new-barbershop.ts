@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 import { normalizeColombianMobile } from "./phone";
-import {
-  barbershopNameSchema,
-  type BarbershopErrorCode,
-} from "./registration";
+import { barbershopNameSchema, type BarbershopErrorCode } from "./registration";
 
 // "Nueva sede" (task 2.6): the name, with the rules of sign-up, and an
 // optional WhatsApp. Without one, create_barbershop uses the owner's own

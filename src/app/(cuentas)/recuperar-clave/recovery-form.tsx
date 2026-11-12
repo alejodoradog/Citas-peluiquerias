@@ -5,7 +5,8 @@ import { routes } from "@/lib/routes";
 import { requestPasswordRecovery } from "@/modulos/cuentas/acciones/account";
 import { AuthHeading } from "@/ui/auth-shell";
 import { Field } from "@/ui/field";
-import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
+import { ActionForm, useFormAction } from "@/ui/form";
+import { ProtectedSubmit } from "@/ui/turnstile-field";
 import { Notice } from "@/ui/notice";
 import { TextLink } from "@/ui/text-link";
 import { textos } from "@/ui/textos";
@@ -41,7 +42,9 @@ export function RecoveryForm({ notice }: { notice?: ReactNode }) {
               error={form.fieldError("email")}
               required
             />
-            <SubmitButton pendingText={t.enviando}>{t.enviar}</SubmitButton>
+            <ProtectedSubmit state={form.state} pendingText={t.enviando}>
+              {t.enviar}
+            </ProtectedSubmit>
           </ActionForm>
         </>
       )}

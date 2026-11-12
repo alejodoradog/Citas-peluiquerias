@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { publicProfileTag } from "@/lib/cache-tags";
 import type { BogotaDate } from "@/lib/fechas/fechas";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
 import { isSlug } from "@/modulos/barberias/dominio/slug";
@@ -228,18 +229,23 @@ export type NewPublicBooking = {
   // Only the SHA-256 of the manage token; the token never reaches the
   // database.
   manageTokenHash: string;
+  // The keyed hash of the visitor's IP (client-ip.ts), or null when there is
+  // none: the limit of bookings per IP (task 3.5).
+  clientIpHash: string | null;
 };
 
-// book_appointment as anon: the database checks everything again and
-// answers the appointment and the barber who takes it.
+// book_appointment_from_app as the app's server (task 3.5): since then only
+// the server books, after Turnstile, so a script with the publishable key
+// cannot skip it. The database checks everything again, with the limits per
+// IP and per email, and answers the appointment and the barber who takes it.
 export async function createPublicBooking(
   booking: NewPublicBooking,
 ): Promise<
   | { ok: true; appointmentId: string; barberId: string }
   | { ok: false; error: { code?: string; hint?: string | null } }
 > {
-  const { data, error } = await createSupabasePublicClient().rpc(
-    "book_appointment",
+  const { data, error } = await createSupabaseAdminClient().rpc(
+    "book_appointment_from_app",
     {
       p_barbershop_id: booking.barbershopId,
       p_starts_at: booking.startsAt.toISOString(),
@@ -249,6 +255,9 @@ export async function createPublicBooking(
       p_manage_token_hash: booking.manageTokenHash,
       ...(booking.barberId ? { p_barber_id: booking.barberId } : {}),
       ...(booking.phone ? { p_customer_phone: booking.phone } : {}),
+      ...(booking.clientIpHash
+        ? { p_client_ip_hash: booking.clientIpHash }
+        : {}),
     },
   );
   const row = data?.[0];

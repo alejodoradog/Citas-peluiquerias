@@ -6,6 +6,9 @@ import { fromBogota } from "@/lib/fechas/fechas";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { hashLinkToken, newLinkToken } from "@/lib/tokens/link-token";
+import { clientIp, hashClientIp } from "@/lib/turnstile/client-ip";
+import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
+import { verifyTurnstile } from "@/lib/turnstile/verify";
 import { toBookingRefusal } from "../datos/booking-errors";
 import {
   createPublicBooking,
@@ -23,9 +26,16 @@ import {
 } from "../dominio/customer-details";
 
 // - services_changed: a chosen service is no longer offered.
+// - captcha_failed: Turnstile did not confirm a person (task 3.5).
+// - too_many_upcoming, too_many_from_ip: the limits of task 3.5.
 // - unknown: the booking could not be made (the network, the database).
 export type BookingActionErrorCode =
-  CustomerDetailsErrorCode | "services_changed" | "unknown";
+  | CustomerDetailsErrorCode
+  | "services_changed"
+  | "captcha_failed"
+  | "too_many_upcoming"
+  | "too_many_from_ip"
+  | "unknown";
 
 export type BookingField = "name" | "email" | "phone";
 
@@ -61,6 +71,16 @@ export async function bookAppointment(
     return { status: "failed", error: "unknown", values: form.values };
   }
 
+  // Turnstile before anything else reaches the database (task 3.5).
+  const ip = await clientIp();
+  const human = await verifyTurnstile(
+    String(formData.get(TURNSTILE_FIELD) ?? ""),
+    ip,
+  );
+  if (!human) {
+    return { status: "failed", error: "captcha_failed", values: form.values };
+  }
+
   const token = newLinkToken();
   const result = await createPublicBooking({
     barbershopId: profile.id,
@@ -71,6 +91,7 @@ export async function bookAppointment(
     email: form.data.email,
     phone: form.data.phone,
     manageTokenHash: hashLinkToken(token),
+    clientIpHash: ip ? hashClientIp(ip) : null,
   });
 
   if (!result.ok) {
@@ -91,7 +112,12 @@ export async function bookAppointment(
     if (refusal === "not_accepting") redirect(routes.booking(profile.slug));
     return {
       status: "failed",
-      error: refusal === "services_changed" ? "services_changed" : "unknown",
+      error:
+        refusal === "services_changed" ||
+        refusal === "too_many_upcoming" ||
+        refusal === "too_many_from_ip"
+          ? refusal
+          : "unknown",
       values: form.values,
     };
   }
