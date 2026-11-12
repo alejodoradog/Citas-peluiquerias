@@ -15,6 +15,10 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
+-- From task 3.5 only the app server books (book_appointment_from_app); this
+-- test books as anon, so it grants it back inside this transaction only.
+grant execute on function public.book_appointment(uuid, timestamptz, uuid[], text, text, text, uuid, text) to anon;
+
 select plan(42);
 
 -- Structure and privileges -------------------------------------------------------------------
