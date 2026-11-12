@@ -502,7 +502,7 @@ isOneToOne: false
 { Args: { "p_name": string,"p_request_id"?: string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
                            },
 "create_time_block_by_barber":
-{ Args: { "p_ends_at": string,"p_reason": string,"p_starts_at": string,"p_token_hash": string }; Returns: string
+{ Args: { "p_ends_at": string,"p_reason"?: string,"p_starts_at": string,"p_token_hash": string }; Returns: string
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined

@@ -334,7 +334,7 @@ create function public.create_time_block_by_barber(
   p_token_hash text,
   p_starts_at timestamptz,
   p_ends_at timestamptz,
-  p_reason text
+  p_reason text default null
 )
 returns uuid
 language plpgsql

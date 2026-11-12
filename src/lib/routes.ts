@@ -39,6 +39,9 @@ export const routes = {
   // A barber's private agenda (task 4.4). The token is the whole credential:
   // only the owner's screen right after issuing it ever holds this path.
   barberAgenda: (token: string) => `/b/${token}`,
+  // Task 4.4: one appointment (B-03) and "Bloquear horas" (B-04).
+  barberAppointment: (token: string, id: string) => `/b/${token}/citas/${id}`,
+  barberBlock: (token: string) => `/b/${token}/bloquear`,
   // A customer's appointment (task 3.4). The token is the whole credential;
   // only its hash is stored (appointments.manage_token_hash).
   manageAppointment: (token: string) => `/c/${token}`,
@@ -90,4 +93,20 @@ export function agendaHref(query: AgendaQueryParams = {}): string {
 // D-38 from a free space of the agenda, or from its "+" button.
 export function newAppointmentHref(query: NewAppointmentParams = {}): string {
   return withQuery(routes.panelAppointmentNew, query);
+}
+
+// Task 4.4: "Mi agenda" of a barber (B-01, B-02) says in its query the day
+// or the week it shows; without one it is today. ?aviso= carries the code
+// of a change that could not be saved, so the screen can say why.
+export type BarberAgendaParams = {
+  vista?: "semana";
+  dia?: string;
+  aviso?: string;
+};
+
+export function barberAgendaHref(
+  token: string,
+  query: BarberAgendaParams = {},
+): string {
+  return withQuery(routes.barberAgenda(token), query);
 }

@@ -627,3 +627,28 @@ export async function suspendBarbershop(barbershopId: string) {
     .eq("id", barbershopId);
   if (error) throw error;
 }
+
+// Task 4.4: a barber's private link, issued past the app as the owner's
+// "Copiar link" does (D-56): a new token, and only its hash stored.
+export async function issueBarberLink(barberId: string): Promise<string> {
+  const token = randomBytes(32).toString("base64url");
+  const { createHash } = await import("node:crypto");
+  const { error } = await adminClient()
+    .from("barbers")
+    .update({
+      link_token_hash: createHash("sha256").update(token, "utf8").digest("hex"),
+      link_active: true,
+    })
+    .eq("id", barberId);
+  if (error) throw error;
+  return token;
+}
+
+// Task 4.4: "Desactivar link" (D-56), past the app.
+export async function setBarberLinkActive(barberId: string, active: boolean) {
+  const { error } = await adminClient()
+    .from("barbers")
+    .update({ link_active: active })
+    .eq("id", barberId);
+  if (error) throw error;
+}
