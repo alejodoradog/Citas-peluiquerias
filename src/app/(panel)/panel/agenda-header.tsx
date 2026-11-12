@@ -152,6 +152,7 @@ function ViewSwitch({ place }: { place: AgendaPlace }) {
 }
 
 // "Todos" or a barber's name; it opens the list of barbers, each a link.
+// 48 px tall with its border, as D-30 draws it (46 plus the border).
 // A native disclosure: it works before the page's JavaScript arrives.
 function BarberFilter({
   place,
@@ -180,7 +181,7 @@ function BarberFilter({
   return (
     // Keyed by the filter, so it closes once the owner picks a barber.
     <details key={place.barberId ?? "todos"} className="relative shrink-0">
-      <summary className="border-line text-ink flex h-11.5 cursor-pointer list-none items-center gap-1.5 rounded-xl border bg-white px-3 text-sm font-semibold whitespace-nowrap [&::-webkit-details-marker]:hidden">
+      <summary className="border-line text-ink flex h-12 cursor-pointer list-none items-center gap-1.5 rounded-xl border bg-white px-3 text-sm font-semibold whitespace-nowrap [&::-webkit-details-marker]:hidden">
         <UsersIcon size={16} />
         <span className="sr-only">{t.barberos.etiqueta}: </span>
         {current}

@@ -182,12 +182,6 @@ function Column({
                 key={appointment.id}
                 href={routes.panelAppointment(appointment.id)}
                 data-to-scale=""
-                aria-label={t.cita(
-                  name,
-                  services,
-                  timeLabel(item.start),
-                  t.estados[look],
-                )}
                 className={cx(
                   "absolute inset-x-0.5 z-10 flex flex-col gap-px overflow-hidden rounded-lg px-[5px] py-[3px] no-underline",
                   LOOK_CLASSES[look],
@@ -202,11 +196,18 @@ function Column({
                 >
                   {name}
                 </span>
+                {/* The name comes from what the card shows, then what it has
+                    no room for (WCAG 2.5.3): services, time and state. */}
                 {minutes >= 40 ? (
                   <span className="text-[10px] leading-[1.2]">
                     {look === "manual" ? `${services} · ${t.manual}` : services}
                   </span>
-                ) : null}
+                ) : (
+                  <span className="sr-only">, {services}</span>
+                )}
+                <span className="sr-only">
+                  , {t.cita(timeLabel(item.start), t.estados[look])}
+                </span>
               </Link>
             );
           }

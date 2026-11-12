@@ -38,6 +38,11 @@ async function signIn(page: Page, owner: { email: string; password: string }) {
   await expect(page).toHaveURL(/\/panel$/, FIRST_VISIT);
 }
 
+// A card's name: what it shows, then what it has no room for, in order.
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const shown = (...parts: string[]) =>
+  new RegExp(`^${parts.map(escape).join(".*")}`);
+
 const heading = (page: Page, name: string | RegExp) =>
   page.getByRole("heading", { level: 1, name });
 
@@ -124,7 +129,7 @@ test("the owner reads the day, a barber's day and the week", async ({
       .filter({ visible: true }),
   ).toBeVisible();
   const card = (name: string, services: string, time: string, state: string) =>
-    page.getByRole("link", { name: t.cita(name, services, time, state) });
+    page.getByRole("link", { name: shown(name, services, time, state) });
   await expect(
     card("Camila R.", "Corte", "10:00 a. m.", "Nueva"),
   ).toHaveAttribute("href", `/panel/citas/${camila}`);

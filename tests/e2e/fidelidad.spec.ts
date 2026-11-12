@@ -1305,7 +1305,7 @@ test("D-30, D-31, D-32 and D-33 match the design", async ({ page }) => {
   await expect(grid).toBeVisible({ timeout: 20_000 });
   design = await openDesign(page, "D30-Agenda-dia.dc.html");
   const card = (name: string) =>
-    grid.getByRole("link", { name: new RegExp(`^${name}, `) });
+    grid.getByRole("link", { name: new RegExp(`^${name}`) });
   const designCard = (name: string) =>
     design.getByRole("link", { name: new RegExp(`^${name}`) });
   const CARD = ["border-radius", "background-color", "color"] as const;

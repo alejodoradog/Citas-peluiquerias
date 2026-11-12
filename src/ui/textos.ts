@@ -184,10 +184,9 @@ export const textos = {
     },
     manual: "manual",
     minutos: (minutos: number) => `${minutos} min`,
-    // The name a screen reader hears for a card of the grid of D-30.
-    // It starts with what the card shows.
-    cita: (cliente: string, servicios: string, hora: string, estado: string) =>
-      `${cliente}, ${servicios}, ${hora}, ${estado}`,
+    // What a card of the grid of D-30 has no room for, read after the
+    // customer and the services: "10:00 a. m., Nueva".
+    cita: (hora: string, estado: string) => `${hora}, ${estado}`,
     bloqueo: "Bloqueado",
     cierre: "Barbería cerrada",
     libre: (hasta: string) => `Libre hasta las ${hasta}`,

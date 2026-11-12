@@ -82,7 +82,7 @@ describe("DayGrid", () => {
     );
     const grid = screen.getByRole("region", { name: t.columnas });
     const card = within(grid).getByRole("link", {
-      name: t.cita("Juan P.", "Corte + Barba", "10:00 a. m.", "Manual"),
+      name: /^Juan P\..*Corte \+ Barba · manual.*10:00 a\. m\., Manual$/,
     });
     expect(card).toHaveAttribute("href", "/panel/citas/cita-1");
     // 9:00 is the top: 10:00 is one hour (56 px) down, and it lasts 56 - 2.
