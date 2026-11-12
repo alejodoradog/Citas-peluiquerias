@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
@@ -6,6 +7,8 @@ import { formatPesos } from "@/lib/dinero/pesos";
 import { fromBogota } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { chosenServices } from "@/modulos/agenda/datos/public-availability";
+import { loadManagedAppointment } from "@/modulos/agenda/datos/manage-appointment";
+import { MANAGE_TOKEN_COOKIE } from "@/modulos/agenda/datos/manage-cookie";
 import { loadPublicProfile } from "@/modulos/agenda/datos/public-booking";
 import {
   isUuid,
@@ -15,9 +18,15 @@ import { buttonClasses } from "@/ui/button";
 import { CopyButton } from "@/ui/copy-button";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
-import { directionsUrl, OutsideLink, whatsappUrl } from "../../booking-ui";
+import {
+  calendarUrl,
+  directionsUrl,
+  OutsideLink,
+  whatsappUrl,
+} from "../../booking-ui";
 import { servicesLine, whenLine } from "../summary";
 import { ConfirmedGreeting } from "./confirmed-greeting";
+import { ManageLink } from "./manage-link";
 
 const t = textos.reservas.confirmada;
 
@@ -28,9 +37,10 @@ export const metadata: Metadata = {
 
 // C-08. Only public data travels in the URL (services, barber, day and
 // time); the customer's name comes from this phone (customer-storage.ts).
-// The confirmation email and the link to cancel or change arrive with
-// phase 5 and task 3.4: this screen promises neither (provisional decisions
-// of docs/tareas/3.2-3.3-reservas.md).
+// The confirmation email arrives with phase 5: this screen does not promise
+// it. Until then the link to cancel or change (task 3.4) is given here, from
+// the short cookie of the booking (manage-cookie.ts), and only when it is
+// the link of this same appointment.
 export default function BookingConfirmedPage({
   params,
   searchParams,
@@ -40,21 +50,6 @@ export default function BookingConfirmedPage({
       <Confirmed params={params} searchParams={searchParams} />
     </Suspense>
   );
-}
-
-function calendarUrl(title: string, start: Date, end: Date, place: string) {
-  const stamp = (date: Date) =>
-    date
-      .toISOString()
-      .replace(/[-:]/g, "")
-      .replace(/\.\d{3}/, "");
-  const query = new URLSearchParams({
-    action: "TEMPLATE",
-    text: title,
-    dates: `${stamp(start)}/${stamp(end)}`,
-    location: place,
-  });
-  return `https://calendar.google.com/calendar/render?${query.toString()}`;
 }
 
 async function Confirmed({
@@ -78,6 +73,15 @@ async function Confirmed({
     .join(", ");
   const directions = directionsUrl(profile);
   const assigned = query.asignado === "1";
+  const token = (await cookies()).get(MANAGE_TOKEN_COOKIE.name)?.value;
+  const managed = token ? await loadManagedAppointment(token) : null;
+  const manageToken =
+    managed &&
+    managed.slug === profile.slug &&
+    managed.barberId === barber.id &&
+    managed.start.getTime() === start.getTime()
+      ? token!
+      : null;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-5 pt-10 pb-7.5">
@@ -159,7 +163,20 @@ async function Confirmed({
           </OutsideLink>
         ) : null}
       </div>
-      <p className="text-muted text-sm">{t.cancelar}</p>
+      {manageToken ? (
+        <>
+          <ManageLink
+            token={manageToken}
+            slug={profile.slug}
+            startsAt={start.toISOString()}
+          />
+          <p className="text-muted text-sm">
+            {t.gestionarAyuda(profile.cancellationNoticeHours)}
+          </p>
+        </>
+      ) : (
+        <p className="text-muted text-sm">{t.cancelar}</p>
+      )}
       <Link
         href={routes.booking(profile.slug)}
         className={buttonClasses({ variant: "text", size: "md" })}

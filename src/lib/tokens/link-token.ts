@@ -19,3 +19,9 @@ export function newLinkToken(): string {
 export function newLinkTokenHash(): string {
   return hashLinkToken(newLinkToken());
 }
+
+// The shape newLinkToken gives: 32 bytes in base64url, 43 characters. A path
+// that is not one is refused before asking the database.
+export function isLinkToken(value: string): boolean {
+  return /^[A-Za-z0-9_-]{43}$/.test(value);
+}

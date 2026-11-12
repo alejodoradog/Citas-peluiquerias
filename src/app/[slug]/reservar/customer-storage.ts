@@ -7,6 +7,8 @@
 // Storage may be missing or blocked (private mode): every access is guarded
 // and the page works without it.
 
+import { appointmentStorage } from "../appointment-storage";
+
 export type StoredCustomer = { name: string; email: string; phone: string };
 
 const DRAFT = "yapoin:reserva-borrador";
@@ -53,9 +55,11 @@ export const customerStorage = {
   draft: () => read(session, DRAFT),
   saveDraft: (value: StoredCustomer) => write(session, DRAFT, value),
   saved: () => read(local, SAVED),
+  // "Borrar mis datos": the details and the links of this phone's appointments.
   forget: () => {
     write(local, SAVED, null);
     write(session, DRAFT, null);
+    appointmentStorage.clear();
   },
   // C-08: the booking was made, so the draft becomes the saved details.
   keepDraft: (): StoredCustomer | null => {

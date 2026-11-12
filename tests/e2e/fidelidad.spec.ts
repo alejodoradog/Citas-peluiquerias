@@ -11,9 +11,15 @@ import {
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
 import {
+  chooseServicesAndBarber,
+  chooseTomorrowAt,
+  fillAndConfirm,
+} from "./helpers/reserva";
+import {
   createBookableShop,
   createConfirmedOwner,
   insertShopClosure,
+  setPolicies,
   uniqueEmail,
 } from "./helpers/supabase";
 
@@ -990,5 +996,177 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     PRIMARY,
   );
   await attachSideBySide(page, design, "C-08");
+  await design.close();
+});
+
+// Task 3.4: "Gestionar mi cita" against C-09 to C-13 and C-16. The design
+// shows times every 5 minutes (4:40); the app offers quarter hours.
+test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
+  test.setTimeout(180_000);
+  const g = r.gestionar;
+  const shop = await createBookableShop("fidelidad-gestionar");
+  await page.goto(`/${shop.slug}`);
+  await chooseServicesAndBarber(page, "Ana");
+  await chooseTomorrowAt(page, "10:00");
+  await fillAndConfirm(page, "Camila Rojas", "camila@correo.com");
+  const manage = page.getByRole("link", { name: r.confirmada.gestionar });
+  await expect(manage).toBeVisible({ timeout: 20_000 });
+  const href = (await manage.getAttribute("href"))!;
+
+  // C-09
+  await page.goto(href);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({
+    timeout: 20_000,
+  });
+  let design = await openDesign(page, "C09-Mi-cita.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "cambiar",
+    page.getByRole("link", { name: g.cambiar }),
+    design.getByRole("link", { name: "Cambiar día u hora" }),
+    PRIMARY,
+  );
+  await compare(
+    "cancelar",
+    page.getByRole("button", { name: g.cancelar }),
+    design.getByRole("link", { name: "Cancelar cita" }),
+    PRIMARY,
+  );
+  await compare(
+    "estado",
+    page.getByText(g.confirmada, { exact: true }).filter({ visible: true }),
+    design.getByText("Confirmada", { exact: true }),
+    // A pill: 9999px against 12px of the design draw the same at 24 px.
+    ["height", "background-color", "color", "font-size"],
+  );
+  await attachSideBySide(page, design, "C-09");
+  await design.close();
+
+  // C-11
+  await page.getByRole("button", { name: g.cancelar }).click();
+  const sheet = page.getByRole("dialog", { name: g.hoja.titulo });
+  await expect(sheet).toBeVisible();
+  design = await openDesign(page, "C11-Cancelar.dc.html");
+  await compare(
+    "sí, cancelar",
+    sheet.getByRole("button", { name: g.hoja.si }),
+    design.getByRole("link", { name: "Sí, cancelar mi cita" }),
+    PRIMARY,
+  );
+  await compare(
+    "mantenerla",
+    sheet.getByRole("button", { name: g.hoja.no }),
+    design.getByRole("link", { name: "No, mantenerla" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-11");
+  await design.close();
+  await sheet.getByRole("button", { name: g.hoja.no }).click();
+  await expect(sheet).toBeHidden();
+
+  // C-10
+  await page.getByRole("link", { name: g.cambiar }).click();
+  await expect(
+    page.getByText(g.reprogramar.liberada).filter({ visible: true }),
+  ).toBeVisible({
+    timeout: 20_000,
+  });
+  const hour = page.getByRole("link", { name: "11:00 a. m.", exact: true });
+  await hour.click();
+  await expect(hour).toHaveAttribute("aria-current", "true", {
+    timeout: 20_000,
+  });
+  await page.mouse.move(0, 0);
+  design = await openDesign(page, "C10-Reprogramar.dc.html");
+  await compare(
+    "hora elegida",
+    hour,
+    design.locator('button[aria-pressed="true"]').last(),
+    ["height", "background-color", "color", "font-size", "font-weight"],
+  );
+  await compare(
+    "cambiar mi cita",
+    page.getByRole("button", { name: g.reprogramar.boton }),
+    design.getByRole("link", { name: "Cambiar mi cita" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-10");
+  await design.close();
+
+  // C-13
+  await setPolicies(shop.slug, {
+    minBookingNoticeMinutes: 60,
+    cancellationNoticeHours: 72,
+  });
+  await page.goto(href);
+  await expect(
+    page.getByText(g.fueraDePlazo.titulo).filter({ visible: true }),
+  ).toBeVisible({
+    timeout: 20_000,
+  });
+  design = await openDesign(page, "C13-Fuera-de-plazo.dc.html");
+  await compare(
+    "aviso",
+    page.getByText(g.fueraDePlazo.titulo).filter({ visible: true }),
+    design.getByText("Ya no puedes cancelar ni cambiar desde aquí"),
+    ["color", "font-size", "font-weight"],
+  );
+  await attachSideBySide(page, design, "C-13");
+  await design.close();
+  await setPolicies(shop.slug, {
+    minBookingNoticeMinutes: 60,
+    cancellationNoticeHours: 2,
+  });
+
+  // C-12
+  await page.goto(href);
+  await page.getByRole("button", { name: g.cancelar }).click();
+  await page
+    .getByRole("dialog", { name: g.hoja.titulo })
+    .getByRole("button", { name: g.hoja.si })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: g.cancelada.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "C12-Cancelada.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "reservar otra",
+    page.getByRole("link", { name: g.cancelada.reservarOtra }),
+    design.getByRole("link", { name: "Reservar otra cita" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-12");
+  await design.close();
+
+  // C-16
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 1, name: g.vencido.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "C16-Link-vencido.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.locator("h1"),
+    ["font-size", "font-weight", "line-height", "color"],
+  );
+  await compare(
+    "ir a la barbería",
+    page.getByRole("link", { name: g.vencido.ir }),
+    design.getByRole("link", { name: "Ir a la barbería" }),
+    PRIMARY,
+  );
+  await attachSideBySide(page, design, "C-16");
   await design.close();
 });

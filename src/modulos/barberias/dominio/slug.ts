@@ -10,6 +10,7 @@ export const RESERVED_SLUGS = [
   "auth",
   "ayuda",
   "b",
+  "c",
   "ingresar",
   "login",
   "nueva-clave",

@@ -16,6 +16,7 @@ import { buttonClasses } from "@/ui/button";
 import { ClockIcon, InfoIcon, MapPinIcon } from "@/ui/icons";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
+import { KeptAppointments } from "./kept-appointments";
 import {
   Cover,
   directionsUrl,
@@ -114,6 +115,7 @@ function Profile({
                 : t.perfil.cerradoHoy}
             </span>
           </div>
+          <KeptAppointments slug={profile.slug} />
           <Link
             href={routes.bookingFlow(profile.slug)}
             className={buttonClasses()}

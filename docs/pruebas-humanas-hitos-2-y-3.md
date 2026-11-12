@@ -80,6 +80,14 @@ URL: `citas-peluiquerias.vercel.app` (base de datos de desarrollo `barberias-dev
 - [ ] **15. Datos guardados.** Reservar dos veces desde el mismo celular B: la segunda vez debe proponer los datos guardados ("¿No eres …?" y "Borrar mis datos").
 - [ ] **16. Revisar la reserva.** La agenda del dueño llega en el hito 4. Por ahora, que Claude confirme en la base de datos que la cita quedó con el barbero, la hora y los servicios correctos.
 
+- [ ] **17. Gestionar la cita (celular B, tarea 3.4).**
+  - Después de reservar, tocar **"Cancelar o cambiar mi cita"** en "¡Listo, …!". Debe salir "Tu cita, …" con día, hora, servicios, barbero y precio.
+  - "Cambiar día u hora": elegir otra hora del mismo día y otra de otro día, y tocar "Cambiar mi cita". Debe decir "Listo, cambiamos tu cita." y la hora vieja debe volver a aparecer libre al reservar.
+  - Volver a la página de la barbería: debe salir "Tienes una cita el … · Ver mi cita".
+  - "Cancelar cita" → "Sí, cancelar mi cita". Debe salir "Cancelaste tu cita". Abrir el link otra vez: "Este link ya no sirve".
+- [ ] **18. Plazo para cancelar.** En el celular A, poner "Cancelar hasta" en más horas de las que faltan para una cita. En el celular B, el link de esa cita debe decir "Ya no puedes cancelar ni cambiar desde aquí", con el botón de WhatsApp.
+- [ ] **19. "Borrar mis datos"** en "Tus datos" también debe quitar el aviso "Tienes una cita" de la página de la barbería.
+
 ## Decisiones provisionales para revisar juntos
 - **2.6:** ¿"Eliminar" debe aparecer también en el asistente de una sede creada por error?
 - **3.1:**
@@ -88,6 +96,7 @@ URL: `citas-peluiquerias.vercel.app` (base de datos de desarrollo `barberias-dev
   - los espacios empiezan en cuartos de hora;
   - los turnos que se tocan se unen;
   - un festivo abierto usa el horario de su día de la semana.
+- **3.4 (G1-G7, `docs/tareas/3.4-gestionar-cita.md`):** cambiar solo con el mismo barbero; el plazo cuenta sobre la cita actual; después de cambiar se vuelve a "Tu cita"; con la barbería suspendida se puede cancelar pero no mover.
 - **3.2-3.3 (R1-R9):**
   - todavía no hay correo de confirmación;
   - el link para gestionar la cita llega en la 3.4;

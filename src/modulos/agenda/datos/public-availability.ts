@@ -110,3 +110,57 @@ export async function loadPublicAvailability(
     appointments,
   };
 }
+
+// C-10, "Cambiar día u hora" (task 3.4): the free times of the same barber
+// for an appointment of the same length. The appointment itself does not
+// take its own time, so it can move a quarter of an hour. Empty days when
+// the barber no longer takes appointments (left, or inactive).
+export async function loadRescheduleAvailability(
+  profile: PublicProfile,
+  appointment: { barberId: string; start: Date; end: Date },
+  now: Date,
+): Promise<DayAvailability[]> {
+  const minutes = Math.round(
+    (appointment.end.getTime() - appointment.start.getTime()) / 60_000,
+  );
+  // The engine takes 5 to 480 minutes in steps of 5, as services add up.
+  if (minutes < 5 || minutes > 480 || minutes % 5 !== 0) return [];
+  const window = bookingWindow(now);
+  const barber = profile.barbers.find((b) => b.id === appointment.barberId);
+  const busy = barber
+    ? await loadBusyTimes(
+        profile.id,
+        startOfBogotaDay(window.from),
+        startOfBogotaDay(addDays(window.until, 1)),
+      )
+    : { blocks: [], appointments: [] };
+  const own = (a: BusyAppointment) =>
+    a.start.getTime() === appointment.start.getTime() &&
+    a.end.getTime() === appointment.end.getTime();
+
+  return availableSlots({
+    now,
+    fromDate: window.from,
+    toDate: window.until,
+    durationMinutes: minutes,
+    minNoticeMinutes: profile.minBookingNoticeMinutes,
+    shopHours: profile.shopHours,
+    holidayOpenings: profile.holidayOpenings,
+    barbers: barber
+      ? [
+          {
+            id: barber.id,
+            sortOrder: barber.sortOrder,
+            usesBarbershopHours: barber.usesBarbershopHours,
+            shifts: barber.shifts,
+          },
+        ]
+      : [],
+    blocks: busy.blocks.filter(
+      (block) => block.barberId === null || block.barberId === barber?.id,
+    ),
+    appointments: busy.appointments.filter(
+      (a) => a.barberId === barber?.id && !own(a),
+    ),
+  });
+}
