@@ -12,7 +12,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(45);
+select plan(47);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -191,6 +191,19 @@ select is(pg_temp.hint_of($$ select public.reschedule_appointment_by_token(pg_te
 select throws_ok('select id from public.appointments limit 1', '42501', null, 'anon still reads no appointment');
 
 reset role;
+
+-- The barber stops doing Barba: the appointment cannot move, and says why.
+delete from public.barber_services
+where barber_id = 'ba000000-0000-0000-0000-000000000001' and service_id = '5e000000-0000-0000-0000-000000000002';
+set local role anon;
+set local request.jwt.claims to '{"role": "anon"}';
+select is(pg_temp.hint_of($$ select public.reschedule_appointment_by_token(pg_temp.h('token-camila'), pg_temp.at(5, '10:00')) $$),
+  'services_changed', 'a barber who no longer does a service of the appointment cannot take it elsewhere');
+select is(pg_temp.hint_of($$ select public.cancel_appointment_by_token(pg_temp.h('otro-token')) $$),
+  'link_invalid', 'and that changes nothing for other links');
+reset role;
+insert into public.barber_services (barbershop_id, barber_id, service_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000002');
 
 select is(
   (select count(*) from public.appointments

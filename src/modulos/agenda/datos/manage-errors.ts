@@ -7,6 +7,8 @@
 // - not_accepting: the barbershop takes no bookings now, so it cannot move;
 // - slot_gone: the new time is no longer free: choose another (C-10);
 // - same_time: the appointment is already at that time;
+// - services_changed: the barber no longer does a service of it, so it
+//   cannot move (cancelling still works);
 // - unknown: anything else (the network).
 
 export type ManageRefusal =
@@ -15,6 +17,7 @@ export type ManageRefusal =
   | "not_accepting"
   | "slot_gone"
   | "same_time"
+  | "services_changed"
   | "unknown";
 
 const SLOT_GONE = new Set([
@@ -38,6 +41,7 @@ export function toManageRefusal(error: {
   if (hint === "too_late") return "too_late";
   if (hint === "not_accepting") return "not_accepting";
   if (hint === "same_time") return "same_time";
+  if (hint === "services_changed") return "services_changed";
   if (SLOT_GONE.has(hint) || error.code === "23P01") return "slot_gone";
   return "unknown";
 }

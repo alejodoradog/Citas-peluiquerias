@@ -26,7 +26,8 @@
 -- history (log_appointment_event) records who made the change.
 --
 -- Errors carry a hint the app maps (src/modulos/agenda/datos/manage-errors.ts):
--- link_invalid, too_late, not_accepting, same_time, slot_taken, and the
+-- link_invalid, too_late, not_accepting, same_time, services_changed (the
+-- barber no longer does a service of the appointment), slot_taken, and the
 -- hints of booking_time_problem and barber_slot_problem.
 
 -- 1. managed_appointment ----------------------------------------------------------------------
@@ -200,6 +201,25 @@ begin
   if not found or not public.barbershop_accepts_bookings(managed.barbershop_id) then
     raise exception 'the barbershop takes no bookings'
       using errcode = 'P0001', hint = 'not_accepting';
+  end if;
+
+  -- The barber must still do every service of the appointment. The lines
+  -- trigger would refuse it only at commit, as if no time were free.
+  if exists (
+    select 1
+    from public.appointment_services l
+    where l.barbershop_id = managed.barbershop_id
+      and l.appointment_id = managed.id
+      and not exists (
+        select 1
+        from public.barber_services bs
+        where bs.barbershop_id = l.barbershop_id
+          and bs.barber_id = managed.barber_id
+          and bs.service_id = l.service_id
+      )
+  ) then
+    raise exception 'the barber no longer does every service'
+      using errcode = 'P0001', hint = 'services_changed';
   end if;
 
   minutes := (extract(epoch from managed.ends_at - managed.starts_at) / 60)::integer;

@@ -1230,6 +1230,8 @@ export const textos = {
           "La barbería no está recibiendo cambios ahora. Escríbeles por WhatsApp.",
         slot_gone: "Esa hora ya no está libre. Elige otra.",
         same_time: "Tu cita ya está a esa hora. Elige otra.",
+        services_changed:
+          "La barbería cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbeles por WhatsApp.",
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
         invalid: "No pudimos hacer el cambio. Intenta de nuevo.",
       } satisfies Record<ManageRefusal | "invalid", string>,

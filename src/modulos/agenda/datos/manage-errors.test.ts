@@ -7,6 +7,9 @@ describe("toManageRefusal", () => {
     expect(toManageRefusal({ hint: "too_late" })).toBe("too_late");
     expect(toManageRefusal({ hint: "not_accepting" })).toBe("not_accepting");
     expect(toManageRefusal({ hint: "same_time" })).toBe("same_time");
+    expect(toManageRefusal({ hint: "services_changed" })).toBe(
+      "services_changed",
+    );
   });
 
   it("treats every reason the new time cannot be booked as taken", () => {

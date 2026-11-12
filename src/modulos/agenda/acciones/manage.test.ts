@@ -26,6 +26,10 @@ vi.mock("../datos/manage-appointment", () => ({
   rescheduleManagedAppointment,
 }));
 
+vi.mock("@/lib/tokens/link-token", () => ({
+  isLinkToken: (value: string) => /^[A-Za-z0-9_-]{43}$/.test(value),
+}));
+
 const { cancelAppointment, rescheduleAppointment } = await import("./manage");
 
 const TOKEN = "a".repeat(43);
@@ -79,6 +83,26 @@ describe("cancelAppointment", () => {
         cancelAppointment({ status: "idle" }, form({ token: TOKEN })),
       ),
     ).toEqual({ status: "failed", error: "unknown", values: {} });
+  });
+});
+
+describe("a value that is not a token", () => {
+  it("is refused without asking the database or redirecting", async () => {
+    for (const token of ["", "x?paso=cambiar", "../../admin", "a".repeat(44)]) {
+      expect(
+        await run(() => cancelAppointment({ status: "idle" }, form({ token }))),
+      ).toEqual({ status: "failed", error: "link_invalid", values: {} });
+      expect(
+        await run(() =>
+          rescheduleAppointment(
+            { status: "idle" },
+            form({ token, dia: "2026-11-24", hora: "16:45" }),
+          ),
+        ),
+      ).toEqual({ status: "failed", error: "link_invalid", values: {} });
+    }
+    expect(cancelManagedAppointment).not.toHaveBeenCalled();
+    expect(rescheduleManagedAppointment).not.toHaveBeenCalled();
   });
 });
 
