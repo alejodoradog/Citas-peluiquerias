@@ -13,12 +13,14 @@ const t = textos.reservas.gestionar.vencido;
 
 // C-16: the appointment passed, was cancelled or the link is not one. The
 // database says nothing more, so the barbershop comes from this phone, when
-// it booked there; this phone also forgets the link.
+// it booked there; this phone no longer shows the link.
 export function LinkGone({ token }: { token: string }) {
   const [slug, setSlug] = useState<string | null>(null);
   useEffect(() => {
+    // Marked, not forgotten: React may run this twice (Strict Mode), and
+    // the second time must still find the barbershop.
     const kept = appointmentStorage.slugOf(token);
-    appointmentStorage.forget(token);
+    appointmentStorage.cancel(token);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one read of browser storage after mounting
     setSlug(kept);
   }, [token]);

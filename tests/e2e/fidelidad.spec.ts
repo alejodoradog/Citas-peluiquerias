@@ -1039,9 +1039,10 @@ test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
   );
   await compare(
     "estado",
-    page.getByText(g.confirmada, { exact: true }),
+    page.getByText(g.confirmada, { exact: true }).filter({ visible: true }),
     design.getByText("Confirmada", { exact: true }),
-    ["height", "border-radius", "background-color", "color", "font-size"],
+    // A pill: 9999px against 12px of the design draw the same at 24 px.
+    ["height", "background-color", "color", "font-size"],
   );
   await attachSideBySide(page, design, "C-09");
   await design.close();
@@ -1070,7 +1071,9 @@ test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
 
   // C-10
   await page.getByRole("link", { name: g.cambiar }).click();
-  await expect(page.getByText(g.reprogramar.liberada)).toBeVisible({
+  await expect(
+    page.getByText(g.reprogramar.liberada).filter({ visible: true }),
+  ).toBeVisible({
     timeout: 20_000,
   });
   const hour = page.getByRole("link", { name: "11:00 a. m.", exact: true });
@@ -1101,13 +1104,15 @@ test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
     cancellationNoticeHours: 72,
   });
   await page.goto(href);
-  await expect(page.getByText(g.fueraDePlazo.titulo)).toBeVisible({
+  await expect(
+    page.getByText(g.fueraDePlazo.titulo).filter({ visible: true }),
+  ).toBeVisible({
     timeout: 20_000,
   });
   design = await openDesign(page, "C13-Fuera-de-plazo.dc.html");
   await compare(
     "aviso",
-    page.getByText(g.fueraDePlazo.titulo),
+    page.getByText(g.fueraDePlazo.titulo).filter({ visible: true }),
     design.getByText("Ya no puedes cancelar ni cambiar desde aquí"),
     ["color", "font-size", "font-weight"],
   );

@@ -9,8 +9,8 @@ export type StoredAppointment = {
   slug: string;
   // ISO instant of the start.
   startsAt: string;
-  // Cancelled from this phone: no longer shown, but C-16 still knows the
-  // barbershop.
+  // Cancelled, or its link stopped working (C-12, C-16): no longer shown,
+  // but C-16 still knows the barbershop. Dropped once its time passes.
   cancelled?: boolean;
 };
 
@@ -68,14 +68,14 @@ export const appointmentStorage = {
   // C-16: the barbershop of a link this phone kept, if any.
   slugOf: (token: string) =>
     readAll().find((item) => item.token === token)?.slug ?? null,
-  // C-12: cancelled here.
+  // C-12 and C-16: the link no longer works. Idempotent.
   cancel: (token: string) =>
     writeAll(
       readAll().map((item) =>
         item.token === token ? { ...item, cancelled: true } : item,
       ),
     ),
-  // C-16: that link no longer works.
+  // Forget one link altogether.
   forget: (token: string) =>
     writeAll(readAll().filter((item) => item.token !== token)),
   clear: () => writeAll([]),

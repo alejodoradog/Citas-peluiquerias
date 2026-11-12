@@ -55,16 +55,26 @@ test("the customer moves and cancels the appointment from its link", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: g.titulo("Camila") }),
   ).toBeVisible(FIRST_VISIT);
-  await expect(page.getByText(g.confirmada, { exact: true })).toBeVisible();
-  await expect(page.getByText("Corte · 30 min", { exact: true })).toBeVisible();
-  await expect(page.getByText("Ana", { exact: true })).toBeVisible();
-  await expect(page.getByText(g.plazo(2))).toBeVisible();
+  await expect(
+    page.getByText(g.confirmada, { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Corte · 30 min", { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Ana", { exact: true }).filter({ visible: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(g.plazo(2)).filter({ visible: true }),
+  ).toBeVisible();
   await screen(page);
 
   // C-10: Ana tomorrow at 11:00 instead of 10:00.
   await page.getByRole("link", { name: g.cambiar }).click();
   await expect(
-    page.getByText(g.reprogramar.liberada, { exact: true }),
+    page
+      .getByText(g.reprogramar.liberada, { exact: true })
+      .filter({ visible: true }),
   ).toBeVisible(FIRST_VISIT);
   const hour = page.getByRole("link", {
     name: formatWallClock("11:00"),
@@ -81,7 +91,9 @@ test("the customer moves and cancels the appointment from its link", async ({
   await change.focus();
   await page.keyboard.press("Enter");
 
-  await expect(page.getByText(g.cambiada)).toBeVisible(FIRST_VISIT);
+  await expect(
+    page.getByText(g.cambiada).filter({ visible: true }),
+  ).toBeVisible(FIRST_VISIT);
   const [moved] = await webAppointments(shop.id);
   expect(new Date(moved!.starts_at).toISOString()).toBe(
     fromBogota(tomorrow(), "11:00").toISOString(),
@@ -103,7 +115,9 @@ test("the customer moves and cancels the appointment from its link", async ({
     cancellationNoticeHours: 72,
   });
   await page.goto(href!);
-  await expect(page.getByText(g.fueraDePlazo.titulo)).toBeVisible(FIRST_VISIT);
+  await expect(
+    page.getByText(g.fueraDePlazo.titulo).filter({ visible: true }),
+  ).toBeVisible(FIRST_VISIT);
   await expect(page.getByRole("button", { name: g.cancelar })).toHaveCount(0);
   await expect(page.getByRole("link", { name: g.cambiar })).toHaveCount(0);
   await screen(page);
