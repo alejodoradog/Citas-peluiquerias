@@ -16,6 +16,7 @@ export const routes = {
   setupBarber: "/panel/configurar/equipo/barbero",
   setupDone: "/panel/configurar/listo",
   panelClients: "/panel/clientes",
+  panelClient: (id: string) => `/panel/clientes/${id}`,
   panelShare: "/panel/compartir",
   panelMore: "/panel/mas",
   panelShopHours: "/panel/horario",

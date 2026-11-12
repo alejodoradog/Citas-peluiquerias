@@ -163,6 +163,8 @@ select is(
     'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
+    -- Task 4.3: "Borrar cliente" and the list of customers.
+    'public.anonymize_customer:authenticated',
     -- Task 3.3: the public booking page, for anyone.
     'public.barbershop_accepts_bookings:anon',
     'public.barbershop_accepts_bookings:authenticated',
@@ -178,6 +180,7 @@ select is(
     'public.create_appointment:authenticated',
     'public.create_barbershop:authenticated',
     'public.delete_barbershop:authenticated',
+    'public.list_customers:authenticated',
     'public.managed_appointment:anon',
     'public.managed_appointment:authenticated',
     'public.reschedule_appointment_by_token:anon',

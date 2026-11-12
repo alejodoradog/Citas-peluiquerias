@@ -500,12 +500,14 @@ export async function createBookableShop(
   id: string;
   services: { corte: string; barba: string };
   barbers: { ana: string; beto: string };
+  // The owner's account, to sign in to the panel (task 4.3).
+  owner: { email: string; password: string };
 }> {
-  const { slug } = await createConfirmedOwner(
-    uniqueEmail(tag),
-    "clave-segura-1",
-    { ownerName: "Carlos Pérez", barbershopName },
-  );
+  const owner = { email: uniqueEmail(tag), password: "clave-segura-1" };
+  const { slug } = await createConfirmedOwner(owner.email, owner.password, {
+    ownerName: "Carlos Pérez",
+    barbershopName,
+  });
   const admin = adminClient();
   const id = await barbershopIdOf(slug);
   const { error: setupError } = await admin
@@ -591,6 +593,7 @@ export async function createBookableShop(
   return {
     slug,
     id,
+    owner,
     services: {
       corte: named(services, "name", "Corte"),
       barba: named(services, "name", "Barba"),
