@@ -19,6 +19,7 @@ export const routes = {
   panelAppointment: (id: string) => `/panel/citas/${id}`,
   panelAppointmentNew: "/panel/citas/nueva",
   panelClients: "/panel/clientes",
+  panelClient: (id: string) => `/panel/clientes/${id}`,
   panelShare: "/panel/compartir",
   panelMore: "/panel/mas",
   panelShopHours: "/panel/horario",

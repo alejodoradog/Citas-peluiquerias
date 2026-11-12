@@ -1126,6 +1126,143 @@ export const textos = {
       } satisfies Record<DeleteBarbershopErrorCode | "invalid", string>,
     },
   },
+  // Task 4.3: D-40 Clientes, D-41 the customer's profile and D-42 "Borrar
+  // cliente". The error copy is checked against the action's codes in
+  // src/modulos/clientes/acciones/customers.ts.
+  clientes: {
+    titulo: "Clientes",
+    cargando: "Cargando tus clientes…",
+    total: (n: number) => (n === 1 ? "1 cliente" : `${n} clientes`),
+    buscar: {
+      etiqueta: "Buscar cliente",
+      placeholder: "Buscar por nombre, correo o celular",
+    },
+    filtros: {
+      etiqueta: "Filtrar clientes",
+      todos: "Todos",
+      inasistencias: "Con inasistencias",
+      nuevos: "Nuevos",
+    },
+    // Days as D-40 and D-41 write them (src/app/(panel)/panel/clientes/format.ts).
+    hoy: "hoy",
+    mesesCortos: [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ],
+    meses: [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre",
+    ],
+    visitas: (n: number) => (n === 1 ? "1 visita" : `${n} visitas`),
+    ultima: (dia: string) => `última: ${dia}`,
+    proxima: (dia: string, hora: string) => `próxima: ${dia} ${hora}`,
+    sinCorreo: "cita manual, sin correo",
+    inasistencias: (n: number) =>
+      n === 1 ? "1 inasistencia" : `${n} inasistencias`,
+    mas: (n: number) =>
+      `Ves los primeros ${n}. Busca por nombre, correo o celular para encontrar a los demás.`,
+    vacio: {
+      titulo: "Aún no tienes clientes",
+      cuerpo:
+        "Aparecen aquí cuando reservan desde tu link o cuando les creas una cita.",
+    },
+    sinResultados: {
+      titulo: "No encontramos clientes",
+      busqueda: (texto: string) =>
+        `Nadie coincide con “${texto}”. Revisa cómo lo escribiste.`,
+      filtro: "Ningún cliente está en este filtro todavía.",
+      verTodos: "Ver todos",
+    },
+    borrado: "Borramos el cliente y sus datos.",
+    // What the appointments of a deleted customer say instead of a name.
+    clienteBorrado: "Cliente borrado",
+    ficha: {
+      titulo: "Cliente",
+      cargando: "Cargando el cliente…",
+      desde: (mes: string, anio: number) => `Cliente desde ${mes} ${anio}`,
+      alerta: {
+        // "No llegó el 7 de nov ni el 12 de oct. …"
+        cuerpo: (dias: string) =>
+          `No llegó ${dias}. Puedes pedirle un abono antes de su próxima cita.`,
+        ni: "ni",
+        otraVez: "otra vez",
+        otrasVeces: (n: number) => `otras ${n} veces`,
+      },
+      numeros: {
+        visitas: "Visitas",
+        inasistencias: "Inasistencias",
+        total: "En total",
+      },
+      correo: "Correo",
+      celular: "Celular",
+      sinCorreo: "Sin correo",
+      sinCelular: "Sin celular",
+      notas: {
+        etiqueta: "Notas",
+        guardar: "Guardar notas",
+        guardando: "Guardando…",
+        guardadas: "Guardamos las notas.",
+        errores: {
+          notes_too_long: "Las notas pueden tener hasta 1.000 caracteres.",
+          unknown: "No pudimos guardar las notas. Intenta de nuevo.",
+          invalid: "Revisa este dato.",
+        },
+      },
+      historial: "Historial",
+      sinCitas: "Todavía no tiene citas.",
+      // "Hoy · 10:20 a. m.", "24 oct · 5:00 p. m."
+      cita: (dia: string, hora: string) =>
+        `${dia.charAt(0).toLocaleUpperCase("es-CO")}${dia.slice(1)} · ${hora}`,
+      detalle: (servicios: string, barbero: string) =>
+        `${servicios} · ${barbero}`,
+      estados: {
+        confirmed: "Confirmada",
+        attended: "Atendida",
+        no_show: "No asistió",
+        cancelled_by_customer: "Cancelada por cliente",
+        cancelled_by_barbershop: "Cancelada por barbería",
+      },
+      // "Nueva cita para Diego": the first name.
+      nuevaCita: (nombre: string) =>
+        `Nueva cita para ${nombre.trim().split(/\s+/)[0]}`,
+    },
+    borrar: {
+      boton: "Borrar cliente",
+      titulo: (nombre: string) => `¿Borrar a ${nombre}?`,
+      cuerpo:
+        "Borramos su nombre, correo, celular y notas. Sus citas quedan en tus cuentas como “Cliente borrado”. No se puede deshacer.",
+      confirmar: "Borrar cliente",
+      borrando: "Borrando…",
+      volver: "Volver",
+      errores: {
+        has_upcoming_appointments:
+          "Tiene citas próximas. Cancélalas en la agenda antes de borrarlo.",
+        customer_not_found: "Este cliente ya no está. Vuelve a la lista.",
+        unknown: "No pudimos borrar el cliente. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      },
+    },
+  },
   // The public booking page (tasks 3.2 and 3.3, C-01 to C-08, C-17, C-18).
   reservas: {
     tituloPestana: (barberia: string) => `Reservar en ${barberia}`,
