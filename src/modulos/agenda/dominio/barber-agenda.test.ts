@@ -108,6 +108,15 @@ describe("canMark (decisions B2 and B3)", () => {
     expect(canMark(appointment("a", TODAY, "10:00", 40), NOW)).toBe(true);
   });
 
+  it("marks up to a week back, and older ones are the owner's (decision B5)", () => {
+    expect(canMark(appointment("a", "2026-10-31", "08:00", 30), NOW)).toBe(
+      true,
+    );
+    expect(canMark(appointment("a", "2026-10-30", "18:00", 30), NOW)).toBe(
+      false,
+    );
+  });
+
   it("not one that has not started, nor one already marked or cancelled", () => {
     expect(canMark(appointment("a", TODAY, "10:40", 60), NOW)).toBe(false);
     expect(

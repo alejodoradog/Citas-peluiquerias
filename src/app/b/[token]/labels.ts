@@ -63,8 +63,8 @@ export function weekTitle(days: readonly BogotaDate[]): string {
   const from =
     first.month === last.month
       ? String(first.day)
-      : `${first.day} de ${a.meses[first.month]}`;
-  return a.semana(from, `${last.day} de ${a.meses[last.month]}`);
+      : textos.barbero.diaDeMes(first.day, a.meses[first.month]!);
+  return a.semana(from, textos.barbero.diaDeMes(last.day, a.meses[last.month]!));
 }
 
 // "Almuerzo" or the default words of a block without a reason.

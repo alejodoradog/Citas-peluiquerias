@@ -17,7 +17,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(54);
+select plan(65);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -187,6 +187,17 @@ insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at
   ('b0000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', null,
    pg_temp.at(2, '06:00'), pg_temp.at(2, '08:00'), null);
 
+-- Older than a week: a9, confirmed, of Uno, 9 days ago. An ended block of
+-- Uno three days ago (b4), and a block of Tres in T (b5).
+insert into public.appointments (id, barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source, status) values
+  ('a0000000-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001',
+   'ba000000-0000-0000-0000-000000000001', pg_temp.at(-9, '10:00'), pg_temp.at(-9, '10:30'), 25000, 'manual', 'confirmed');
+insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
+  ('b0000000-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001',
+   pg_temp.at(-3, '10:00'), pg_temp.at(-3, '11:00'), 'Permiso'),
+  ('b0000000-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000003',
+   pg_temp.at(1, '14:00'), pg_temp.at(1, '15:00'), null);
+
 -- Cuatro leaves the team, with their link still active.
 update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000004';
 
@@ -273,6 +284,16 @@ select is(
   'at most 7 days at a time'
 );
 select is(
+  pg_temp.hint_of($q$select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(-20), pg_temp.d(-14))$q$),
+  'range_invalid',
+  'never weeks long gone (decision B5)'
+);
+select is(
+  pg_temp.hint_of($q$select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(31), pg_temp.d(37))$q$),
+  'range_invalid',
+  'nor beyond the weeks of the next 30 days'
+);
+select is(
   (select jsonb_array_length(public.barber_agenda(pg_temp.h('tres'), pg_temp.d(0), pg_temp.d(5)) -> 'appointments')),
   1,
   'Tres sees only the appointment of barbershop T'
@@ -300,6 +321,11 @@ select is(
   (select count(*)::integer from public.barber_appointment(pg_temp.h('cinco'), 'a0000000-0000-0000-0000-000000000001')),
   0,
   'nor anything through a deactivated link'
+);
+select is(
+  (select count(*)::integer from public.barber_appointment(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000003')),
+  0,
+  'nor a cancelled appointment, as the agenda'
 );
 
 -- Marking ----------------------------------------------------------------------------------------------
@@ -352,6 +378,16 @@ select is(
   'link_invalid',
   'a deactivated link marks nothing'
 );
+select is(
+  pg_temp.hint_of($q$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000005', 'attended')$q$),
+  'not_yours',
+  'nor one of another barbershop'
+);
+select is(
+  pg_temp.hint_of($q$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000009', 'no_show')$q$),
+  'not_yours',
+  'nor one older than a week (decision B5)'
+);
 
 -- Blocks --------------------------------------------------------------------------------------------------
 
@@ -372,6 +408,21 @@ select is(
   pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '10:15'), pg_temp.at(1, '11:00'), null)$$),
   'overlaps_appointment',
   'not over an appointment of their own'
+);
+select is(
+  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '14:30'), pg_temp.at(1, '15:30'), null)$q$),
+  'overlaps_block',
+  'nor over a block of their own'
+);
+select is(
+  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '18:00'), pg_temp.at(1, '19:00'), 'Llama al 3001234567')$q$),
+  'range_invalid',
+  'only the reasons of B-04'
+);
+select is(
+  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '18:00') + interval '400 milliseconds', pg_temp.at(1, '19:00'), null)$q$),
+  'range_invalid',
+  'exactly on the quarter hour, not a fraction of a second off'
 );
 select is(
   pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '10:05'), pg_temp.at(1, '10:20'), null)$$),
@@ -407,6 +458,16 @@ select is(
   pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000002')$$),
   'not_yours',
   'nor a block of Dos'
+);
+select is(
+  pg_temp.hint_of($q$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000005')$q$),
+  'not_yours',
+  'nor one of another barbershop'
+);
+select is(
+  pg_temp.hint_of($q$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000004')$q$),
+  'not_yours',
+  'nor one that already ended'
 );
 select is(
   pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000001')$$),
@@ -445,6 +506,13 @@ select is(
   'read_only',
   'nor remove a block'
 );
+
+-- A deleted barbershop: its links stop working.
+reset role;
+update public.barbershops set deleted_at = now() where id = 'aaaaaaaa-0000-0000-0000-000000000002';
+set local role anon;
+select is(public.barber_agenda(pg_temp.h('tres'), pg_temp.d(0), pg_temp.d(0)), null,
+  'the link of a deleted barbershop gives nothing');
 
 select * from finish();
 rollback;

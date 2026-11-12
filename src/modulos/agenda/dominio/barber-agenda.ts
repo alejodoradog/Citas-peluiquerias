@@ -2,6 +2,7 @@ import {
   addDays,
   isBogotaDate,
   startOfBogotaDay,
+  toBogotaDate,
   toBogotaTime,
   fromBogota,
   type BogotaDate,
@@ -76,16 +77,19 @@ export function parseBarberQuery(
   return { view, date };
 }
 
-// Decisions B2 and B3: a confirmed appointment that already started. A mark
-// is not corrected from the link, and nobody marks "no asistió" to someone
-// who has not arrived yet.
+// Decisions B2, B3 and B5: a confirmed appointment that already started,
+// within the last week. A mark is not corrected from the link, nobody marks
+// "no asistió" to someone who has not arrived yet, and older appointments
+// are the owner's to mark. The database checks the same.
 export function canMark(
   appointment: Pick<BarberAppointment, "status" | "start">,
   now: Date,
 ): boolean {
+  const oldest = startOfBogotaDay(addDays(toBogotaDate(now), -DAYS_BACK));
   return (
     appointment.status === "confirmed" &&
-    appointment.start.getTime() <= now.getTime()
+    appointment.start.getTime() <= now.getTime() &&
+    appointment.start.getTime() >= oldest.getTime()
   );
 }
 

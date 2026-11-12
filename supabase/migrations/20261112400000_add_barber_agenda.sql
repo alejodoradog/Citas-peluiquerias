@@ -115,8 +115,13 @@ begin
     return null;
   end if;
 
-  if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 6 then
-    raise exception 'at most 7 days'
+  -- At most 7 days, inside the days the barber can open (decision B5: a
+  -- week back to 30 days ahead), widened to the whole weeks of B-02 that
+  -- touch them: never the barber's whole history.
+  if p_from is null or p_to is null or p_to < p_from or p_to - p_from > 6
+    or p_from < private.today_bogota() - 13
+    or p_to > private.today_bogota() + 36 then
+    raise exception 'at most 7 days, near today'
       using errcode = 'invalid_parameter_value', hint = 'range_invalid';
   end if;
   range_start := p_from::timestamp at time zone 'America/Bogota';
@@ -262,6 +267,8 @@ as $$
   join public.customers c
     on c.barbershop_id = a.barbershop_id and c.id = a.customer_id
   where a.id = p_appointment_id
+    -- As the agenda: a cancelled appointment is no longer the barber's.
+    and a.status in ('confirmed', 'attended', 'no_show')
 $$;
 
 revoke all on function public.barber_appointment(text, uuid) from public;
@@ -317,6 +324,13 @@ begin
     raise exception 'the appointment has not started'
       using errcode = 'P0001', hint = 'too_early';
   end if;
+  -- Decision B5: a week back, for what the barber forgot to mark. Older
+  -- appointments are the owner's to mark.
+  if found_appointment.starts_at
+    < (private.today_bogota() - 7)::timestamp at time zone 'America/Bogota' then
+    raise exception 'too old to mark from the link'
+      using errcode = 'P0001', hint = 'not_yours';
+  end if;
 
   update public.appointments
   set status = p_status
@@ -363,8 +377,9 @@ begin
       using errcode = 'P0001', hint = 'barber_inactive';
   end if;
 
+  -- The reasons of B-04, as the owner's agenda shows them; "Otro" is none.
   if p_starts_at is null or p_ends_at is null or p_starts_at >= p_ends_at
-    or (p_reason is not null and char_length(p_reason) > 40) then
+    or (p_reason is not null and p_reason not in ('Almuerzo', 'Permiso', 'Diligencia')) then
     raise exception 'invalid block'
       using errcode = 'invalid_parameter_value', hint = 'range_invalid';
   end if;
@@ -374,8 +389,8 @@ begin
       using errcode = 'P0001', hint = 'too_early';
   end if;
   block_day := (p_starts_at at time zone 'America/Bogota')::date;
-  if extract(epoch from p_starts_at)::bigint % 900 <> 0
-    or extract(epoch from p_ends_at)::bigint % 900 <> 0
+  if p_starts_at <> date_bin('15 minutes', p_starts_at, timestamptz '2000-01-01 00:00+00')
+    or p_ends_at <> date_bin('15 minutes', p_ends_at, timestamptz '2000-01-01 00:00+00')
     or p_ends_at > (block_day + 1)::timestamp at time zone 'America/Bogota'
     or block_day > private.today_bogota() + 30 then
     raise exception 'one day, in steps of 15 minutes, up to 30 days ahead'
@@ -383,7 +398,11 @@ begin
   end if;
 
   -- The same lock as a public booking of that barbershop and Bogotá day, so
-  -- the two see each other.
+  -- the two see each other. The day before too, in order, because a
+  -- booking takes the lock of the day it starts and may run past midnight.
+  perform pg_advisory_xact_lock(
+    hashtextextended('book_appointment:' || barber.barbershop_id::text || ':' || (block_day - 1)::text, 0)
+  );
   perform pg_advisory_xact_lock(
     hashtextextended('book_appointment:' || barber.barbershop_id::text || ':' || block_day::text, 0)
   );

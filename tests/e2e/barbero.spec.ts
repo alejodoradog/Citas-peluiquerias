@@ -192,6 +192,8 @@ test("a link that was deactivated or made up shows B-05", async ({ page }) => {
   await expect(heading(page, t.vencido.titulo)).toBeVisible();
   await expect(page.getByText(t.vencido.detalle)).toBeVisible();
   await expectAccessible(page);
+  await expectTouchTargets(page);
+  await expectNoZoomOnFocus(page);
 
   await page.goto(`/b/${"x".repeat(43)}`);
   await expect(heading(page, t.vencido.titulo)).toBeVisible();
@@ -219,6 +221,8 @@ test("a paused barbershop leaves the agenda read only, but for the marks (B-06)"
     0,
   );
   await expectAccessible(page);
+  await expectTouchTargets(page);
+  await expectNoZoomOnFocus(page);
 
   // Decision B6: marking still works (spec, Suscripciones, point 6).
   await page

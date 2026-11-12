@@ -1539,6 +1539,8 @@ export const textos = {
     // B-02.
     descansas: "Descansas",
     horario: (desde: string, hasta: string) => `${desde} – ${hasta}`,
+    // "15 de noviembre", the ends of the week of B-02.
+    diaDeMes: (dia: number, mes: string) => `${dia} de ${mes}`,
     pausada: {
       titulo: "La barbería está pausada",
       detalle:

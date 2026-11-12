@@ -84,6 +84,8 @@ export function WeekList({
           const row = "text-ink flex min-h-14 items-center gap-3 px-4 py-3";
           return (
             <li key={day.date}>
+              {/* A rest day without appointments has nothing to open, as
+                  B-02 draws it: no chevron. */}
               {canOpen(day.date) && (day.hours || day.count > 0) ? (
                 <Link
                   href={barberAgendaHref(token, { dia: day.date })}

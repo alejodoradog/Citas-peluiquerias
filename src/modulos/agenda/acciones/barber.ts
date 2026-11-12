@@ -66,7 +66,10 @@ export async function markAppointment(formData: FormData): Promise<void> {
   if (!isLinkToken(token)) redirect(routes.home);
   const appointmentId = String(formData.get("cita") ?? "");
   const status = String(formData.get("estado") ?? "");
-  const target = returnTarget(formData, appointmentId);
+  // Only a real id goes into a path; anything else goes back to today.
+  const target = isId(appointmentId)
+    ? returnTarget(formData, appointmentId)
+    : { date: toBogotaDate(now()) };
   if (!isId(appointmentId) || (status !== "attended" && status !== "no_show")) {
     back(token, target, "not_yours");
   }
