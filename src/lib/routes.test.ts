@@ -39,8 +39,12 @@ describe("routes", () => {
 
   it("reserves the first segment of every named route", () => {
     for (const route of Object.values(routes)) {
-      // Routes with a parameter are functions; a sample value stands in.
-      const path = typeof route === "function" ? route("muestra") : route;
+      // Routes with parameters are functions; a sample value stands in for
+      // each one (B-03 takes the link and the appointment).
+      const path =
+        typeof route === "function"
+          ? (route as (...values: string[]) => string)("muestra", "muestra")
+          : route;
       const first = path.split("/")[1];
       // The booking routes start with the barbershop's own link.
       if (first === "muestra") continue;

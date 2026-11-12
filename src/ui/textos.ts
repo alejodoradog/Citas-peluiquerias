@@ -2,6 +2,8 @@ import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
 import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
+import type { BarberRefusal } from "@/modulos/agenda/datos/barber-errors";
+import type { BlockFormCode } from "@/modulos/agenda/dominio/barber-agenda";
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
@@ -1506,6 +1508,105 @@ export const textos = {
       unknown: "No pudimos reservar tu cita. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BookingActionErrorCode | "invalid", string>,
+  },
+  barbero: {
+    // "Mi agenda" of a barber, by their private link (task 4.4): B-01 to B-06.
+    tituloPestana: "Mi agenda",
+    cargando: "Cargando tu agenda…",
+    encabezado: (barberia: string) => `${barberia} · Mi agenda`,
+    hola: (nombre: string) => `Hola, ${nombre}`,
+    resumen: {
+      sinCitas: "Hoy no tienes citas",
+      citas: (cantidad: number) =>
+        cantidad === 1 ? "Hoy tienes 1 cita" : `Hoy tienes ${cantidad} citas`,
+      proxima: (citas: string, hora: string) =>
+        `${citas} · la próxima a las ${hora}`,
+    },
+    vistas: { etiqueta: "Vista", hoy: "Hoy", semana: "Semana" },
+    sinCitasDia: "No tienes citas este día.",
+    marcar: {
+      atendida: "Atendida",
+      noAsistio: "No asistió",
+      // The name a screen reader hears, starting with the visible word.
+      atendidaDe: (cliente: string) => `Atendida, ${cliente}`,
+      noAsistioDe: (cliente: string) => `No asistió, ${cliente}`,
+      guardando: "Guardando…",
+    },
+    quitar: "Quitar",
+    quitarDe: (bloqueo: string) => `Quitar, ${bloqueo}`,
+    bloquearHoras: "Bloquear horas",
+    soloTuyo: "Este link es solo tuyo. No lo compartas.",
+    // B-02.
+    descansas: "Descansas",
+    horario: (desde: string, hasta: string) => `${desde} – ${hasta}`,
+    // "15 de noviembre", the ends of the week of B-02.
+    diaDeMes: (dia: number, mes: string) => `${dia} de ${mes}`,
+    pausada: {
+      titulo: "La barbería está pausada",
+      detalle:
+        "Tu agenda es solo de lectura y no entran reservas nuevas. Las citas tomadas siguen en pie.",
+    },
+    // B-03.
+    cita: {
+      titulo: "Cita",
+      volver: "Volver a mi agenda",
+      cuando: "Cuándo",
+      servicios: "Servicios",
+      visitas: "Visitas",
+      servicio: (nombre: string, minutos: number) =>
+        `${nombre} (${minutos} min)`,
+      cuandoLinea: (dia: string, horas: string) => `${dia} · ${horas}`,
+      visitasLinea: (visitas: number, inasistencias: number) =>
+        `${visitas} · ${
+          inasistencias === 0
+            ? "sin inasistencias"
+            : inasistencias === 1
+              ? "1 inasistencia"
+              : `${inasistencias} inasistencias`
+        }`,
+    },
+    // B-04.
+    bloquear: {
+      titulo: "Bloquear horas",
+      cerrar: "Cerrar",
+      dia: "Día",
+      desde: "Desde",
+      hasta: "Hasta",
+      motivo: "Motivo",
+      // What the owner's agenda shows too; "other" is saved without one.
+      motivos: {
+        lunch: "Almuerzo",
+        leave: "Permiso",
+        errand: "Diligencia",
+        other: "Otro",
+      },
+      aviso:
+        "Solo puedes bloquear horas sin citas. Si tienes una cita en ese rango, pídele al dueño que la mueva.",
+      enviar: "Bloquear",
+      enviando: "Bloqueando…",
+    },
+    // B-05.
+    vencido: {
+      titulo: "Este link ya no funciona",
+      detalle:
+        "La barbería lo cambió o lo desactivó. Pídele al dueño que te envíe el nuevo.",
+    },
+    errores: {
+      link_invalid: "Este link ya no funciona.",
+      read_only: "La barbería está pausada: tu agenda es solo de lectura.",
+      not_yours: "Eso ya no está en tu agenda.",
+      not_confirmed: "Esa cita ya estaba marcada o cancelada.",
+      too_early: "Esa cita todavía no empieza.",
+      barber_inactive: "La barbería te desactivó: ya no puedes bloquear horas.",
+      overlaps_appointment:
+        "Tienes una cita en ese rango. Pídele al dueño que la mueva.",
+      overlaps_block: "Ya tienes un bloqueo en ese rango.",
+      range_invalid: "Revisa el día y las horas.",
+      end_before_start: "La hora final debe ser después de la inicial.",
+      in_the_past: "Esa hora ya pasó. Elige una más tarde.",
+      unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<BarberRefusal | BlockFormCode | "invalid", string>,
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

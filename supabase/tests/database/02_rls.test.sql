@@ -165,6 +165,11 @@ select is(
     'private.set_updated_at:authenticated',
     -- Task 4.3: "Borrar cliente" and the list of customers.
     'public.anonymize_customer:authenticated',
+    -- Task 4.4: "Mi agenda" of a barber, for anyone who has the link.
+    'public.barber_agenda:anon',
+    'public.barber_agenda:authenticated',
+    'public.barber_appointment:anon',
+    'public.barber_appointment:authenticated',
     -- Task 3.3: the public booking page, for anyone.
     'public.barbershop_accepts_bookings:anon',
     'public.barbershop_accepts_bookings:authenticated',
@@ -177,10 +182,16 @@ select is(
     'public.complete_barbershop_setup:authenticated',
     'public.create_appointment:authenticated',
     'public.create_barbershop:authenticated',
+    'public.create_time_block_by_barber:anon',
+    'public.create_time_block_by_barber:authenticated',
     'public.delete_barbershop:authenticated',
+    'public.delete_time_block_by_barber:anon',
+    'public.delete_time_block_by_barber:authenticated',
     'public.list_customers:authenticated',
     'public.managed_appointment:anon',
     'public.managed_appointment:authenticated',
+    'public.mark_appointment_by_barber:anon',
+    'public.mark_appointment_by_barber:authenticated',
     'public.reschedule_appointment_by_token:anon',
     'public.reschedule_appointment_by_token:authenticated',
     'public.reserve_image_upload:authenticated',
