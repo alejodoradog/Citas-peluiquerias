@@ -45,7 +45,7 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Revisar en **Settings → Functions** que la región sea **`iad1`** (también la fija `vercel.json`).
 - [ ] En **Settings → Domains**, agregar el dominio y copiar los registros que muestra Vercel al DNS de Cloudflare en modo **"DNS only"** (nube gris). Esperar a que Vercel muestre el certificado activo.
 - [ ] Reemplazar las variables de **Production**, que hasta aquí apuntan a `barberias-dev` porque las pruebas se hacen en la URL de `main`, por las de `barberias-prod`, siguiendo la sección "Variables de producción en Vercel" de abajo. Las de Preview siguen apuntando a `barberias-dev`, y desde aquí las pruebas vuelven a las vistas previas.
-- [ ] En `barberias-dev`, cambiar la **Site URL** de vuelta a una URL de vista previa, porque `citas-peluquerias-eta.vercel.app` pasa a ser producción.
+- [ ] En `barberias-dev`, cambiar la **Site URL** de vuelta a una URL de vista previa, porque `citas-peluiquerias.vercel.app` pasa a ser producción.
 - [ ] En **Settings → Billing → Spend Management**, poner un presupuesto con avisos al 50, 75 y 100%. **No activar "Pause Production Deployments"**: dejaría la app caída hasta reanudarla a mano.
 - [ ] Revisar en **Billing** que Flat Rate CDN esté activo con el nivel incluido.
 

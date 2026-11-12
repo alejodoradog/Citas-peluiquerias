@@ -2,7 +2,7 @@
 
 Hasta la tarea 6.4, la app desplegada en Vercel usa el proyecto `barberias-dev` de Supabase, tanto en **Production** como en las vistas previas. Esto lo hace el dueño del proyecto: Claude Code no toca la nube.
 
-**Dónde se prueba:** en la URL fija de `main`, `https://citas-peluquerias-eta.vercel.app`, después de fusionar cada PR (decisión del fundador, 2026-11-06). Así la Site URL de Supabase no cambia con cada rama. El código sigue llegando a `main` solo por PR con los chequeos en verde, y los merges los hace la cuenta `alejodoradog`, porque en Hobby Vercel bloquea los despliegues cuyo autor no es el dueño del equipo.
+**Dónde se prueba:** en la URL fija de `main`, `https://citas-peluiquerias.vercel.app`, después de fusionar cada PR (decisión del fundador, 2026-11-06). Desde el 2026-11-12 el proyecto de Vercel es `citas-peluiquerias`, en el equipo `yapoin`; la URL anterior, `citas-peluquerias-eta.vercel.app`, ya no existe. Así la Site URL de Supabase no cambia con cada rama. El código sigue llegando a `main` solo por PR con los chequeos en verde, y los merges los hace la cuenta `alejodoradog`, porque en Hobby Vercel bloquea los despliegues cuyo autor no es el dueño del equipo.
 
 **Estado actual (2026-11-07):** `barberias-dev` ya existe, en **East US (North Virginia), `us-east-1`**, con cómputo Nano, dentro de una **organización gratis aparte de la de producción** (decisión 0007, puntos 2 y 4). Vercel sigue en el plan **Hobby** hasta la 6.4, y sus funciones corren en `iad1` (fijado en `vercel.json`).
 
@@ -19,7 +19,7 @@ Hasta la tarea 6.4, la app desplegada en Vercel usa el proyecto `barberias-dev` 
 
 ## 1. Variables en Vercel
 
-En vercel.com, entra al proyecto **citas-peluquerias** → **Settings** → **Environment Variables** → **Add Environment Variable**. Crea estas dos:
+En vercel.com, entra al proyecto **citas-peluiquerias** (equipo `yapoin`) → **Settings** → **Environment Variables** → **Add Environment Variable**. Crea estas dos:
 
 | Variable | Valor (Supabase → proyecto `barberias-dev`) |
 | --- | --- |
@@ -70,8 +70,8 @@ En Supabase → **Authentication**:
 - **Sign In / Providers → Email:** deja activado **Confirm email** (decisión 0006), activa **Secure password change**, pon la longitud del código (**Email OTP length**) en 10 y la vigencia (**Email OTP Expiration**) en 86400 segundos (24 horas, decisión del fundador del 2026-11-09), como en `supabase/config.toml`. La app solo acepta los links de recuperación durante su primera hora.
 - **Password:** contraseña mínima de 8 caracteres.
 - **URL Configuration:**
-  - **Site URL:** `https://citas-peluquerias-eta.vercel.app`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
-  - **Redirect URLs:** `https://citas-peluquerias-eta.vercel.app/**` y `https://citas-peluquerias-*-alejodoradogs-projects.vercel.app/**`.
+  - **Site URL:** `https://citas-peluiquerias.vercel.app`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
+  - **Redirect URLs:** `https://citas-peluiquerias.vercel.app/**` y `https://citas-peluiquerias-*-yapoin.vercel.app/**`.
 - **Plantillas de correo: esperan a la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), y el nuestro será Amazon SES (decisión 0007). Cuando esté:
   - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
   - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
@@ -97,7 +97,7 @@ En Vercel → **Deployments** → el último despliegue de `main` → **Redeploy
 
 ## Cómo verificar
 
-1. Abre `https://citas-peluquerias-eta.vercel.app/registro` y crea una barbería de prueba con un correo del equipo.
+1. Abre `https://citas-peluiquerias.vercel.app/registro` y crea una barbería de prueba con un correo del equipo.
 2. Abre el link que te llega. Hasta la 5.2 es el correo en inglés de Supabase, que confirma y te lleva a la Site URL; desde la 5.2 será nuestra pantalla con "Continuar".
 3. Entra por `/ingresar` con tu contraseña. Debes llegar a `/panel`.
 
