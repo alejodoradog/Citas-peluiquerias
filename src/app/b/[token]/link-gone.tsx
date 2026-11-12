@@ -13,7 +13,7 @@ export function BarberLinkGone() {
         <BrandHeader />
       </div>
       <main className="flex flex-col gap-4 px-5 py-15">
-        <span className="text-muted">
+        <span className="text-muted pb-5">
           <LinkIcon size={24} />
         </span>
         <div className="flex flex-col gap-1.5">

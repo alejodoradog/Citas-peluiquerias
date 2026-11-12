@@ -85,7 +85,7 @@ export function BlockForm({
               <label
                 key={reason}
                 className={cx(
-                  "border-line text-ink flex min-h-11 cursor-pointer items-center rounded-full border bg-white px-4 text-sm font-bold",
+                  "border-line text-ink flex min-h-11 cursor-pointer items-center rounded-full border bg-white px-4 text-sm font-semibold",
                   "has-checked:border-brand has-checked:bg-brand-soft has-checked:border-2 has-checked:px-3.75",
                   "has-focus-visible:outline-brand has-focus-visible:outline-2 has-focus-visible:outline-offset-2",
                 )}
