@@ -79,21 +79,20 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      # The system packages come from apt, which is sometimes very slow. Each
-      # try gets 8 minutes; a try that times out leaves apt running, so it is
-      # stopped and its lock released before the next one.
+      # The browsers' system packages come from apt, whose mirrors the
+      # runners sometimes cannot reach. The workflow "Browser packages" keeps
+      # them in a cache from main; without it, they are downloaded with
+      # retries (scripts/ci/browser-packages.sh).
+      - name: Name the browser packages cache
+        id: browser-debs
+        run: echo "key=browser-debs-${ImageOS}-${ImageVersion}-$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Restore the browser packages
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/browser-debs
+          key: ${{ steps.browser-debs.outputs.key }}
       - name: Install the browsers
-        run: |
-          for try in 1 2 3; do
-            if timeout -k 15 480 pnpm exec playwright install --with-deps chromium webkit; then
-              exit 0
-            fi
-            echo "::warning::Browser install try $try did not finish"
-            sudo pkill -9 -f 'apt-get|dpkg' || true
-            sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock
-            sudo dpkg --configure -a || true
-          done
-          exit 1
+        run: bash scripts/ci/browser-packages.sh install
       - run: pnpm test:e2e
       - name: Keep the report, with the side-by-side screenshots
         if: always()
