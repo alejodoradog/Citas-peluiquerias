@@ -26,6 +26,7 @@ import {
 import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BottomNav } from "@/ui/bottom-nav";
+import { removeOwnerBlock } from "@/modulos/agenda/acciones/owner-appointment";
 import { Fab } from "@/ui/fab";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
@@ -181,7 +182,11 @@ async function OwnerAgenda({
         <BarberChips place={place} barbers={headerBarbers} />
         {notices}
         {column!.items.length > 0 ? (
-          <BarberDayList day={column!} date={date} />
+          <BarberDayList
+            day={column!}
+            date={date}
+            removeBlock={removeOwnerBlock}
+          />
         ) : (
           <Padded>
             <EmptyState title={t.sinCitas}>
@@ -226,6 +231,7 @@ async function OwnerAgenda({
           hours={hours}
           now={current}
           barberHref={(id) => placeHref(place, { barberId: id })}
+          removeBlock={removeOwnerBlock}
         />
       ) : (
         <Padded>

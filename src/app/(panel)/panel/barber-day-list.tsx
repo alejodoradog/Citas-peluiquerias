@@ -11,7 +11,13 @@ import { cx } from "@/ui/cx";
 import { LockIcon, PlusIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
 import { hourLabel, timeLabel } from "./agenda-labels";
-import { BLOCK_STRIPES, blockLabel, servicesLabel } from "./day-grid";
+import { BlockButton, type RemoveBlockAction } from "./block-button";
+import {
+  BLOCK_STRIPES,
+  blockDetail,
+  blockLabel,
+  servicesLabel,
+} from "./day-grid";
 
 const t = textos.agenda;
 
@@ -28,7 +34,15 @@ const time = "w-21 shrink-0 text-sm font-bold whitespace-nowrap";
 
 // D-31: one barber's day as a list, in order: appointments with their state,
 // free spaces that lead to a new appointment, and blocks.
-export function BarberDayList({ day, date }: { day: BarberDay; date: string }) {
+export function BarberDayList({
+  day,
+  date,
+  removeBlock,
+}: {
+  day: BarberDay;
+  date: string;
+  removeBlock: RemoveBlockAction;
+}) {
   return (
     <ul className="flex flex-col gap-2.5 px-5 pb-4">
       {day.items.map((item) => {
@@ -87,14 +101,22 @@ export function BarberDayList({ day, date }: { day: BarberDay; date: string }) {
             );
           case "block":
             return (
-              <li key={`bloqueo-${item.id}`} className={cx(row, BLOCK_STRIPES)}>
-                <span className={cx(time, "text-muted")}>
-                  {timeLabel(item.start)}
-                </span>
-                <span className="text-muted flex items-center gap-1.5 font-semibold">
-                  <LockIcon size={16} />
-                  {`${blockLabel(item)} · ${t.minutos(minutesBetween(item.start, item.end))}`}
-                </span>
+              <li key={`bloqueo-${item.id}`}>
+                <BlockButton
+                  id={item.id}
+                  end={item.end}
+                  action={removeBlock}
+                  detail={blockDetail(item, day.barber.name)}
+                  className={cx(row, BLOCK_STRIPES, "w-full")}
+                >
+                  <span className={cx(time, "text-muted")}>
+                    {timeLabel(item.start)}
+                  </span>
+                  <span className="text-muted flex items-center gap-1.5 font-semibold">
+                    <LockIcon size={16} />
+                    {`${blockLabel(item)} · ${t.minutos(minutesBetween(item.start, item.end))}`}
+                  </span>
+                </BlockButton>
               </li>
             );
         }

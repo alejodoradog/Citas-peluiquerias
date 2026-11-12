@@ -19,6 +19,8 @@ const DAY = "2026-11-07";
 const MARIO = "11111111-1111-4111-8111-111111111111";
 const at = (time: string) => fromBogota(DAY, time);
 const early = at("06:00");
+// The views get the server action from the page; the tests never submit.
+const removeBlock = async () => ({ status: "done" as const });
 
 const mario: AgendaBarber = {
   id: MARIO,
@@ -78,6 +80,7 @@ describe("DayGrid", () => {
         hours={gridHours(DAY, days)!}
         now={early}
         barberHref={(id) => `/panel?barbero=${id}`}
+        removeBlock={removeBlock}
       />,
     );
     const grid = screen.getByRole("region", { name: t.columnas });
@@ -116,6 +119,7 @@ describe("BarberDayList", () => {
       <BarberDayList
         day={day([appointment({ source: "web", createdAt: at("05:00") })])}
         date={DAY}
+        removeBlock={removeBlock}
       />,
     );
     const items = screen.getAllByRole("listitem");

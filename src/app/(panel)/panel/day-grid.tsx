@@ -13,6 +13,8 @@ import { cx } from "@/ui/cx";
 import { PlusIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
 import { hourLabel, timeLabel } from "./agenda-labels";
+import { BlockButton, type RemoveBlockAction } from "./block-button";
+import { timeRange } from "./citas/labels";
 
 const t = textos.agenda;
 
@@ -40,6 +42,20 @@ export function blockLabel(item: Extract<AgendaItem, { kind: "block" }>) {
   return item.reason ?? (item.wholeShop ? t.cierre : t.bloqueo);
 }
 
+// The sheet of a block (task 4.2): "Kevin · 1:00 – 2:00 p. m.", or the
+// whole barbershop.
+export function blockDetail(
+  item: Extract<AgendaItem, { kind: "block" }>,
+  barberName: string,
+): string {
+  const [from, until] = timeRange(item.start, item.end).split(" – ");
+  return t.bloqueoHoja.quien(
+    item.wholeShop ? t.bloquear.todaLaBarberia : barberName,
+    from!,
+    until!,
+  );
+}
+
 // The day by barber, to scale (D-30): a column per barber, the hours down
 // the side, appointments and blocks where they fall, the free spaces as
 // links to a new appointment, and a red line at the current time. Cards of
@@ -51,12 +67,14 @@ export function DayGrid({
   hours,
   now,
   barberHref,
+  removeBlock,
 }: {
   date: string;
   days: readonly BarberDay[];
   hours: { from: Date; until: Date };
   now: Date;
   barberHref: (barberId: string) => string;
+  removeBlock: RemoveBlockAction;
 }) {
   const from = hours.from.getTime();
   const total = Math.round((hours.until.getTime() - from) / HOUR_MS);
@@ -122,6 +140,7 @@ export function DayGrid({
               date={date}
               hours={total}
               px={px}
+              removeBlock={removeBlock}
             />
           ))}
           {showNow ? (
@@ -149,11 +168,13 @@ function Column({
   date,
   hours,
   px,
+  removeBlock,
 }: {
   day: BarberDay;
   date: string;
   hours: number;
   px: (instant: Date) => number;
+  removeBlock: RemoveBlockAction;
 }) {
   return (
     <div className="border-neutral-soft relative border-l">
@@ -213,8 +234,12 @@ function Column({
           }
           case "block":
             return (
-              <div
+              <BlockButton
                 key={`${item.id}-${day.barber.id}`}
+                id={item.id}
+                end={item.end}
+                action={removeBlock}
+                detail={blockDetail(item, day.barber.name)}
                 className={cx(
                   "absolute inset-x-0.5 z-10 overflow-hidden rounded-lg px-[5px] py-[3px]",
                   BLOCK_STRIPES,
@@ -224,7 +249,8 @@ function Column({
                 <span className="block truncate text-[11px] leading-[1.2] font-bold">
                   {blockLabel(item)}
                 </span>
-              </div>
+                <span className="sr-only">, {timeLabel(item.start)}</span>
+              </BlockButton>
             );
           case "free":
             return splitAtHours(item).map((piece) => {
