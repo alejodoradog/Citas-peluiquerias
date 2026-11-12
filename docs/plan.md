@@ -265,21 +265,21 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [x] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
 - [x] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar. (El envío por correo pasa a la 5.2, con SES; ver docs/tareas/2.3-link-privado.md.)
-- [ ] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono (P2, D-63) salen del hito 2 y quedan para después del lanzamiento (decisión del fundador, 2026-11-10). Construida (2.4a a 2.4e); pendiente del CI: pgTAP, tipos generados y pruebas de punta a punta (docs/tareas/2.4-configuracion.md).
+- [x] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono (P2, D-63) salen del hito 2 y quedan para después del lanzamiento (decisión del fundador, 2026-11-10). Construida (2.4a a 2.4e); pendiente del CI: pgTAP, tipos generados y pruebas de punta a punta (docs/tareas/2.4-configuracion.md). Verificada con el CI (PRs #31 a #35) y desplegada.
 - [x] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
-- [ ] 2.6 Selector de sede arriba en Más (D-50) y "Nueva sede" (`create_barbershop`, decisión 0006), sin abonos: los datos de abono (D-63) pasan a después del lanzamiento (decisión del fundador, 2026-11-10). Construida; pendiente del CI: pgTAP y pruebas de punta a punta (docs/tareas/2.6-sedes.md).
+- [x] 2.6 Selector de sede arriba en Más (D-50) y "Nueva sede" (`create_barbershop`, decisión 0006), sin abonos: los datos de abono (D-63) pasan a después del lanzamiento (decisión del fundador, 2026-11-10). Incluye el tope de 4 sedes y "Eliminar sede" (2.6b). Verificada con el CI (PRs #34 y #35) y desplegada.
 
-**Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos.
+**Lista cuando:** creas una barbería real desde tu celular en menos de 10 minutos. **Pendiente:** la prueba humana del fundador y su socio (`docs/pruebas-humanas-hitos-2-y-3.md`).
 
 ### Fase 3 · Motor de disponibilidad y página pública (semana 3)
 
-- [ ] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible").
-- [ ] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicios (uno o varios), barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo.
-- [ ] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente.
+- [x] 3.1 Motor de disponibilidad como función pura en `modulos/agenda/dominio`, con pruebas de todos los casos de la spec (bloqueos, festivos, duración, anticipación, "el primero disponible"). Verificada con el CI (PR #36).
+- [x] 3.2 Página pública: perfil con link al WhatsApp de la barbería, servicios (uno o varios), barbero, día y hora, datos (nombre, correo y celular opcional; autocompletar solo desde el navegador) y confirmación. El perfil público va en caché corta; la disponibilidad y la reserva, siempre en vivo. Verificada con el CI (PR #37) y en la URL desplegada (2026-11-11: reserva anónima completa en 9 s).
+- [x] 3.3 Confirmar cita con validación final en la base de datos; si otro tomó la hora, volver a elegir. Una reserva pública no sobrescribe la ficha de un cliente existente. Verificada con el CI (PR #37: pgTAP 28, concurrencia y C-07) y en la URL desplegada.
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
 - [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor. Según la decisión 0007: Turnstile en modo Managed, captcha de Supabase Auth con Turnstile, límites propios con la IP que entrega Vercel y Vercel WAF para bloquear.
 
-**Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una.
+**Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una. **Pendiente:** la prueba humana con dos celulares (`docs/pruebas-humanas-hitos-2-y-3.md`); además faltan la 3.4 (gestionar la cita) y la 3.5 (Turnstile).
 
 ### Fase 4 · Agenda del panel y vista del barbero (semana 4)
 

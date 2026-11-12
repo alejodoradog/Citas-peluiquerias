@@ -882,7 +882,9 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
   const day = formatCalendarDay(addDays(toBogotaDate(new Date()), 1));
   const dayLink = page
     .getByRole("link", {
+      // Exact: after closing time the button "Ir al …" also has this name.
       name: day.charAt(0).toLocaleUpperCase("es-CO") + day.slice(1),
+      exact: true,
     })
     .filter({ visible: true });
   await dayLink.click();
