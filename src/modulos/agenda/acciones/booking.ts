@@ -20,6 +20,7 @@ import {
   FIRST_AVAILABLE,
   readBookingParams,
 } from "../dominio/booking-flow";
+import { ipLimitKey } from "../dominio/booking-limits";
 import {
   parseCustomerDetails,
   type CustomerDetailsErrorCode,
@@ -91,7 +92,8 @@ export async function bookAppointment(
     email: form.data.email,
     phone: form.data.phone,
     manageTokenHash: hashLinkToken(token),
-    clientIpHash: ip ? hashClientIp(ip) : null,
+    // The limit counts an IPv6 visitor by its /64 network (task 3.5b).
+    clientIpHash: ip ? hashClientIp(ipLimitKey(ip)) : null,
   });
 
   if (!result.ok) {

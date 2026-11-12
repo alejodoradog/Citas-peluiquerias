@@ -29,7 +29,7 @@ En vercel.com, entra al proyecto **citas-peluiquerias** (equipo `yapoin`) → **
 - **Tipo Config.** Vercel crea las variables como secretas y rechaza un nombre con `NEXT_PUBLIC_`, porque ese prefijo las expone al navegador. Estas dos son públicas a propósito, así que se pulsa **Change to Config**. No se quita el prefijo: el código lee esos nombres.
 - **Production y Preview.** En **Environments**, marca **Production** y **Preview**, sin elegir ramas. No marques **Development**, porque en el computador se usa el Supabase local. Production apunta a `barberias-dev` solo hasta la 6.4.
 - **Revisa que no queden intercambiadas.** Si la URL y la llave van al revés, el registro falla sin llegar a Supabase, y las páginas con sesión responden "Internal Server Error". Los valores se fijan al construir: un despliegue hecho con valores malos sigue roto aunque se corrijan las variables, así que hay que volver a desplegar.
-- **No agregues la clave secreta (`SUPABASE_SECRET_KEY`).** La app todavía no la usa, y es mejor no tenerla expuesta hasta que haga falta. Si algún día hace falta, va como **secreta** y sin `NEXT_PUBLIC_` (`docs/operacion/infraestructura-produccion.md`, sección 5).
+- **La clave secreta (`SUPABASE_SECRET_KEY`) es obligatoria desde la tarea 3.5:** solo el servidor reserva, con esa llave (sección 3b). Va como **secreta** (Sensitive), sin `NEXT_PUBLIC_`, en Production y Preview, con la `sb_secret_…` de `barberias-dev` (`docs/operacion/infraestructura-produccion.md`, sección 5).
 
 ## 2. Tablas en `barberias-dev`
 
@@ -92,11 +92,15 @@ En Supabase → **Authentication**:
 - **Vercel → Environment Variables:**
   - **Production:** `TURNSTILE_SECRET_KEY` = la Secret Key del widget.
   - **Preview** (las URLs de vista previa no están en los hostnames): `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `1x00000000000000000000AA` y `TURNSTILE_SECRET_KEY` = `1x0000000000000000000000000000000AA`. Son las llaves de prueba públicas de Cloudflare, que siempre aceptan.
+  - **Sin esas dos en Preview,** la vista previa usa la Site Key real en un dominio que el widget no conoce. Turnstile no carga y el botón de reservar, ingresar, registrarse o recuperar se queda deshabilitado (decisión T4 de la 3.5).
+  - **Con ellas,** cualquiera que conozca la URL de una vista previa reserva sin Turnstile en la misma base que Production, porque hasta la 6.4 las dos usan `barberias-dev`. Por eso la vista previa debe tener **Vercel Authentication** activa (Settings → Deployment Protection), incluida en Hobby.
+  - **Con el captcha de Supabase Auth activo,** las vistas previas no pueden ingresar, registrarse, recuperar la contraseña ni pedir "Enviarme un link nuevo": Supabase verifica con la Secret Key real, que no acepta los tokens de prueba. Las pruebas de cuentas se hacen en `www.yapoin.com`.
 - **`SUPABASE_SECRET_KEY` debe existir en Production y Preview.** Desde la 3.5, solo el servidor reserva (`book_appointment_from_app`, con la llave de servidor).
-- **Supabase → Authentication → Attack Protection → Enable CAPTCHA protection:** proveedor Turnstile, con la misma Secret Key. **Se activa solo después de desplegar la 3.5**; antes, el registro y el ingreso fallan porque la app todavía no manda el token.
+- **Supabase → Authentication → Attack Protection → Enable CAPTCHA protection:** proveedor Turnstile, con la misma Secret Key de Production. **Se activa solo después de desplegar la 3.5b.** Antes, con la 3.5 sola, "Enviarme un link nuevo" no existía y el reenvío del link de confirmación fallaba con el captcha activo. Y si se activa antes de que la app mande el token, Supabase rechaza el registro, el ingreso y la recuperación de todos.
 - **Para comprobarlo:**
   - una reserva en `www.yapoin.com` funciona;
   - con el captcha de Auth activo, el registro, el ingreso y "Recuperar clave" funcionan;
+  - ingresar con una cuenta sin confirmar muestra "Enviarme un link nuevo", y el correo llega;
   - en el registro de Vercel no aparece `captcha_failed`.
 
 ## Caché de compilación de Vercel
@@ -118,4 +122,4 @@ En Vercel → **Deployments** → el último despliegue de `main` → **Redeploy
 - **"Algo salió mal":** el despliegue no tiene las variables. Revisa que estén marcadas para Production y que el despliegue sea posterior a cuando las agregaste.
 - **"Internal Server Error":** la URL y la llave están intercambiadas o mal escritas. Corrígelas y vuelve a desplegar.
 
-También revisa en **Emails** que el link dure una hora, como dice la plantilla.
+También revisa en **Emails** que las plantillas digan lo mismo que la sección 3: el link de confirmación dura 24 horas y el de recuperación, una hora.

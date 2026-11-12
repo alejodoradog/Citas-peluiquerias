@@ -279,7 +279,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 3.4 Gestionar mi cita con token: ver, cancelar, reprogramar según la política.
 - [ ] 3.5 Protección contra abuso: límite de reservas por correo e IP, y verificación anti-bots invisible. Sin OTP, cualquiera puede escribir un correo ajeno (decisión 0006). Cubre también registro, ingreso, recuperación y reenvío de links, con captcha en Auth y límite por IP real, porque Auth solo ve la IP del servidor. Según la decisión 0007: Turnstile en modo Managed, captcha de Supabase Auth con Turnstile, límites propios con la IP que entrega Vercel y Vercel WAF para bloquear.
 
-**Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una. **Pendiente:** la prueba humana con dos celulares (`docs/pruebas-humanas-hitos-2-y-3.md`); además faltan la 3.4 (gestionar la cita) y la 3.5 (Turnstile).
+**Lista cuando:** reservas desde otro celular en menos de un minuto, y dos reservas simultáneas a la misma hora dejan solo una. **Pendiente:** la prueba humana con dos celulares (`docs/pruebas-humanas-hitos-2-y-3.md`); la 3.4 y la 3.5 ya están fusionadas (PR 40 y PR 44) y esperan esa prueba. De la 3.5 falta desplegar la 3.5b y activar el captcha de Supabase Auth; el límite por IP propio de cuentas y Vercel WAF quedan anotados en `docs/tareas/3.5-anti-abuso.md`.
 
 ### Fase 4 · Agenda del panel y vista del barbero (semana 4)
 

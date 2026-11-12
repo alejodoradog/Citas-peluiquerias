@@ -3,12 +3,13 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { requireLocalSupabaseUrl } from "./supabase";
 
 // The appointments of the agenda's tests (task 4.1), written the way the app
-// writes them: a web booking through book_appointment as anon, a manual one
-// through create_appointment with the owner's session.
+// writes them: a web booking through book_appointment_from_app with the
+// server key (since task 3.5 only the server books), a manual one through
+// create_appointment with the owner's session.
 
-function anonClient() {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!key) throw new Error("Missing NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
+function serverClient() {
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!key) throw new Error("Missing SUPABASE_SECRET_KEY");
   return createClient(requireLocalSupabaseUrl(), key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -25,15 +26,18 @@ export async function bookOnline(
   },
 ): Promise<string> {
   const token = randomBytes(32).toString("base64url");
-  const { data, error } = await anonClient().rpc("book_appointment", {
-    p_barbershop_id: barbershopId,
-    p_barber_id: booking.barberId,
-    p_starts_at: booking.startsAt.toISOString(),
-    p_service_ids: booking.serviceIds,
-    p_customer_name: booking.name,
-    p_customer_email: booking.email,
-    p_manage_token_hash: createHash("sha256").update(token).digest("hex"),
-  });
+  const { data, error } = await serverClient().rpc(
+    "book_appointment_from_app",
+    {
+      p_barbershop_id: barbershopId,
+      p_barber_id: booking.barberId,
+      p_starts_at: booking.startsAt.toISOString(),
+      p_service_ids: booking.serviceIds,
+      p_customer_name: booking.name,
+      p_customer_email: booking.email,
+      p_manage_token_hash: createHash("sha256").update(token).digest("hex"),
+    },
+  );
   if (error) throw error;
   return (data as { appointment_id: string }[])[0]!.appointment_id;
 }
