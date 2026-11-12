@@ -324,8 +324,11 @@ test("the owner's panel has its bottom bar", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: textos.panel.secciones.clientes }),
   ).toBeVisible();
+  // D-40 of a new barbershop (task 4.3): no customers yet.
   await expect(
-    page.getByText(textos.panel.pronto.titulo, { exact: true }),
+    page
+      .getByText(textos.clientes.vacio.titulo, { exact: true })
+      .filter({ visible: true }),
   ).toBeVisible();
   await expect(
     nav.getByRole("link", { name: textos.ui.navegacion.clientes }),
