@@ -100,6 +100,27 @@ export function OutsideLink({
   );
 }
 
+// "Agregar a mi calendario" (C-08, C-09): a Google Calendar event.
+export function calendarUrl(
+  title: string,
+  start: Date,
+  end: Date,
+  place: string,
+) {
+  const stamp = (date: Date) =>
+    date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "");
+  const query = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${stamp(start)}/${stamp(end)}`,
+    location: place,
+  });
+  return `https://calendar.google.com/calendar/render?${query.toString()}`;
+}
+
 export function whatsappUrl(phone: string): string {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
 }

@@ -470,6 +470,9 @@ isOneToOne: false
               "barber_id": string,"ends_at": string,"starts_at": string
             }[]
                            },
+"cancel_appointment_by_token":
+{ Args: { "p_token_hash": string }; Returns: undefined
+                           },
 "change_appointment_services":
 { Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined
                            },
@@ -484,6 +487,14 @@ isOneToOne: false
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
+                           },
+"managed_appointment":
+{ Args: { "p_token_hash": string }; Returns: {
+              "barber_id": string,"barber_name": string,"barbershop_id": string,"cancellation_notice_hours": number,"changeable": boolean,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"slug": string,"starts_at": string
+            }[]
+                           },
+"reschedule_appointment_by_token":
+{ Args: { "p_starts_at": string,"p_token_hash": string }; Returns: undefined
                            },
 "reserve_image_upload":
 { Args: { "p_path": string }; Returns: undefined

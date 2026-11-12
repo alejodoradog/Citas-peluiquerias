@@ -1,6 +1,7 @@
 import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
 import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
+import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
@@ -1161,6 +1162,77 @@ export const textos = {
         "¿No puedes ir? Escríbele a la barbería por WhatsApp para cancelar o cambiar tu cita.",
       calendarioTitulo: (barberia: string) => `Cita en ${barberia}`,
       reservarOtra: "Reservar otra cita",
+      // Task 3.4: until the confirmation email, the link is given here.
+      gestionar: "Cancelar o cambiar mi cita",
+      gestionarAyuda: (horas: number) =>
+        `¿No puedes ir? Con este botón cancelas o cambias tu cita, hasta ${duracion(horas * 60)} antes. Este celular lo recuerda: también lo encuentras en la página de la barbería.`,
+    },
+    // C-09 to C-13 and C-16 (task 3.4): the customer's appointment, from its
+    // private link.
+    gestionar: {
+      tituloPestana: "Tu cita",
+      titulo: (nombre: string) => (nombre ? `Tu cita, ${nombre}` : "Tu cita"),
+      confirmada: "Confirmada",
+      cambiada: "Listo, cambiamos tu cita.",
+      cambiar: "Cambiar día u hora",
+      cancelar: "Cancelar cita",
+      plazo: (horas: number) =>
+        `Puedes cancelar o cambiar hasta ${duracion(horas * 60)} antes de la cita. Después, escríbele a la barbería.`,
+      fueraDePlazo: {
+        titulo: "Ya no puedes cancelar ni cambiar desde aquí",
+        detalle: (horas: number) =>
+          `La barbería permite hacerlo hasta ${duracion(horas * 60)} antes. Escríbeles si no puedes ir.`,
+      },
+      hoy: (cuando: string) =>
+        `Hoy, ${cuando.charAt(0).toLocaleLowerCase("es-CO")}${cuando.slice(1)}`,
+      escribir: "Escribir a la barbería",
+      hoja: {
+        titulo: "¿Cancelar tu cita?",
+        detalle: (cuando: string, barbero: string) =>
+          `${cuando} con ${barbero}. La hora queda libre para otra persona.`,
+        si: "Sí, cancelar mi cita",
+        cancelando: "Cancelando…",
+        no: "No, mantenerla",
+        cerrar: "Cerrar",
+      },
+      cancelada: {
+        estado: "Cancelada por cliente",
+        titulo: "Cancelaste tu cita",
+        reservarOtra: "Reservar otra cita",
+      },
+      reprogramar: {
+        volver: "Volver a tu cita",
+        tienes: (cuando: string) => `Hoy tienes: ${cuando}`,
+        liberada: "Si eliges otra hora, la anterior queda libre.",
+        boton: "Cambiar mi cita",
+        cambiando: "Cambiando…",
+        sinHoras: (barbero: string, dia: string) =>
+          `${barbero} no tiene horas libres ${dia}.`,
+        sinHorasMes: (barbero: string) =>
+          `${barbero} no tiene horas libres en los próximos 30 días. Escríbele a la barbería.`,
+      },
+      vencido: {
+        titulo: "Este link ya no sirve",
+        detalle:
+          "La cita ya pasó, se canceló o el link cambió. Si tienes otra cita, usa el link de esa cita.",
+        ir: "Ir a la barbería",
+        inicio: "Ir a Yapoin",
+      },
+      // C-01: the appointments this phone remembers.
+      aviso: {
+        titulo: (cuando: string) => `Tienes una cita el ${cuando}`,
+        ver: "Ver mi cita",
+      },
+      errores: {
+        link_invalid: "Este link ya no sirve.",
+        too_late: "Ya no puedes cancelar ni cambiar desde aquí.",
+        not_accepting:
+          "La barbería no está recibiendo cambios ahora. Escríbeles por WhatsApp.",
+        slot_gone: "Esa hora ya no está libre. Elige otra.",
+        same_time: "Tu cita ya está a esa hora. Elige otra.",
+        unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
+        invalid: "No pudimos hacer el cambio. Intenta de nuevo.",
+      } satisfies Record<ManageRefusal | "invalid", string>,
     },
     errores: {
       name_required: "Escribe tu nombre.",

@@ -15,6 +15,12 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
+// The cookie that carries the manage token to C-08.
+const setCookie = vi.fn();
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ set: setCookie }),
+}));
+
 const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const SERVICE = "11111111-1111-4111-8111-111111111111";
 const BARBER = "33333333-3333-4333-8333-333333333333";
@@ -103,6 +109,34 @@ describe("bookAppointment", () => {
     expect(result).toEqual({
       redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&barbero=${BARBER}&dia=2026-11-24&hora=10%3A30`,
     });
+  });
+
+  it("gives the token to C-08 alone, in a short cookie no script reads", async () => {
+    await run(form(VALID));
+    const sent = createPublicBooking.mock.calls[0]![0];
+    expect(setCookie).toHaveBeenCalledTimes(1);
+    const [name, token, options] = setCookie.mock.calls[0]!;
+    expect(name).toBe("yapoin_cita");
+    expect(token).toMatch(/^token-en-claro-/);
+    const { createHash } = await import("node:crypto");
+    expect(createHash("sha256").update(token, "utf8").digest("hex")).toBe(
+      sent.manageTokenHash,
+    );
+    expect(options).toMatchObject({
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/la-esquina/reservar/confirmada",
+      maxAge: 1800,
+    });
+  });
+
+  it("gives no token when the booking fails", async () => {
+    createPublicBooking.mockResolvedValueOnce({
+      ok: false,
+      error: { hint: "slot_taken" },
+    });
+    await run(form(VALID));
+    expect(setCookie).not.toHaveBeenCalled();
   });
 
   it("a new token on every booking", async () => {

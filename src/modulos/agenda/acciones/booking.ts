@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { fromBogota } from "@/lib/fechas/fechas";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
@@ -10,6 +11,7 @@ import {
   createPublicBooking,
   loadPublicProfile,
 } from "../datos/public-booking";
+import { MANAGE_TOKEN_COOKIE } from "../datos/manage-cookie";
 import {
   bookingQuery,
   FIRST_AVAILABLE,
@@ -34,8 +36,9 @@ const FIELDS = ["name", "email", "phone"] as const;
 // C-06, "Confirmar reserva" (task 3.3). Everything the browser sends is
 // untrusted: the selection is read again from the hidden fields as from the
 // URL, and book_appointment checks the whole booking in the database. The
-// manage token (task 3.4) is created here and only its hash is sent; the
-// token itself is not kept yet (the link arrives with 3.4 and phase 5).
+// manage token (task 3.4) is created here and only its hash is sent. The
+// token goes to C-08 alone, in a short cookie (manage-cookie.ts), so the
+// link never travels in a URL the browser keeps.
 export async function bookAppointment(
   _previous: BookingState,
   formData: FormData,
@@ -93,6 +96,11 @@ export async function bookAppointment(
     };
   }
 
+  (await cookies()).set(
+    MANAGE_TOKEN_COOKIE.name,
+    token,
+    MANAGE_TOKEN_COOKIE.options(profile.slug),
+  );
   // C-08 shows only public data: the services, the barber, the time. The
   // customer's details never travel in the URL.
   redirect(
