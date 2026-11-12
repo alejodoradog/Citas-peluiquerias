@@ -210,8 +210,11 @@ test("the owner reads the day, a barber's day and the week", async ({
       page.getByText(state, { exact: true }).filter({ visible: true }),
     ).toBeVisible();
   }
+  // From 6:00 to Camila at 10:00. The last free space, to 22:00, also reads
+  // "Libre hasta las 10:00" (D-31 writes the hour without p. m.): the start
+  // tells them apart.
   await expect(
-    page.getByRole("link", { name: new RegExp(t.libre("10:00")) }),
+    page.getByRole("link", { name: shown("6:00 a. m.", t.libre("10:00")) }),
   ).toHaveAttribute(
     "href",
     newAppointmentHref({ barbero: ana, dia: tomorrow, hora: "06:00" }),
