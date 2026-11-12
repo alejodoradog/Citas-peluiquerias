@@ -36,6 +36,8 @@ export function shopInitialsOf(name: string): string {
 }
 
 const sizes = {
+  // The barbers of the agenda (D-30, D-31).
+  sm: "size-7 text-xs",
   md: "size-11 text-sm",
   lg: "size-16 text-[1.3125rem]",
 } as const;

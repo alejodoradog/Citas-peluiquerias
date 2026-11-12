@@ -17,12 +17,19 @@ export async function expectAccessible(page: Page) {
 
 // Every visible control is at least 44 × 44 px (F-01). A link inside a
 // sentence is exempt (WCAG 2.5.8): its parent has more text than it does.
-export async function expectTouchTargets(page: Page) {
-  const small = await page.evaluate(() => {
+// `except` leaves out controls drawn to scale on purpose: the cards and free
+// spaces of the agenda's grid ("[data-to-scale]", D-30, decision A9 of task
+// 4.1), whose rows in D-31 do reach 44 px.
+export async function expectTouchTargets(
+  page: Page,
+  { except }: { except?: string } = {},
+) {
+  const small = await page.evaluate((except) => {
     const selector =
       'a[href], button, input:not([type="hidden"]), select, textarea, [role="switch"], [role="checkbox"], [tabindex]:not([tabindex="-1"])';
     const found: string[] = [];
     for (const element of document.querySelectorAll<HTMLElement>(selector)) {
+      if (except && element.matches(except)) continue;
       // Visually hidden inputs are measured by their label (switch, checkbox).
       const target =
         element instanceof HTMLInputElement &&
@@ -43,7 +50,7 @@ export async function expectTouchTargets(page: Page) {
       }
     }
     return found;
-  });
+  }, except);
   expect(small, "controls under 44 px").toEqual([]);
 }
 

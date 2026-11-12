@@ -82,7 +82,10 @@ test("an owner signs up, confirms their email and sees the free trial running", 
   await finishSetup(page);
 
   await expect(
-    page.getByRole("heading", { name: textos.panel.saludo("Carlos Pérez") }),
+    page.getByRole("heading", {
+      level: 1,
+      name: new RegExp(`^${textos.agenda.hoy("")}`),
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Barbería El Parche", { exact: true }),

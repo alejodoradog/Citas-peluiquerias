@@ -1170,3 +1170,269 @@ test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
   await attachSideBySide(page, design, "C-16");
   await design.close();
 });
+
+// Task 4.1: the agenda. D-33 before the first appointment, then D-30 (the
+// day by barber), D-31 (one barber) and D-32 (the week), with appointments
+// written the way the app writes them. The helpers come in with import() so
+// this test stays at the end of the file, apart from the others. The
+// segmented control and the chips are 44 px tall, not 38 and 40 (F-01,
+// decision A10), so their heights are not compared.
+test("D-30, D-31, D-32 and D-33 match the design", async ({ page }) => {
+  test.setTimeout(180_000);
+  const { signedInClient } = await import("./helpers/supabase");
+  const { addBlock, addManualAppointment, bookOnline } =
+    await import("./helpers/agenda");
+  const a = textos.agenda;
+  const shop = await createBookableShop("fidelidad-agenda");
+  const tomorrow = addDays(toBogotaDate(new Date()), 1);
+  const at = (time: string) => fromBogota(tomorrow, time);
+  await page.goto("/ingresar");
+  await page
+    .getByRole("textbox", { name: textos.cuentas.ingreso.campos.email })
+    .fill(shop.owner.email);
+  await page
+    .getByLabel(textos.cuentas.ingreso.campos.password)
+    .filter({ visible: true })
+    .fill(shop.owner.password);
+  await page
+    .getByRole("button", { name: textos.cuentas.ingreso.enviar })
+    .click();
+  await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
+
+  // D-33
+  await expect(
+    page.getByRole("heading", { level: 1, name: new RegExp(`^${a.hoy("")}`) }),
+  ).toBeVisible({ timeout: 20_000 });
+  let design = await openDesign(page, "D33-Agenda-vacia.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Hoy, sábado 7 de nov"),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "sede",
+    page
+      .getByText("Barbería La Esquina", { exact: true })
+      .filter({ visible: true }),
+    design.getByText("Barbería La Esquina", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "día anterior",
+    page.getByRole("link", { name: a.anterior.dia }),
+    design.getByRole("button", { name: "Día anterior" }),
+    ["height", "border-radius", "background-color"],
+  );
+  await compare(
+    "día elegido",
+    page.getByRole("link", { name: a.vistas.dia, exact: true }),
+    design.getByRole("link", { name: "Día", exact: true }),
+    ["border-radius", "background-color", "color", "font-size", "font-weight"],
+  );
+  await compare(
+    "barberos",
+    page.locator("summary").filter({ visible: true }),
+    design.getByRole("link", { name: "Todos" }),
+    PRIMARY,
+  );
+  await compare(
+    "paso",
+    page.getByRole("heading", { level: 2, name: a.vacia.compartir.titulo }),
+    design.getByText(a.vacia.compartir.titulo),
+    ["font-size", "font-weight"],
+  );
+  await compare(
+    "compartir mi link",
+    page.getByRole("link", { name: a.vacia.compartir.boton }),
+    design.getByRole("link", { name: "Compartir mi link" }),
+    PRIMARY,
+  );
+  await compare(
+    "ir a barberos",
+    page.getByRole("link", { name: a.vacia.barberos.boton }),
+    design.getByRole("link", { name: "Ir a barberos" }),
+    PRIMARY,
+  );
+  await compare(
+    "nueva cita",
+    page.getByRole("link", { name: textos.ui.nuevaCita }),
+    design.getByRole("link", { name: "Nueva cita" }),
+    // Round: 9999px against 29px draw the same.
+    ["height", "background-color", "color"],
+  );
+  await attachSideBySide(page, design, "D-33");
+  await design.close();
+
+  const owner = await signedInClient(shop.owner.email, shop.owner.password);
+  await bookOnline(shop.id, {
+    barberId: shop.barbers.ana,
+    startsAt: at("10:00"),
+    serviceIds: [shop.services.corte],
+    name: "Camila Rojas",
+    email: "camila@correo.com",
+  });
+  await addManualAppointment(owner, shop.id, {
+    barberId: shop.barbers.ana,
+    startsAt: at("09:00"),
+    serviceIds: [shop.services.corte],
+    customerName: "Felipe Ramírez",
+    status: "attended",
+  });
+  await addManualAppointment(owner, shop.id, {
+    barberId: shop.barbers.beto,
+    startsAt: at("11:00"),
+    serviceIds: [shop.services.corte, shop.services.barba],
+    customerName: "Pedro Suárez",
+  });
+  await addManualAppointment(owner, shop.id, {
+    barberId: shop.barbers.beto,
+    startsAt: at("09:00"),
+    serviceIds: [shop.services.corte],
+    customerName: "Diego Pérez",
+    status: "no_show",
+  });
+  await addBlock(owner, shop.id, {
+    barberId: shop.barbers.beto,
+    startsAt: at("13:00"),
+    endsAt: at("14:00"),
+    reason: "Almuerzo",
+  });
+
+  // D-30
+  await page.goto(`/panel?dia=${tomorrow}`);
+  const grid = page.getByRole("region", { name: a.columnas });
+  await expect(grid).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "D30-Agenda-dia.dc.html");
+  const card = (name: string) =>
+    grid.getByRole("link", { name: new RegExp(`^${name}, `) });
+  const designCard = (name: string) =>
+    design.getByRole("link", { name: new RegExp(`^${name}`) });
+  const CARD = ["border-radius", "background-color", "color"] as const;
+  await compare("nueva", card("Camila R\\."), designCard("Camila R\\."), CARD);
+  await compare(
+    "atendida",
+    card("Felipe R\\."),
+    designCard("Felipe R\\."),
+    CARD,
+  );
+  await compare(
+    "no asistió",
+    card("Diego P\\."),
+    designCard("Diego P\\."),
+    CARD,
+  );
+  await compare(
+    "nombre en la tarjeta",
+    card("Camila R\\.").getByText("Camila R.", { exact: true }),
+    design.getByText("Camila R.", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "bloqueo",
+    grid.getByText("Almuerzo", { exact: true }),
+    design.getByText("Almuerzo", { exact: true }).first(),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "barbero de la columna",
+    grid.getByRole("link", { name: "Ana", exact: true }).getByText("Ana"),
+    design.getByText("Mario", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "hora",
+    grid.getByText("10:00", { exact: true }),
+    design.getByText("10:00", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "resumen",
+    page
+      .getByText(a.resumen(a.citas(4), a.ayudaEspacio))
+      .filter({ visible: true }),
+    design.getByText("14 citas · toca un espacio libre para crear una cita"),
+    ["font-size", "color"],
+  );
+  await attachSideBySide(page, design, "D-30");
+  await design.close();
+
+  // D-31
+  await page.goto(`/panel?dia=${tomorrow}&barbero=${shop.barbers.ana}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: a.barberos.agendaDe("Ana") }),
+  ).toBeVisible({ timeout: 20_000 });
+  design = await openDesign(page, "D31-Agenda-barbero.dc.html");
+  await compare(
+    "título",
+    page.getByRole("heading", { level: 1 }),
+    design.getByText("Agenda de Kevin"),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "barbero elegido",
+    page.getByRole("link", { name: "Ana", exact: true }),
+    design.getByRole("link", { name: /Kevin/ }),
+    // A pill: 9999px against 20px draw the same.
+    ["background-color", "color", "font-size", "font-weight"],
+  );
+  for (const [state, text] of [
+    [a.estados.new, "Nueva"],
+    [a.estados.attended, "Atendida"],
+  ] as const) {
+    await compare(
+      state,
+      page.getByText(state, { exact: true }).filter({ visible: true }),
+      design.getByText(text, { exact: true }),
+      ["height", "background-color", "color", "font-size"],
+    );
+  }
+  await compare(
+    "cita",
+    page.getByRole("link", { name: /Camila R\./ }),
+    design.getByRole("link", { name: /Camila R\./ }),
+    ["border-radius", "background-color", "color"],
+  );
+  await compare(
+    "hora de la cita",
+    page.getByText("10:00 a. m.", { exact: true }).filter({ visible: true }),
+    design.getByText("10:40 a. m.", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "espacio libre",
+    page.getByRole("link", { name: /Libre hasta las/ }).first(),
+    design.getByRole("link", { name: /Libre hasta las/ }),
+    ["border-radius", "color", "font-size", "font-weight"],
+  );
+  await attachSideBySide(page, design, "D-31");
+  await design.close();
+
+  // D-32
+  await page.goto(`/panel?vista=semana&dia=${tomorrow}`);
+  await expect(
+    page.getByRole("link", { name: a.vistas.semana, exact: true }),
+  ).toHaveAttribute("aria-current", "page", { timeout: 20_000 });
+  design = await openDesign(page, "D32-Agenda-semana.dc.html");
+  const row = page.locator(`li > a[href="/panel?dia=${tomorrow}"]`);
+  await compare(
+    "día",
+    row.locator("span > span").first(),
+    design.getByText("Lun 2", { exact: true }),
+    ["font-size", "font-weight", "color"],
+  );
+  await compare(
+    "citas del día",
+    row.getByText(a.citas(4), { exact: true }),
+    design.getByText("9 citas", { exact: true }),
+    ["font-size", "color"],
+  );
+  await compare(
+    "semana elegida",
+    page.getByRole("link", { name: a.vistas.semana, exact: true }),
+    design.getByRole("link", { name: "Semana", exact: true }),
+    ["border-radius", "background-color", "color", "font-size", "font-weight"],
+  );
+  await attachSideBySide(page, design, "D-32");
+  await design.close();
+});
