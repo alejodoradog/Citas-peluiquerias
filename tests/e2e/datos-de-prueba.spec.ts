@@ -18,7 +18,10 @@ test("the seed owner signs in to their barbershop", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/panel$/);
   await expect(
-    page.getByRole("heading", { name: textos.panel.saludo("Carlos Pérez") }),
+    page.getByRole("heading", {
+      level: 1,
+      name: new RegExp(`^${textos.agenda.hoy("")}`),
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("La Barbería del Barrio", { exact: true }),

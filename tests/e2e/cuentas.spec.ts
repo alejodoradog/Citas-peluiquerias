@@ -60,8 +60,10 @@ async function registerAndConfirm(
 }
 
 // Waits until signing out finished: otherwise its response can arrive after
-// the next sign-in and clear the new session.
+// the next sign-in and clear the new session. The agenda (D-30) has no sign
+// out: it is in Más › Tu cuenta (D-50).
 async function signOut(page: Page) {
+  await page.goto("/panel/mas");
   await page.getByRole("button", { name: t.salir }).click();
   await expect(page).toHaveURL(/\/ingresar$/);
 }
@@ -82,7 +84,10 @@ test("an owner signs up, confirms their email and sees the free trial running", 
   await finishSetup(page);
 
   await expect(
-    page.getByRole("heading", { name: textos.panel.saludo("Carlos Pérez") }),
+    page.getByRole("heading", {
+      level: 1,
+      name: new RegExp(`^${textos.agenda.hoy("")}`),
+    }),
   ).toBeVisible();
   await expect(
     page.getByText("Barbería El Parche", { exact: true }),
@@ -198,7 +203,7 @@ test("an owner signs out and signs back in", async ({ page }) => {
   test.setTimeout(90_000);
   const email = uniqueEmail("ingreso");
   await registerAndConfirm(page, { email });
-  // The wizard has no sign out: the panel does.
+  // The wizard has no sign out: Más does.
   await finishSetup(page);
   await signOut(page);
 

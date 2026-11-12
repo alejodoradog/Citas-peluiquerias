@@ -330,6 +330,30 @@ function daySlots(
   );
 }
 
+// The instants a barber works one Bogotá day, with the same rules as the
+// slots: the barbershop's hours of that weekday (none on a holiday it does
+// not open), cut to the barber's own shifts unless usesBarbershopHours.
+// Blocks and appointments are not taken out. The owner's agenda (task 4.1)
+// draws its free spaces from these.
+export function barberWorkingIntervals(
+  date: BogotaDate,
+  barber: Pick<AvailabilityBarber, "usesBarbershopHours" | "shifts">,
+  shopHours: readonly WeeklyShift[],
+  holidayOpenings: readonly BogotaDate[],
+): Interval[] {
+  if (!isBogotaDate(date)) invalid("Invalid date");
+  if (isColombianHoliday(date) && !holidayOpenings.includes(date)) return [];
+  const weekday = getWeekday(date);
+  const shop = daySpans(shopHours, weekday);
+  const spans = barber.usesBarbershopHours
+    ? shop
+    : intersect(daySpans(barber.shifts, weekday), shop);
+  return spans.map((span) => ({
+    start: new Date(wallInstant(date, span.start)),
+    end: new Date(wallInstant(date, span.end)),
+  }));
+}
+
 // The days with at least one free slot: what the calendar of C-04 enables.
 export function availableDays(input: AvailabilityInput): BogotaDate[] {
   return availableSlots(input)
