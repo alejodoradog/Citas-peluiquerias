@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<title>Agenda en solo lectura</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#145a63}a:hover{color:#16211f}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f4f7f6; color: #16211f; font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 12px"><span style="font-size: 13px; color: #4c5c58">Barbería La Esquina · Mi agenda</span><div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 24px; background: #e2f0f2; color: #145a63; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0">KM</span><div style="display: flex; flex-direction: column"><span style="font-size: 22px; font-weight: 700">Hola, Kevin</span><span style="font-size: 14px; color: #4c5c58">Hoy tienes 4 citas · la próxima a las 10:40 a. m.</span></div></div><div role="status" style="display: flex; gap: 10px; align-items: flex-start; background: #e9eeed; border-radius: 14px; padding: 12px 14px"><span style="color: #4c5c58; display: flex; padding-top: 1px"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span><div style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 14px; color: #4c5c58">La barbería está pausada</strong><span style="font-size: 13px; line-height: 1.4; color: #16211f">Tu agenda es solo de lectura y no entran reservas nuevas. Las citas tomadas siguen en pie.</span></div></div><div style="display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #e9eeed"><a href="B01-Mi-agenda.dc.html" style="flex: 1; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; text-decoration: none; color: #16211f; background: #ffffff; box-shadow: 0 1px 2px rgba(22,33,31,0.12); ">Hoy</a><a href="B02-Semana.dc.html" style="flex: 1; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; text-decoration: none; color: #4c5c58; background: transparent; ">Semana</a></div></div><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 20px"><div style="display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px; border: 1px solid #cbd6d3; background: #fff"><a href="B03-Detalle.dc.html" style="display: flex; gap: 12px; align-items: flex-start; text-decoration: none; color: #16211f"><span style="width: 84px; flex-shrink: 0; white-space: nowrap; font-size: 14px; font-weight: 700">10:40 a. m.</span><span style="display: flex; flex-direction: column; gap: 3px; flex: 1"><span style="font-size: 15px; font-weight: 700">Camila R.</span><span style="font-size: 13px; color: #4c5c58">Corte + Barba · 60 min</span></span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 12px; background: #e2f0f2; color: #145a63; font-size: 12px; font-weight: 700; white-space: nowrap">Confirmada</span></a></div><div style="display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px; border: 1px solid #cbd6d3; background: #fff"><a href="B03-Detalle.dc.html" style="display: flex; gap: 12px; align-items: flex-start; text-decoration: none; color: #16211f"><span style="width: 84px; flex-shrink: 0; white-space: nowrap; font-size: 14px; font-weight: 700">12:20 p. m.</span><span style="display: flex; flex-direction: column; gap: 3px; flex: 1"><span style="font-size: 15px; font-weight: 700">Mateo</span><span style="font-size: 13px; color: #4c5c58">Barba · 20 min</span></span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 12px; background: #e2f0f2; color: #145a63; font-size: 12px; font-weight: 700; white-space: nowrap">Confirmada</span></a></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
