@@ -209,7 +209,10 @@ export function validateShopWeek(input: unknown): ShopWeekResult {
 // Their hours are not cut: the availability engine (task 3.1) crosses both,
 // so in those hours they take no bookings. D-58 warns about them.
 export function barbersOutsideShop<
-  Barber extends { usesBarbershopHours: boolean; shifts: readonly WeeklyShift[] },
+  Barber extends {
+    usesBarbershopHours: boolean;
+    shifts: readonly WeeklyShift[];
+  },
 >(barbers: readonly Barber[], shop: readonly WeeklyShift[]): Barber[] {
   return barbers.filter(
     (barber) =>

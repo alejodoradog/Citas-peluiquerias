@@ -124,6 +124,10 @@ test("an owner changes the data, the logo, the cover and the location", async ({
     .filter({ visible: true })
     .setInputFiles(png("portada.png", RED_PIXEL));
   await expect(page.getByText(t.portada.lista)).toBeVisible(FIRST_VISIT);
+  // Playwright drops its simulated position when an iframe of another site
+  // goes away, as Turnstile's does after signing in (task 3.5); a real phone
+  // has no simulation to lose. It is set again right before it is asked.
+  await context.setGeolocation(CALI);
   await page.getByRole("button", { name: t.ubicacion.usar }).click();
   await expect(
     page.getByText(t.ubicacion.marcada).filter({ visible: true }),

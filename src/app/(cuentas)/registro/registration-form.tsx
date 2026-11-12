@@ -6,7 +6,8 @@ import { registerBarbershop } from "@/modulos/barberias/acciones/barbershops";
 import { AuthHeading } from "@/ui/auth-shell";
 import { ButtonLink } from "@/ui/button";
 import { Field } from "@/ui/field";
-import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
+import { ActionForm, useFormAction } from "@/ui/form";
+import { ProtectedSubmit } from "@/ui/turnstile-field";
 import { MailIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { Steps } from "@/ui/steps";
@@ -87,7 +88,9 @@ export function RegistrationForm() {
           <TextLink href={routes.privacy}>{t.legal.privacidad}</TextLink>
           {t.legal.despues}
         </p>
-        <SubmitButton pendingText={t.enviando}>{t.enviar}</SubmitButton>
+        <ProtectedSubmit state={form.state} pendingText={t.enviando}>
+          {t.enviar}
+        </ProtectedSubmit>
       </ActionForm>
       <p className="text-label text-muted text-center leading-[1.45] font-normal">
         {t.yaTienes} <TextLink href={routes.signIn}>{t.ingresa}</TextLink>

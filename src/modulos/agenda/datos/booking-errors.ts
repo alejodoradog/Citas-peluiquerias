@@ -6,6 +6,8 @@
 // - services_changed: a service is no longer offered: choose again;
 // - customer_invalid: the details the database refused (the form checks
 //   the same first);
+// - too_many_upcoming: that email already has 5 upcoming appointments here;
+// - too_many_from_ip: 10 bookings in the last hour from that IP (task 3.5);
 // - unknown: anything else (the network, a token hash already used).
 
 export type BookingRefusal =
@@ -13,6 +15,8 @@ export type BookingRefusal =
   | "not_accepting"
   | "services_changed"
   | "customer_invalid"
+  | "too_many_upcoming"
+  | "too_many_from_ip"
   | "unknown";
 
 const SLOT_GONE = new Set([
@@ -47,6 +51,8 @@ export function toBookingRefusal(error: {
   // The exclusion constraint itself, should it ever reach the caller.
   if (SLOT_GONE.has(hint) || error.code === "23P01") return "slot_gone";
   if (hint === "not_accepting") return "not_accepting";
+  if (hint === "too_many_upcoming") return "too_many_upcoming";
+  if (hint === "too_many_from_ip") return "too_many_from_ip";
   if (SERVICES_CHANGED.has(hint)) return "services_changed";
   if (CUSTOMER_INVALID.has(hint)) return "customer_invalid";
   return "unknown";

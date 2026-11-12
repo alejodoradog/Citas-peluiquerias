@@ -468,6 +468,11 @@ isOneToOne: false
               "appointment_id": string,"barber_id": string
             }[]
                            },
+"book_appointment_from_app":
+{ Args: { "p_barber_id"?: string,"p_barbershop_id": string,"p_client_ip_hash"?: string,"p_customer_email": string,"p_customer_name": string,"p_customer_phone"?: string,"p_manage_token_hash": string,"p_service_ids": (string)[],"p_starts_at": string }; Returns: {
+              "appointment_id": string,"barber_id": string
+            }[]
+                           },
 "booking_busy_ranges":
 { Args: { "p_barbershop_id": string,"p_from": string,"p_until": string }; Returns: {
               "barber_id": string,"ends_at": string,"starts_at": string

@@ -10,6 +10,7 @@ export type AccountError =
   | "weak_password"
   | "same_password"
   | "link_expired"
+  | "captcha_failed"
   | "unknown";
 
 const byCode: Record<string, AccountError> = {
@@ -23,6 +24,8 @@ const byCode: Record<string, AccountError> = {
   same_password: "same_password",
   otp_expired: "link_expired",
   session_not_found: "link_expired",
+  // Turnstile (task 3.5), once the captcha of Supabase Auth is on.
+  captcha_failed: "captcha_failed",
 };
 
 export function toAccountError(error: { code?: string }): AccountError {
