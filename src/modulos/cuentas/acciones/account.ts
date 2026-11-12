@@ -27,6 +27,11 @@ export type RecoveryRequestState = FormState<
   AccountErrorCode,
   "recovery_sent"
 >;
+export type ResendConfirmationState = FormState<
+  "email",
+  AccountErrorCode,
+  "confirmation_sent"
+>;
 export type NewPasswordState = FormState<
   "password" | "confirmation",
   AccountErrorCode
@@ -52,15 +57,13 @@ export async function signIn(
     options: { captchaToken: captchaTokenOf(formData) },
   });
   if (error) {
-    const accountError = toAccountError(error);
-    // Only reached with the right password. The first link lasts 24 hours, so
-    // this is how an owner who was late gets another. Limits may skip the
-    // send; the message stays the same. With the captcha of Auth on, the
-    // token is already spent and Auth refuses this send too (task 3.5).
-    if (accountError === "email_not_confirmed") {
-      await supabase.auth.resend({ type: "signup", email: form.data.email });
-    }
-    return { status: "failed", error: accountError, values: form.values };
+    // An unconfirmed owner asks for a new link with its own button
+    // (resendConfirmation): this Turnstile token is already spent (task 3.5b).
+    return {
+      status: "failed",
+      error: toAccountError(error),
+      values: form.values,
+    };
   }
   // The panel sends a super admin on to /admin.
   redirect(routes.panel);
@@ -98,6 +101,35 @@ export async function requestPasswordRecovery(
     return { status: "failed", error: "captcha_failed", values: form.values };
   }
   return { status: "done", notice: "recovery_sent" };
+}
+
+// D-06, "Enviarme un link nuevo" (task 3.5b): an owner who did not confirm in
+// time asks for another confirmation link. It carries its own Turnstile token,
+// which Supabase Auth checks once its captcha is on. Like recovery, it answers
+// the same whether or not the email has an account or Auth limited the send.
+export async function resendConfirmation(
+  _previous: ResendConfirmationState,
+  formData: FormData,
+): Promise<ResendConfirmationState> {
+  const form = readForm(formData, {
+    fields: ["email"],
+    parse: parseRecoveryRequest,
+  });
+  if (!form.valid) {
+    return form.state;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: form.data.email,
+    options: { captchaToken: captchaTokenOf(formData) },
+  });
+  // Turnstile's refusal says nothing about the email, so it can be shown.
+  if (error && toAccountError(error) === "captcha_failed") {
+    return { status: "failed", error: "captcha_failed", values: form.values };
+  }
+  return { status: "done", notice: "confirmation_sent" };
 }
 
 // Emails link to /auth/confirm, which asks for a tap before spending the

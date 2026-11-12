@@ -27,7 +27,7 @@ Se decidió antes de la fase 2, cuando cambiar el modelo de datos aún es barato
    - Es el único canal para avisarle del vencimiento y los pagos, así que un correo mal escrito lo dejaría sin avisos.
    - El link lleva a `/auth/confirm`, que pide un toque, como el de recuperación.
    - **Confirmar no abre sesión.** Supabase registra en `amr` el mismo método (`otp`) para ambos links, tanto con el tipo `signup` como con `email`; se comprobó en local. Conservar esa sesión la dejaría crear una contraseña nueva sin pedirla (decisión 0004, punto 14). Por eso la acción cierra la sesión y el dueño ingresa con su contraseña.
-   - **Link vencido.** Si el dueño intenta ingresar sin confirmar y con la contraseña correcta, se le envía un link nuevo.
+   - **Link vencido.** Si el dueño intenta ingresar sin confirmar y con la contraseña correcta, la app se lo dice y le ofrece "Enviarme un link nuevo", un botón con su propio Turnstile. Hasta la tarea 3.5 el link se reenviaba solo; la 3.5b lo cambió porque con el captcha de Auth ese reenvío no tenía token.
 8. **El registro responde igual si el correo ya tiene cuenta.** Supabase local responde `user_already_exists` aun con la confirmación activa, contra lo que preveía la decisión 0004. La acción trata ese caso como un registro normal, y el texto orienta a ingresar si el correo ya tenía cuenta. Queda una señal indirecta (ver riesgos).
 9. **"Confirmo" y "Cancelar" son links**, con una pantalla que pide un toque, porque algunos filtros de correo abren los links solos. El campo para guardar la respuesta se agrega en la tarea 5.3.
 10. **"Mis citas" (P2)** funciona con un link al correo, y la pantalla responde siempre lo mismo, exista o no el correo.

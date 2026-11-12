@@ -171,7 +171,14 @@ export const textos = {
         cuerpo: "Ingresa con tu correo y contraseña.",
       },
       linkVencido:
-        "Ese link venció o ya se usó. Ingresa con tu correo y contraseña; si te falta confirmar el correo, te enviamos otro link.",
+        "Ese link venció o ya se usó. Ingresa con tu correo y contraseña; si te falta confirmar el correo, podrás pedir otro link.",
+      reenviar: {
+        enviar: "Enviarme un link nuevo",
+        enviando: "Enviando…",
+        enviadoTitulo: "Revisa tu correo",
+        enviado:
+          "Si te falta confirmar, ya te enviamos un link nuevo. Revisa también la carpeta de spam.",
+      },
     },
     recuperar: {
       titulo: "Recupera tu acceso",
@@ -214,7 +221,7 @@ export const textos = {
       password_mismatch: "Las contraseñas no coinciden.",
       invalid_credentials: "El correo o la contraseña no coinciden.",
       email_not_confirmed:
-        "Te falta confirmar tu correo. Te enviamos un link nuevo; revisa también la carpeta de spam.",
+        "Te falta confirmar tu correo. Pide un link nuevo aquí abajo.",
       email_taken:
         "Ya existe una cuenta con ese correo. Ingresa o recupera tu contraseña.",
       rate_limited: "Hiciste muchos intentos seguidos. Espera unos minutos.",

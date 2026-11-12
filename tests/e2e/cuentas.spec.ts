@@ -120,11 +120,22 @@ test("an owner cannot enter until they confirm their email", async ({
   await expectAccessible(page);
   expect(await emailCount(email)).toBe(1);
 
-  // Auth allows one email per address each second (max_frequency).
-  await page.waitForTimeout(1100);
+  // Signing in unconfirmed sends nothing; the owner asks for a new link with
+  // its own button and its own Turnstile token (task 3.5b).
   await signIn(page, email);
   await expect(page).toHaveURL(/\/ingresar$/);
   await expect(page.getByText(t.errores.email_not_confirmed)).toBeVisible();
+  expect(await emailCount(email)).toBe(1);
+
+  // Auth allows one email per address each second (max_frequency).
+  await page.waitForTimeout(1100);
+  const resend = page.getByRole("button", {
+    name: t.ingreso.reenviar.enviar,
+  });
+  await expect(resend).toBeEnabled();
+  await resend.click();
+  await expect(page.getByText(t.ingreso.reenviar.enviado)).toBeVisible();
+  await expectAccessible(page);
   await expect.poll(() => emailCount(email)).toBe(2);
 
   await page.goto("/panel");
