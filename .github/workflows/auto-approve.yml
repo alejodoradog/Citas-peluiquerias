@@ -10,6 +10,8 @@ name: Aprobar y fusionar PRs de colaborador
 # commit, nunca squash. Usa el token de alejodoradog (secreto MERGE_TOKEN): el
 # merge commit sale a su nombre, así Vercel (Hobby) despliega y GitHub corre
 # "Migrate barberias-dev". Nunca hace checkout del código del PR.
+# Con el repo público, un PR desde un fork nunca se fusiona solo: el CI y el
+# PR tienen que venir de este mismo repositorio.
 on:
   workflow_run:
     workflows: [CI]
@@ -30,9 +32,11 @@ jobs:
     if: >-
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.event == 'pull_request' &&
-       github.event.workflow_run.conclusion == 'success') ||
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.user.login == 'manuel-alejandro429' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
        github.event.pull_request.base.ref == 'main')
     env:
       GH_TOKEN: ${{ secrets.MERGE_TOKEN }}
@@ -43,7 +47,7 @@ jobs:
         id: check
         run: |
           pr=$(gh pr list --repo "$REPO" --base main --head "$HEAD_BRANCH" --state open \
-            --json number,author,isDraft,headRefOid --jq '.[0] // empty')
+            --json number,author,isDraft,headRefOid,isCrossRepository --jq '.[0] // empty')
           if [ -z "$pr" ]; then
             echo "No hay un PR abierto desde $HEAD_BRANCH hacia main."
             exit 0
@@ -52,6 +56,11 @@ jobs:
           author=$(jq -r .author.login <<<"$pr")
           draft=$(jq -r .isDraft <<<"$pr")
           sha=$(jq -r .headRefOid <<<"$pr")
+          fork=$(jq -r .isCrossRepository <<<"$pr")
+          if [ "$fork" != "false" ]; then
+            echo "PR #$number viene de un fork: no se fusiona solo."
+            exit 0
+          fi
           if [ "$author" != "manuel-alejandro429" ]; then
             echo "PR #$number es de $author: no se fusiona solo."
             exit 0
