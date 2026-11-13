@@ -163,7 +163,8 @@ test("the owner reads the day, a barber's day and the week", async ({
     new RegExp(`/panel/citas/${camila}$`),
     FIRST_VISIT,
   );
-  await expect(heading(page, t.detalle)).toBeVisible(FIRST_VISIT);
+  // D-34 (task 4.2) is titled with the customer's name.
+  await expect(heading(page, "Camila Rojas")).toBeVisible(FIRST_VISIT);
   await page.goBack();
   await expect(heading(page, dayTitle(tomorrow, today))).toBeVisible(
     FIRST_VISIT,

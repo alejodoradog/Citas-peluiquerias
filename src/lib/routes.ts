@@ -18,6 +18,9 @@ export const routes = {
   // D-34, an appointment of the agenda, and D-38, a new one (task 4.2).
   panelAppointment: (id: string) => `/panel/citas/${id}`,
   panelAppointmentNew: "/panel/citas/nueva",
+  // Task 4.2: D-37 "Reprogramar" and D-39 "Bloquear horas".
+  panelAppointmentReschedule: (id: string) => `/panel/citas/${id}/reprogramar`,
+  panelBlock: "/panel/bloquear",
   panelClients: "/panel/clientes",
   panelClient: (id: string) => `/panel/clientes/${id}`,
   panelShare: "/panel/compartir",
@@ -88,6 +91,13 @@ function withQuery(
 // "back" and reloading keep it; without one it is today, by day, everyone.
 export function agendaHref(query: AgendaQueryParams = {}): string {
   return withQuery(routes.panel, query);
+}
+
+// D-39 "Bloquear horas" (task 4.2), from D-38 with what it had chosen.
+export type BlockParams = { barbero?: string; dia?: string; desde?: string };
+
+export function blockHref(query: BlockParams = {}): string {
+  return withQuery(routes.panelBlock, query);
 }
 
 // D-38 from a free space of the agenda, or from its "+" button.

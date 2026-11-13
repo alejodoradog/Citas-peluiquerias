@@ -492,6 +492,9 @@ isOneToOne: false
 "change_appointment_services":
 { Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined
                            },
+"change_appointment_services_checked":
+{ Args: { "p_appointment_id": string,"p_service_ids": (string)[] }; Returns: undefined
+                           },
 "complete_barbershop_setup":
 { Args: { "p_barbers": Json,"p_barbershop_id": string,"p_hours": Json,"p_services": Json }; Returns: undefined
                            },
@@ -501,11 +504,20 @@ isOneToOne: false
 "create_barbershop":
 { Args: { "p_name": string,"p_request_id"?: string,"p_slug": string,"p_whatsapp_phone"?: string }; Returns: string
                            },
+"create_manual_appointment":
+{ Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_email"?: string,"p_customer_id"?: string,"p_customer_name"?: string,"p_customer_phone"?: string,"p_service_ids": (string)[],"p_starts_at": string }; Returns: string
+                           },
+"create_time_block":
+{ Args: { "p_barber_id": string,"p_barbershop_id": string,"p_ends_at": string,"p_reason"?: string,"p_starts_at": string }; Returns: string
+                           },
 "create_time_block_by_barber":
 { Args: { "p_ends_at": string,"p_reason"?: string,"p_starts_at": string,"p_token_hash": string }; Returns: string
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
+                           },
+"delete_time_block":
+{ Args: { "p_block_id": string }; Returns: undefined
                            },
 "delete_time_block_by_barber":
 { Args: { "p_block_id": string,"p_token_hash": string }; Returns: undefined
@@ -523,11 +535,17 @@ isOneToOne: false
 "mark_appointment_by_barber":
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"],"p_token_hash": string }; Returns: undefined
                            },
+"reschedule_appointment":
+{ Args: { "p_appointment_id": string,"p_barber_id": string,"p_starts_at": string }; Returns: undefined
+                           },
 "reschedule_appointment_by_token":
 { Args: { "p_starts_at": string,"p_token_hash": string }; Returns: undefined
                            },
 "reserve_image_upload":
 { Args: { "p_path": string }; Returns: undefined
+                           },
+"set_appointment_status":
+{ Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"] }; Returns: undefined
                            },
 "set_barber_schedule":
 { Args: { "p_barber_id": string,"p_shifts"?: Json,"p_uses_barbershop_hours": boolean }; Returns: undefined

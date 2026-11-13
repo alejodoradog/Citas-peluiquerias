@@ -3,6 +3,7 @@ import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
 import type { BarberRefusal } from "@/modulos/agenda/datos/barber-errors";
+import type { OwnerRefusal } from "@/modulos/agenda/datos/owner-appointment-errors";
 import type { BlockFormCode } from "@/modulos/agenda/dominio/barber-agenda";
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
@@ -214,8 +215,200 @@ export const textos = {
       },
     },
     sinBarberos: "Aún no tienes barberos activos. Agrégalos en Más › Barberos.",
-    // D-34 and D-38 arrive with task 4.2.
+    // D-34 to D-39 (task 4.2).
     detalle: "Detalle de la cita",
+    detalleCita: {
+      titulo: "Cita",
+      cargando: "Cargando la cita…",
+      editar: "Editar servicios",
+      origen: {
+        web: "Reservada por la web",
+        manual: "Creada por la barbería",
+      },
+      // "Reservada por la web · hace 20 min".
+      origenCuando: (origen: string, cuando: string) => `${origen} · ${cuando}`,
+      haceMinutos: (minutos: number) =>
+        minutos < 1 ? "hace un momento" : `hace ${minutos} min`,
+      haceHoras: (horas: number) =>
+        horas === 1 ? "hace 1 hora" : `hace ${horas} horas`,
+      chips: {
+        canceladaCliente: "Cancelada por el cliente",
+        canceladaBarberia: "Cancelada por la barbería",
+      },
+      cuando: "Cuándo",
+      servicios: "Servicios",
+      // "Corte (40 min) + Barba (20 min)".
+      servicio: (nombre: string, minutos: number) =>
+        `${nombre} (${minutos} min)`,
+      barbero: "Barbero",
+      valor: "Valor",
+      // "Hoy, sábado 7 de nov · 10:40 – 11:40 a. m."
+      horario: (dia: string, desde: string, hasta: string) =>
+        `${dia} · ${desde} – ${hasta}`,
+      cliente: "Cliente",
+      verFicha: "Ver ficha",
+      correo: "Correo",
+      celular: "Celular",
+      sinCorreo: "Sin correo",
+      sinCelular: "Sin celular",
+      historial: (visitas: number, inasistencias: number) =>
+        `${visitas === 1 ? "1 visita" : `${visitas} visitas`} · ${
+          inasistencias === 1
+            ? "1 inasistencia"
+            : `${inasistencias} inasistencias`
+        }`,
+      atendida: "Atendida",
+      noAsistio: "No asistió",
+      reprogramar: "Reprogramar",
+      cancelar: "Cancelar cita",
+      noEncontrada: "No encontramos esta cita",
+      noEncontradaCuerpo: "Puede que sea de otra sede. Vuelve a la agenda.",
+      volverAgenda: "Volver a la agenda",
+      hechos: {
+        attended: "La cita quedó como atendida.",
+        no_show: "La cita quedó como no asistió.",
+        cancelled: "Cancelaste la cita. La hora quedó libre.",
+        rescheduled: "Cambiaste la cita.",
+        services: "Cambiaste los servicios de la cita.",
+        created: "Creaste la cita.",
+      },
+    },
+    marcar: {
+      titulo: "Marcar cita",
+      cuerpo: "Elige cómo terminó la cita. Puedes cambiarlo después.",
+      nota: "Con 2 o más inasistencias, la ficha del cliente muestra una alerta.",
+    },
+    cancelar: {
+      titulo: "¿Cancelar esta cita?",
+      // "Camila Rojas · hoy 10:40 a. m. La hora queda libre."
+      cuerpo: (cliente: string, cuando: string) =>
+        `${cliente} · ${cuando}. La hora queda libre.`,
+      confirmar: "Cancelar cita",
+      enviando: "Cancelando…",
+      volver: "Volver",
+    },
+    servicios: {
+      titulo: "Editar servicios",
+      guardar: "Guardar servicios",
+      enviando: "Guardando…",
+      detalle: (minutos: number, precio: string) =>
+        `${minutos} min · ${precio}`,
+    },
+    reprogramar: {
+      titulo: "Reprogramar cita",
+      actual: "Cita actual",
+      barbero: "Barbero",
+      dia: "Día",
+      horas: (minutos: number) => `Horas libres (${minutos} min)`,
+      sinHoras: "No hay horas libres ese día. Prueba otro día u otro barbero.",
+      guardar: "Guardar cambio",
+      enviando: "Guardando…",
+    },
+    nueva: {
+      titulo: "Nueva cita",
+      cliente: "Cliente",
+      buscar: "Buscar o escribir nombre",
+      resultados: "Clientes encontrados",
+      visitas: (correo: string | null, visitas: number) =>
+        [correo, visitas === 1 ? "1 visita" : `${visitas} visitas`]
+          .filter(Boolean)
+          .join(" · "),
+      crear: (nombre: string) => `Crear cliente nuevo: “${nombre}”`,
+      cambiar: "Cambiar cliente",
+      correo: "Correo",
+      celular: "Celular",
+      sinCorreo: {
+        titulo: "Sin correo no hay confirmación ni recordatorio",
+        cuerpo: "El cliente no recibe nada. Solo pedimos el nombre.",
+      },
+      servicios: "Servicios",
+      barbero: "Barbero",
+      sinBarbero: "Ningún barbero activo hace todos esos servicios.",
+      diaHora: "Día y hora",
+      elegirHora: "Elige día y hora",
+      // "Hoy · 3:00 p. m. (hasta 3:40)".
+      horaElegida: (dia: string, desde: string, hasta: string) =>
+        `${dia} · ${desde} (hasta ${hasta})`,
+      soloLibres: (barbero: string) =>
+        `Solo mostramos horas libres de ${barbero}.`,
+      listo: "Listo",
+      crearCita: "Crear cita",
+      enviando: "Creando…",
+      total: (servicios: number, minutos: number) =>
+        `${servicios === 1 ? "1 servicio" : `${servicios} servicios`} · ${minutos} min`,
+    },
+    bloquear: {
+      titulo: "Bloquear horas",
+      quien: "¿A quién?",
+      todaLaBarberia: "Toda la barbería",
+      ayudaQuien: "Elige “Toda la barbería” para cerrar por unas horas.",
+      dia: "Día",
+      desde: "Desde",
+      hasta: "Hasta",
+      motivo: "Motivo",
+      enviar: "Bloquear",
+      enviando: "Bloqueando…",
+      // The warning of D-39: who has appointments in the way.
+      conCitas: (quien: string, cantidad: number) =>
+        `${quien} tiene ${cantidad === 1 ? "1 cita" : `${cantidad} citas`} en ese horario`,
+      conCitasTodos: (cantidad: number) =>
+        `Hay ${cantidad === 1 ? "1 cita" : `${cantidad} citas`} en ese horario`,
+      unaEnMedio: (cita: string) =>
+        `${cita} no se cancela sola. Reprográmala o cancélala primero.`,
+      variasEnMedio: (citas: string) =>
+        `${citas} no se cancelan solas. Reprográmalas o cancélalas primero.`,
+      // "Mateo · 12:20 p. m."
+      citaCorta: (cliente: string, hora: string) => `${cliente} · ${hora}`,
+    },
+    // The sheet of a block in D-30 and D-31.
+    bloqueoHoja: {
+      titulo: "Horas bloqueadas",
+      // "Kevin · 1:00 – 2:00 p. m."
+      quien: (quien: string, desde: string, hasta: string) =>
+        `${quien} · ${desde} – ${hasta}`,
+      quitar: "Quitar bloqueo",
+      enviando: "Quitando…",
+      terminado: "Este bloqueo ya terminó.",
+      abrir: (motivo: string, hora: string) => `${motivo}, ${hora}`,
+    },
+    rechazos: {
+      not_found: "Ya no encontramos esto. Vuelve a la agenda.",
+      barber_not_found: "Ese barbero ya no está en tu barbería.",
+      customer_not_found: "Ese cliente ya no está. Búscalo de nuevo.",
+      customer_name_invalid:
+        "Escribe el nombre del cliente (hasta 100 letras).",
+      customer_email_invalid: "Revisa el correo: no parece válido.",
+      customer_phone_invalid: "Revisa el celular: 10 dígitos, empieza por 3.",
+      services_required: "Elige al menos un servicio.",
+      services_repeated: "Elige cada servicio una sola vez.",
+      service_inactive:
+        "Uno de los servicios ya no está activo. Revisa la lista.",
+      too_long: "La cita pasaría de 8 horas. Quita algún servicio.",
+      barber_inactive:
+        "Ese barbero está desactivado y no recibe citas ni bloqueos nuevos.",
+      barber_does_not_offer_service:
+        "Ese barbero no hace todos esos servicios.",
+      slot_invalid: "Elige una hora de la lista.",
+      too_early: "Esa hora ya pasó. Elige otra.",
+      outside_booking_window: "Solo puedes agendar hasta 30 días adelante.",
+      closed: "La barbería no abre ese día.",
+      outside_hours: "El barbero no trabaja a esa hora.",
+      blocked: "Esas horas están bloqueadas.",
+      slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
+      not_confirmed: "La cita cambió mientras tanto. Revísala de nuevo.",
+      not_started: "La cita aún no empieza. Márcala cuando llegue la hora.",
+      status_invalid: "No se puede hacer ese cambio a la cita.",
+      appointment_closed: "Una cita cancelada no cambia de servicios.",
+      overlaps_appointment:
+        "Hay citas en ese horario. Reprográmalas o cancélalas primero.",
+      overlaps_block: "Ya hay un bloqueo en ese horario.",
+      range_invalid: "Revisa el día y las horas del bloqueo.",
+      block_ended: "Este bloqueo ya terminó.",
+      unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
+      invalid: "Revisa los datos marcados.",
+      end_before_start: "La hora final va después de la inicial.",
+      in_the_past: "Esa hora ya pasó. Elige otra.",
+    } satisfies Record<OwnerRefusal | "invalid" | BlockFormCode, string>,
     errores: {
       slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
       unknown: "No pudimos guardar la cita. Intenta de nuevo.",
