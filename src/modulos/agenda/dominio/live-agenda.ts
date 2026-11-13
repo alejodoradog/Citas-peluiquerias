@@ -7,8 +7,9 @@ import type { AgendaView } from "./owner-agenda";
 // its 30–60 s range: every refresh is one invocation of a Vercel function.
 export const LIVE_REFRESH_MS = 60_000;
 
-// Only the day of today (D-30, D-31): bookings arrive there. The week (D-32)
-// and other days stay as they were opened.
+// Only the day of today (D-30, D-31), where the owner works the day
+// (provisional decision V2 of docs/tareas/4.5). The week (D-32) and other
+// days stay as they were opened.
 export function pollsLive({
   view,
   date,
