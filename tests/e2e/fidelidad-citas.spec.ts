@@ -269,7 +269,7 @@ test("D-34 to D-39 match the design", async ({ page }) => {
   await compare(
     "Volver",
     cancel.getByRole("button", { name: t.cancelar.volver }),
-    design.getByRole("link", { name: "Volver" }),
+    design.getByRole("dialog").getByRole("link", { name: "Volver" }),
     BUTTON,
   );
   await attachSideBySide(page, design, "D-36");

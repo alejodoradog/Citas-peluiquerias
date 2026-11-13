@@ -102,7 +102,7 @@ export function AppointmentActionBar({
 function MarkForm({ appointmentId }: { appointmentId: string }) {
   const form = useFormAction(markAppointment, t.rechazos);
   const choice =
-    "flex min-h-13.5 w-full items-center gap-3 rounded-button px-4 text-base font-bold";
+    "flex w-full items-center gap-3 rounded-button px-4 text-base font-bold";
   return (
     <ActionForm form={form} className="flex flex-col gap-3.5">
       <input type="hidden" name="cita" value={appointmentId} />
@@ -114,7 +114,7 @@ function MarkForm({ appointmentId }: { appointmentId: string }) {
         value="attended"
         className={cx(
           choice,
-          "border-success bg-success-soft text-success border-2",
+          "border-success bg-success-soft text-success min-h-13.5 border-2",
         )}
       >
         <CircleCheckIcon size={22} />
@@ -124,7 +124,11 @@ function MarkForm({ appointmentId }: { appointmentId: string }) {
         type="submit"
         name="estado"
         value="no_show"
-        className={cx(choice, "border-line text-danger border bg-white")}
+        // 52 px, as D-35: its border is 1 px, the chosen one's 2.
+        className={cx(
+          choice,
+          "border-line text-danger min-h-13 border bg-white",
+        )}
       >
         {t.detalleCita.noAsistio}
       </button>
