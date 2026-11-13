@@ -15,9 +15,9 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | --- | --- | --- |
 | 4.1 Agenda del dueño | Fundador | Fusionada (#43) |
 | 4.3 Clientes | Fundador | Fusionada (#42) |
-| **4.2** Detalle de cita, estados, reprogramar, cita manual, bloqueos (D-34 a D-39) | Fundador | En curso (`hito-4-detalle-cita`) |
+| **4.2** Detalle de cita, estados, reprogramar, cita manual, bloqueos (D-34 a D-39) | Fundador | Fusionada (#49) |
 | **4.4** Vista "Mi agenda" del barbero (B-01 a B-06) | **Socio** | En curso (`hito-4-barbero`) |
-| **4.5** Agenda en vivo (consultar cada 30–60 s) | Fundador | Pendiente |
+| **4.5** Agenda en vivo (consultar cada 30–60 s) | Fundador | En curso (`hito-4-agenda-en-vivo`) |
 | **4.6** Cierre del día (D-64, P2) | Fundador | Pendiente |
 | **5.1, 5.2 y 5.3** Cola de correos, SES y recordatorio | Fundador | Pendiente |
 | **5.4** Panel de plataforma (P-01 a P-06) y migración 9 | **Socio** | Pendiente |
