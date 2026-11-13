@@ -266,3 +266,37 @@ test("the owner reads the day, a barber's day and the week", async ({
     page.getByText(`Almuerzo · ${t.minutos(60)}`).filter({ visible: true }),
   ).toBeVisible();
 });
+
+// Task 4.5: the agenda of today shows an appointment that arrives while the
+// owner looks at it, without reloading. It asks every minute; coming back to
+// the tab asks right away, which the test uses so it does not wait a minute.
+test("the agenda of today shows an appointment that arrives", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const shop = await createBookableShop("en-vivo");
+  const today = toBogotaDate(new Date());
+  const owner = await signedInClient(shop.owner.email, shop.owner.password);
+  await addManualAppointment(owner, shop.id, {
+    barberId: shop.barbers.ana,
+    startsAt: fromBogota(today, "07:00"),
+    serviceIds: [shop.services.corte],
+    customerName: "Primera Cita",
+  });
+
+  await signIn(page, shop.owner);
+  await expect(heading(page, dayTitle(today, today))).toBeVisible(FIRST_VISIT);
+  const card = page.getByRole("link", { name: /^Luisa V\./ });
+  await expect(card).toHaveCount(0);
+
+  await addManualAppointment(owner, shop.id, {
+    barberId: shop.barbers.beto,
+    startsAt: fromBogota(today, "21:00"),
+    serviceIds: [shop.services.corte],
+    customerName: "Luisa Vélez",
+  });
+  await page.evaluate(() =>
+    document.dispatchEvent(new Event("visibilitychange")),
+  );
+  await expect(card).toBeVisible(FIRST_VISIT);
+});

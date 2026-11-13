@@ -27,6 +27,7 @@ import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BottomNav } from "@/ui/bottom-nav";
 import { removeOwnerBlock } from "@/modulos/agenda/acciones/owner-appointment";
+import { pollsLive } from "@/modulos/agenda/dominio/live-agenda";
 import { Fab } from "@/ui/fab";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
@@ -44,6 +45,7 @@ import { dayTitle, weekTitle } from "./agenda-labels";
 import { BarberDayList } from "./barber-day-list";
 import { DayGrid } from "./day-grid";
 import { EmptyAgenda } from "./empty-agenda";
+import { LiveRefresh } from "./live-refresh";
 import { DeletedBarbershopNotice } from "./sedes/deleted-notice";
 import { WeekDays } from "./week-days";
 
@@ -113,14 +115,19 @@ async function OwnerAgenda({
       <Notice tone="info" title={textos.panel.prueba(trialEnd)} />
     </div>
   );
+  // Every view ends with the "+"; the day of today also asks the server
+  // again every minute, so a booking shows up by itself (task 4.5).
   const fab = (
-    <Fab
-      href={newAppointmentHref({
-        barbero: barber?.id,
-        dia: date === today ? undefined : date,
-      })}
-      label={textos.ui.nuevaCita}
-    />
+    <>
+      {pollsLive({ view, date, today }) ? <LiveRefresh /> : null}
+      <Fab
+        href={newAppointmentHref({
+          barbero: barber?.id,
+          dia: date === today ? undefined : date,
+        })}
+        label={textos.ui.nuevaCita}
+      />
+    </>
   );
 
   if (view === "semana") {
