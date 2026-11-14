@@ -18,10 +18,10 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.3 Clientes | Fundador | Fusionada (#42) |
 | 4.4 Vista "Mi agenda" del barbero (B-01 a B-06) | Socio | Fusionada (#48) |
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
-| **5.4** Panel de plataforma (P-01 a P-06) y migración 9 | **Socio** | Pendiente: **la siguiente** |
+| **5.4** Panel de plataforma (P-01 a P-06) y migración 9 | **Socio** | En curso (`hito-5-plataforma`) |
 | **4.6** Cierre del día (D-64, P2) | **Socio** | Pendiente |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
-| **6.3** PWA instalable | **Socio** | Pendiente |
+| **6.3** PWA instalable | Socio | Fuera por ahora: el socio decidió no hacer una app (2026-11-13). Falta que el fundador lo confirme |
 | 5.1, 5.2 y 5.3 Cola de correos, SES y recordatorio | Fundador | Pendiente |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Pendiente |
@@ -29,7 +29,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.5 → 6.3.**
+**Orden del socio:** **5.4 → 4.6 → 5.5** (la 6.3 queda fuera por ahora, ver el tablero).
 - Si una tarea queda frenada esperando una respuesta del fundador, avanza la siguiente y vuelve después.
 - Si terminas todo, pide más al fundador. No tomes una tarea de otra persona sin cambiar el tablero en un PR.
 
