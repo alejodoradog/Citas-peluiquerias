@@ -97,7 +97,7 @@ Después, el dueño puede crear otra sede desde su misma cuenta. La sede nueva c
 
 ## Pantallas
 
-Son 21 pantallas principales en cuatro aplicaciones; todas se diseñan primero para celular. El diseño de cada una, con sus estados de carga, vacío y error, está en Claude Design, canvas "Prototipos Barberías" (pantallas C-xx del cliente, D-xx del dueño, B-xx del barbero, P-xx de la plataforma y E-xx de los correos). Si el diseño y esta lista difieren, manda el diseño.
+Son 21 pantallas principales en cuatro partes de la web; todas se diseñan primero para celular. El diseño de cada una, con sus estados de carga, vacío y error, está en Claude Design, canvas "Prototipos Barberías" (pantallas C-xx del cliente, D-xx del dueño, B-xx del barbero, P-xx de la plataforma y E-xx de los correos). Si el diseño y esta lista difieren, manda el diseño.
 
 **Página pública de reservas** (`yapoin.com/nombre-barberia`)
 
@@ -176,13 +176,15 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 No hay pasarela: la barbería paga solo por transferencia (bancaria, Nequi o llave Bre-B), envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento. Los pagos registrados no se editan ni se borran: un registro equivocado se anula y queda el rastro.
 
-**Plan único** (decisión del fundador, decisión 0006)
+**Precio según los barberos de la sede** (decisión del fundador, 2026-11-14; antes era un plan único, decisión 0006)
 
-| Plan | Precio | Barberos |
-| --- | --- | --- |
-| Estándar | $25.000 COP por sede al mes | Hasta 5, de forma informativa: nunca se bloquea registrar más |
+| Barberos activos de la sede | Precio |
+| --- | --- |
+| 1 a 4 | $25.000 COP al mes |
+| 5 a 8 | $40.000 COP al mes |
+| 9 o más | Por acuerdo con el área financiera de Yapoin |
 
-Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6), y el precio por encima de 5 barberos sigue abierto.
+El dueño que corta cuenta como barbero, y nunca se bloquea registrar más barberos. Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6). Se construye en la tarea 5.6.
 
 **Ciclo de la suscripción**
 
@@ -253,7 +255,7 @@ La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo leng
 
 | Pieza | Herramienta | Por qué |
 | --- | --- | --- |
-| Web (las 3 aplicaciones) | Next.js + Tailwind, instalable como PWA | Un solo código para página pública, panel y admin; se "instala" en el celular sin tienda de apps |
+| Web (las 3 vistas) | Next.js + Tailwind; Yapoin es solo una web app, sin app móvil ni PWA | Un solo código para página pública, panel y admin; se usa en el navegador del celular, sin tienda de apps |
 | Base de datos, login e imágenes | Supabase Pro en `us-east-1` (PostgreSQL, Auth, Row Level Security, Storage) | Separa los datos de cada barbería desde la base de datos; copias de seguridad diarias y sin pausas |
 | Hosting | Vercel Pro, funciones en `iad1` (Hobby solo en desarrollo) | Next.js sin adaptadores y despliegue automático desde GitHub; el plan gratis no permite uso comercial |
 | Tareas programadas | pg_cron + Edge Functions de Supabase | Envío de la cola, recordatorios, avisos y purgas |
@@ -297,7 +299,6 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 | Recordatorios por WhatsApp o SMS | Cuestan por mensaje y WhatsApp exige número dedicado, verificación y plantillas | Las inasistencias no bajan en el piloto con el correo |
 | Campañas de marketing por correo | No es el dolor principal y afecta la reputación del remitente | Lo piden como función paga |
 | Directorio o marketplace de barberías | Necesita masa crítica | Más de 300 barberías activas en una ciudad |
-| Apps en Play Store y App Store | La PWA cubre el uso | Barberías lo piden para su imagen |
 | Cobro consolidado de una cadena (`organizations`) | Cada sede paga su suscripción | Una cadena pide una sola factura |
 | Reseñas de clientes | Moderación y reclamos | Piden mostrar reputación |
 
@@ -306,7 +307,7 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 - [x] Nombre del producto y dominio: **Yapoin**, `yapoin.com`.
 - [ ] Quién lo desarrolla: tú, un equipo o un freelancer; esto define si el plan de 6 semanas es realista.
 - [ ] Persona natural o empresa: afecta la factura electrónica de tus ventas y las cuentas para recibir pagos (consultar con un contador). Como mínimo, sacar el RUT como persona natural antes de abrir la venta.
-- [x] Precio: plan único de $25.000 COP por sede al mes (decisión 0006). Queda abierto el precio por encima de 5 barberos.
+- [x] Precio: $25.000 COP al mes de 1 a 4 barberos, $40.000 de 5 a 8, y por acuerdo con 9 o más (decisión del fundador, 2026-11-14).
 - [ ] Ciudad y barrios para las 10 barberías piloto.
 - [ ] Correo para recibir comprobantes y cuenta bancaria o Nequi para recibir pagos.
 - [ ] Términos de uso y política de tratamiento de datos personales (Ley 1581 de 2012), porque se guardan nombres, correos y celulares de los clientes.

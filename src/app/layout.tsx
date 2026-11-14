@@ -16,8 +16,12 @@ export const metadata: Metadata = {
   description: textos.inicio.descripcion,
 };
 
-// Lets the bottom bar reach the phone's safe area.
-export const viewport: Viewport = { viewportFit: "cover" };
+// Lets the bottom bar reach the phone's safe area; the phone's bar takes the
+// brand color, as the icon (src/app/icon.svg).
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: "#1e7f8c",
+};
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

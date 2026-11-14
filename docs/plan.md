@@ -298,6 +298,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero. Presupuesto de la decisión 0007: 2 correos por cita, uno al cliente y uno al barbero; el cliente recibe solo el recordatorio, sin confirmación al reservar (decisión abierta 2, resuelta por el fundador el 2026-11-14).
 - [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", anular un pago con rastro, suspender, Reactivar, extender prueba y métricas (P2, P-06). Incluye la migración 9 de la decisión 0006 (`add_subscription_payment_flow`) y la copia en TypeScript de la fórmula de fechas, con una prueba que compare las dos.
 - [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea). Incluye la migración 10 de la decisión 0006 (`read_only_when_suspended`), los avisos en la agenda (D-70 a D-72, sin pantalla de suscripción) y Mis citas (P2, C-19 a C-21).
+- [ ] 5.6 Precio por número de barberos: $25.000 al mes de 1 a 4, $40.000 de 5 a 8 y por acuerdo con 9 o más (decisión del fundador, 2026-11-14), en el catálogo, el registro de pagos, P-02, P-03 y los avisos.
 
 **Lista cuando:** una cita de prueba recibe su recordatorio real por correo (el cliente recibe solo el recordatorio, decisión del fundador del 2026-11-14), que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
 
@@ -305,7 +306,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 - [ ] 6.1 Pruebas de punta a punta con Playwright de los 3 flujos de la spec.
 - [ ] 6.2 Prueba en celulares reales (Android de gama media, iPhone) y redes lentas.
-- [ ] 6.3 PWA instalable, ícono, nombre, pantalla sin conexión. **Fuera del MVP** (decisión del fundador, 2026-11-14).
+- 6.3 eliminada: Yapoin es solo web, sin app móvil ni PWA (decisión del fundador, 2026-11-14).
 - [ ] 6.4 Proyecto de producción en Supabase con "Confirm email" y "Secure password change" activados, código de 10 caracteres y sus plantillas, dominio conectado a la app, Sentry, copias de seguridad. Según la decisión 0007 y `docs/operacion/infraestructura-produccion.md`: Supabase Pro en `us-east-1`, Vercel Pro en `iad1`, dominio con DNS en Cloudflare ("DNS only"), alertas de gasto sin pausar producción, migraciones y despliegue desde CI, monitor de disponibilidad, `pg_dump` semanal a S3 y simulacro de restauración. Variables de Production nuevas, apuntando a `barberias-prod`, con el tipo y las reglas de seguridad de `docs/operacion/infraestructura-produccion.md` ("Variables de producción en Vercel"); las de Preview no se reutilizan.
 - [ ] 6.5 Términos de uso y política de datos personales visibles en el registro y la reserva.
 - [ ] 6.6 Las 10 barberías piloto se registran solas por el camino normal (registro con correo y contraseña, y el asistente), sin cargarlas a mano (decisión del fundador, 2026-11-14).

@@ -2027,6 +2027,36 @@ export const textos = {
       archivo: (dia: string) => `cierre-${dia}.csv`,
     },
   },
+  // The subscription notice on top of the agenda (task 5.5: D-70, D-71 and
+  // D-72). The trial one stays textos.panel.prueba (task 1.5).
+  suscripcion: {
+    vencePrueba: (fecha: string) => `Tu prueba gratis vence el ${fecha}`,
+    venceMes: (fecha: string) => `Tu mes vence el ${fecha}`,
+    vencida: (fecha: string) => `Tu barbería venció el ${fecha}`,
+    reservasHasta: (fecha: string) =>
+      `Sigues recibiendo reservas hasta el ${fecha}.`,
+    pausada: "Tu barbería está pausada",
+    pausadaDetalle:
+      "Tu página no recibe reservas nuevas y la agenda es solo de lectura. Las citas tomadas siguen en pie.",
+    // A sede awaiting its first payment (decision S4): configurable.
+    pausadaPrimerPago:
+      "Tu página no recibe reservas hasta que registremos el primer pago de esta sede. Mientras tanto puedes configurarla.",
+    // How to pay (decision S2): the founder's data once it exists, or a
+    // promise to send it.
+    pago: {
+      con: (valor: string, opciones: string, correo: string) =>
+        `Paga ${valor} por ${opciones} y envía el comprobante a ${correo}.`,
+      opcionBreB: (llave: string) => `llave Bre-B ${llave}`,
+      opcionNequi: (numero: string) => `Nequi ${numero}`,
+      o: " o ",
+      sinDatos: (valor: string) =>
+        `El valor es ${valor} al mes. Te enviaremos los datos de pago por correo.`,
+      sinValor: "Te enviaremos los datos de pago por correo.",
+    },
+    // A change refused because the barbershop is paused.
+    soloLectura:
+      "Tu barbería está pausada: la agenda es solo de lectura hasta que registremos tu pago.",
+  },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.
   proximamente: {

@@ -6,7 +6,11 @@ import { formatPesos } from "@/lib/dinero/pesos";
 import { addDays, getWeekday, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes, SAVED_PARAM } from "@/lib/routes";
 import { loadDayClose } from "@/modulos/cierre/datos/day-close";
-import { dayClose, parseCloseDay } from "@/modulos/cierre/dominio/day-close";
+import {
+  dayClose,
+  parseCloseDay,
+  PAUSED_WARNING,
+} from "@/modulos/cierre/dominio/day-close";
 import { initialsOf } from "@/ui/avatar";
 import { buttonClasses } from "@/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon } from "@/ui/icons";
@@ -104,7 +108,16 @@ async function DayCloseScreen({
         {params[SAVED_PARAM] ? (
           <Notice tone="success" title={t.guardado} />
         ) : null}
-        {params.aviso ? <Notice tone="danger" title={t.noGuardado} /> : null}
+        {params.aviso ? (
+          <Notice
+            tone="danger"
+            title={
+              params.aviso === PAUSED_WARNING
+                ? textos.suscripcion.soloLectura
+                : t.noGuardado
+            }
+          />
+        ) : null}
         <dl className="grid grid-cols-2 gap-2.5">
           {figures.map((figure) => (
             <div

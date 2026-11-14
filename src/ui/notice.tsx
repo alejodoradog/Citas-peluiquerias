@@ -1,8 +1,15 @@
 import type { ReactNode } from "react";
 import { cx } from "./cx";
-import { CircleCheckIcon, ClockIcon, InfoIcon, WarningIcon } from "./icons";
+import {
+  CircleCheckIcon,
+  ClockIcon,
+  InfoIcon,
+  LockIcon,
+  WarningIcon,
+} from "./icons";
 
-export type NoticeTone = "info" | "success" | "warning" | "danger";
+// neutral: something on hold, as D-72 shows a paused barbershop (task 5.5).
+export type NoticeTone = "info" | "success" | "warning" | "danger" | "neutral";
 
 const tones: Record<
   NoticeTone,
@@ -27,6 +34,11 @@ const tones: Record<
     box: "bg-danger-soft",
     accent: "text-danger",
     icon: <WarningIcon />,
+  },
+  neutral: {
+    box: "bg-neutral-soft",
+    accent: "text-muted",
+    icon: <LockIcon />,
   },
 };
 

@@ -164,6 +164,9 @@ select is(
     'private.member_barbershop_ids:authenticated',
     'private.set_updated_at:anon',
     'private.set_updated_at:authenticated',
+    -- Task 5.5: the barbershops whose configuration may change (policies of
+    -- migration 10).
+    'private.writable_barbershop_ids:authenticated',
     -- Task 4.3: "Borrar cliente" and the list of customers.
     'public.anonymize_customer:authenticated',
     -- Task 4.4: "Mi agenda" of a barber, for anyone who has the link.
