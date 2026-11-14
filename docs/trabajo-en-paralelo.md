@@ -22,7 +22,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | **4.6** Cierre del día (D-64, P2) | **Socio** | Pendiente |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
 | **6.3** PWA instalable | **Socio** | Pendiente |
-| 5.1, 5.2 y 5.3 Cola de correos, SES y recordatorio | Fundador | Pendiente |
+| 5.1 Cola de correos | Fundador | En curso (`hito-5-cola-correos`) |
+| 5.2 y 5.3 Envío por el proveedor (decisión 0008, propuesta) y recordatorio | Fundador | Pendiente |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Pendiente |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
@@ -95,7 +96,7 @@ Fusionada en #48. Su documento está en `docs/tareas/`. Sirve de modelo para las
   - la tarea define el plazo: **pregúntalo al fundador**;
   - corre con pg_cron (decisión 0007, punto 8).
 - **Correos del ciclo** (por vencer, el día del vencimiento, 3 días después, suspendida y pago registrado) van por la cola de la 5.1, que es del fundador.
-  - **Contrato:** la 5.1 deja una función `private.enqueue_notification(...)`, sin duplicados por llave.
+  - **Contrato:** la 5.1 deja `private.enqueue_notification(barbershop_id, type, dedupe_key, appointment_id default null, scheduled_for default now(), payload default '{}')`. Devuelve el id, o `null` si esa `dedupe_key` ya estaba: así un aviso no sale dos veces. El destinatario no se pasa, porque los de suscripción van al dueño de la sede (`docs/tareas/5.1-cola-de-correos.md`).
   - Si la 5.1 todavía no está fusionada, construye todo lo demás de la 5.5 y deja los correos para un PR corto después. No crees tu propia cola.
 - **No incluye "Mis citas"** (C-19 a C-21): es un link que llega por correo y lo hace el fundador.
 
