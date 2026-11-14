@@ -6,9 +6,10 @@ import {
   calendarUrl,
   composeAppointmentEmail,
   dayLine,
-  emailLinkToken,
   linkTokenHash,
+  newLinkToken,
   outdatedReason,
+  plainName,
   renderAppointmentEmail,
   timeLine,
 } from "./appointment-emails";
@@ -57,19 +58,27 @@ const SITE = "https://www.yapoin.com/";
 const MANAGE = "https://www.yapoin.com/c/token";
 
 describe("the link of an email", () => {
-  it("is the same for the same email, and has the shape of a link of the app", async () => {
-    const one = await emailLinkToken("s".repeat(32), "id-1");
-    expect(one).toBe(await emailLinkToken("s".repeat(32), "id-1"));
+  it("is new each time, with the shape of a link of the app", () => {
+    const one = newLinkToken();
     expect(one).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    expect(one).not.toBe(await emailLinkToken("s".repeat(32), "id-2"));
-    expect(one).not.toBe(await emailLinkToken("t".repeat(32), "id-1"));
+    expect(one).not.toBe(newLinkToken());
   });
 
   it("keeps the hash the app computes (hashLinkToken)", async () => {
-    const token = await emailLinkToken("s".repeat(32), "id-1");
+    const token = newLinkToken();
     expect(await linkTokenHash(token)).toBe(
       createHash("sha256").update(token, "utf8").digest("hex"),
     );
+  });
+});
+
+describe("names that look like a link", () => {
+  it("never reach a greeting or a subject", () => {
+    expect(plainName("Camila")).toBe("Camila");
+    expect(plainName("J.R.")).toBe("J.R.");
+    expect(plainName("https://falso.co/pago")).toBeNull();
+    expect(plainName("falso.co")).toBeNull();
+    expect(plainName("www.falso.net")).toBeNull();
   });
 });
 
@@ -157,6 +166,22 @@ describe("renderAppointmentEmail", () => {
     expect(email.text).toContain(`Ver mi cita: ${MANAGE}`);
   });
 
+  it("greets without a name that looks like a link, and keeps the subject on one line", () => {
+    const email = renderAppointmentEmail(
+      "barber_new_booking",
+      data({
+        manageUrl: null,
+        appointment: record({
+          customerFirstName: "falso.co/pago",
+          barberName: "Kevin\r\nBcc: x@y.z",
+        }),
+      }),
+    )!;
+    expect(email.subject).toMatch(/^Nueva cita: Un cliente, /);
+    expect(email.text).not.toContain("falso.co");
+    expect(email.subject).not.toMatch(/[\r\n]/);
+  });
+
   it("tells the barber about a new appointment and a cancellation, without links", () => {
     const fresh = renderAppointmentEmail(
       "barber_new_booking",
@@ -238,7 +263,7 @@ describe("composeAppointmentEmail", () => {
     };
     return db;
   }
-  const env = { siteUrl: SITE, linkSecret: "s".repeat(32) };
+  const env = { siteUrl: SITE };
   const now = Date.parse("2026-11-20T12:00:00Z");
 
   it("keeps the hash of the link before sending the reminder", async () => {
@@ -249,18 +274,14 @@ describe("composeAppointmentEmail", () => {
       env,
       now,
     );
-    const token = await emailLinkToken(
-      env.linkSecret,
-      "11111111-2222-3333-4444-555555555555",
-    );
     expect(db.appointment).toHaveBeenCalledWith("shop", "appt");
+    const text = "text" in email ? email.text : "";
+    const token = /\/c\/([A-Za-z0-9_-]{43})\?confirmo=1/.exec(text)?.[1];
+    expect(token).toBeDefined();
     expect(db.issueLink).toHaveBeenCalledWith(
       "shop",
       "appt",
-      await linkTokenHash(token),
-    );
-    expect("text" in email && email.text).toContain(
-      `https://www.yapoin.com/c/${token}?confirmo=1`,
+      await linkTokenHash(token!),
     );
   });
 

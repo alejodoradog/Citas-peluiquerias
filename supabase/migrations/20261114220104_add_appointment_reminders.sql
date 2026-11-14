@@ -22,8 +22,16 @@
 -- 3. "Confirmo": the customer says they are coming
 --    (appointments.customer_confirmed_at), from the link, with one tap. A new
 --    time asks again.
--- 4. A barbershop name never carries a link, so an email can never say "Paga
---    en http://…" in a barbershop's name (security note of task 5.2).
+-- 4. What reaches an email never carries a link: the names and the address
+--    of a barbershop, its barbers and services, and the customer's name, so
+--    nobody can put "Paga en falso.co" inside an email from Yapoin (security
+--    note of task 5.2).
+-- 5. Limits, so a link or an account cannot send emails without end
+--    (security review of 2026-11-14): one pending reminder per appointment
+--    (a new one replaces it), at most 5 emails per appointment for its
+--    customer, at most 300 a day per barbershop, and at most 3 moves by the
+--    customer from the link. Only who acts from a link counts as the
+--    customer, and only a member of the barbershop counts as the barbershop.
 
 -- 1. The customer's answer ------------------------------------------------------------------------
 
@@ -256,6 +264,141 @@ grant execute on function public.confirm_appointment_by_token(text) to anon, aut
 
 -- 1. What is queued ------------------------------------------------------------------------------
 
+-- Who acts from a link: the functions of the customer's link (task 3.4) and
+-- of this task set yapoin.actor to 'customer'. A person with a session who
+-- uses someone's link is that customer here, never the barbershop.
+create function private.acting_from_customer_link()
+returns boolean
+language sql
+stable
+set search_path = ''
+as $$
+  select coalesce(current_setting('yapoin.actor', true) = 'customer', false)
+$$;
+
+revoke all on function private.acting_from_customer_link() from public;
+
+-- From the link, an appointment moves while it has moved fewer than 3 times
+-- (by anyone); after that the barbershop moves it (security review: each
+-- move queues a reminder).
+create function private.limit_customer_moves()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.starts_at is distinct from old.starts_at
+    and private.acting_from_customer_link()
+    and (
+      select count(*)
+      from public.appointment_events e
+      where e.barbershop_id = new.barbershop_id
+        and e.appointment_id = new.id
+        and e.type = 'rescheduled'
+    ) >= 3 then
+    raise exception 'moved too many times'
+      using errcode = 'P0001', hint = 'too_many_changes';
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function private.limit_customer_moves() from public;
+
+create trigger limit_customer_moves
+  before update of starts_at on public.appointments
+  for each row execute function private.limit_customer_moves();
+
+-- The customer's emails of an appointment.
+create function private.is_customer_email(p_type public.notification_type)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select p_type in ('appointment_confirmed', 'appointment_reminder',
+                    'appointment_cancelled', 'appointment_rescheduled')
+$$;
+
+revoke all on function private.is_customer_email(public.notification_type) from public;
+
+-- Whether another email for the customer of an appointment fits the limits:
+-- 5 per appointment (what was sent or is due; a replaced reminder does not
+-- count) and 300 a day per barbershop.
+create function private.customer_email_fits(p_barbershop_id uuid, p_appointment_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (
+      select count(*) from public.notifications n
+      where n.barbershop_id = p_barbershop_id
+        and n.appointment_id = p_appointment_id
+        and private.is_customer_email(n.type)
+        and n.status <> 'cancelled'
+    ) < 5
+    and (
+      select count(*) from public.notifications n
+      where n.barbershop_id = p_barbershop_id
+        and n.appointment_id is not null
+        and private.is_customer_email(n.type)
+        and n.created_at > now() - interval '1 day'
+        and n.status <> 'cancelled'
+    ) < 300
+$$;
+
+revoke all on function private.customer_email_fits(uuid, uuid) from public;
+
+-- A new email of a type replaces the pending one of the same appointment
+-- that no run holds: there is one reminder, for the current time.
+create function private.replace_pending_email(
+  p_barbershop_id uuid,
+  p_appointment_id uuid,
+  p_type public.notification_type
+)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.notifications n
+  set status = 'cancelled', last_error = 'superseded'
+  where n.barbershop_id = p_barbershop_id
+    and n.appointment_id = p_appointment_id
+    and n.type = p_type
+    and n.status = 'pending'
+    and (n.locked_until is null or n.locked_until <= now())
+$$;
+
+revoke all on function private.replace_pending_email(uuid, uuid, public.notification_type) from public;
+
+-- Queue an email for the customer of an appointment, within the limits.
+create function private.queue_customer_email(
+  p_appointment public.appointments,
+  p_type public.notification_type,
+  p_key text,
+  p_scheduled_for timestamptz,
+  p_payload jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  perform private.replace_pending_email(p_appointment.barbershop_id, p_appointment.id, p_type);
+  if private.customer_email_fits(p_appointment.barbershop_id, p_appointment.id) then
+    perform private.enqueue_notification(
+      p_appointment.barbershop_id, p_type, p_key, p_appointment.id, p_scheduled_for, p_payload);
+  end if;
+end;
+$$;
+
+revoke all on function private.queue_customer_email(public.appointments, public.notification_type, text, timestamptz, jsonb) from public;
+
 -- The reminder 24 h before; 3 h before when there is no time for that (the
 -- spec: "24 h antes, o 3 h si la cita es para el mismo día"); at once when
 -- there is not even time for that, and then it is also the confirmation.
@@ -319,15 +462,19 @@ declare
   -- is cancelled when it is sent, because the time moved.
   stamp text := extract(epoch from clock_timestamp())::text;
   starts jsonb := jsonb_build_object('starts_at', new.starts_at);
-  by_barbershop boolean := private.current_actor() = 'staff';
+  -- The barbershop is a member of it acting with their session, never
+  -- someone else's session on a link.
+  by_barbershop boolean := not private.acting_from_customer_link()
+    and private.current_actor() = 'staff'
+    and new.barbershop_id = any ((select private.member_barbershop_ids())::uuid[]);
   customer boolean := private.customer_has_email(new.barbershop_id, new.customer_id);
 begin
   if tg_op = 'INSERT' then
     if new.status = 'confirmed' and new.starts_at > now() then
       if customer then
-        perform private.enqueue_notification(
-          new.barbershop_id, 'appointment_reminder', 'reminder:' || new.id || ':' || stamp,
-          new.id, private.reminder_time(new.starts_at), starts);
+        perform private.queue_customer_email(
+          new, 'appointment_reminder', 'reminder:' || new.id || ':' || stamp,
+          private.reminder_time(new.starts_at), starts);
       end if;
       if private.barber_wants_notices(new.barbershop_id, new.barber_id) then
         perform private.enqueue_notification(
@@ -346,10 +493,12 @@ begin
         new.barbershop_id, 'barber_booking_cancelled', 'barber-cancelled:' || new.id,
         new.id, now(), starts);
     end if;
-    if new.status = 'cancelled_by_barbershop' and customer and new.starts_at > now() then
-      perform private.enqueue_notification(
-        new.barbershop_id, 'appointment_cancelled', 'cancelled:' || new.id,
-        new.id, now(), starts);
+    -- A cancelled appointment has no reminder left.
+    perform private.replace_pending_email(new.barbershop_id, new.id, 'appointment_reminder');
+    if new.status = 'cancelled_by_barbershop' and by_barbershop and customer
+      and new.starts_at > now() then
+      perform private.queue_customer_email(
+        new, 'appointment_cancelled', 'cancelled:' || new.id, now(), starts);
     end if;
     return null;
   end if;
@@ -359,15 +508,14 @@ begin
     and (new.starts_at is distinct from old.starts_at
          or new.barber_id is distinct from old.barber_id) then
     if customer then
-      perform private.enqueue_notification(
-        new.barbershop_id, 'appointment_reminder', 'reminder:' || new.id || ':' || stamp,
-        new.id, private.reminder_time(new.starts_at), starts);
       if by_barbershop then
-        perform private.enqueue_notification(
-          new.barbershop_id, 'appointment_rescheduled', 'rescheduled:' || new.id || ':' || stamp,
-          new.id, now(),
-          starts || jsonb_build_object('old_starts_at', old.starts_at));
+        perform private.queue_customer_email(
+          new, 'appointment_rescheduled', 'rescheduled:' || new.id || ':' || stamp,
+          now(), starts || jsonb_build_object('old_starts_at', old.starts_at));
       end if;
+      perform private.queue_customer_email(
+        new, 'appointment_reminder', 'reminder:' || new.id || ':' || stamp,
+        private.reminder_time(new.starts_at), starts);
     end if;
     if new.barber_id is distinct from old.barber_id
       and private.barber_wants_notices(new.barbershop_id, new.barber_id) then
@@ -390,8 +538,35 @@ create trigger queue_appointment_emails_on_update
   after update of status, starts_at, barber_id on public.appointments
   for each row execute function private.queue_appointment_emails();
 
--- 4. A barbershop name without links ---------------------------------------------------------------
+-- 4. Without links -------------------------------------------------------------------------------
+-- Something that a mail client would turn into a link: a scheme (also with
+-- a full-width colon), "www.", or a word ending in a common domain. "Cra. 15"
+-- or "J.R." are not links. NOT VALID: the rows written before are not
+-- checked again; every new write is.
+create function private.has_link(p_value text)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select coalesce(
+    p_value ~* '([:：]//|www\.|\m[a-z0-9-]+\.(com|co|net|org|io|me|ly|link|info|biz|xyz|app|site|online|store|shop|top|click|gg|to|cc|ws|tk|ru|cn)\M)',
+    false)
+$$;
+
+revoke all on function private.has_link(text) from public;
+grant execute on function private.has_link(text) to authenticated, service_role;
 
 alter table public.barbershops
-  add constraint barbershops_name_without_links
-    check (name !~* '(://|www\.)');
+  add constraint barbershops_without_links
+    check (not private.has_link(name) and not private.has_link(address) and not private.has_link(locality))
+    not valid;
+alter table public.barbers
+  add constraint barbers_name_without_links
+    check (not private.has_link(display_name)) not valid;
+alter table public.services
+  add constraint services_name_without_links
+    check (not private.has_link(name)) not valid;
+alter table public.customers
+  add constraint customers_name_without_links
+    check (not private.has_link(full_name)) not valid;

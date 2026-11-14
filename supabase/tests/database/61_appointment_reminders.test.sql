@@ -17,7 +17,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(31);
+select plan(40);
 
 -- Fixtures, inserted as the table owner -------------------------------------------------------
 -- Barbershop R (owner r). Uno takes notices, Dos does not. Camila has an
@@ -295,6 +295,100 @@ select is(
 select is(
   pg_temp.hint_of($$update public.barbershops set name = 'Visita www.falso.co' where id = 'aaaaaaaa-0000-0000-0000-000000000061'$$),
   '23514', 'nor a www. address'
+);
+
+-- Limits (security review of 2026-11-14) -----------------------------------------------------------
+
+-- A stranger with a session, using the link of an appointment, never counts
+-- as the barbershop.
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-0000000061bb', 'extrano@example.com');
+insert into public.profiles (id, full_name, phone) values
+  ('00000000-0000-0000-0000-0000000061bb', 'Extraño', '+573001112299');
+select pg_temp.book('e0000000-0000-0000-0000-000000000615', interval '5 days', 'c0000000-0000-0000-0000-000000000061', 'ba000000-0000-0000-0000-000000000062', 'web');
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000061bb", "role": "authenticated"}';
+select set_config('yapoin.actor', 'customer', true);
+update public.appointments
+set starts_at = now() + interval '6 days', ends_at = now() + interval '6 days 30 minutes'
+where id = 'e0000000-0000-0000-0000-000000000615';
+select is(
+  (select count(*)::int from public.notifications
+   where appointment_id = 'e0000000-0000-0000-0000-000000000615' and type = 'appointment_rescheduled'),
+  0, 'someone else''s session on a link is the customer, not the barbershop: no "the barbershop moved it"'
+);
+
+-- Moving back and forth from the link leaves one reminder, and stops at 3 moves.
+update public.appointments
+set starts_at = now() + interval '5 days', ends_at = now() + interval '5 days 30 minutes'
+where id = 'e0000000-0000-0000-0000-000000000615';
+update public.appointments
+set starts_at = now() + interval '6 days', ends_at = now() + interval '6 days 30 minutes'
+where id = 'e0000000-0000-0000-0000-000000000615';
+select is(
+  (select count(*)::int from public.notifications
+   where appointment_id = 'e0000000-0000-0000-0000-000000000615'
+     and type = 'appointment_reminder' and status = 'pending'),
+  1, 'moving back and forth leaves a single reminder, for the current time'
+);
+select is(
+  pg_temp.hint_of($$update public.appointments
+    set starts_at = now() + interval '5 days', ends_at = now() + interval '5 days 30 minutes'
+    where id = 'e0000000-0000-0000-0000-000000000615'$$),
+  'too_many_changes', 'after 3 moves the link moves it no more'
+);
+select set_config('yapoin.actor', '', true);
+reset request.jwt.claims;
+
+-- At most 5 emails per appointment for its customer.
+insert into public.notifications (barbershop_id, appointment_id, type, scheduled_for, dedupe_key, status, sent_at)
+select 'aaaaaaaa-0000-0000-0000-000000000061', 'e0000000-0000-0000-0000-000000000615',
+       'appointment_rescheduled', now(), 'enviado-' || n, 'sent', now()
+from generate_series(1, 5) n;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000061aa", "role": "authenticated"}';
+update public.appointments set status = 'cancelled_by_barbershop'
+where id = 'e0000000-0000-0000-0000-000000000615';
+reset request.jwt.claims;
+select is(
+  (select count(*)::int from public.notifications
+   where appointment_id = 'e0000000-0000-0000-0000-000000000615' and type = 'appointment_cancelled'),
+  0, 'after 5 emails, an appointment queues no more for its customer'
+);
+select is(
+  (select count(*)::int from public.notifications
+   where appointment_id = 'e0000000-0000-0000-0000-000000000615'
+     and type = 'appointment_reminder' and status = 'pending'),
+  0, 'and a cancelled appointment has no reminder left'
+);
+
+-- Links of the emails: a hash belongs to one appointment; nobody resolves
+-- tokens but the functions.
+set local role service_role;
+select is(
+  pg_temp.hint_of($$select public.issue_appointment_link('aaaaaaaa-0000-0000-0000-000000000061', 'e0000000-0000-0000-0000-000000000615',
+    encode(sha256(convert_to('correo 1', 'UTF8')), 'hex'))$$),
+  'P0002', 'a link already given to one appointment is never given to another'
+);
+reset role;
+select ok(
+  not has_function_privilege('anon', 'private.appointment_id_by_token(text)', 'EXECUTE')
+    and not has_function_privilege('authenticated', 'private.appointment_id_by_token(text)', 'EXECUTE'),
+  'no session resolves a token by itself'
+);
+
+-- Without links: what reaches an email.
+select is(
+  array[
+    pg_temp.hint_of($$update public.barbershops set address = 'Paga en falso.co' where id = 'aaaaaaaa-0000-0000-0000-000000000061'$$),
+    pg_temp.hint_of($$update public.barbers set display_name = 'bit.ly/x' where id = 'ba000000-0000-0000-0000-000000000061'$$),
+    pg_temp.hint_of($$update public.services set name = 'Corte www.x.net' where id = '5e000000-0000-0000-0000-000000000061'$$),
+    pg_temp.hint_of($$update public.customers set full_name = 'https://falso.co Pérez' where id = 'c0000000-0000-0000-0000-000000000061'$$)
+  ],
+  array['23514', '23514', '23514', '23514'],
+  'no link in an address, a barber, a service or a customer name'
+);
+select is(
+  pg_temp.hint_of($$update public.barbershops set address = 'Cra. 15 # 82-40', name = 'Barbería J.R.' where id = 'aaaaaaaa-0000-0000-0000-000000000061'$$),
+  'no error', 'while an ordinary address or name passes'
 );
 
 select * from finish();

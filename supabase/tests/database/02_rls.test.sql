@@ -152,6 +152,7 @@ select is(
     'private.current_barbershop_id:authenticated',
     'private.current_profile_id:authenticated',
     'private.deleted_barbershop_ids:authenticated',
+    'private.has_link:authenticated',
     'private.has_upload_ticket:authenticated',
     'private.is_e164_phone:anon',
     'private.is_e164_phone:authenticated',

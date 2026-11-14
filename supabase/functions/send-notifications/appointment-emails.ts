@@ -15,11 +15,14 @@ import type { Email } from "./render.ts";
 import type { QueuedMessage } from "./run-queue.ts";
 
 // The link of an email, /c/<token>, like the one of C-08 (task 3.4). The
-// payload never keeps it (rule Q5 of task 5.1): the token is derived from
-// the email's id with the function's secret, so a retry of the same email
-// gives the same link, and only its hash reaches the database
-// (issue_appointment_link). The shape is that of src/lib/tokens/link-token.ts:
-// 32 bytes in base64url, 43 characters, and its SHA-256 in hex.
+// payload never keeps it (rule Q5 of task 5.1): a new random token is made
+// when the email is sent, and only its hash reaches the database
+// (issue_appointment_link). A retry makes another one; if the first email
+// left, Resend answers the retry as already sent (idempotency key, task 5.2)
+// and the first link keeps working. The shape is that of
+// src/lib/tokens/link-token.ts: 32 random bytes in base64url, 43 characters,
+// and its SHA-256 in hex.
+
 const encoder = new TextEncoder();
 
 function base64url(bytes: Uint8Array): string {
@@ -31,25 +34,8 @@ function base64url(bytes: Uint8Array): string {
     .replace(/=+$/, "");
 }
 
-// The token of one email: HMAC-SHA256 of its id, under a label of its own so
-// the secret of the function never signs anything else the same way.
-export async function emailLinkToken(
-  secret: string,
-  notificationId: string,
-): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(`appointment-link:${notificationId}`),
-  );
-  return base64url(new Uint8Array(signature));
+export function newLinkToken(): string {
+  return base64url(crypto.getRandomValues(new Uint8Array(32)));
 }
 
 // What the database keeps: the SHA-256 of the token, in hex
@@ -131,6 +117,7 @@ export const textos = {
     },
   },
   calendarioTitulo: (barberia: string) => `Cita en ${barberia}`,
+  unCliente: "Un cliente",
 } as const;
 
 const t = textos;
@@ -166,7 +153,7 @@ export type AppointmentDb = {
   ): Promise<void>;
 };
 
-export type AppointmentEnv = { siteUrl: string; linkSecret: string };
+export type AppointmentEnv = { siteUrl: string };
 
 // "sábado 15 de noviembre" and "3:00 p. m.", in Bogotá.
 export function dayLine(iso: string): string {
@@ -189,6 +176,16 @@ export function timeLine(iso: string): string {
   })
     .format(new Date(iso))
     .replace(/\s+/g, " ");
+}
+
+// A name that a mail client would turn into a link (the database refuses
+// new ones, private.has_link; this guards the old rows): the email then
+// greets without it.
+const LINKISH =
+  /([:\uff1a]\/\/|www\.|\b[a-z0-9-]+\.(com|co|net|org|io|me|ly|link|info|biz|xyz|app|site|online|store|shop|top|click|gg|to|cc|ws|tk|ru|cn)\b)/i;
+
+export function plainName(name: string | null): string | null {
+  return name && !LINKISH.test(name) ? name : null;
 }
 
 function when(iso: string): string {
@@ -228,8 +225,10 @@ function frame(
   buttons: Button[],
   place: string,
 ): Email {
-  const lines = [t.saludo(name), ...paragraphs];
+  const lines = [t.saludo(plainName(name)), ...paragraphs];
   const footer = t.pie(place);
+  // One line, whatever was written: no control character reaches a header.
+  const title = subject.replace(/[\p{Cc}]+/gu, " ");
   const button = ({ label, href, tone }: Button) =>
     tone === "primary"
       ? `<p style="margin:0 0 12px"><a href="${escapeHtml(href)}" style="display:block;text-align:center;background:#1e7f8c;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:14px">${escapeHtml(label)}</a></p>`
@@ -238,7 +237,7 @@ function frame(
     '<!doctype html><html lang="es-CO"><body style="margin:0;background:#f4f7f6;font-family:Arial,Helvetica,sans-serif;color:#16211f">',
     '<div style="max-width:480px;margin:0 auto;padding:24px 20px">',
     `<p style="margin:0 0 20px;font-size:18px;font-weight:700;color:#145a63">${escapeHtml(t.marca)}</p>`,
-    `<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3">${escapeHtml(subject)}</h1>`,
+    `<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3">${escapeHtml(title)}</h1>`,
     ...lines.map(
       (line) =>
         `<p style="margin:0 0 14px;font-size:16px;line-height:1.5">${escapeHtml(line)}</p>`,
@@ -255,7 +254,7 @@ function frame(
     "",
     footer,
   ].join("\n\n");
-  return { subject, html, text };
+  return { subject: title, html, text };
 }
 
 export type AppointmentEmailData = {
@@ -277,6 +276,7 @@ export function renderAppointmentEmail(
   const address = [shop.address, shop.locality].filter(Boolean).join(", ");
   const place = address ? `${shop.name}, ${address}` : shop.name;
   const services = a.serviceNames.join(" + ");
+  const customer = plainName(a.customerFirstName) ?? t.unCliente;
   const start = when(a.startsAt);
   const site = data.siteUrl.replace(/\/$/, "");
 
@@ -349,16 +349,16 @@ export function renderAppointmentEmail(
     case "barber_new_booking":
       return frame(
         a.barberName,
-        t.barbero.nueva.asunto(a.customerFirstName, start),
-        [t.barbero.nueva.cuerpo(a.customerFirstName, services, start)],
+        t.barbero.nueva.asunto(customer, start),
+        [t.barbero.nueva.cuerpo(customer, services, start)],
         [],
         place,
       );
     case "barber_booking_cancelled":
       return frame(
         a.barberName,
-        t.barbero.cancelada.asunto(a.customerFirstName, start),
-        [t.barbero.cancelada.cuerpo(a.customerFirstName, start)],
+        t.barbero.cancelada.asunto(customer, start),
+        [t.barbero.cancelada.cuerpo(customer, start)],
         [],
         place,
       );
@@ -428,7 +428,7 @@ export async function composeAppointmentEmail(
 
   let manageUrl: string | null = null;
   if (LINKED.has(message.type)) {
-    const token = await emailLinkToken(env.linkSecret, message.id);
+    const token = newLinkToken();
     await db.issueLink(
       message.barbershopId,
       message.appointmentId,

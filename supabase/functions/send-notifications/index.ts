@@ -191,9 +191,6 @@ function senderFromEnv(db: SupabaseClient): Sender | null {
   if (!apiKey || !from) return null;
   const content = emailDb(db);
   const appointments = appointmentDb(db);
-  // The links of the appointments' emails are signed with the function's
-  // own secret (task 5.3), checked at the top of the request.
-  const linkSecret = Deno.env.get("NOTIFICATIONS_SECRET") ?? "";
   const settings = {
     payInfo: {
       breB: env("PAYMENT_BRE_B"),
@@ -210,7 +207,6 @@ function senderFromEnv(db: SupabaseClient): Sender | null {
       if (APPOINTMENT_EMAILS.has(message.type)) {
         return composeAppointmentEmail(message, appointments, {
           siteUrl: settings.siteUrl,
-          linkSecret,
         });
       }
       const data = await emailData(content, message, settings);

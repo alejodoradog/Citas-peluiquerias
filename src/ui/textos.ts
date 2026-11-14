@@ -1700,6 +1700,8 @@ export const textos = {
         same_time: "Tu cita ya está a esa hora. Elige otra.",
         services_changed:
           "La barbería cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbeles por WhatsApp.",
+        too_many_changes:
+          "Ya cambiaste esta cita varias veces. Si necesitas otra hora, escríbele a la barbería por WhatsApp.",
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
         invalid: "No pudimos hacer el cambio. Intenta de nuevo.",
       } satisfies Record<ManageRefusal | "invalid", string>,
@@ -1708,6 +1710,7 @@ export const textos = {
       name_required: "Escribe tu nombre.",
       name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
       name_invalid: "Escribe tu nombre en una sola línea.",
+      name_has_link: "Escribe solo tu nombre, sin links ni páginas web.",
       email_invalid: "Escribe un correo válido, como nombre@correo.com.",
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:
