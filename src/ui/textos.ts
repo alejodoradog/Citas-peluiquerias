@@ -1,5 +1,6 @@
 import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
 import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
+import type { MyAppointmentsErrorCode } from "@/modulos/agenda/acciones/my-appointments";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
 import type { BarberRefusal } from "@/modulos/agenda/datos/barber-errors";
@@ -1705,6 +1706,47 @@ export const textos = {
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
         invalid: "No pudimos hacer el cambio. Intenta de nuevo.",
       } satisfies Record<ManageRefusal | "invalid", string>,
+    },
+    // "Mis citas" (C-19 to C-21): the link to the upcoming appointments, by
+    // email. The answer never says whether the email is a customer's.
+    misCitas: {
+      tituloPestana: "Mis citas",
+      entrada: "Ver mis citas",
+      titulo: "Mis citas",
+      bajada: (barberia: string) =>
+        `Escribe el correo con el que reservaste en ${barberia} y te enviamos un link para ver tus próximas citas.`,
+      correo: "Tu correo",
+      enviar: "Enviarme el link",
+      enviando: "Enviando…",
+      enviado: {
+        titulo: "Revisa tu correo",
+        detalle: (correo: string) =>
+          `Si tienes citas próximas en esta barbería, te llegó un link a ${correo}. Sirve por 24 horas.`,
+        otro: "Usar otro correo",
+      },
+      lista: {
+        titulo: (nombre: string) =>
+          nombre ? `Tus citas, ${nombre}` : "Tus citas",
+        bajada: "Toca una cita para confirmarla, cambiarla o cancelarla.",
+        vacia: "No tienes citas próximas en esta barbería.",
+        ver: "Ver o cambiar",
+        reservar: "Reservar una cita",
+      },
+      vencido: {
+        titulo: "Este link ya no sirve",
+        detalle:
+          "Los links de Mis citas sirven por 24 horas. Pide uno nuevo con tu correo.",
+        pedir: "Pedir un link nuevo",
+      },
+      errores: {
+        email_invalid: "Escribe un correo válido, como nombre@correo.com.",
+        captcha_failed:
+          "No pudimos confirmar que no eres un robot. Intenta de nuevo en un momento.",
+        too_many_from_ip:
+          "Se pidieron muchos links desde esta conexión. Intenta de nuevo en un rato.",
+        unknown: "No pudimos enviar el link. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      } satisfies Record<MyAppointmentsErrorCode | "invalid", string>,
     },
     errores: {
       name_required: "Escribe tu nombre.",
