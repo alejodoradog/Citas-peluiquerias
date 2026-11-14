@@ -30,7 +30,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
-| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
+| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | La parte de código está en curso (`hito-6-produccion`); la nube la crean el fundador y el socio con `docs/operacion/infraestructura-produccion.md` |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 se eliminó: solo web).
