@@ -59,6 +59,17 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
   4. Tocar "Quitar" en el bloqueo. Desaparece en los dos celulares.
 - [ ] **6. Link desactivado.** En el celular A, desactivar el link del barbero. Al recargar el celular B debe salir "Este link ya no funciona".
 
+## Tarea 4.6: cierre del día (celular A, dueño)
+
+- [ ] **1. Abrir el cierre.** En Más, tocar "Cierre del día". Debe salir el día de hoy con sus cifras.
+- [ ] **2. Las cifras.** Con un día de prueba que tenga citas atendidas, una que no asistió y una sin marcar:
+  1. el total atendido es la suma de los precios de los servicios atendidos;
+  2. "Servicios atendidos" cuenta servicios: una cita de corte y barba suma 2;
+  3. "No asistió" y "Pendientes" coinciden con la agenda.
+- [ ] **3. La comisión.** Elegir 40 % en "Comisión de los barberos". Cada barbero muestra su comisión, y el dueño que corta sigue con "Comisión —".
+- [ ] **4. Días anteriores.** Tocar la flecha de la izquierda: sale el día anterior. Desde hoy no se puede ir a mañana.
+- [ ] **5. Descargar.** Tocar "Descargar resumen" y abrir el archivo en Excel o en Google Sheets: una fila por barbero y una de totales, con tildes y en columnas.
+
 ## Decisiones provisionales de la 4.2 para revisar juntos
 Están en `docs/tareas/4.2-detalle-cita.md` (M1 a M8). Las que más se notan:
 - **El candado de "Nueva cita"** es la entrada a "Bloquear horas", porque el diseño no dice desde dónde se abre (M6).
