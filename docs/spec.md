@@ -206,8 +206,7 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 
 | Mensaje | Para | Cuándo |
 | --- | --- | --- |
-| Cita confirmada + agregar al calendario + link para gestionarla | Cliente con correo | Al reservar |
-| Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día) |
+| Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque, más agregar al calendario y el link para gestionar la cita | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día). Es el único correo de la cita para el cliente: no hay correo de confirmación al reservar (decisión del fundador, 2026-11-14) |
 | Cita cancelada o reprogramada | Cliente con correo | Cuando la barbería cambia la cita |
 | Nueva reserva o cancelación (opcional) | Barbero con correo | Al instante |
 | Link privado de su agenda (opcional; el dueño también lo puede copiar) | Barbero con correo | Cuando el dueño lo envía |

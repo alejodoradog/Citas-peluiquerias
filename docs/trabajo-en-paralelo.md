@@ -29,7 +29,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | En curso (`hito-5-plataforma-correcciones`) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
-| 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
+| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 6.3 queda fuera, ver el tablero).
@@ -158,7 +158,7 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
    - el link lleva un token, y por Q5 no puede ir en el `payload`.
    - **Consúltalo con el fundador** antes de hacerlo. Lo natural es un PR corto después del envío real, porque toca la pantalla de barberos (del fundador).
 
-**Lo que hace el fundador, y cuándo pedírselo:**
+**La configuración de Resend la hace el socio** (decisión del fundador, 2026-11-14), con `docs/operacion/configurar-resend.md`:
 - **Antes de probar de verdad:**
   - crear la cuenta de Resend;
   - agregar `yapoin.com` en `us-east-1`;
@@ -270,7 +270,7 @@ Cómo usarlas:
 - E2E de los flujos de tu tarea en `tests/e2e/<tema>.spec.ts`, con `expectAccessible`, `expectTouchTargets` y `expectNoZoomOnFocus` (`tests/e2e/helpers/pantalla.ts`). Lee `.claude/rules/pruebas.md`: Next deja montada y oculta la página anterior.
 - Revisores `revisor-spec` y `revisor-seguridad` antes de marcar el PR listo. La 5.4, la 4.6 y la 5.5 tocan permisos y dinero.
 - Documenta la tarea en `docs/tareas/<n>-<tema>.md` con el formato de `docs/tareas/3.4-gestionar-cita.md`: qué hace, base de datos, decisiones provisionales numeradas y riesgos.
-- Agrega las pruebas humanas de tu tarea a `docs/pruebas-humanas-hito-<n>.md`, para que el fundador las haga en `www.yapoin.com`.
+- Agrega las pruebas humanas de tu tarea a `docs/pruebas-humanas-hito-<n>.md`. **Se hacen todas juntas cuando el producto esté terminado** (decisión del fundador, 2026-11-14): no esperes a ellas para seguir con la siguiente tarea.
 
 ### Decisiones de negocio
 Si la spec no responde algo, **pregunta al fundador** antes de decidir. Si hay que seguir, toma la opción más conservadora, márcala como provisional en el archivo de la tarea y avísale en el PR.
