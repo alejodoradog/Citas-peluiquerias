@@ -18,6 +18,10 @@ describe("toBarberRefusal", () => {
     }
   });
 
+  it("reads a paused barbershop of the triggers of task 5.5 as read_only", () => {
+    expect(toBarberRefusal({ hint: "barbershop_read_only" })).toBe("read_only");
+  });
+
   it("turns anything else into unknown", () => {
     expect(toBarberRefusal({ hint: "status_invalid" })).toBe("unknown");
     expect(toBarberRefusal({ code: "08006" })).toBe("unknown");

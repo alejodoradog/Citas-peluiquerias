@@ -164,3 +164,7 @@ export function closeCsv(
     ].join("\r\n")
   );
 }
+
+// ?aviso= when the commission did not save because the barbershop is paused
+// (task 5.5); any other value is a plain failure.
+export const PAUSED_WARNING = "pausada";

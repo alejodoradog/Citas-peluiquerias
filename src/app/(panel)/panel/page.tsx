@@ -4,9 +4,7 @@ import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
 import {
   addDays,
-  formatBogotaDate,
   now,
-  startOfBogotaDay,
   toBogotaDate,
 } from "@/lib/fechas/fechas";
 import { newAppointmentHref, routes } from "@/lib/routes";
@@ -47,6 +45,7 @@ import { DayGrid } from "./day-grid";
 import { EmptyAgenda } from "./empty-agenda";
 import { LiveRefresh } from "./live-refresh";
 import { DeletedBarbershopNotice } from "./sedes/deleted-notice";
+import { SubscriptionNotice } from "./subscription-notice";
 import { WeekDays } from "./week-days";
 
 const t = textos.agenda;
@@ -107,12 +106,11 @@ async function OwnerAgenda({
     id,
     name,
   }));
-  const trialEnd = formatBogotaDate(startOfBogotaDay(barbershop.expiresOn));
   const notices = (
     <div className="flex flex-col gap-2.5 px-4 pb-3">
       {/* After "Eliminar sede" (task 2.6b), which sede went away. */}
       <DeletedBarbershopNotice />
-      <Notice tone="info" title={textos.panel.prueba(trialEnd)} />
+      <SubscriptionNotice barbershopId={barbershop.id} today={today} />
     </div>
   );
   // Every view ends with the "+"; the day of today also asks the server

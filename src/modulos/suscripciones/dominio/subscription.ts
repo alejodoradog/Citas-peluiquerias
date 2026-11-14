@@ -226,3 +226,36 @@ export function revenue(
   };
   return { month: sum(month), previous: sum(previous) };
 }
+
+// The agenda notice (task 5.5) ---------------------------------------------------------------
+
+// What the owner reads on top of the agenda:
+// - trial: the trial goes on (as task 1.5 showed it);
+// - expiring: D-70, from EXPIRING_DAYS before expires_on;
+// - grace: D-71, the GRACE_DAYS after it, still taking bookings;
+// - paused: D-72, suspended, expired or awaiting its first payment
+//   (decision S4): no new bookings and the agenda is read only.
+export type SubscriptionNotice =
+  | { kind: "trial"; until: BogotaDate }
+  | { kind: "expiring"; trial: boolean; on: BogotaDate }
+  | { kind: "grace"; expiredOn: BogotaDate; bookingsUntil: BogotaDate }
+  | { kind: "paused" };
+
+export function subscriptionNotice(
+  shop: Parameters<typeof phaseOf>[0],
+  today: BogotaDate,
+): SubscriptionNotice | null {
+  if (phaseOf(shop, today) !== "active") return { kind: "paused" };
+  if (today > shop.expiresOn) {
+    return {
+      kind: "grace",
+      expiredOn: shop.expiresOn,
+      bookingsUntil: addDays(shop.expiresOn, GRACE_DAYS),
+    };
+  }
+  const trial = shop.status === "trial";
+  if (shop.expiresOn <= addDays(today, EXPIRING_DAYS)) {
+    return { kind: "expiring", trial, on: shop.expiresOn };
+  }
+  return trial ? { kind: "trial", until: shop.expiresOn } : null;
+}

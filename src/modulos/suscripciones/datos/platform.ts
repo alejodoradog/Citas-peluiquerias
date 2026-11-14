@@ -16,7 +16,6 @@ import { toPlatformRefusal, type PlatformRefusal } from "./platform-errors";
 // policies let that session read barbershops, payments, appointments and
 // barbers. The owner's email comes only from platform_barbershops.
 
-
 export type PlatformRow = {
   id: string;
   name: string;
