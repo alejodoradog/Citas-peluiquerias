@@ -50,6 +50,10 @@ export const routes = {
   manageAppointment: (token: string) => `/c/${token}`,
   // The public booking page of a barbershop (tasks 3.2 and 3.3).
   booking: (slug: string) => `/${slug}`,
+  // "Mis citas" (C-19 to C-21).
+  myAppointments: (slug: string) => `/${slug}/mis-citas`,
+  myAppointmentsList: (slug: string, token: string) =>
+    `/${slug}/mis-citas/${token}`,
   bookingFlow: (slug: string) => `/${slug}/reservar`,
   bookingConfirmed: (slug: string) => `/${slug}/reservar/confirmada`,
   admin: "/admin",

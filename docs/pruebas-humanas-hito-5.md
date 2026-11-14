@@ -84,5 +84,12 @@ Con una barbería de prueba que tenga servicios, barberos y una cita para mañan
 - [ ] **4. Otra sede sigue normal.** Si el dueño tiene otra sede activa, al cambiar a ella todo funciona.
 - [ ] **5. Reactivar.** Registrar un pago a la barbería suspendida: el aviso desaparece (o vuelve el de la prueba) y todo se puede cambiar otra vez.
 
+## "Mis citas" (celular A, cliente)
+
+- [ ] **1. Pedir el link.** En la página de la barbería, tocar "Ver mis citas", escribir el correo con el que se reservó y tocar "Enviarme el link". Dice "Revisa tu correo", y llega "Tus citas en …" a la bandeja de entrada.
+- [ ] **2. Un correo que no es de un cliente.** La pantalla dice lo mismo, y no llega ningún correo.
+- [ ] **3. La lista.** El link del correo muestra las citas próximas. "Ver o cambiar" abre cada cita, con Confirmo, Cambiar y Cancelar.
+- [ ] **4. El link vencido.** Al día siguiente, el mismo link dice "Este link ya no sirve" y deja pedir otro.
+
 ## Decisiones provisionales de la 5.4 para revisar juntos
 Están en `docs/tareas/5.4-panel-plataforma.md`, de P1 a P11.

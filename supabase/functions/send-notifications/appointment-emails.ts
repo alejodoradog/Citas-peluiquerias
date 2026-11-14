@@ -449,3 +449,81 @@ export async function composeAppointmentEmail(
     }) ?? { cancel: "no_template" }
   );
 }
+
+// "Mis citas" (C-19 to C-21): the customer asked for the link to their
+// upcoming appointments in a barbershop. The payload carries only the
+// customer's id; the link (/<slug>/mis-citas/<token>) is made when the email
+// is sent and lives 24 hours (issue_customer_link).
+export const MY_APPOINTMENTS_EMAIL = "customer_appointments";
+
+export const misCitas = {
+  asunto: (barberia: string) => `Tus citas en ${barberia}`,
+  cuerpo: (barberia: string) =>
+    `Aquí tienes el link para ver tus próximas citas en ${barberia}. Desde ahí puedes confirmarlas, cambiarlas o cancelarlas.`,
+  vence: "El link sirve por 24 horas.",
+  noFuiste: "Si no lo pediste tú, ignora este correo: nadie más lo recibe.",
+  boton: "Ver mis citas",
+} as const;
+
+export type CustomerRecord = {
+  firstName: string;
+  hasUpcoming: boolean;
+  barbershop: {
+    name: string;
+    slug: string;
+    address: string | null;
+    locality: string | null;
+  };
+};
+
+export type CustomerDb = {
+  customer(
+    barbershopId: string,
+    customerId: string,
+  ): Promise<CustomerRecord | null>;
+  issueCustomerLink(
+    barbershopId: string,
+    customerId: string,
+    tokenHash: string,
+  ): Promise<void>;
+};
+
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function composeMyAppointmentsEmail(
+  message: QueuedMessage,
+  db: CustomerDb,
+  env: AppointmentEnv,
+): Promise<Email | { cancel: string }> {
+  const customerId = message.payload.customer_id;
+  if (typeof customerId !== "string" || !ID.test(customerId)) {
+    return { cancel: "no_customer" };
+  }
+  const customer = await db.customer(message.barbershopId, customerId);
+  if (!customer) return { cancel: "no_customer" };
+  // Nothing upcoming any more (it was cancelled or passed): nothing to show.
+  if (!customer.hasUpcoming) return { cancel: "outdated" };
+
+  const token = newLinkToken();
+  await db.issueCustomerLink(
+    message.barbershopId,
+    customerId,
+    await linkTokenHash(token),
+  );
+  const shop = customer.barbershop;
+  const site = env.siteUrl.replace(/\/$/, "");
+  const address = [shop.address, shop.locality].filter(Boolean).join(", ");
+  return frame(
+    customer.firstName,
+    misCitas.asunto(shop.name),
+    [misCitas.cuerpo(shop.name), misCitas.vence, misCitas.noFuiste],
+    [
+      {
+        label: misCitas.boton,
+        href: `${site}/${shop.slug}/mis-citas/${token}`,
+        tone: "primary",
+      },
+    ],
+    address ? `${shop.name}, ${address}` : shop.name,
+  );
+}

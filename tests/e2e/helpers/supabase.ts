@@ -692,3 +692,39 @@ export async function setExpiresOn(barbershopId: string, expiresOn: string) {
     .eq("id", barbershopId);
   if (error) throw error;
 }
+
+// "Mis citas": the emails queued for the customers of a barbershop, and a
+// link like the one the email carries, issued with the server key for the
+// customer with that email.
+export async function myAppointmentsEmails(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("notifications")
+    .select("payload")
+    .eq("barbershop_id", barbershopId)
+    .eq("type", "customer_appointments");
+  if (error) throw error;
+  return data;
+}
+
+export async function issueMyAppointmentsLink(
+  barbershopId: string,
+  email: string,
+): Promise<string> {
+  const { createHash, randomBytes } = await import("node:crypto");
+  const admin = adminClient();
+  const { data: customer, error } = await admin
+    .from("customers")
+    .select("id")
+    .eq("barbershop_id", barbershopId)
+    .eq("email", email)
+    .single();
+  if (error) throw error;
+  const token = randomBytes(32).toString("base64url");
+  const { error: linkError } = await admin.rpc("issue_customer_link", {
+    p_barbershop_id: barbershopId,
+    p_customer_id: customer.id,
+    p_token_hash: createHash("sha256").update(token, "utf8").digest("hex"),
+  });
+  if (linkError) throw linkError;
+  return token;
+}
