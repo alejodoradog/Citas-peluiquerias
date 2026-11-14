@@ -192,11 +192,16 @@ select is(
     'public.delete_time_block:authenticated',
     'public.delete_time_block_by_barber:anon',
     'public.delete_time_block_by_barber:authenticated',
+    -- Task 5.4: the platform panel; each function answers the super admin only.
+    'public.extend_trial:authenticated',
     'public.list_customers:authenticated',
     'public.managed_appointment:anon',
     'public.managed_appointment:authenticated',
     'public.mark_appointment_by_barber:anon',
     'public.mark_appointment_by_barber:authenticated',
+    'public.platform_barbershops:authenticated',
+    'public.reactivate_barbershop:authenticated',
+    'public.register_subscription_payment:authenticated',
     'public.reschedule_appointment:authenticated',
     'public.reschedule_appointment_by_token:anon',
     'public.reschedule_appointment_by_token:authenticated',
@@ -206,7 +211,9 @@ select is(
     'public.set_barber_services:authenticated',
     'public.set_barbershop_hours:authenticated',
     'public.set_holiday_openings:authenticated',
-    'public.set_service_barbers:authenticated'
+    'public.set_service_barbers:authenticated',
+    'public.suspend_barbershop:authenticated',
+    'public.void_subscription_payment:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
 );
