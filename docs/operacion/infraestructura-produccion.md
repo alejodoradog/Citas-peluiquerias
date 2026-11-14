@@ -11,17 +11,11 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Comprar el dominio en **Cloudflare Registrar** si el TLD aparece al buscarlo en el panel (cobra a costo). Si no aparece (por ejemplo, `.com.co`), comprarlo en otro registrador y cambiar sus nameservers a los que indique Cloudflare.
 - [ ] Revisar el precio de **renovación**, no el de la promoción del primer año.
 
-## 2. Amazon SES (antes de la tarea 5.2, apenas exista el dominio)
+## 2. Correo con Resend (decisión 0008)
 
-- [ ] Crear la cuenta de AWS. Activar la verificación en dos pasos del usuario raíz.
-- [ ] En SES, elegir la región **`us-east-1`** (N. Virginia). Todo lo de SES va en esa región.
-- [ ] Revisar el plan de precios: Essentials es el que queda por defecto. Si la consola permite elegir la tarifa "a la carta", anotarlo en la decisión abierta 1 de la 0007 antes de elegir.
-- [ ] Crear la identidad del **dominio** con DKIM. Copiar los registros que muestra SES al DNS de Cloudflare, en modo "DNS only".
-- [ ] Agregar en Cloudflare el registro SPF y uno DMARC (`_dmarc`), empezando con `p=none` y un correo que reciba los reportes.
-- [ ] Esperar a que SES muestre el dominio como verificado.
-- [ ] Solicitar la salida del sandbox: tipo **Transactional**, la URL del sitio, hasta 4 correos de contacto, idioma inglés, y aceptar la política de rebotes y quejas. Amazon responde en hasta 96 horas.
-- [ ] Crear el usuario de IAM para la Edge Function, con permiso solo para `ses:SendEmail` desde la identidad del dominio, y guardar su llave en un gestor de contraseñas. Se pega en los secretos de la Edge Function en la 5.2.
-- [ ] Crear las credenciales SMTP de SES para Supabase Auth (las pide la 5.2).
+- [ ] **`barberias-dev`:** el socio lo configura con `docs/operacion/configurar-resend.md` (tarea 5.2): la cuenta, el dominio `yapoin.com` en `us-east-1`, el DNS en Cloudflare, la llave, el webhook y el SMTP de Auth.
+- [ ] **Antes del piloto, pasar Resend a Pro** (US$20 al mes, 50.000 correos). El plan Free solo envía 100 al día, y 10 sedes mandan unos 800 (decisión 0008).
+- [ ] **Para producción:** repetir los pasos 2 a 4 de `docs/operacion/configurar-resend.md` en `barberias-prod`. Se reutilizan la cuenta y el dominio, con una llave propia para producción.
 
 ## 3. Turnstile (tarea 3.5)
 
@@ -34,10 +28,20 @@ Antes de crear cada cuenta, revisa que el precio siga igual al de la decisión 0
 - [ ] Crear una organización con plan **Pro** y, dentro, el proyecto `barberias-prod` en **`us-east-1`**, con cómputo **Micro**.
 - [ ] Dejar el **Spend Cap activo**. Apagarlo antes de que el disco pase de 6,5 GB o la salida de 200 GB al mes (decisión 0007, punto 11).
 - [ ] Repetir en producción los ajustes de Auth de `docs/operacion/configurar-barberias-dev.md`, con el dominio en **Site URL** y en **Redirect URLs**.
-- [ ] En **Authentication → SMTP Settings**, poner el SMTP de SES y el remitente del dominio. Subir el límite de envíos de Auth, que con SMTP propio arranca en 30 por hora.
+- [ ] En **Authentication → SMTP Settings**, poner el SMTP de Resend y el remitente del dominio (paso 4 de `docs/operacion/configurar-resend.md`). Subir el límite de envíos de Auth, que con SMTP propio arranca en 30 por hora.
 - [ ] Activar el captcha con Turnstile.
 - [ ] En **Project Settings → Data API**, dejar expuestos solo `public` y `storage`: quitar `graphql_public` si la app no usa GraphQL, para que nadie encadene varias escrituras en una sola transacción por esa vía (revisión de la tarea 1.9, decisión 0006, sección 7).
-- [ ] Guardar en los secretos de GitHub `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` y el `project-ref` de producción.
+- [ ] **Las migraciones automáticas:** en GitHub → Settings → Environments, crear el ambiente `production` (si quieres, con aprobación antes de cada corrida). Dentro de él, crear el secreto `SUPABASE_PROD_DB_URL` con la cadena del **Session pooler** de `barberias-prod`.
+  - Desde ahí, el workflow "Migrate barberias-prod" (`.github/workflows/migrate-prod.yml`) aplica las migraciones en cada fusión a `main`.
+  - Mientras falte el secreto, solo avisa y no cambia nada.
+  - La primera vez, córrelo a mano (Actions → Migrate barberias-prod → Run workflow) para crear todo el esquema.
+- [ ] **Los correos de la cola en producción** (tareas 5.1 a 5.3):
+  1. desplegar `send-notifications` y `resend-webhook`;
+  2. poner sus secretos: `NOTIFICATIONS_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `RESEND_WEBHOOK_SECRET`, `SITE_URL` y los datos de pago `PAYMENT_BRE_B`, `PAYMENT_NEQUI` y `PAYMENT_EMAIL`;
+  3. crear los dos secretos de Vault `notifications_function_url` y `notifications_secret`.
+
+  Los pasos están en `docs/tareas/5.1-cola-de-correos.md` y en `docs/operacion/configurar-resend.md`.
+- [ ] **El super admin de producción,** con `docs/operacion/crear-super-admin.md`.
 
 ## 5. Vercel Pro (tarea 6.4, antes de recibir clientes)
 
@@ -62,15 +66,15 @@ Los valores de `barberias-dev` nunca se reutilizan en Production.
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL de **`barberias-prod`** | Config | Solo **Production** |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key de **`barberias-prod`** (`sb_publishable_…`) | Config | Solo **Production** |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (tarea 3.5; el nombre exacto lo fija esa tarea) | Llave del sitio del widget de Turnstile | Config | Production, y Preview con su propio valor |
-| `TURNSTILE_SECRET_KEY` (tarea 3.5; el nombre exacto lo fija esa tarea) | Secreto del widget de Turnstile | **Secreta** (Sensitive) | Production, y Preview con su propio valor |
-| `SUPABASE_SECRET_KEY` | **Solo si una tarea lo pide.** La app no lo usa hoy | **Secreta** (Sensitive) | Solo Production |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Llave del sitio del widget de Turnstile. Sin ella, la app usa la del widget "Yapoin" (`src/lib/turnstile/keys.ts`) | Config | Production, y Preview con las llaves de prueba de Cloudflare |
+| `TURNSTILE_SECRET_KEY` | Secreto del widget de Turnstile | **Secreta** (Sensitive) | Production, y Preview con su propio valor |
+| `SUPABASE_SECRET_KEY` | Secret key de **`barberias-prod`** (`sb_secret_…`). La usan la reserva pública, "Mis citas" y el límite por IP desde el servidor (tareas 3.3, 3.5 y "Mis citas") | **Secreta** (Sensitive) | Solo Production |
 
 Reglas de seguridad:
 
 - **Solo lleva `NEXT_PUBLIC_` lo que puede ver cualquiera:** la URL, la llave publicable y la llave del sitio de Turnstile. Vercel exige marcarlas como **Config**.
 - **Todo lo demás va como secreta y sin `NEXT_PUBLIC_`:** la llave secreta de Supabase, el secreto de Turnstile y cualquier contraseña. Si Vercel muestra el aviso "Keep This Value Private" con una de estas, se corrige el nombre; nunca se pulsa **Change to Config**.
-- **Nunca en Vercel:** la contraseña de la base de datos, la llave de SES (vive en los secretos de la Edge Function) ni la llave de AWS del `pg_dump` (vive en GitHub) (decisión 0007, "Dónde vive cada secreto").
+- **Nunca en Vercel:** la contraseña de la base de datos, la llave de Resend (vive en los secretos de la Edge Function) ni la llave de AWS del respaldo (vive en GitHub) (decisión 0007, "Dónde vive cada secreto").
 - **Un valor por ambiente:** Production apunta a `barberias-prod` y Preview a `barberias-dev`. Una vista previa nunca debe ver datos de producción.
 - **Comprobación:**
   1. Después del **Redeploy**, abre el sitio de producción con las herramientas del navegador (pestaña **Network**) y confirma que las peticiones van a la URL de `barberias-prod`.
@@ -80,7 +84,12 @@ Reglas de seguridad:
 
 ## 6. Copias y monitoreo (tarea 6.4)
 
-- [ ] Crear en AWS un bucket privado de S3 para el `pg_dump` semanal, con una regla que borre lo que tenga más de 8 semanas, y un usuario de IAM con solo `s3:PutObject` en ese bucket. Su llave va en los secretos de GitHub.
+- [ ] **El respaldo semanal:**
+  - crear en AWS (`us-east-1`) un bucket privado de S3, con el bloqueo de acceso público activo y una regla de ciclo de vida que borre lo que tenga más de 8 semanas;
+  - crear un usuario de IAM con solo `s3:PutObject` en `arn:aws:s3:::<bucket>/weekly/*`;
+  - en el ambiente `production` de GitHub, crear los secretos `BACKUP_AWS_ACCESS_KEY_ID`, `BACKUP_AWS_SECRET_ACCESS_KEY` y `BACKUP_S3_BUCKET`.
+
+  El workflow "Back up barberias-prod" (`.github/workflows/backup-prod.yml`) corre cada domingo a las 3:00 a. m. de Bogotá: guarda los roles, el esquema y los datos en un `.tar.gz`. Córrelo a mano una vez para probarlo.
 - [ ] Crear la cuenta gratis de Sentry y el monitor de disponibilidad, si siguen siendo gratis.
 - [ ] Hacer el simulacro: restaurar una copia en un proyecto temporal y abrir los datos.
 
@@ -88,4 +97,4 @@ Reglas de seguridad:
 
 - [ ] Comparar las facturas de Supabase, Vercel y AWS con la tabla de costos de la decisión 0007.
 - [ ] Revisar las métricas de "Cuándo escalar o revisar" y actuar si alguna pasa su umbral.
-- [ ] Revisar los rebotes y quejas de SES.
+- [ ] Revisar los rebotes y quejas en Resend (Emails → Bounced y Complained).

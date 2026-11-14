@@ -55,6 +55,10 @@ describe("render", () => {
       "Abrir mi panel: https://www.yapoin.com/panel",
     );
     expect(email.html).toContain('href="https://www.yapoin.com/panel"');
+    // The header: the app's icon and "Yapoin Citas".
+    expect(email.html).toContain('src="https://www.yapoin.com/icon-192.png"');
+    expect(email.html).toContain(">Ya</span>");
+    expect(email.html).toContain(">Citas</span>");
   });
 
   it("promises the payment data while they are not set (decision E5)", () => {

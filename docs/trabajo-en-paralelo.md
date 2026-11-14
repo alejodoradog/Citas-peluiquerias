@@ -25,12 +25,12 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.3 eliminada: solo web | — | — |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
 | 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
-| 5.3 Correos de las citas y recordatorio | Fundador | En curso (`hito-5-recordatorio`) |
-| "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | En curso (`hito-5-mis-citas`) |
+| 5.3 Correos de las citas y recordatorio | Fundador | Fusionada (#66) |
+| "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Fusionada (#68) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |
-| 6.5 Términos de uso y política de datos personales | Fundador | En curso (`hito-6-legal`) |
-| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
+| 6.5 Términos de uso y política de datos personales | Fundador | Fusionada (#69) |
+| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | El código está fusionado (#70). La nube la crean el fundador y el socio con `docs/operacion/infraestructura-produccion.md` |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 se eliminó: solo web).

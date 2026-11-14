@@ -48,17 +48,19 @@ Los datos de pago los publicó el fundador en `docs/trabajo-en-paralelo.md` ("Re
 | Port | `465` |
 | Username | `resend` |
 | Password | Una llave de Resend (puede ser otra solo para Auth). |
-| Sender email | `citas@yapoin.com` |
+| Sender email | `auth@yapoin.com` (registro y contraseña; los avisos y las citas salen de `citas@yapoin.com`, el `EMAIL_FROM` de las funciones) |
 | Sender name | `Yapoin` |
 
 2. Con el SMTP propio ya se pueden editar las plantillas (pendiente desde la 3.5, `docs/operacion/configurar-barberias-dev.md`):
    - **Reset password:** pega `supabase/templates/recovery.html`, con el asunto "Recupera tu acceso";
    - **Confirm signup:** pega `supabase/templates/confirmation.html`, con el asunto "Confirma tu correo".
+
+   Las dos llevan el encabezado "Yapoin Citas" con el ícono de la app, que se carga de `{{ .SiteURL }}/icon-192.png`: el **Site URL** de Authentication → URL Configuration debe ser `https://www.yapoin.com`. La bolita del remitente en la bandeja (BIMI) no se configura: pide un certificado de marca pago.
 3. El SMTP de SES que tenía `barberias-dev` se reemplaza por este.
 4. **Sube el límite de envíos de Auth:** Authentication → Rate Limits → "Rate limit for sending emails". Con SMTP propio arranca en 30 por hora; ponlo en unos 100 por hora para el piloto.
 
 ## 5. Comprobar
-1. Regístrate con un correo nuevo en `www.yapoin.com`. El correo de confirmación debe llegar desde `citas@yapoin.com` a la bandeja de entrada, no a spam. Prueba en Gmail y en Outlook.
+1. Regístrate con un correo nuevo en `www.yapoin.com`. El correo de confirmación debe llegar desde `auth@yapoin.com` a la bandeja de entrada, no a spam. Prueba en Gmail y en Outlook.
 2. **Un correo de la cola:** en el SQL Editor de `barberias-dev`, encola un aviso para una barbería de prueba tuya:
    ```sql
    select private.enqueue_notification('<id de la barbería>', 'subscription_expiring', 'prueba-resend-1');
