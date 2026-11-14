@@ -22,15 +22,17 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | **4.6** Cierre del día (D-64, P2) | **Socio** | En curso (`hito-4-cierre-dia`) |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
 | **6.3** PWA instalable | Socio | Fuera por ahora: el socio decidió no hacer una app (2026-11-13). Falta que el fundador lo confirme |
-| 5.1 Cola de correos | Fundador | En curso (`hito-5-cola-correos`) |
-| 5.2 y 5.3 Envío por el proveedor (decisión 0008, propuesta) y recordatorio | Fundador | Pendiente |
+| 5.1 Cola de correos | Fundador | Fusionada (#56) |
+| **5.2** Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | **Socio** (antes del fundador) | Pendiente (después de la 4.6) |
+| 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
 | 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.5** (la 6.3 queda fuera por ahora, ver el tablero).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 6.3 queda fuera por ahora, ver el tablero).
+- La 5.2 va antes de la 5.5 porque es el camino crítico: la 5.3 del fundador y los correos de la 5.5 la necesitan.
 - Si una tarea queda frenada esperando una respuesta del fundador, avanza la siguiente y vuelve después.
 - Si terminas todo, pide más al fundador. No tomes una tarea de otra persona sin cambiar el tablero en un PR.
 
@@ -39,8 +41,9 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
   - `/admin`;
   - la fórmula de fechas y su ciclo (5.4 y 5.5, que usan la misma fórmula);
   - el cierre del día en `/panel/cierre`, una pantalla nueva y aislada;
-  - la PWA.
-- **El fundador tiene los correos (5.1 a 5.3)**, el camino crítico del hito 5, y las rutas del cliente.
+  - la PWA;
+  - el envío con Resend (5.2), sobre la cola que dejó la 5.1.
+- **El fundador tiene la cola (5.1, fusionada) y lo que se encola por las citas (5.3)**, y las rutas del cliente.
 - Los únicos puntos de contacto están en la sección 4, en "Archivos compartidos".
 
 ## 2. Qué hay que construir
@@ -83,6 +86,114 @@ Fusionada en #48. Su documento está en `docs/tareas/`. Sirve de modelo para las
 
   Si no responde y hay que seguir, toma lo más conservador del diseño: un porcentaje por sede, el dueño sin comisión, CSV y solo hoy con flechas de día. Márcalo como provisional en `docs/tareas/4.6-cierre-del-dia.md`.
 
+### 5.2 Envío con Resend (después de la 4.6)
+La 5.1 dejó la cola completa: guarda los correos, los toma cada minuto sin duplicados, los reintenta y los purga. Lo único que falta es **quién envía**. La 5.2 conecta Resend en ese hueco, sin tocar la cola.
+
+**Lee primero, en este orden:**
+1. `docs/tareas/5.1-cola-de-correos.md`: cómo funciona la cola, cómo se activa y las decisiones Q1 a Q5. **Q4 y Q5 son reglas para ti.**
+2. `docs/decisiones/0008-correo-con-resend.md`: el proveedor, la región, el plan, Auth, el dominio y los rebotes. Si todavía dice "propuesta", **confirma con el fundador que está aceptada** antes de empezar. El plan (`docs/plan.md`, 5.2) y `CLAUDE.md` todavía dicen SES: con la 0008 aceptada, vale Resend.
+3. `docs/decisiones/0007-infraestructura.md`: los puntos 6 a 8, "Correo con SES" (el mismo diseño, con otro proveedor) y la tabla de secretos.
+4. `docs/spec.md`, "Mensajes del MVP": qué correo va a quién y cuándo.
+5. El código de la 5.1:
+   - `supabase/functions/send-notifications/run-queue.ts`: la lógica y la interfaz `Sender`;
+   - `supabase/functions/send-notifications/index.ts`: la entrada de Deno, con `senderFromEnv()`, que hoy devuelve `null`;
+   - `supabase/migrations/20261114023807_add_notification_queue.sql`: la cola, `claim_notifications`, `finish_notification` y `private.notification_recipient`;
+   - `supabase/tests/database/34_notification_queue.test.sql`.
+
+**Cómo funciona hoy, de punta a punta:**
+
+```
+algo que merece correo ─► private.enqueue_notification(...)   una sola vez por dedupe_key
+                                    │
+pg_cron, cada minuto ─► private.request_notification_send()   solo si hay algo pendiente
+                                    │ pg_net, con la URL y el secreto de Vault
+                                    ▼
+Edge Function send-notifications ─► responde 202 y sigue en segundo plano
+   claim_notifications(50)          préstamo de 5 min, el destinatario se calcula aquí
+   Sender.send(mensaje)             ◄── esto es la 5.2
+   finish_notification(id, préstamo, sent | retry | cancelled, código)
+```
+
+- **El destinatario** llega resuelto en `message.recipient`. Si es `null` (cliente borrado, barbero sin avisos), la cola cancela el correo sin llamar al `Sender`.
+- **Los reintentos** los decide la base: 3 intentos, con 5, 10 y 15 minutos de espera. Tu `Sender` solo dice si el fallo es pasajero o permanente.
+- **La corrida deja de enviar al minuto 4**, antes de que venza el préstamo.
+- **Sin `Sender`, la función responde 503** y no toma nada, así que los correos esperan en la cola. Eso pasa hoy en `barberias-dev` y siempre en local y en el CI.
+
+**Qué construyes:**
+1. **`ResendSender`**, en un archivo nuevo, `supabase/functions/send-notifications/resend-sender.ts`:
+   - **Sin imports**, como `run-queue.ts`, para que lo usen Deno y Vitest. Recibe `fetch`, la llave y el remitente por parámetro, y así las pruebas le pasan un `fetch` falso.
+   - **Una llamada por correo** a `POST https://api.resend.com/emails`. La interfaz `Sender` envía de a uno, y con el piloto (unos 800 correos al día) sobra. El envío por lotes del punto 4 de la 0008 queda para cuando el volumen lo pida. Anótalo como decisión provisional.
+   - **Llave de idempotencia = el `id` del correo** de la cola, en la cabecera `Idempotency-Key`. Es la regla Q4: si un reporte no llega a la base, el correo vuelve a la cola y Resend no lo manda dos veces. Confirma en la documentación de Resend la cabecera y cuánto dura la llave (los reintentos de la cola caben en 30 minutos).
+   - **El resultado.** Devuelve `{ ok: true }`, o `{ ok: false, permanent, code }`:
+     - 429, 5xx y fallos de red son pasajeros (`permanent: false`);
+     - una dirección inválida es permanente;
+     - una llave mala o un dominio sin verificar no son culpa de la dirección: trátalos como pasajeros, para que el correo no se pierda mientras se arregla la configuración.
+   - **`code` es corto**, como `http_429`, `http_422` o `invalid_to`. **Nunca el texto de Resend**, que puede traer la dirección.
+   - **Límite de llamadas:** Resend tiene un límite por segundo por equipo, el mismo en todos los planes. Confirma el valor actual y, si hace falta, espera entre envíos. Un 429 ya se reintenta solo.
+2. **`senderFromEnv()`** en `index.ts`: devuelve el `ResendSender` cuando están `RESEND_API_KEY` y `EMAIL_FROM` (por ejemplo `Yapoin <citas@yapoin.com>`), y `null` si falta alguna. Así la función sigue respondiendo 503 en local, en el CI y en cualquier proyecto sin llave.
+3. **Las plantillas en español:**
+   - **El contenido se lee al enviar, no al encolar** (regla Q5): el `payload` no lleva datos personales ni secretos.
+     - Para armar el correo, la función lee con su cliente de servicio la barbería, la cita, el barbero o lo que el tipo necesite, siempre filtrando por el `barbershop_id` del mensaje.
+     - Separa la lectura de datos (en `index.ts` o en un archivo propio) del armado (`render`, puro y con pruebas, que recibe los datos y devuelve asunto, HTML y texto plano).
+   - **En la 5.2:** la base común (encabezado con la marca, pie, versión de texto plano) y las plantillas de **suscripción**:
+     - `subscription_expiring`, `subscription_expired`, `subscription_suspended` y `subscription_payment_registered`;
+     - son de tu dominio, y la 5.5 solo las encola.
+   - **Las de citas** (`appointment_*`, `barber_*`) las hace el fundador en la 5.3, sobre tu base. El recordatorio necesita los links Confirmo / Cancelar, y cómo viajan esos links sin guardarlos en el `payload` es una decisión de la 5.3.
+   - **Diseño:** E-01 a E-06 no están en el repo; pídeselos al fundador. Solo está `docs/diseno/E07-Link-barbero.dc.html`.
+   - **Los textos:** si el empaquetado de la Edge Function no deja importar `src/ui/textos.ts`, van en un archivo de textos propio de la función. Anótalo como excepción en la tarea.
+4. **Rebotes y quejas:**
+   - una Edge Function nueva, `resend-webhook`, con `verify_jwt = false` en `supabase/config.toml` (una sección nueva al final; avísalo en el PR);
+   - **verifica la firma del webhook** (Resend firma con Svix: cabeceras `svix-id`, `svix-timestamp` y `svix-signature`), con su secreto en `RESEND_WEBHOOK_SECRET`. Sin firma válida, 401 y nada más;
+   - para saber a qué correo de la cola corresponde un evento, envía el `id` del correo como etiqueta (`tags`) de Resend y léelo en el evento.
+   - **Resend ya deja de enviar** a las direcciones que rebotan para siempre. **Pregúntale al fundador** si basta con eso y con guardar el código en el correo de la cola, o si quiere una lista propia de supresión.
+     - Una lista propia guarda correos de personas sin `barbershop_id`, así que choca con la regla de `CLAUDE.md` ("toda tabla de negocio tiene `barbershop_id`") y con el borrado de clientes de la 4.3 (Ley 1581).
+     - Si se hace, guarda el hash del correo, no el correo, y que `private.notification_recipient` devuelva `null` para esas direcciones. Eso es una migración nueva tuya, nunca un cambio a la de la 5.1.
+5. **Desactiva el rastreo de aperturas y de clics** en el dominio de Resend. El rastreo de clics reescribe los links, y los de gestionar la cita llevan un token privado.
+6. **Auth por el SMTP de Resend** (punto 5 de la 0008):
+   - actualiza `docs/operacion/configurar-barberias-dev.md`: la sección de SMTP, que hoy habla de SES, y las plantillas de `supabase/templates/`, que esperaban a la 5.2;
+   - sube el límite de envíos de Auth, que con SMTP propio arranca en 30 por hora;
+   - la configuración la hace el fundador en el Dashboard.
+7. **El link privado del barbero por correo** (spec, "Mensajes del MVP"; la 2.3 lo dejó para la 5.2, diseño E07):
+   - no hay tipo en `notification_type` para ese correo;
+   - el link lleva un token, y por Q5 no puede ir en el `payload`.
+   - **Consúltalo con el fundador** antes de hacerlo. Lo natural es un PR corto después del envío real, porque toca la pantalla de barberos (del fundador).
+
+**Lo que hace el fundador, y cuándo pedírselo:**
+- **Antes de probar de verdad:**
+  - aceptar la 0008;
+  - crear la cuenta de Resend;
+  - agregar `yapoin.com` en `us-east-1`;
+  - poner los registros SPF, DKIM y DMARC en Cloudflare, en modo "DNS only".
+- **Para activar la cola en `barberias-dev`:**
+  - desplegar las funciones;
+  - poner los secretos `NOTIFICATIONS_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM` y `RESEND_WEBHOOK_SECRET`, y los dos de Vault;
+  - los pasos están en `docs/tareas/5.1-cola-de-correos.md`.
+  - **Las llaves nunca van al repo ni a un PR** (el repo es público).
+- **Puedes construir y probar todo antes de tener la cuenta.** El `Sender`, el `render` y el webhook se prueban con `fetch` y firmas falsas. El CI **nunca** llama a Resend.
+
+**Pruebas:**
+- **Unitarias** (Vitest, junto a cada archivo: el proyecto `unit` ya incluye `supabase/functions/**/*.test.ts`):
+  - cada respuesta de Resend da el resultado y el código correctos;
+  - la cabecera de idempotencia es el `id`;
+  - ningún código trae la dirección;
+  - el `render` de cada plantilla;
+  - el webhook rechaza firmas malas o viejas.
+- **pgTAP:** solo si hay migración (números 40 a 59).
+- **La prueba real**, en `docs/pruebas-humanas-hito-5.md`:
+  1. encolar un correo de suscripción en `barberias-dev` desde el SQL Editor con `private.enqueue_notification`, para una barbería de prueba;
+  2. ver que llega a Gmail y a Outlook en la bandeja de entrada, no en spam;
+  3. ver en la cola que quedó `sent`.
+
+  Es la mitad del criterio de cierre del hito 5.
+- **`revisor-seguridad`** antes de marcar el PR listo: la llave, la firma del webhook, que no se registren correos en los logs y que el contenido de un correo solo lea datos de su barbería.
+
+**Archivos:**
+- **Tuyos en la 5.2:**
+  - `supabase/functions/send-notifications/` (nuevos archivos y `senderFromEnv` en `index.ts`);
+  - `supabase/functions/resend-webhook/`;
+  - `docs/tareas/5.2-envio-resend.md`.
+- **`run-queue.ts` es la frontera con la cola:** si necesitas cambiar `Sender`, `Queue` o `runQueue`, mantén sus pruebas en verde y avísalo en el PR.
+
 ### 5.5 Ciclo de suscripción (después de la 5.4)
 - **Spec:** "Ciclo de la suscripción", pasos 2 (avisos), 5 (gracia), 6 (suspensión) y 7 (reactivación), y la fila "Suscripción por vencer, vencida, suspendida, pago registrado" de "Mensajes del MVP".
 - **Migración 10 de la 0006** (`read_only_when_suspended`): el SQL está en el anexo A (A.10) y la explicación, con la lista de pruebas, en la sección "### 10.".
@@ -95,9 +206,9 @@ Fusionada en #48. Su documento está en `docs/tareas/`. Sirve de modelo para las
 - **Limpieza de cuentas sin confirmar**, que hoy apartan el link de su barbería (decisión `0006-correo-unico-canal.md`, "Links apartados"):
   - la tarea define el plazo: **pregúntalo al fundador**;
   - corre con pg_cron (decisión 0007, punto 8).
-- **Correos del ciclo** (por vencer, el día del vencimiento, 3 días después, suspendida y pago registrado) van por la cola de la 5.1, que es del fundador.
+- **Correos del ciclo** (por vencer, el día del vencimiento, 3 días después, suspendida y pago registrado) van por la cola de la 5.1 (fusionada en #56), con las plantillas que hiciste en la 5.2.
   - **Contrato:** la 5.1 deja `private.enqueue_notification(barbershop_id, type, dedupe_key, appointment_id default null, scheduled_for default now(), payload default '{}')`. Devuelve el id, o `null` si esa `dedupe_key` ya estaba: así un aviso no sale dos veces. El destinatario no se pasa, porque los de suscripción van al dueño de la sede (`docs/tareas/5.1-cola-de-correos.md`).
-  - Si la 5.1 todavía no está fusionada, construye todo lo demás de la 5.5 y deja los correos para un PR corto después. No crees tu propia cola.
+  - No crees tu propia cola.
 - **No incluye "Mis citas"** (C-19 a C-21): es un link que llega por correo y lo hace el fundador.
 
 ### 6.3 PWA instalable
@@ -116,6 +227,7 @@ El diseño vive en Claude Design, pero **cada pantalla está copiada en el repo*
 - **5.4:** `P01` a `P06`.
 - **4.6:** `D64-Cierre-dia`.
 - **5.5:** `D70-Agenda-por-vencer`, `D71-Agenda-gracia` y `D72-Agenda-suspendida`.
+- **5.2:** `E07-Link-barbero`. Los correos E-01 a E-06 no están en el repo: pídeselos al fundador.
 
 Cómo usarlas:
 
@@ -133,7 +245,7 @@ Cómo usarlas:
 ## 4. Reglas para no pisarse
 
 ### Ramas y PRs (`CLAUDE.md`, "Forma de trabajo")
-- Una rama por tarea desde `main` actualizado: `hito-5-plataforma`, `hito-4-cierre-dia`, `hito-5-suscripcion` y `hito-6-pwa`.
+- Una rama por tarea desde `main` actualizado: `hito-5-plataforma`, `hito-4-cierre-dia`, `hito-5-envio-resend`, `hito-5-suscripcion` y `hito-6-pwa`.
 - Un PR por tarea, en borrador desde el primer push, y listo con el CI en verde.
 - **Antes de abrir el PR y antes de fusionar, mete `main` en tu rama** (merge, no rebase) y vuelve a pasar el CI.
 - Solo `alejodoradog` fusiona, con "Create a merge commit". Sin coautoría ni marcas de Claude.
@@ -154,6 +266,7 @@ Cómo usarlas:
 | `src/lib/supabase/database.types.ts` | Se regenera con `pnpm db:types`; el CI lo compara con el generador. Si hay conflicto, regenéralo después de meter `main`. |
 | `src/app/(panel)/panel/page.tsx` (la agenda, del fundador) | Solo montar `SubscriptionNotice` (5.5), una línea. Avísalo en el PR. |
 | `src/app/(panel)/panel/mas/page.tsx` (Más, D-50, del fundador) | Solo la fila "Cierre del día" (4.6). Avísalo en el PR. |
+| `supabase/config.toml` | Las secciones nuevas (`[functions.<nombre>]`) van al final. Avísalo en el PR. |
 | `src/ui/icons.tsx` | Los íconos nuevos van al final del archivo. |
 | `tests/e2e/helpers/*.ts` | Las funciones nuevas van al final. No cambies la firma de las existentes; si necesitas otra cosa, agrega una función nueva. |
 | `playwright.config.ts`, `.github/`, `next.config.ts`, `CLAUDE.md` | No se tocan sin avisar al otro (un PR propio, `docs-` o `ci-`). |
