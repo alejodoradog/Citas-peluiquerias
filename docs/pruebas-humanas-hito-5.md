@@ -91,5 +91,13 @@ Con una barbería de prueba que tenga servicios, barberos y una cita para mañan
 - [ ] **3. La lista.** El link del correo muestra las citas próximas. "Ver o cambiar" abre cada cita, con Confirmo, Cambiar y Cancelar.
 - [ ] **4. El link vencido.** Al día siguiente, el mismo link dice "Este link ya no sirve" y deja pedir otro.
 
+## Tarea 5.5b: correos del ciclo y limpieza (celular A, super admin; dueño con Gmail)
+
+- [ ] **1. Por vencer.** Con el panel de plataforma, extender la prueba de una barbería de prueba hasta dentro de 3 días. Al otro día, a las 8:00 a. m., llega "Tu prueba gratis vence el …" con el valor y los datos de pago.
+- [ ] **2. Pago registrado.** Registrar un pago a esa barbería: en un minuto llega "Recibimos tu pago" con el valor y la nueva fecha.
+- [ ] **3. Pausada.** Con una barbería vencida hace 6 días, a las 8:00 a. m. llega "Tu barbería está pausada".
+- [ ] **4. Una sola vez.** Ninguno de estos correos llega dos veces.
+- [ ] **5. Cuenta sin confirmar.** Registrar una cuenta y no confirmarla: a los 8 días ya no existe y su link (`www.yapoin.com/<link>`) queda libre.
+
 ## Decisiones provisionales de la 5.4 para revisar juntos
 Están en `docs/tareas/5.4-panel-plataforma.md`, de P1 a P11.
