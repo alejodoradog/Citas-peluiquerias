@@ -225,14 +225,20 @@ function Profile({
           </section>
         ) : null}
       </main>
-      <Footer />
+      <Footer slug={profile.slug} />
     </div>
   );
 }
 
-function Footer() {
+function Footer({ slug }: { slug: string }) {
   return (
     <footer className="text-muted flex flex-col items-center gap-1 px-5 pt-6.5 text-xs">
+      <Link
+        href={routes.myAppointments(slug)}
+        className="text-ink inline-flex min-h-11 items-center text-sm font-semibold"
+      >
+        {t.misCitas.entrada}
+      </Link>
       <span>
         {t.perfil.reservasCon} <strong>{textos.marca}</strong>
       </span>
@@ -285,7 +291,7 @@ function Suspended({ profile }: { profile: PublicProfile }) {
           </OutsideLink>
         ) : null}
       </main>
-      <Footer />
+      <Footer slug={profile.slug} />
     </div>
   );
 }

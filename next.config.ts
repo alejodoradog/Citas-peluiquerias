@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
       { source: "/b/:path*", headers: privateLink },
       { source: "/c/:path*", headers: privateLink },
       { source: "/:slug/reservar/confirmada", headers: privateLink },
+      // "Mis citas": the customer's list, by the link of an email.
+      { source: "/:slug/mis-citas/:token", headers: privateLink },
     ];
   },
   turbopack: {

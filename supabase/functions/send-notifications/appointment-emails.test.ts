@@ -5,6 +5,8 @@ import {
   type AppointmentRecord,
   calendarUrl,
   composeAppointmentEmail,
+  composeMyAppointmentsEmail,
+  type CustomerDb,
   dayLine,
   linkTokenHash,
   newLinkToken,
@@ -310,5 +312,77 @@ describe("composeAppointmentEmail", () => {
       ),
     ).toEqual({ cancel: "outdated" });
     expect(db.issueLink).not.toHaveBeenCalled();
+  });
+});
+
+describe("composeMyAppointmentsEmail", () => {
+  const customer = {
+    firstName: "Camila",
+    hasUpcoming: true,
+    barbershop: {
+      name: "Barbería La Esquina",
+      slug: "la-esquina",
+      address: "Calle 5 # 38-20",
+      locality: null,
+    },
+  };
+  function fakeDb(found: typeof customer | null = customer) {
+    const db: CustomerDb = {
+      customer: vi.fn(async () => found),
+      issueCustomerLink: vi.fn(async () => {}),
+    };
+    return db;
+  }
+  const mine = (payload: Record<string, unknown>) => ({
+    ...message("customer_appointments", payload),
+    appointmentId: null,
+  });
+  const id = "c0000000-0000-4000-8000-000000000001";
+
+  it("sends the link to the customer's appointments, keeping only its hash", async () => {
+    const db = fakeDb();
+    const email = await composeMyAppointmentsEmail(
+      mine({ customer_id: id }),
+      db,
+      { siteUrl: SITE },
+    );
+    const text = "text" in email ? email.text : "";
+    expect(email).toMatchObject({
+      subject: "Tus citas en Barbería La Esquina",
+    });
+    const token = /\/la-esquina\/mis-citas\/([A-Za-z0-9_-]{43})/.exec(
+      text,
+    )?.[1];
+    expect(token).toBeDefined();
+    expect(db.issueCustomerLink).toHaveBeenCalledWith(
+      "shop",
+      id,
+      await linkTokenHash(token!),
+    );
+    expect(text).toContain("El link sirve por 24 horas.");
+  });
+
+  it("sends nothing for a customer gone or with nothing upcoming", async () => {
+    expect(
+      await composeMyAppointmentsEmail(
+        mine({ customer_id: id }),
+        fakeDb(null),
+        {
+          siteUrl: SITE,
+        },
+      ),
+    ).toEqual({ cancel: "no_customer" });
+    expect(
+      await composeMyAppointmentsEmail(
+        mine({ customer_id: id }),
+        fakeDb({ ...customer, hasUpcoming: false }),
+        { siteUrl: SITE },
+      ),
+    ).toEqual({ cancel: "outdated" });
+    expect(
+      await composeMyAppointmentsEmail(mine({ customer_id: "x" }), fakeDb(), {
+        siteUrl: SITE,
+      }),
+    ).toEqual({ cancel: "no_customer" });
   });
 });

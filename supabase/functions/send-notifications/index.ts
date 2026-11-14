@@ -21,6 +21,9 @@ import {
   APPOINTMENT_EMAILS,
   type AppointmentDb,
   composeAppointmentEmail,
+  composeMyAppointmentsEmail,
+  type CustomerDb,
+  MY_APPOINTMENTS_EMAIL,
 } from "./appointment-emails.ts";
 import { emailData, type EmailDb } from "./content.ts";
 import { composeEmail } from "./render.ts";
@@ -185,12 +188,60 @@ function appointmentDb(db: SupabaseClient): AppointmentDb {
   };
 }
 
+// "Mis citas": the customer of a message, whether they have something
+// upcoming, and the hash of the email's link.
+function customerDb(db: SupabaseClient): CustomerDb {
+  return {
+    async customer(barbershopId, customerId) {
+      const [customer, shop, upcoming] = await Promise.all([
+        db
+          .from("customers")
+          .select("full_name, anonymized_at")
+          .eq("barbershop_id", barbershopId)
+          .eq("id", customerId)
+          .maybeSingle(),
+        db
+          .from("barbershops")
+          .select("name, slug, address, locality")
+          .eq("id", barbershopId)
+          .is("deleted_at", null)
+          .maybeSingle(),
+        db
+          .from("appointments")
+          .select("id", { count: "exact", head: true })
+          .eq("barbershop_id", barbershopId)
+          .eq("customer_id", customerId)
+          .eq("status", "confirmed")
+          .gt("starts_at", new Date().toISOString()),
+      ]);
+      const customerRow = rowOf(customer);
+      const shopRow = rowOf(shop);
+      if (upcoming.error) throw new Error("read_failed");
+      if (!customerRow || customerRow.anonymized_at || !shopRow) return null;
+      return {
+        firstName: customerRow.full_name.trim().split(/\s+/)[0] ?? "",
+        hasUpcoming: (upcoming.count ?? 0) > 0,
+        barbershop: shopRow,
+      };
+    },
+    async issueCustomerLink(barbershopId, customerId, tokenHash) {
+      const { error } = await db.rpc("issue_customer_link", {
+        p_barbershop_id: barbershopId,
+        p_customer_id: customerId,
+        p_token_hash: tokenHash,
+      });
+      if (error) throw new Error("link_failed");
+    },
+  };
+}
+
 function senderFromEnv(db: SupabaseClient): Sender | null {
   const apiKey = env("RESEND_API_KEY");
   const from = env("EMAIL_FROM");
   if (!apiKey || !from) return null;
   const content = emailDb(db);
   const appointments = appointmentDb(db);
+  const customers = customerDb(db);
   const settings = {
     payInfo: {
       breB: env("PAYMENT_BRE_B"),
@@ -204,6 +255,11 @@ function senderFromEnv(db: SupabaseClient): Sender | null {
     apiKey,
     from,
     async compose(message) {
+      if (message.type === MY_APPOINTMENTS_EMAIL) {
+        return composeMyAppointmentsEmail(message, customers, {
+          siteUrl: settings.siteUrl,
+        });
+      }
       if (APPOINTMENT_EMAILS.has(message.type)) {
         return composeAppointmentEmail(message, appointments, {
           siteUrl: settings.siteUrl,
