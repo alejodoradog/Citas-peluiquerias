@@ -497,7 +497,7 @@ select ok(
 
 select lives_ok(
   $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-2',
             current_date + 10, current_date + 10, current_date + 40, '00000000-0000-0000-0000-0000000000ad')$$,
   'a valid payment is recorded'
 );

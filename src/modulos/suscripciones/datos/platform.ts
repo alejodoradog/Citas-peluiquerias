@@ -14,7 +14,8 @@ import { toPlatformRefusal, type PlatformRefusal } from "./platform-errors";
 // session. The pages call requireSuperAdmin first; the database checks again
 // in every function (private.is_super_admin), and its super_admin_read
 // policies let that session read barbershops, payments, appointments and
-// barbers. The owner's email comes only from platform_barbershops.
+// barbers. The owner's email comes only from platform_barbershops, and why a
+// payment was voided only from platform_payments (task 5.4b, B4).
 
 export type PlatformRow = {
   id: string;
@@ -125,14 +126,7 @@ export async function loadPlatformBarbershop(
   const firstOfMonth = `${today.slice(0, 7)}-01`;
   const firstOfLastMonth = `${addDays(firstOfMonth, -1).slice(0, 7)}-01`;
   const [payments, appointments, barbers] = await Promise.all([
-    supabase
-      .from("subscription_payments")
-      .select(
-        "id, amount_cop, method, reference, paid_on, covers_from, covers_until, voided_at, void_reason, created_at",
-      )
-      .eq("barbershop_id", id)
-      .order("paid_on", { ascending: false })
-      .order("created_at", { ascending: false }),
+    supabase.rpc("platform_payments", { p_barbershop_id: id }),
     supabase
       .from("appointments")
       .select("id", { count: "exact", head: true })
@@ -232,12 +226,15 @@ export async function registerPayment(payment: {
   return done(error);
 }
 
+// Only a payment of that barbershop (task 5.4b, B1).
 export async function voidPayment(
+  barbershopId: string,
   paymentId: string,
   reason: string,
 ): Promise<PlatformResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("void_subscription_payment", {
+    p_barbershop_id: barbershopId,
     p_payment_id: paymentId,
     p_reason: reason,
   });

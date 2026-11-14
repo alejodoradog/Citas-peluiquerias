@@ -122,9 +122,9 @@ describe("resendSender", () => {
     });
   });
 
-  it("cancels a type without a template, without calling Resend", async () => {
+  it("cancels what is not sent any more, without calling Resend", async () => {
     const { fetch, sender: s } = sender(() => reply(200), {
-      compose: async () => null,
+      compose: async () => ({ cancel: "no_template" }),
     });
     expect(await s.send(MESSAGE)).toEqual({
       ok: false,

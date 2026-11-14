@@ -144,7 +144,7 @@ select ok(
    from pg_proc
    where oid in (
      'public.register_subscription_payment(uuid, text, public.payment_method, text, date)'::regprocedure,
-     'public.void_subscription_payment(uuid, text)'::regprocedure,
+     'public.void_subscription_payment(uuid, uuid, text)'::regprocedure,
      'public.suspend_barbershop(uuid)'::regprocedure,
      'public.reactivate_barbershop(uuid)'::regprocedure,
      'public.extend_trial(uuid, date)'::regprocedure,
@@ -156,7 +156,7 @@ select ok(
   (select bool_and(not has_function_privilege('anon', f, 'EXECUTE'))
    from unnest(array[
      'public.register_subscription_payment(uuid, text, public.payment_method, text, date)',
-     'public.void_subscription_payment(uuid, text)',
+     'public.void_subscription_payment(uuid, uuid, text)',
      'public.suspend_barbershop(uuid)',
      'public.reactivate_barbershop(uuid)',
      'public.extend_trial(uuid, date)',
@@ -186,7 +186,7 @@ select is(
   pg_temp.hint_of($$select public.reactivate_barbershop('aaaaaaaa-0000-0000-0000-000000000001')$$),
   '42501', 'nor reactivate');
 select is(
-  pg_temp.hint_of($$select public.void_subscription_payment(gen_random_uuid(), 'Motivo')$$),
+  pg_temp.hint_of($$select public.void_subscription_payment('aaaaaaaa-0000-0000-0000-000000000001', gen_random_uuid(), 'Motivo')$$),
   '42501', 'nor void a payment');
 
 -- The super admin --------------------------------------------------------------------------------
@@ -263,11 +263,12 @@ set local role authenticated;
 -- A second payment, then voiding the first: the second takes its place.
 select pg_temp.hint_of($$select public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000001', 'standard', 'bre_b', 'BRB-2')$$);
 select is(
-  pg_temp.hint_of($$select public.void_subscription_payment((select id from public.subscription_payments where reference = 'NEQ-1'), '   ')$$),
+  pg_temp.hint_of($$select public.void_subscription_payment('aaaaaaaa-0000-0000-0000-000000000001', (select id from public.subscription_payments where reference = 'NEQ-1'), '   ')$$),
   '23514', 'voiding needs a reason');
 select is(
   (select row(voided_by, void_reason)::text
    from public.void_subscription_payment(
+     'aaaaaaaa-0000-0000-0000-000000000001',
      (select id from public.subscription_payments where reference = 'NEQ-1'), ' Pago duplicado ')),
   '(00000000-0000-0000-0000-0000000000ad,"Pago duplicado")',
   'voiding leaves who and why'
@@ -280,12 +281,12 @@ select is(
   'and the other payment takes its place'
 );
 select is(
-  pg_temp.hint_of($$select public.void_subscription_payment((select id from public.subscription_payments where reference = 'NEQ-1'), 'Otra vez')$$),
+  pg_temp.hint_of($$select public.void_subscription_payment('aaaaaaaa-0000-0000-0000-000000000001', (select id from public.subscription_payments where reference = 'NEQ-1'), 'Otra vez')$$),
   'P0002', 'a payment is voided once');
 
 -- Suspend; voiding keeps it suspended; a payment lifts it.
 select is(pg_temp.hint_of($$select public.suspend_barbershop('aaaaaaaa-0000-0000-0000-000000000001')$$), 'no error', 'the super admin suspends');
-select pg_temp.hint_of($$select public.void_subscription_payment((select id from public.subscription_payments where reference = 'BRB-2'), 'Rebotó')$$);
+select pg_temp.hint_of($$select public.void_subscription_payment('aaaaaaaa-0000-0000-0000-000000000001', (select id from public.subscription_payments where reference = 'BRB-2'), 'Rebotó')$$);
 select is(
   (select row(subscription_status, plan, expires_on = pg_temp.d(10))::text
    from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000001'),

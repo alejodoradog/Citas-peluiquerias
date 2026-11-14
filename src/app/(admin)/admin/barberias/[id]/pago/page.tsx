@@ -11,6 +11,7 @@ import {
   loadPlatformBarbershop,
 } from "@/modulos/suscripciones/datos/platform";
 import {
+  earliestPaymentDay,
   PAYMENT_METHODS,
   paymentDayOptions,
 } from "@/modulos/suscripciones/dominio/platform-forms";
@@ -58,7 +59,8 @@ async function Payment({
     .map((payment) => ({ id: payment.id, paidOn: payment.paidOn }));
   // Each possible payment day with what it would leave, worked out here so
   // the form only picks among them.
-  const days = paymentDayOptions(today).map((date) => {
+  const earliest = earliestPaymentDay(today, toBogotaDate(shop.createdAt));
+  const days = paymentDayOptions(today, earliest).map((date) => {
     const preview = paymentPreview(shop.trialEndsOn, registered, date);
     return {
       value: date,

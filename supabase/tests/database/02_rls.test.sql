@@ -202,6 +202,7 @@ select is(
     'public.mark_appointment_by_barber:anon',
     'public.mark_appointment_by_barber:authenticated',
     'public.platform_barbershops:authenticated',
+    'public.platform_payments:authenticated',
     'public.reactivate_barbershop:authenticated',
     'public.register_subscription_payment:authenticated',
     'public.reschedule_appointment:authenticated',

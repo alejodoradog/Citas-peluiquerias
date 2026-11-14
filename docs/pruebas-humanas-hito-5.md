@@ -31,12 +31,26 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 - [ ] **7. Métricas.** Tocar el ícono de métricas. Las cuatro tarjetas deben sumar el total de "Todas" (una barbería por vencer cuenta en "Activas" o en "En prueba", según su estado), y el ingreso del mes debe ser la suma de los pagos no anulados de este mes.
 - [ ] **8. Solo el super admin.** Con la cuenta de un dueño, abrir `www.yapoin.com/admin`: debe llevarlo a su panel, sin mostrar nada de la plataforma.
 
+## Tarea 5.4b: correcciones del panel de plataforma (celular A, super admin)
+
+- [ ] **1. Un pago no se registra dos veces.**
+  1. Abrir "Registrar pago" de la misma barbería en dos pestañas.
+  2. Registrar el pago en la primera.
+  3. En la segunda, con el mismo medio y la misma referencia, tocar "Registrar y activar". Debe decir "Ese pago ya está registrado…", y la ficha muestra un solo pago y un solo mes.
+  4. Con otra referencia, sí se registra.
+- [ ] **2. La fecha del pago.** En una barbería creada hace pocos días, la lista de fechas de "Registrar pago" empieza el día en que se creó, no un mes atrás.
+- [ ] **3. Anular sigue funcionando.** Anular un pago desde su ficha: queda tachado con su motivo. Después se puede registrar otra vez esa misma referencia.
+
 ## Tarea 5.2: correos con Resend (celular A, dueño)
 
 Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev`.
 
 - [ ] **1. Auth.** Registrarse con un correo nuevo de Gmail y con uno de Outlook. El correo de confirmación llega a la bandeja de entrada (no a spam), en español y desde `citas@yapoin.com`. Lo mismo con "Recuperar clave".
-- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba (paso 5 de la guía). En un minuto llega "Tu prueba gratis vence el …", con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`.
+- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba cuyo dueño tenga Gmail, y otra vez para una cuyo dueño tenga Outlook (paso 5 de la guía):
+  1. en un minuto llega "Tu prueba gratis vence el …" a la bandeja de entrada, no a spam, con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`;
+  2. en la tabla `notifications` de `barberias-dev`, ese correo quedó `sent`.
+
+  Es la mitad del criterio de cierre del hito 5.
 - [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
 - [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addDays, longDate, pesos, render, type EmailData } from "./render";
+import {
+  addDays,
+  composeEmail,
+  longDate,
+  pesos,
+  render,
+  type EmailData,
+} from "./render";
 
 function data(extra: Partial<EmailData> = {}): EmailData {
   return {
@@ -111,6 +118,35 @@ describe("render", () => {
     expect(email.html).not.toContain("<script>");
     expect(email.html).toContain("&lt;script&gt;");
     expect(email.html).toContain("A &amp; B");
+  });
+
+  it("decides what is not sent any more, and why", () => {
+    expect(composeEmail("subscription_expiring", {}, null)).toEqual({
+      cancel: "no_barbershop",
+    });
+    // Paid in between: the expiry that made the notice due moved.
+    expect(
+      composeEmail(
+        "subscription_expired",
+        { expires_on: "2026-11-01" },
+        data(),
+      ),
+    ).toEqual({ cancel: "outdated" });
+    expect(
+      composeEmail(
+        "subscription_expired",
+        { expires_on: "2026-11-24" },
+        data(),
+      ),
+    ).toHaveProperty("subject");
+    expect(composeEmail("subscription_payment_registered", {}, data())).toEqual(
+      {
+        cancel: "no_payment",
+      },
+    );
+    expect(composeEmail("appointment_confirmed", {}, data())).toEqual({
+      cancel: "no_template",
+    });
   });
 
   it("has no template for the appointments' emails yet (task 5.3)", () => {

@@ -3,19 +3,28 @@
 // - not_allowed: the account is not a super admin (insufficient_privilege);
 // - payment_required: Reactivar on a barbershop whose validity ran out
 //   (hint subscription_payment_required): register a payment instead;
+// - already_registered: a payment with that method and reference is already
+//   there (hint payment_already_registered, task 5.4b);
 // - not_found: the payment was already voided, the barbershop is not
 //   suspended, or its trial cannot be extended any more (no_data_found);
-// - invalid: a value the database refused (an unknown plan, an empty reason);
+// - invalid: a value the database refused (an unknown plan, an empty reason,
+//   a payment day out of its window, a trial extended too far);
 // - unknown: anything else (the network).
 
 export type PlatformRefusal =
-  "not_allowed" | "payment_required" | "not_found" | "invalid" | "unknown";
+  | "not_allowed"
+  | "payment_required"
+  | "already_registered"
+  | "not_found"
+  | "invalid"
+  | "unknown";
 
 export function toPlatformRefusal(error: {
   code?: string;
   hint?: string | null;
 }): PlatformRefusal {
   if (error.hint === "subscription_payment_required") return "payment_required";
+  if (error.hint === "payment_already_registered") return "already_registered";
   switch (error.code) {
     case "42501":
       return "not_allowed";

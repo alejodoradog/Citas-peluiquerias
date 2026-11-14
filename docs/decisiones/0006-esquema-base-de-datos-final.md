@@ -2679,6 +2679,16 @@ El SQL exacto está en el anexo A. Cada archivo corre en una sola transacción y
   - Un pago levanta la suspensión; una anulación no.
   - Reactivar pasa si la vigencia cubre y rechaza con `subscription_payment_required` si no.
   - `extend_trial` solo durante la prueba.
+- **Cómo quedó (tareas 5.4 y 5.4b):**
+  - `barbershop_phase` ya existía desde la 3.3, igual, y no se volvió a crear;
+  - la 5.4 agregó `platform_barbershops` (la lista del super admin, con el correo del dueño);
+  - la 5.4b (`harden_subscription_payments`) agregó:
+    - un pago sin anular por medio y referencia;
+    - anular nombrando la barbería;
+    - la ventana del día del pago y el tope de la prueba en la base;
+    - nada sobre barberías borradas;
+    - el rastro solo para el super admin (`platform_payments`).
+  - Ver `docs/tareas/5.4b-correcciones-plataforma.md`.
 
 ### 10. `read_only_when_suspended` (tarea 5.5)
 
