@@ -300,7 +300,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea). Incluye la migración 10 de la decisión 0006 (`read_only_when_suspended`), los avisos en la agenda (D-70 a D-72, sin pantalla de suscripción) y Mis citas (P2, C-19 a C-21).
 - [ ] 5.6 Precio por número de barberos: $25.000 al mes de 1 a 4, $40.000 de 5 a 8 y por acuerdo con 9 o más (decisión del fundador, 2026-11-14), en el catálogo, el registro de pagos, P-02, P-03 y los avisos.
 
-**Lista cuando:** una cita de prueba recibe confirmación y recordatorio reales por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
+**Lista cuando:** una cita de prueba recibe su recordatorio real por correo (el cliente recibe solo el recordatorio, decisión del fundador del 2026-11-14), que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
 
 ### Fase 6 · Pulido y salida al piloto (semana 6)
 

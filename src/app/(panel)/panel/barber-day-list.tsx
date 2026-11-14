@@ -74,7 +74,12 @@ export function BarberDayList({
                       {`${services} · ${t.minutos(minutes)}`}
                     </span>
                   </span>
-                  <Chip tone={LOOK_TONES[look]}>{t.estados[look]}</Chip>
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <Chip tone={LOOK_TONES[look]}>{t.estados[look]}</Chip>
+                    {appointment.customerConfirmed ? (
+                      <Chip tone="success">{t.clienteConfirmo}</Chip>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             );

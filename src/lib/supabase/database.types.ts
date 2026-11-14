@@ -77,14 +77,14 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "barber_id": string,"barbershop_id": string,"created_at": string,"customer_id": string,"deposit_received": boolean,"ends_at": string,"id": string,"manage_token_hash": string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
+                    "barber_id": string,"barbershop_id": string,"created_at": string,"customer_confirmed_at": string | null,"customer_id": string,"deposit_received": boolean,"ends_at": string,"id": string,"manage_token_hash": string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "barber_id": string,"barbershop_id"?: string,"created_at"?: string,"customer_confirmed_at"?: string | null,"customer_id": string,"deposit_received"?: boolean,"ends_at": string,"id"?: string,"manage_token_hash"?: string | null,"price_cop": number,"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Update: {
-                    "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"customer_id"?: string,"deposit_received"?: boolean,"ends_at"?: string,"id"?: string,"manage_token_hash"?: string | null,"price_cop"?: number,"source"?: Database["public"]['Enums']["appointment_source"],"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"customer_confirmed_at"?: string | null,"customer_id"?: string,"deposit_received"?: boolean,"ends_at"?: string,"id"?: string,"manage_token_hash"?: string | null,"price_cop"?: number,"source"?: Database["public"]['Enums']["appointment_source"],"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -509,6 +509,9 @@ isOneToOne: false
 "complete_barbershop_setup":
 { Args: { "p_barbers": Json,"p_barbershop_id": string,"p_hours": Json,"p_services": Json }; Returns: undefined
                            },
+"confirm_appointment_by_token":
+{ Args: { "p_token_hash": string }; Returns: undefined
+                           },
 "create_appointment":
 { Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_id": string,"p_manage_token_hash"?: string,"p_service_ids": (string)[],"p_source"?: Database["public"]['Enums']["appointment_source"],"p_starts_at": string }; Returns: string
                            },
@@ -539,6 +542,9 @@ isOneToOne: false
 "finish_notification":
 { Args: { "p_error"?: string,"p_lease_id": string,"p_notification_id": string,"p_outcome": string }; Returns: Database["public"]['Enums']["notification_status"]
                            },
+"issue_appointment_link":
+{ Args: { "p_appointment_id": string,"p_barbershop_id": string,"p_token_hash": string }; Returns: undefined
+                           },
 "list_customers":
 { Args: { "p_barbershop_id": string,"p_filter"?: string,"p_limit"?: number,"p_search"?: string }; Returns: {
               "created_at": string,"email": string,"full_name": string,"id": string,"last_visit_at": string,"next_appointment_at": string,"no_shows": number,"phone": string,"visits": number
@@ -546,7 +552,7 @@ isOneToOne: false
                            },
 "managed_appointment":
 { Args: { "p_token_hash": string }; Returns: {
-              "barber_id": string,"barber_name": string,"barbershop_id": string,"cancellation_notice_hours": number,"changeable": boolean,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"slug": string,"starts_at": string
+              "barber_id": string,"barber_name": string,"barbershop_id": string,"cancellation_notice_hours": number,"changeable": boolean,"customer_confirmed": boolean,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"slug": string,"starts_at": string
             }[]
                            },
 "mark_appointment_by_barber":

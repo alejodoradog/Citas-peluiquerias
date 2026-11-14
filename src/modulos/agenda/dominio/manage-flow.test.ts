@@ -9,7 +9,18 @@ describe("readManageParams", () => {
       time: null,
       changed: false,
       taken: null,
+      confirm: false,
+      cancel: false,
     });
+  });
+
+  it("reads the buttons of the reminder (task 5.3) on C-09 only", () => {
+    expect(readManageParams({ confirmo: "1" }).confirm).toBe(true);
+    expect(readManageParams({ cancelar: "1" }).cancel).toBe(true);
+    expect(readManageParams({ confirmo: "si" }).confirm).toBe(false);
+    expect(
+      readManageParams({ paso: "cambiar", confirmo: "1", cancelar: "1" }),
+    ).toMatchObject({ confirm: false, cancel: false });
   });
 
   it("reads the day and the time of C-10", () => {
@@ -73,6 +84,11 @@ describe("manageQuery", () => {
     const params = Object.fromEntries(
       new URLSearchParams(manageQuery(selection)),
     );
-    expect(readManageParams(params)).toEqual({ ...selection, changed: false });
+    expect(readManageParams(params)).toEqual({
+      ...selection,
+      changed: false,
+      confirm: false,
+      cancel: false,
+    });
   });
 });

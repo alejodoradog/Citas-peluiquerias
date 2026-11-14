@@ -17,6 +17,11 @@
 // pg_net stops waiting after 5 s, so the function answers 202 at once and
 // works the batch in the background (EdgeRuntime.waitUntil).
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
+import {
+  APPOINTMENT_EMAILS,
+  type AppointmentDb,
+  composeAppointmentEmail,
+} from "./appointment-emails.ts";
 import { emailData, type EmailDb } from "./content.ts";
 import { composeEmail } from "./render.ts";
 import { resendSender } from "./resend-sender.ts";
@@ -65,9 +70,10 @@ function emailDb(db: SupabaseClient): EmailDb {
     async planPrice(code) {
       const query = db.from("plans").select("monthly_price_cop");
       const data = rowOf(
-        await (code
-          ? query.eq("code", code)
-          : query.eq("active", true).order("sort_order")
+        await (
+          code
+            ? query.eq("code", code)
+            : query.eq("active", true).order("sort_order")
         )
           .limit(1)
           .maybeSingle(),
@@ -105,11 +111,86 @@ function emailDb(db: SupabaseClient): EmailDb {
   };
 }
 
+// Task 5.3: the appointment of a message, with what its email shows, and the
+// hash of the email's link. Every read filters by the message's barbershop.
+function appointmentDb(db: SupabaseClient): AppointmentDb {
+  return {
+    async appointment(barbershopId, appointmentId) {
+      const appointment = rowOf(
+        await db
+          .from("appointments")
+          .select("status, starts_at, ends_at, barber_id, customer_id")
+          .eq("barbershop_id", barbershopId)
+          .eq("id", appointmentId)
+          .maybeSingle(),
+      );
+      if (!appointment) return null;
+      const [shop, barber, customer, lines] = await Promise.all([
+        db
+          .from("barbershops")
+          .select("name, slug, address, locality, cancellation_notice_hours")
+          .eq("id", barbershopId)
+          .is("deleted_at", null)
+          .maybeSingle(),
+        db
+          .from("barbers")
+          .select("display_name")
+          .eq("barbershop_id", barbershopId)
+          .eq("id", appointment.barber_id)
+          .maybeSingle(),
+        db
+          .from("customers")
+          .select("full_name")
+          .eq("barbershop_id", barbershopId)
+          .eq("id", appointment.customer_id)
+          .maybeSingle(),
+        db
+          .from("appointment_services")
+          .select("position, services(name)")
+          .eq("barbershop_id", barbershopId)
+          .eq("appointment_id", appointmentId)
+          .order("position"),
+      ]);
+      const shopRow = rowOf(shop);
+      const barberRow = rowOf(barber);
+      const customerRow = rowOf(customer);
+      const lineRows = rowOf(lines) ?? [];
+      if (!shopRow || !barberRow || !customerRow) return null;
+      return {
+        status: appointment.status,
+        startsAt: appointment.starts_at,
+        endsAt: appointment.ends_at,
+        barberName: barberRow.display_name,
+        serviceNames: lineRows
+          .map((line) => (line.services as { name?: string } | null)?.name)
+          .filter((name): name is string => typeof name === "string"),
+        customerFirstName: customerRow.full_name.trim().split(/\s+/)[0] ?? "",
+        barbershop: {
+          name: shopRow.name,
+          slug: shopRow.slug,
+          address: shopRow.address,
+          locality: shopRow.locality,
+          cancellationNoticeHours: shopRow.cancellation_notice_hours,
+        },
+      };
+    },
+    async issueLink(barbershopId, appointmentId, tokenHash) {
+      const { error } = await db.rpc("issue_appointment_link", {
+        p_barbershop_id: barbershopId,
+        p_appointment_id: appointmentId,
+        p_token_hash: tokenHash,
+      });
+      if (error) throw new Error("link_failed");
+    },
+  };
+}
+
 function senderFromEnv(db: SupabaseClient): Sender | null {
   const apiKey = env("RESEND_API_KEY");
   const from = env("EMAIL_FROM");
   if (!apiKey || !from) return null;
   const content = emailDb(db);
+  const appointments = appointmentDb(db);
   const settings = {
     payInfo: {
       breB: env("PAYMENT_BRE_B"),
@@ -123,6 +204,11 @@ function senderFromEnv(db: SupabaseClient): Sender | null {
     apiKey,
     from,
     async compose(message) {
+      if (APPOINTMENT_EMAILS.has(message.type)) {
+        return composeAppointmentEmail(message, appointments, {
+          siteUrl: settings.siteUrl,
+        });
+      }
       const data = await emailData(content, message, settings);
       return composeEmail(message.type, message.payload, data);
     },

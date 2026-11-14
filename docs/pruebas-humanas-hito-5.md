@@ -7,7 +7,7 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
 - qué pasó;
 - una captura.
 
-**Criterio de cierre del plan:** "Una cita de prueba recibe confirmación y recordatorio reales por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago."
+**Criterio de cierre del plan:** "Una cita de prueba recibe su recordatorio real por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago."
 
 ## Tarea 5.4: panel de plataforma (celular A, super admin)
 
@@ -53,6 +53,20 @@ Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev
   Es la mitad del criterio de cierre del hito 5.
 - [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
 - [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
+
+## Tarea 5.3: el recordatorio y los correos de las citas (celular A, cliente; celular B, dueño)
+
+Con Resend ya configurado en `barberias-dev` por el socio.
+
+- [ ] **1. El recordatorio.**
+  1. Reservar desde la página pública una cita para dentro de unas 2 horas, con un correo de Gmail.
+  2. El recordatorio llega al instante, a la bandeja de entrada y no a spam, en español, con la barbería, la hora, el barbero y la dirección.
+  3. Repetir con Outlook.
+- [ ] **2. "Sí, ahí estaré".** Tocarlo en el correo. Abre la cita y pregunta "¿Vas a llegar?". Al tocar el botón dice "Listo, … sabe que vas". En el celular B, la cita muestra "El cliente confirmó que va" y una ✓ en la agenda.
+- [ ] **3. "No puedo ir: cancelar".** Desde otro recordatorio, tocarlo. Se abre la hoja para cancelar, y la cita no se cancela hasta tocar "Sí, cancelar mi cita".
+- [ ] **4. La barbería cancela o mueve.** En el celular B, mover una cita con correo a otra hora. Al cliente le llega "… cambió la hora de tu cita", con la hora vieja y la nueva. Luego cancelarla: le llega "… canceló tu cita".
+- [ ] **5. El aviso al barbero.** Con "Avisos por correo" activado en un barbero que tiene correo, reservar con él. Le llega "Nueva cita: …", y si se cancela, "Cancelaron la cita de …".
+- [ ] **6. Agregar al calendario.** Desde el recordatorio, el botón crea el evento en Google Calendar a la hora correcta.
 
 ## Tarea 5.5a: solo lectura y avisos en la agenda (celular A, super admin; celular B, dueño)
 

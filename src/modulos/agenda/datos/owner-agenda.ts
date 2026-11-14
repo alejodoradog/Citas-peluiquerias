@@ -48,7 +48,7 @@ export async function loadOwnerAgenda(
       supabase
         .from("appointments")
         .select(
-          "id, barber_id, starts_at, ends_at, status, source, created_at, customers(full_name), appointment_services(position, services(name))",
+          "id, barber_id, starts_at, ends_at, status, source, created_at, customer_confirmed_at, customers(full_name), appointment_services(position, services(name))",
         )
         .eq("barbershop_id", barbershopId)
         .in("status", [...TAKES_TIME])
@@ -96,6 +96,7 @@ export async function loadOwnerAgenda(
       source: row.source,
       createdAt: new Date(row.created_at),
       customerName: row.customers?.full_name ?? "",
+      customerConfirmed: row.customer_confirmed_at !== null,
       serviceNames: [...row.appointment_services]
         .sort((a, b) => a.position - b.position)
         .map((line) => line.services?.name ?? "")

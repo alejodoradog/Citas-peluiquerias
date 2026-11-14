@@ -7,6 +7,7 @@ import { routes } from "@/lib/routes";
 import { isLinkToken } from "@/lib/tokens/link-token";
 import {
   cancelManagedAppointment,
+  confirmManagedAppointment,
   rescheduleManagedAppointment,
 } from "../datos/manage-appointment";
 import type { ManageRefusal } from "../datos/manage-errors";
@@ -38,6 +39,25 @@ export async function cancelAppointment(
   if (result.error === "link_invalid" || result.error === "too_late") {
     redirect(routes.manageAppointment(token));
   }
+  return { status: "failed", error: result.error, values: {} };
+}
+
+// "Confirmo" (task 5.3): one tap, then C-09 says the barbershop knows. A link
+// that stopped working shows C-16.
+export type ConfirmState = FormState<never, ManageRefusal>;
+
+export async function confirmAppointment(
+  _previous: ConfirmState,
+  formData: FormData,
+): Promise<ConfirmState> {
+  const token = String(formData.get("token") ?? "");
+  if (!isLinkToken(token)) {
+    return { status: "failed", error: "link_invalid", values: {} };
+  }
+  const result = await confirmManagedAppointment(token);
+  if (result.ok) return { status: "done" };
+  if (result.error === "link_invalid")
+    redirect(routes.manageAppointment(token));
   return { status: "failed", error: result.error, values: {} };
 }
 

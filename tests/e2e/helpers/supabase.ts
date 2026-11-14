@@ -653,6 +653,31 @@ export async function setBarberLinkActive(barberId: string, active: boolean) {
   if (error) throw error;
 }
 
+// Task 5.3: the emails the queue holds for the appointments of a barbershop
+// (type, when they are due and for which start), and whether each web
+// appointment was confirmed by its customer.
+export async function appointmentEmails(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("notifications")
+    .select("type, scheduled_for, payload, appointment_id")
+    .eq("barbershop_id", barbershopId)
+    .not("appointment_id", "is", null)
+    .order("created_at");
+  if (error) throw error;
+  return data;
+}
+
+export async function customerConfirmations(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("appointments")
+    .select("id, customer_confirmed_at")
+    .eq("barbershop_id", barbershopId)
+    .eq("source", "web")
+    .order("created_at");
+  if (error) throw error;
+  return data;
+}
+
 // Task 5.5: moves the end of a barbershop's trial by hand, to see each notice
 // of the agenda (D-70, D-71 and D-72). The barbershop is dated 60 days back,
 // so an ended trial is not read as a sede awaiting its first payment.

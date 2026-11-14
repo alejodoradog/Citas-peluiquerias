@@ -9,6 +9,8 @@
 // - same_time: the appointment is already at that time;
 // - services_changed: the barber no longer does a service of it, so it
 //   cannot move (cancelling still works);
+// - too_many_changes: it already moved 3 times; the barbershop moves it now
+//   (task 5.3, security review);
 // - unknown: anything else (the network).
 
 export type ManageRefusal =
@@ -18,6 +20,7 @@ export type ManageRefusal =
   | "slot_gone"
   | "same_time"
   | "services_changed"
+  | "too_many_changes"
   | "unknown";
 
 const SLOT_GONE = new Set([
@@ -42,6 +45,7 @@ export function toManageRefusal(error: {
   if (hint === "not_accepting") return "not_accepting";
   if (hint === "same_time") return "same_time";
   if (hint === "services_changed") return "services_changed";
+  if (hint === "too_many_changes") return "too_many_changes";
   if (SLOT_GONE.has(hint) || error.code === "23P01") return "slot_gone";
   return "unknown";
 }

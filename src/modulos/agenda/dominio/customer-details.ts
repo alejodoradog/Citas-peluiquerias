@@ -2,6 +2,7 @@ import { z } from "zod";
 import { emailSchema } from "@/lib/validacion/credentials";
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 import { normalizeColombianMobile } from "@/modulos/barberias/dominio/phone";
+import { hasLink } from "@/lib/validacion/links";
 
 // C-06: name, email and an optional Colombian mobile, as book_appointment
 // checks them again (name of 1 to 100 characters, private.is_email, a mobile
@@ -14,6 +15,7 @@ export type CustomerDetailsErrorCode =
   | "name_required"
   | "name_too_long"
   | "name_invalid"
+  | "name_has_link"
   | "email_invalid"
   | "phone_invalid";
 
@@ -31,7 +33,10 @@ const schema = z.object({
     .max(CUSTOMER_NAME_MAX, "name_too_long")
     // No control characters: the name reaches the panel and, from phase 5,
     // emails (security review of 3.2).
-    .regex(/^[^\p{Cc}]*$/u, "name_invalid"),
+    .regex(/^[^\p{Cc}]*$/u, "name_invalid")
+    // Nor a link: the name reaches the barber's email (task 5.3), and the
+    // database refuses it too (private.has_link).
+    .refine((name) => !hasLink(name), "name_has_link"),
   email: emailSchema,
   phone: z
     .string({ error: "phone_invalid" })

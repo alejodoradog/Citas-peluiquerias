@@ -161,6 +161,9 @@ async function Appointment({
       <div className="flex flex-wrap gap-2">
         {isNew ? <Chip tone="warning">{textos.agenda.estados.new}</Chip> : null}
         <Chip tone={chip.tone}>{chip.text}</Chip>
+        {appointment.status === "confirmed" && appointment.customerConfirmed ? (
+          <Chip tone="success">{textos.agenda.clienteConfirmoLargo}</Chip>
+        ) : null}
         <span className="text-muted self-center text-xs">
           {t.origenCuando(
             t.origen[appointment.source],

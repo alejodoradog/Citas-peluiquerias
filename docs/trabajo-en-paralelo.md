@@ -24,8 +24,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
 | 6.3 eliminada: solo web | — | — |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
-| 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión fusionados (#62) |
-| 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
+| 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
+| 5.3 Correos de las citas y recordatorio | Fundador | En curso (`hito-5-recordatorio`) |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |

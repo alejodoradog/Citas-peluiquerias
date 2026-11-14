@@ -6,7 +6,9 @@ import type { SearchParams } from "./booking-flow";
 // - no paso: C-09 (C-13 inside the policy's hours);
 // - paso=cambiar: C-10, with the day and the time chosen so far;
 // - cambiada=1: C-09 says the appointment moved;
-// - tomada=HH:MM: C-10 says that time was taken in the meantime.
+// - tomada=HH:MM: C-10 says that time was taken in the meantime;
+// - confirmo=1 and cancelar=1: the buttons of the reminder (task 5.3): C-09
+//   asks "¿Vas a llegar?", or opens the sheet to cancel (C-11).
 
 export type ManageStep = "cita" | "cambiar";
 
@@ -16,6 +18,8 @@ export type ManageSelection = {
   time: string | null;
   changed: boolean;
   taken: string | null;
+  confirm: boolean;
+  cancel: boolean;
 };
 
 const QUARTER_TIME = /^([01]\d|2[0-3]):(00|15|30|45)$/;
@@ -43,6 +47,8 @@ export function readManageParams(params: SearchParams): ManageSelection {
     time: date ? time(one(params.hora)) : null,
     changed: step === "cita" && one(params.cambiada) === "1",
     taken: step === "cambiar" ? time(one(params.tomada)) : null,
+    confirm: step === "cita" && one(params.confirmo) === "1",
+    cancel: step === "cita" && one(params.cancelar) === "1",
   };
 }
 

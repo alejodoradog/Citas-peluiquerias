@@ -20,6 +20,8 @@ export type ManagedAppointment = {
   cancellationNoticeHours: number;
   // Still before the policy's hours: it can be cancelled or moved here.
   changeable: boolean;
+  // The customer already said they are coming ("Confirmo", task 5.3).
+  customerConfirmed: boolean;
 };
 
 // Null for a link that does not work (C-16): the appointment passed, was
@@ -48,6 +50,7 @@ export async function loadManagedAppointment(
     customerFirstName: row.customer_first_name,
     cancellationNoticeHours: row.cancellation_notice_hours,
     changeable: row.changeable,
+    customerConfirmed: row.customer_confirmed,
   };
 }
 
@@ -59,6 +62,19 @@ export async function cancelManagedAppointment(
   if (!isLinkToken(token)) return { ok: false, error: "link_invalid" };
   const { error } = await createSupabasePublicClient().rpc(
     "cancel_appointment_by_token",
+    { p_token_hash: hashLinkToken(token) },
+  );
+  return error ? { ok: false, error: toManageRefusal(error) } : { ok: true };
+}
+
+// "Confirmo" (task 5.3), from the link of the reminder: the customer says
+// they are coming. Until the appointment starts.
+export async function confirmManagedAppointment(
+  token: string,
+): Promise<ManageResult> {
+  if (!isLinkToken(token)) return { ok: false, error: "link_invalid" };
+  const { error } = await createSupabasePublicClient().rpc(
+    "confirm_appointment_by_token",
     { p_token_hash: hashLinkToken(token) },
   );
   return error ? { ok: false, error: toManageRefusal(error) } : { ok: true };
