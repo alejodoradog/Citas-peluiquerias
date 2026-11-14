@@ -53,6 +53,11 @@ export const routes = {
   bookingFlow: (slug: string) => `/${slug}/reservar`,
   bookingConfirmed: (slug: string) => `/${slug}/reservar/confirmada`,
   admin: "/admin",
+  // Task 5.4, the platform panel: a barbershop (P-02), registering a payment
+  // (P-03) and the numbers (P-06). P-01 is /admin itself.
+  adminBarbershop: (id: string) => `/admin/barberias/${id}`,
+  adminPayment: (id: string) => `/admin/barberias/${id}/pago`,
+  adminMetrics: "/admin/metricas",
 } as const;
 
 // The query a screen reads after its own save sent the owner back to it, to

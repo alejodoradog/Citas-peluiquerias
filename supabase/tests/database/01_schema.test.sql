@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(73);
+select plan(74);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -482,11 +482,16 @@ select throws_ok(
   'a sent notification records when it was sent'
 );
 
-select throws_ok(
+-- Since task 5.4 (set_payment_coverage) the period comes from the spec's
+-- date rule, never from the insert: a backwards one sent by hand is replaced.
+select lives_ok(
   $$insert into public.subscription_payments (barbershop_id, plan, amount_cop, method, reference, paid_on, covers_from, covers_until, registered_by)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'standard', 25000, 'nequi', 'REF-1',
             current_date + 10, current_date + 40, current_date + 10, '00000000-0000-0000-0000-0000000000ad')$$,
-  '23514', null,
+  'a payment with a period sent by hand is accepted'
+);
+select ok(
+  (select covers_from < covers_until from public.subscription_payments where reference = 'REF-1'),
   'a payment covers a forward period'
 );
 

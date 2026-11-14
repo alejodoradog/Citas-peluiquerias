@@ -395,14 +395,14 @@ isOneToOne: false
                   ]
                 },"subscription_payments": {
                   Row: {
-                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string
+                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at"?: string,"id"?: string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string
+                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at"?: string,"id"?: string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Update: {
-                    "amount_cop"?: number,"barbershop_id"?: string,"covers_from"?: string,"covers_until"?: string,"created_at"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_on"?: string,"plan"?: string,"reference"?: string,"registered_by"?: string
+                    "amount_cop"?: number,"barbershop_id"?: string,"covers_from"?: string,"covers_until"?: string,"created_at"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_on"?: string,"plan"?: string,"reference"?: string,"registered_by"?: string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -420,6 +420,12 @@ isOneToOne: false
     },{
       foreignKeyName: "subscription_payments_registered_by_fkey"
       columns: ["registered_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "subscription_payments_voided_by_fkey"
+      columns: ["voided_by"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -527,6 +533,9 @@ isOneToOne: false
 "delete_time_block_by_barber":
 { Args: { "p_block_id": string,"p_token_hash": string }; Returns: undefined
                            },
+"extend_trial":
+{ Args: { "p_barbershop_id": string,"p_until": string }; Returns: undefined
+                           },
 "finish_notification":
 { Args: { "p_error"?: string,"p_lease_id": string,"p_notification_id": string,"p_outcome": string }; Returns: Database["public"]['Enums']["notification_status"]
                            },
@@ -543,6 +552,37 @@ isOneToOne: false
 "mark_appointment_by_barber":
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"],"p_token_hash": string }; Returns: undefined
                            },
+"platform_barbershops":
+{ Args: { "p_search"?: string }; Returns: {
+              "created_at": string,"expires_on": string,"id": string,"locality": string,"name": string,"owner_email": string,"owner_name": string,"owner_phone": string,"phase": string,"plan": string,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string
+            }[]
+                           },
+"reactivate_barbershop":
+{ Args: { "p_barbershop_id": string }; Returns: undefined
+                           },
+"register_subscription_payment":
+{ Args: { "p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {
+              "amount_cop": number,
+"barbershop_id": string,
+"covers_from": string,
+"covers_until": string,
+"created_at": string,
+"id": string,
+"method": Database["public"]['Enums']["payment_method"],
+"paid_on": string,
+"plan": string,
+"reference": string,
+"registered_by": string,
+"void_reason": string | null,
+"voided_at": string | null,
+"voided_by": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "subscription_payments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "reschedule_appointment":
 { Args: { "p_appointment_id": string,"p_barber_id": string,"p_starts_at": string }; Returns: undefined
                            },
@@ -569,7 +609,33 @@ isOneToOne: false
                            },
 "set_service_barbers":
 { Args: { "p_barber_ids": (string)[],"p_service_id": string }; Returns: undefined
-                           }
+                           },
+"suspend_barbershop":
+{ Args: { "p_barbershop_id": string }; Returns: undefined
+                           },
+"void_subscription_payment":
+{ Args: { "p_payment_id": string,"p_reason": string }; Returns: {
+              "amount_cop": number,
+"barbershop_id": string,
+"covers_from": string,
+"covers_until": string,
+"created_at": string,
+"id": string,
+"method": Database["public"]['Enums']["payment_method"],
+"paid_on": string,
+"plan": string,
+"reference": string,
+"registered_by": string,
+"void_reason": string | null,
+"voided_at": string | null,
+"voided_by": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "subscription_payments"
+        isOneToOne: true
+        isSetofReturn: false
+      } }
           }
           Enums: {
             "appointment_event_type": "status_changed"|"rescheduled"|"service_added"|"service_removed","appointment_source": "web"|"manual","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","event_actor": "staff"|"customer"|"barber"|"system","membership_role": "owner","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","subscription_status": "trial"|"active"|"suspended"

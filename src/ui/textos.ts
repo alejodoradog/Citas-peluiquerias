@@ -5,6 +5,11 @@ import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
 import type { BarberRefusal } from "@/modulos/agenda/datos/barber-errors";
 import type { OwnerRefusal } from "@/modulos/agenda/datos/owner-appointment-errors";
 import type { BlockFormCode } from "@/modulos/agenda/dominio/barber-agenda";
+import type { PlatformRefusal } from "@/modulos/suscripciones/datos/platform-errors";
+import type {
+  PaymentFormCode,
+  VoidFormCode,
+} from "@/modulos/suscripciones/dominio/platform-forms";
 import type { ScheduleActionErrorCode } from "@/modulos/barberias/acciones/barber-schedule";
 import type { BarberActionErrorCode } from "@/modulos/barberias/acciones/barbers";
 import type { BarbershopErrorCode } from "@/modulos/barberias/dominio/registration";
@@ -1802,6 +1807,171 @@ export const textos = {
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberRefusal | BlockFormCode | "invalid", string>,
+  },
+  plataforma: {
+    // The platform panel of the super admin (task 5.4): P-01 to P-06. P-01
+    // says "Barberías", the repo's provisional name that no copy uses
+    // (textos.test.ts).
+    titulo: "Lista de barberías",
+    cargando: "Cargando…",
+    verMetricas: "Métricas",
+    buscar: {
+      etiqueta: "Buscar barbería",
+      placeholder: "Buscar barbería, dueño o correo",
+    },
+    filtros: {
+      etiqueta: "Estado",
+      todas: "Todas",
+      prueba: "En prueba",
+      activas: "Activas",
+      porVencer: "Por vencer",
+      vencidas: "Vencidas",
+      suspendidas: "Suspendidas",
+      conteo: (nombre: string, cantidad: number) => `${nombre} · ${cantidad}`,
+    },
+    estados: {
+      trial: "En prueba",
+      active: "Activa",
+      expiring: "Por vencer",
+      grace: "Vencida · en gracia",
+      expired: "Vencida",
+      suspended: "Suspendida",
+      awaiting: "Sin primer pago",
+    },
+    // "Chapinero, Bogotá · vence 24 nov 2026".
+    linea: (lugar: string | null, vence: string) =>
+      lugar ? `${lugar} · vence ${vence}` : `Vence ${vence}`,
+    sinResultados: "No hay barberías con esa búsqueda.",
+    sinBarberias: "No hay barberías en este estado.",
+    ficha: {
+      volver: "Volver a las barberías",
+      venceEl: (fecha: string, cuando: string) =>
+        `Vence el ${fecha} · ${cuando}`,
+      cuando: (dias: number) =>
+        dias === 0
+          ? "hoy"
+          : dias === 1
+            ? "mañana"
+            : dias > 1
+              ? `en ${dias} días`
+              : dias === -1
+                ? "hace 1 día"
+                : `hace ${-dias} días`,
+      dueno: "Dueño",
+      correo: "Correo",
+      celular: "Celular / WhatsApp",
+      link: "Link",
+      sinDato: "—",
+      citasEn: (mes: string) => `Citas en ${mes}`,
+      barberos: "Barberos",
+      registro: "Registro",
+      pagos: "Pagos",
+      sinPagos: "Aún no tiene pagos.",
+      pagoLinea: (fecha: string, valor: string) => `${fecha} · ${valor}`,
+      pagoDetalle: (referencia: string) => `1 mes · ref. ${referencia}`,
+      anulado: (motivo: string) => `Anulado: ${motivo}`,
+      registrarPago: "Registrar pago",
+      extender: "Extender prueba",
+      suspender: "Suspender",
+      reactivar: "Reactivar",
+      anular: "Anular",
+      anularDe: (fecha: string) => `Anular el pago del ${fecha}`,
+      hecho: {
+        pago: "Pago registrado.",
+        anulado: "Pago anulado.",
+        suspendida: "Barbería suspendida.",
+        reactivada: "Barbería reactivada.",
+        extendida: "Prueba extendida.",
+      },
+    },
+    pago: {
+      titulo: "Registrar pago",
+      cerrar: "Cerrar",
+      valor: "Valor recibido",
+      periodo: "Periodo",
+      unMes: "1 mes",
+      // Decision P1: one payment is one month at the plan's price.
+      ayudaPeriodo: "Cada pago cubre un mes, al precio del plan.",
+      medio: "Medio",
+      medios: {
+        bre_b: "Llave Bre-B",
+        nequi: "Nequi",
+        daviplata: "Daviplata",
+        bank_transfer: "Transferencia",
+      },
+      referencia: "Referencia del comprobante",
+      fecha: "Fecha del pago",
+      quedaHasta: "Queda activa hasta",
+      aTiempo: (vence: string) =>
+        `Pagó antes de vencer: el mes se suma a la fecha de vencimiento (${vence}). Si hubiera pagado vencida, contaría desde el día del pago.`,
+      tarde: "Pagó vencida: el mes cuenta desde el día del pago.",
+      enviar: "Registrar y activar",
+      enviando: "Registrando…",
+    },
+    extender: {
+      titulo: "Extender prueba",
+      pruebaHasta: "Prueba hasta",
+      dias: "Días extra",
+      diasOpcion: (dias: number) => `${dias} días`,
+      nuevaFecha: "Nueva fecha",
+      enviar: "Extender prueba",
+      enviando: "Extendiendo…",
+    },
+    suspender: {
+      titulo: (barberia: string) => `¿Suspender ${barberia}?`,
+      detalle:
+        "Su página deja de recibir reservas nuevas y muestra su WhatsApp. El panel queda en solo lectura. No se borra nada y las citas tomadas se respetan.",
+      avisoTitulo: "Para reactivarla, registra un pago",
+      aviso: "Todo vuelve a funcionar al instante.",
+      enviar: "Suspender ahora",
+      enviando: "Suspendiendo…",
+      volver: "Volver",
+    },
+    reactivar: {
+      titulo: (barberia: string) => `¿Reactivar ${barberia}?`,
+      detalle:
+        "Vuelve a recibir reservas y su panel deja de estar en solo lectura. No cambia ninguna fecha: si su vigencia ya venció, registra un pago.",
+      enviar: "Reactivar ahora",
+      enviando: "Reactivando…",
+      volver: "Volver",
+    },
+    anular: {
+      titulo: "Anular pago",
+      detalle: (fecha: string, valor: string) =>
+        `El pago del ${fecha} por ${valor} deja de contar y la fecha de vencimiento se recalcula. Queda en el historial, con el motivo.`,
+      motivo: "Motivo",
+      enviar: "Anular pago",
+      enviando: "Anulando…",
+      volver: "Volver",
+    },
+    metricas: {
+      titulo: "Métricas",
+      activas: "Activas",
+      prueba: "En prueba",
+      vencidas: "Vencidas",
+      suspendidas: "Suspendidas",
+      ingresoMes: "Ingreso del mes",
+      mesAnterior: "Mes anterior",
+      delMes: (valor: string, pagos: number) =>
+        `${valor} · ${pagos === 1 ? "1 pago registrado" : `${pagos} pagos registrados`}`,
+      anterior: (valor: string, pagos: number) =>
+        `${valor} · ${pagos === 1 ? "1 pago" : `${pagos} pagos`}`,
+    },
+    errores: {
+      not_allowed: "Solo el equipo de la plataforma puede hacer esto.",
+      payment_required:
+        "Su vigencia ya venció: registra un pago para reactivarla.",
+      not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
+      invalid: "Revisa este dato.",
+      unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
+      reference_required: "Escribe la referencia del comprobante.",
+      reference_too_long: "Usa máximo 100 caracteres.",
+      reason_required: "Escribe por qué lo anulas.",
+      reason_too_long: "Usa máximo 200 caracteres.",
+    } satisfies Record<
+      PlatformRefusal | PaymentFormCode | VoidFormCode | "invalid",
+      string
+    >,
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.
