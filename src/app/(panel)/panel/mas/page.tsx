@@ -135,7 +135,12 @@ async function More() {
         </Section>
         <Section title={t.secciones.dinero}>
           <ListRow icon={<DollarIcon />} title={t.abono} trailing={soon} />
-          <ListRow icon={<BarChartIcon />} title={t.cierre} trailing={soon} />
+          {/* Task 4.6: "Cierre del día" (D-64). */}
+          <ListRow
+            icon={<BarChartIcon />}
+            title={t.cierre}
+            href={routes.panelClose}
+          />
         </Section>
         <Section title={t.secciones.cuenta}>
           <ListRow icon={<UserIcon />} title={email} subtitle={t.correo} />
