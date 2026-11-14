@@ -50,6 +50,8 @@ insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-00000000060a', 'cccccccc-0000-0000-0000-000000000601', 'owner');
 
 -- The hint of the error a statement raises (or its SQLSTATE), or 'no error'.
+-- A missing privilege gives its SQLSTATE: Supabase adds its own hint
+-- ("Grant the required privileges...") to those errors.
 create function pg_temp.hint_of(statement text)
 returns text
 language plpgsql
@@ -60,6 +62,9 @@ begin
   execute statement;
   return 'no error';
 exception when others then
+  if sqlstate = '42501' then
+    return sqlstate;
+  end if;
   get stacked diagnostics error_hint = pg_exception_hint;
   return coalesce(nullif(error_hint, ''), sqlstate);
 end;
