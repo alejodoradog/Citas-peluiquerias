@@ -255,14 +255,14 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "anonymized_at": string | null,"barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"updated_at": string
+                    "anonymized_at": string | null,"barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"privacy_accepted_at": string | null,"privacy_version": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -361,14 +361,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "active": boolean,"created_at": string,"full_name": string,"id": string,"is_super_admin": boolean,"phone": string | null,"updated_at": string
+                    "active": boolean,"created_at": string,"full_name": string,"id": string,"is_super_admin": boolean,"phone": string | null,"terms_accepted_at": string | null,"terms_version": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"created_at"?: string,"full_name": string,"id": string,"is_super_admin"?: boolean,"phone"?: string | null,"updated_at"?: string
+                    "active"?: boolean,"created_at"?: string,"full_name": string,"id": string,"is_super_admin"?: boolean,"phone"?: string | null,"terms_accepted_at"?: string | null,"terms_version"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "active"?: boolean,"created_at"?: string,"full_name"?: string,"id"?: string,"is_super_admin"?: boolean,"phone"?: string | null,"updated_at"?: string
+                    "active"?: boolean,"created_at"?: string,"full_name"?: string,"id"?: string,"is_super_admin"?: boolean,"phone"?: string | null,"terms_accepted_at"?: string | null,"terms_version"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -584,6 +584,9 @@ isOneToOne: false
                            },
 "record_email_event":
 { Args: { "p_event": string,"p_notification_id": string }; Returns: boolean
+                           },
+"record_privacy_acceptance":
+{ Args: { "p_appointment_id": string,"p_barbershop_id": string,"p_version": string }; Returns: undefined
                            },
 "register_subscription_payment":
 { Args: { "p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {

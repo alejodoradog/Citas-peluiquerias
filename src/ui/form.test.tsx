@@ -105,10 +105,16 @@ describe("account screen frame", () => {
     expect(screen.getByText("Una línea.")).toBeInTheDocument();
   });
 
-  it("says a legal page is on its way and links home", () => {
-    render(<LegalPage title="Términos de uso" />);
+  it("shows a legal document with its date and sections, and links home", () => {
+    render(<LegalPage document="privacidad" />);
     expect(
-      screen.getByRole("heading", { level: 1, name: "Términos de uso" }),
+      screen.getByRole("heading", { level: 1, name: "Política de datos" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Vigente desde el 14 de noviembre de 2026."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "7. Tus derechos" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Volver al inicio" }),

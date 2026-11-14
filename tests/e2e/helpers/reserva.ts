@@ -99,8 +99,17 @@ export async function fillAndConfirm(page: Page, name: string, email: string) {
     .getByRole("textbox", { name: t.datos.correo })
     .filter({ visible: true })
     .fill(email);
+  await acceptDataPolicy(page);
   await page
     .getByRole("button", { name: t.datos.confirmar })
     .filter({ visible: true })
     .click();
+}
+
+// The box of task 6.5: the express authorization of Ley 1581.
+export async function acceptDataPolicy(page: Page) {
+  await page
+    .getByRole("checkbox", { name: /Autorizo a .* y a Yapoin/ })
+    .filter({ visible: true })
+    .check({ force: true });
 }

@@ -33,6 +33,9 @@ async function register(
   await page.getByLabel(t.registro.campos.phone).fill(phone);
   await page.getByLabel(t.registro.campos.email).fill(email);
   await page.getByLabel(t.registro.campos.password).fill(PASSWORD);
+  await page
+    .getByRole("checkbox", { name: textos.legal.casilla.registro })
+    .check({ force: true });
   await page.getByRole("button", { name: t.registro.enviar }).click();
 }
 

@@ -7,6 +7,7 @@ import {
   expectTouchTargets,
 } from "./helpers/pantalla";
 import {
+  acceptDataPolicy,
   chooseServicesAndBarber,
   chooseTomorrowAt,
   fillAndConfirm,
@@ -130,6 +131,7 @@ test("a time someone else took sends the customer back to choose (C-07)", async 
       .getByRole("textbox", { name: t.datos.nombre })
       .filter({ visible: true }),
   ).toHaveValue("Andrés Gómez");
+  await acceptDataPolicy(second);
   await second
     .getByRole("button", { name: t.datos.confirmar })
     .filter({ visible: true })

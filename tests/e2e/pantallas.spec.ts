@@ -18,7 +18,10 @@ async function checkScreen(page: Page, browserName: string) {
   await expectNoZoomOnFocus(page);
   // Tab does not reach links in WebKit by default; Chromium checks focus.
   if (browserName === "chromium") await expectVisibleFocus(page);
-  await expect(page.locator("body")).not.toContainText(/silla/i);
+  // The whole word: "casilla" (the box of task 6.5) is fine.
+  await expect(page.locator("body")).not.toContainText(
+    /(^|[^\p{L}])silla($|[^\p{L}])/iu,
+  );
   await expect(page).toHaveTitle(/Yapoin/);
 }
 

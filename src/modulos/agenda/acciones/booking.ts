@@ -13,7 +13,9 @@ import { toBookingRefusal } from "../datos/booking-errors";
 import {
   createPublicBooking,
   loadPublicProfile,
+  recordPrivacyAcceptance,
 } from "../datos/public-booking";
+import { LEGAL_VERSION } from "@/lib/legal/version";
 import { MANAGE_TOKEN_COOKIE } from "../datos/manage-cookie";
 import {
   bookingQuery,
@@ -38,11 +40,11 @@ export type BookingActionErrorCode =
   | "too_many_from_ip"
   | "unknown";
 
-export type BookingField = "name" | "email" | "phone";
+export type BookingField = "name" | "email" | "phone" | "acepto";
 
 export type BookingState = FormState<BookingField, BookingActionErrorCode>;
 
-const FIELDS = ["name", "email", "phone"] as const;
+const FIELDS = ["name", "email", "phone", "acepto"] as const;
 
 // C-06, "Confirmar reserva" (task 3.3). Everything the browser sends is
 // untrusted: the selection is read again from the hidden fields as from the
@@ -123,6 +125,14 @@ export async function bookAppointment(
       values: form.values,
     };
   }
+
+  // The proof of the customer's authorization (task 6.5): the booking stands
+  // even if this write fails.
+  await recordPrivacyAcceptance(
+    profile.id,
+    result.appointmentId,
+    LEGAL_VERSION,
+  ).catch(() => undefined);
 
   (await cookies()).set(
     MANAGE_TOKEN_COOKIE.name,

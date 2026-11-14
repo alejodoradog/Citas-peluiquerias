@@ -84,7 +84,10 @@ test("the owner reads the day close, sets the commission and downloads it", asyn
   await expect(visibleText(page, t.atendidos(2))).toBeVisible();
   await expect(visibleText(page, t.atendidos(1))).toBeVisible();
   const figure = (label: string) =>
-    page.locator("dl > div").filter({ visible: true }).filter({ hasText: label });
+    page
+      .locator("dl > div")
+      .filter({ visible: true })
+      .filter({ hasText: label });
   await expect(figure(t.serviciosAtendidos)).toContainText("3");
   await expect(figure(t.noAsistio)).toContainText("1");
   await expect(figure(t.pendientes)).toContainText("1");

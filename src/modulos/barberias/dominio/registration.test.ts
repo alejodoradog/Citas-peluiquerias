@@ -7,9 +7,19 @@ const valid = {
   phone: "300 123 4567",
   email: " Carlos@Example.COM ",
   password: "una-clave-segura",
+  acepto: "on",
 };
 
 describe("parseRegistration", () => {
+  it("needs the box of the terms and the data policy (task 6.5)", () => {
+    const { acepto: _box, ...withoutBox } = valid;
+    expect(parseRegistration(withoutBox)).toMatchObject({
+      success: false,
+      errors: { acepto: "terms_required" },
+    });
+    expect(parseRegistration({ ...valid, acepto: "si" }).success).toBe(false);
+  });
+
   it("cleans and normalizes a valid registration", () => {
     expect(parseRegistration(valid)).toEqual({
       success: true,

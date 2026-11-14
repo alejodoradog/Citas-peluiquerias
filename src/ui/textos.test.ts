@@ -24,7 +24,8 @@ describe("textos", () => {
 
   it("never uses the provisional names of the design or the repo", () => {
     for (const text of allStrings(textos)) {
-      expect(text).not.toMatch(/silla/i);
+      // The whole word: "casilla" (the box of task 6.5) is fine.
+      expect(text).not.toMatch(/(^|[^\p{L}])silla($|[^\p{L}])/iu);
       expect(text).not.toBe("Barberías");
     }
   });

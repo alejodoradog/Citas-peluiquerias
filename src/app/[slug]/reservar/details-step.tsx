@@ -37,6 +37,7 @@ export function DetailsStep({
   return (
     <DetailsForm
       header={<StepHeader shopName={profile.name} backHref={toTime} step={4} />}
+      shopName={profile.name}
       hidden={{
         slug: profile.slug,
         servicios: selection.serviceIds,
