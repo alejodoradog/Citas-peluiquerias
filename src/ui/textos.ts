@@ -1961,6 +1961,8 @@ export const textos = {
       not_allowed: "Solo el equipo de la plataforma puede hacer esto.",
       payment_required:
         "Su vigencia ya venció: registra un pago para reactivarla.",
+      already_registered:
+        "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
       invalid: "Revisa este dato.",
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",

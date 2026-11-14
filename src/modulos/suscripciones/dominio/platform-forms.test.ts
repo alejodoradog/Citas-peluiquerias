@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  earliestPaymentDay,
   parseExtendDays,
   parsePaymentForm,
   parseVoidReason,
@@ -46,6 +47,36 @@ describe("parsePaymentForm (P-03)", () => {
       success: false,
       errors: { metodo: "invalid" },
     });
+  });
+
+  it("never takes a day before the barbershop existed (task 5.4b, B3)", () => {
+    const earliest = earliestPaymentDay(TODAY, "2026-11-02");
+    expect(earliest).toBe("2026-11-02");
+    expect(
+      parsePaymentForm({ ...valid, fecha: "2026-11-02" }, TODAY, earliest)
+        .success,
+    ).toBe(true);
+    expect(
+      parsePaymentForm({ ...valid, fecha: "2026-11-01" }, TODAY, earliest),
+    ).toEqual({ success: false, errors: { fecha: "invalid" } });
+    expect(paymentDayOptions(TODAY, earliest)).toEqual([
+      "2026-11-07",
+      "2026-11-06",
+      "2026-11-05",
+      "2026-11-04",
+      "2026-11-03",
+      "2026-11-02",
+    ]);
+  });
+
+  it("goes a month back for a barbershop older than that", () => {
+    expect(earliestPaymentDay(TODAY, "2026-01-15")).toBe("2026-10-07");
+  });
+
+  it("refuses a day that is not a date", () => {
+    expect(
+      parsePaymentForm({ ...valid, fecha: "2026-10-32" }, TODAY).success,
+    ).toBe(false);
   });
 
   it("offers today and the 31 days before", () => {

@@ -557,6 +557,11 @@ isOneToOne: false
               "created_at": string,"expires_on": string,"id": string,"locality": string,"name": string,"owner_email": string,"owner_name": string,"owner_phone": string,"phase": string,"plan": string,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string
             }[]
                            },
+"platform_payments":
+{ Args: { "p_barbershop_id": string }; Returns: {
+              "amount_cop": number,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"reference": string,"void_reason": string,"voided_at": string
+            }[]
+                           },
 "reactivate_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
                            },
@@ -614,7 +619,7 @@ isOneToOne: false
 { Args: { "p_barbershop_id": string }; Returns: undefined
                            },
 "void_subscription_payment":
-{ Args: { "p_payment_id": string,"p_reason": string }; Returns: {
+{ Args: { "p_barbershop_id": string,"p_payment_id": string,"p_reason": string }; Returns: {
               "amount_cop": number,
 "barbershop_id": string,
 "covers_from": string,

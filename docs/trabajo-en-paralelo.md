@@ -21,17 +21,18 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | **5.4** Panel de plataforma (P-01 a P-06) y migración 9 | **Socio** | En curso (`hito-5-plataforma`) |
 | **4.6** Cierre del día (D-64, P2) | **Socio** | Pendiente |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
-| **6.3** PWA instalable | Socio | Fuera por ahora: el socio decidió no hacer una app (2026-11-13). Falta que el fundador lo confirme |
+| 6.3 PWA instalable | Socio | Fuera: el socio propuso no hacer una app (2026-11-13) y el fundador lo confirmó (2026-11-14) |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
 | **5.2** Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | **Socio** (antes del fundador) | Pendiente (después de la 4.6) |
 | 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
+| 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | En curso (`hito-5-plataforma-correcciones`) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
 | 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 6.3 queda fuera por ahora, ver el tablero).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 6.3 queda fuera, ver el tablero).
 - La 5.2 va antes de la 5.5 porque es el camino crítico: la 5.3 del fundador y los correos de la 5.5 la necesitan.
 - Si una tarea queda frenada esperando una respuesta del fundador, avanza la siguiente y vuelve después.
 - Si terminas todo, pide más al fundador. No tomes una tarea de otra persona sin cambiar el tablero en un PR.
@@ -41,7 +42,6 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
   - `/admin`;
   - la fórmula de fechas y su ciclo (5.4 y 5.5, que usan la misma fórmula);
   - el cierre del día en `/panel/cierre`, una pantalla nueva y aislada;
-  - la PWA;
   - el envío con Resend (5.2), sobre la cola que dejó la 5.1.
 - **El fundador tiene la cola (5.1, fusionada) y lo que se encola por las citas (5.3)**, y las rutas del cliente.
 - Los únicos puntos de contacto están en la sección 4, en "Archivos compartidos".
@@ -211,14 +211,8 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
   - No crees tu propia cola.
 - **No incluye "Mis citas"** (C-19 a C-21): es un link que llega por correo y lo hace el fundador.
 
-### 6.3 PWA instalable
-- **Spec:** "Web (las 3 aplicaciones)": instalable como PWA. **Plan:** tarea 6.3: "PWA instalable, ícono, nombre, pantalla sin conexión".
-- **Qué lleva:**
-  - `src/app/manifest.ts` con el nombre "Yapoin", los colores de `src/app/globals.css` y `start_url` en `/panel`;
-  - los íconos;
-  - una pantalla sin conexión con sus textos en un bloque propio de `textos.ts`.
-- **Sin diseño en el repo:** pídele al fundador el ícono y el texto de la pantalla sin conexión.
-- **Un service worker solo si hace falta para la pantalla sin conexión.** Nunca guardes en caché la disponibilidad, la reserva ni la agenda, que van siempre en vivo (plan 3.2). Si necesitas cabeceras en `next.config.ts`, van en su propio PR, avisado, porque es un archivo compartido.
+### 6.3 PWA instalable (fuera)
+Fuera del MVP: el socio propuso no hacer una app y el fundador lo confirmó el 2026-11-14. No se construye.
 
 ## 3. Diseño, sin acceso a Claude Design
 
@@ -245,7 +239,7 @@ Cómo usarlas:
 ## 4. Reglas para no pisarse
 
 ### Ramas y PRs (`CLAUDE.md`, "Forma de trabajo")
-- Una rama por tarea desde `main` actualizado: `hito-5-plataforma`, `hito-4-cierre-dia`, `hito-5-envio-resend`, `hito-5-suscripcion` y `hito-6-pwa`.
+- Una rama por tarea desde `main` actualizado: `hito-5-plataforma`, `hito-4-cierre-dia`, `hito-5-envio-resend` y `hito-5-suscripcion`.
 - Un PR por tarea, en borrador desde el primer push, y listo con el CI en verde.
 - **Antes de abrir el PR y antes de fusionar, mete `main` en tu rama** (merge, no rebase) y vuelve a pasar el CI.
 - Solo `alejodoradog` fusiona, con "Create a merge commit". Sin coautoría ni marcas de Claude.

@@ -18,6 +18,7 @@ import {
 } from "../datos/platform";
 import type { PlatformRefusal } from "../datos/platform-errors";
 import {
+  earliestPaymentDay,
   parseExtendDays,
   parsePaymentForm,
   parseVoidReason,
@@ -57,9 +58,13 @@ export async function registerPayment(
   await requireSuperAdmin();
   const id = barbershopIdOf(formData);
   const today = toBogotaDate(now());
+  const shop = await loadPlatformBarbershop(id, today);
+  if (!shop) redirect(routes.admin);
+  // Never a day before the barbershop existed (task 5.4b, B3).
+  const earliest = earliestPaymentDay(today, toBogotaDate(shop.createdAt));
   const form = readForm(formData, {
     fields: ["metodo", "referencia", "fecha"],
-    parse: (input) => parsePaymentForm(input, today),
+    parse: (input) => parsePaymentForm(input, today, earliest),
   });
   if (!form.valid) return form.state;
 
@@ -94,7 +99,7 @@ export async function voidPayment(
     return { status: "invalid", fieldErrors: reason.errors, values };
   }
   if (!isId(paymentId)) return { status: "failed", error: "not_found", values };
-  const result = await voidPaymentData(paymentId, reason.data);
+  const result = await voidPaymentData(id, paymentId, reason.data);
   if (!result.ok) return { status: "failed", error: result.error, values };
   backToBarbershop(id, "anulado");
 }
