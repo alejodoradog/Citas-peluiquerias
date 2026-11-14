@@ -676,6 +676,7 @@ export async function customerConfirmations(barbershopId: string) {
     .order("created_at");
   if (error) throw error;
   return data;
+}
 
 // Task 5.5: moves the end of a barbershop's trial by hand, to see each notice
 // of the agenda (D-70, D-71 and D-72). The barbershop is dated 60 days back,
