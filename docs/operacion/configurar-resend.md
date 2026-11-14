@@ -25,7 +25,7 @@ Esto lo hace el fundador, o el socio con su acceso, **una vez por proyecto de Su
 | `SITE_URL` | `https://www.yapoin.com` |
 | `PAYMENT_BRE_B`, `PAYMENT_NEQUI`, `PAYMENT_EMAIL` | Los datos de pago, cuando existan (decisión E5). Mientras falten, los correos dicen "Te enviaremos los datos de pago por correo". |
 
-El aviso de la agenda (tarea 5.5) lee los mismos tres datos de pago, pero en Vercel: **Settings → Environment Variables**, con los mismos nombres y sin el prefijo `NEXT_PUBLIC_`. Si no están, el aviso promete enviarlos por correo.
+Los datos de pago los publicó el fundador en `docs/trabajo-en-paralelo.md` ("Respuestas del fundador"). El aviso de la agenda (tarea 5.5) ya los trae en el código (`src/modulos/suscripciones/dominio/payment-details.ts`) y no necesita variables en Vercel.
 
 3. **Despliega las dos funciones** desde tu terminal:
    ```

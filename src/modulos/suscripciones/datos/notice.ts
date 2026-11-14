@@ -1,15 +1,15 @@
 import "server-only";
 import { toBogotaDate, type BogotaDate } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PAYMENT_DETAILS } from "../dominio/payment-details";
 import {
   subscriptionNotice,
   type SubscriptionNotice,
 } from "../dominio/subscription";
 
-// How to pay, for the agenda notice (task 5.5). The founder's Bre-B key, Nequi
-// number and email for receipts are not in the public repo: they are
-// variables of the deployment, as for the emails of task 5.2 (decision E5).
-// Until they exist the notice promises to send them (decision S2).
+// How to pay, for the agenda notice (task 5.5): the plan's price and the
+// founder's payment details (decision S2). Without a price, the notice
+// promises to send the data.
 export type PayInfo = {
   priceCop: number | null;
   breB: string | null;
@@ -62,9 +62,7 @@ export async function loadSubscriptionNotice(
     notice,
     pay: {
       priceCop: plan?.monthly_price_cop ?? null,
-      breB: process.env.PAYMENT_BRE_B || null,
-      nequi: process.env.PAYMENT_NEQUI || null,
-      email: process.env.PAYMENT_EMAIL || null,
+      ...PAYMENT_DETAILS,
     },
   };
 }

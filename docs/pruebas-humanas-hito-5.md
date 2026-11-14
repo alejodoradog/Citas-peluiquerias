@@ -58,7 +58,7 @@ Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev
 
 Con una barbería de prueba que tenga servicios, barberos y una cita para mañana.
 
-- [ ] **1. Por vencer (D-70).** Con el panel de plataforma, extender la prueba hasta dentro de 2 días. En la agenda del dueño sale, en amarillo, "Tu prueba gratis vence el …" con el valor del plan y "Te enviaremos los datos de pago por correo".
+- [ ] **1. Por vencer (D-70).** Con el panel de plataforma, extender la prueba hasta dentro de 2 días. En la agenda del dueño sale, en amarillo, "Tu prueba gratis vence el …" con "Paga $25.000 por llave Bre-B 3229381101 o Nequi 3229381101 y envía el comprobante a manuelalejo429@gmail.com".
 - [ ] **2. En gracia (D-71).** Con una barbería vencida hace 1 a 5 días, la agenda dice, en rojo, "Tu barbería venció el …" y "Sigues recibiendo reservas hasta el …" (5 días después). La página pública sigue recibiendo reservas.
 - [ ] **3. Pausada (D-72).** Suspender la barbería desde el panel de plataforma. La agenda del dueño dice, en gris con un candado, "Tu barbería está pausada", y:
   1. las citas siguen a la vista;

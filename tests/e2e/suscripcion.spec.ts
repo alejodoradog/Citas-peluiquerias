@@ -5,6 +5,7 @@ import {
   startOfBogotaDay,
   toBogotaDate,
 } from "../../src/lib/fechas/fechas";
+import { PAYMENT_DETAILS } from "../../src/modulos/suscripciones/dominio/payment-details";
 import { textos } from "../../src/ui/textos";
 import { signInOwner } from "./helpers/clientes";
 import {
@@ -44,7 +45,17 @@ test("the agenda warns before the end, during the grace and once paused", async 
   await signInOwner(page, shop.owner);
   const expiring = notice(page, t.vencePrueba(day(soon)));
   await expect(expiring).toBeVisible(FIRST_VISIT);
-  await expect(expiring).toContainText(t.pago.sinValor);
+  // The plan's price and the founder's payment details (decision S2).
+  await expect(expiring).toContainText(
+    t.pago.con(
+      "$25.000",
+      [
+        t.pago.opcionBreB(PAYMENT_DETAILS.breB),
+        t.pago.opcionNequi(PAYMENT_DETAILS.nequi),
+      ].join(t.pago.o),
+      PAYMENT_DETAILS.email,
+    ),
+  );
 
   // D-71: it ended two days ago; bookings go on for five days.
   const ended = addDays(today, -2);
