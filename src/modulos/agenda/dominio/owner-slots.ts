@@ -96,7 +96,9 @@ export function appointmentActions(
   return {
     mark: takesTime && started,
     cancel: status === "confirmed",
-    reschedule: status === "confirmed",
+    // A confirmed appointment that already started does not move: the
+    // customer who missed it books again (founder, 2026-11-13, task 4.2b).
+    reschedule: status === "confirmed" && !started,
     editServices: status === "confirmed" || status === "attended",
   };
 }

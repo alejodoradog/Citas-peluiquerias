@@ -73,9 +73,12 @@ insert into public.customers (id, barbershop_id, full_name, email) values
   ('aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000000', 'Cliente A', 'cliente-a@example.com'),
   ('bbbbbbbb-0000-0000-0000-0000000000d1', 'bbbbbbbb-0000-0000-0000-000000000000', 'Cliente B', 'cliente-b@example.com');
 
--- The owner of A creates appointments from the panel ------------------------------------
+-- create_appointment, as the functions of task 4.2 call it ---------------------------
+-- Since task 4.2b a session no longer calls create_appointment or
+-- change_appointment_services: the security definer functions of task 4.2
+-- (create_manual_appointment, change_appointment_services_checked) and the
+-- public booking do, as their owner and with the caller's claims, as here.
 
-set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
 
 create temporary table ids (name text primary key, id uuid) on commit drop;
@@ -147,13 +150,15 @@ select throws_ok(
   '23514', 'the barber does not offer every service',
   'the barber must offer every service of the appointment'
 );
+set local role authenticated;
 select throws_ok(
   $$select public.create_appointment('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1',
       'aaaaaaaa-0000-0000-0000-0000000000b1', date_trunc('day', now()) + interval '3 days 09:00',
-      array['aaaaaaaa-0000-0000-0000-0000000000c1']::uuid[], 'web')$$,
-  '42501', 'staff create manual appointments only',
-  'a signed-in account cannot create a web booking'
+      array['aaaaaaaa-0000-0000-0000-0000000000c1']::uuid[])$$,
+  '42501', null,
+  'a signed-in account cannot call create_appointment itself (task 4.2b)'
 );
+reset role;
 select throws_ok(
   $$select pg_temp.check_now($q$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
       values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1',
@@ -253,6 +258,7 @@ select throws_ok(
 
 -- Another barbershop and the public ----------------------------------------------------
 
+set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000b", "role": "authenticated"}';
 
 select is_empty(
@@ -262,7 +268,7 @@ select is_empty(
 select throws_ok(
   $$select public.change_appointment_services((select id from ids where name = 'two'),
       array['aaaaaaaa-0000-0000-0000-0000000000c1']::uuid[])$$,
-  'P0002', 'appointment not found',
+  '42501', null,
   'owner B cannot change the services of an appointment of A'
 );
 select throws_ok(
@@ -272,14 +278,10 @@ select throws_ok(
   'owner B cannot add a line to an appointment of A'
 );
 
-delete from public.appointment_services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000';
-
-set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
-
-select is(
-  (select count(*)::int from public.appointment_services where appointment_id = (select id from ids where name = 'two')),
-  2,
-  'and owner B could not delete the lines of A'
+select throws_ok(
+  $$delete from public.appointment_services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'$$,
+  '42501', null,
+  'nor delete the lines of A'
 );
 
 set local role anon;

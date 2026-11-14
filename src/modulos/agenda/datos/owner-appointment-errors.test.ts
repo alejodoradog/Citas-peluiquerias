@@ -3,15 +3,15 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { OWNER_REFUSALS, toOwnerRefusal } from "./owner-appointment-errors";
 
-const sql = readFileSync(
-  join(
-    process.cwd(),
-    "supabase",
-    "migrations",
-    "20261112700000_add_owner_appointment_actions.sql",
-  ),
-  "utf8",
-);
+// The panel functions of task 4.2 and the reschedule rule of task 4.2b.
+const sql = [
+  "20261112700000_add_owner_appointment_actions.sql",
+  "20261114021141_close_owner_legacy_writes.sql",
+]
+  .map((file) =>
+    readFileSync(join(process.cwd(), "supabase", "migrations", file), "utf8"),
+  )
+  .join("\n");
 
 describe("toOwnerRefusal", () => {
   it("keeps every hint the panel functions raise", () => {

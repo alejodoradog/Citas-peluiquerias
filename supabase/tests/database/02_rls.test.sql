@@ -178,11 +178,9 @@ select is(
     -- Task 3.4: the link to manage an appointment, for anyone who has it.
     'public.cancel_appointment_by_token:anon',
     'public.cancel_appointment_by_token:authenticated',
-    'public.change_appointment_services:authenticated',
     -- Task 4.2: what the owner does with an appointment and a block.
     'public.change_appointment_services_checked:authenticated',
     'public.complete_barbershop_setup:authenticated',
-    'public.create_appointment:authenticated',
     'public.create_barbershop:authenticated',
     'public.create_manual_appointment:authenticated',
     'public.create_time_block:authenticated',
@@ -392,9 +390,11 @@ select lives_ok(
   'owner A creates a customer in A'
 );
 
-select lives_ok(
+-- Since task 4.2b an appointment changes only through the functions of
+-- task 4.2 (32_owner_appointment_actions, 33_owner_legacy_writes).
+select throws_ok(
   $$update public.appointments set status = 'attended' where id = 'aaaaaaaa-0000-0000-0000-0000000000e1'$$,
-  'owner A marks an appointment of A as attended'
+  '42501', null, 'owner A does not edit an appointment of A directly'
 );
 
 select lives_ok(
@@ -479,13 +479,11 @@ update public.barbershops set name = 'Hackeada' where id = 'bbbbbbbb-0000-0000-0
 update public.services set name = 'Hackeado' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 update public.barbers set display_name = 'Hackeado' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 update public.customers set full_name = 'Hackeado' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
-update public.appointments set status = 'cancelled_by_barbershop' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.barber_services where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.time_blocks where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.holiday_openings where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 update public.barber_schedules set start_time = '05:00' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 update public.barbershop_hours set start_time = '05:00' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
-update public.time_blocks set reason = 'Hackeado' where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.barber_schedules where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.barbershop_hours where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
 delete from public.customers where barbershop_id = 'bbbbbbbb-0000-0000-0000-000000000000';
