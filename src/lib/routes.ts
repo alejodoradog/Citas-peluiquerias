@@ -58,6 +58,9 @@ export const routes = {
   adminBarbershop: (id: string) => `/admin/barberias/${id}`,
   adminPayment: (id: string) => `/admin/barberias/${id}/pago`,
   adminMetrics: "/admin/metricas",
+  // Task 4.6, "Cierre del día" (D-64) and its CSV ("Descargar resumen").
+  panelClose: "/panel/cierre",
+  panelCloseCsv: "/panel/cierre/resumen",
 } as const;
 
 // The query a screen reads after its own save sent the owner back to it, to
