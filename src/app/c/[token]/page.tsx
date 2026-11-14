@@ -119,6 +119,9 @@ async function ManageAppointment({
       changeable={appointment.changeable}
       canMove={canMove}
       changed={selection.changed}
+      askConfirm={selection.confirm}
+      askCancel={selection.cancel}
+      customerConfirmed={appointment.customerConfirmed}
       moveHref={
         routes.manageAppointment(token) + manageQuery({ step: "cambiar" })
       }

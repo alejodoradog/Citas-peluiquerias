@@ -190,6 +190,9 @@ export const textos = {
       attended: "Atendida",
       no_show: "No asistió",
     },
+    // The customer said they are coming, from the reminder (task 5.3).
+    clienteConfirmo: "Confirmó",
+    clienteConfirmoLargo: "El cliente confirmó que va",
     manual: "manual",
     minutos: (minutos: number) => `${minutos} min`,
     // What a card of the grid of D-30 has no room for, read after the
@@ -1595,7 +1598,7 @@ export const textos = {
       titulo: (nombre: string | null) =>
         nombre ? `¡Listo, ${nombre}!` : "¡Listo!",
       bajada:
-        "Tu cita quedó reservada. Toma una captura de esta pantalla para tenerla a mano.",
+        "Tu cita quedó reservada. Te enviaremos un recordatorio por correo antes de la cita, con el link para confirmarla, cambiarla o cancelarla.",
       cuando: "Cuándo",
       servicios: "Servicios",
       con: "Con",
@@ -1629,6 +1632,16 @@ export const textos = {
       titulo: (nombre: string) => (nombre ? `Tu cita, ${nombre}` : "Tu cita"),
       confirmada: "Confirmada",
       cambiada: "Listo, cambiamos tu cita.",
+      // "Confirmo", from the reminder (task 5.3).
+      confirmar: {
+        pregunta: "¿Vas a llegar?",
+        detalle: (barberia: string) =>
+          `Con un toque le avisas a ${barberia} que te espere.`,
+        si: "Sí, ahí estaré",
+        confirmando: "Avisando…",
+        listo: (barberia: string) => `Listo, ${barberia} sabe que vas.`,
+        yaConfirmaste: "Confirmaste que vas",
+      },
       cambiar: "Cambiar día u hora",
       cancelar: "Cancelar cita",
       plazo: (horas: number) =>

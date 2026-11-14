@@ -92,6 +92,9 @@ insert into public.appointment_services (barbershop_id, appointment_id, position
 update public.customers
 set full_name = 'Cliente borrado', email = null, phone = null, notes = null, anonymized_at = now()
 where id = 'c0000000-0000-0000-0000-000000000002';
+-- Since task 5.3 the appointments queue their own emails (test 61); this
+-- file tests the queue alone, so it starts empty.
+delete from public.notifications;
 
 -- The hint of the error a statement raises, its code if it has no hint or is
 -- a missing privilege, or 'no error'.

@@ -299,7 +299,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", anular un pago con rastro, suspender, Reactivar, extender prueba y métricas (P2, P-06). Incluye la migración 9 de la decisión 0006 (`add_subscription_payment_flow`) y la copia en TypeScript de la fórmula de fechas, con una prueba que compare las dos.
 - [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea). Incluye la migración 10 de la decisión 0006 (`read_only_when_suspended`), los avisos en la agenda (D-70 a D-72, sin pantalla de suscripción) y Mis citas (P2, C-19 a C-21).
 
-**Lista cuando:** una cita de prueba recibe confirmación y recordatorio reales por correo, que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
+**Lista cuando:** una cita de prueba recibe su recordatorio real por correo (el cliente recibe solo el recordatorio, decisión del fundador del 2026-11-14), que llegan a la bandeja de entrada de Gmail y Outlook, y una barbería vencida se suspende y se reactiva al registrar el pago.
 
 ### Fase 6 · Pulido y salida al piloto (semana 6)
 

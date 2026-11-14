@@ -215,7 +215,7 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 
 **Correo del cliente:** es obligatorio en la reserva web y opcional en la cita manual. El cliente que vuelve se reconoce por su correo dentro de cada barbería. La cola de avisos se guarda 90 días.
 
-**Cita manual sin correo:** el cliente no recibe confirmación ni recordatorio; la barbería lo sabe al crearla.
+**Cita manual sin correo:** el cliente no recibe el recordatorio; la barbería lo sabe al crearla.
 
 **Sin código, cualquiera puede escribir un correo ajeno al reservar.** Por eso: hay límites por correo e IP y verificación anti-bots invisible; cada correo lleva el link para cancelar; una reserva pública no sobrescribe la ficha de un cliente existente; y el servidor no autocompleta datos a partir de lo que alguien escriba.
 

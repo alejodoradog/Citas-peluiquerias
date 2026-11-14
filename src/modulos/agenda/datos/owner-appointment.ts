@@ -26,6 +26,8 @@ export type OwnerAppointmentDetail = {
   start: Date;
   end: Date;
   priceCop: number;
+  // "Confirmo" from the reminder (task 5.3).
+  customerConfirmed: boolean;
   barber: { id: string; name: string };
   // As the appointment keeps them: the price and length of each line.
   services: OwnerService[];
@@ -52,7 +54,7 @@ export async function getOwnerAppointment(
   const { data, error } = await supabase
     .from("appointments")
     .select(
-      "id, status, source, created_at, starts_at, ends_at, price_cop, barber_id, customer_id, barbers(display_name), customers(full_name, email, phone, anonymized_at), appointment_services(position, service_id, price_cop, duration_minutes, services(name))",
+      "id, status, source, created_at, starts_at, ends_at, price_cop, customer_confirmed_at, barber_id, customer_id, barbers(display_name), customers(full_name, email, phone, anonymized_at), appointment_services(position, service_id, price_cop, duration_minutes, services(name))",
     )
     .eq("barbershop_id", barbershopId)
     .eq("id", id)
@@ -76,6 +78,7 @@ export async function getOwnerAppointment(
     start: new Date(data.starts_at),
     end: new Date(data.ends_at),
     priceCop: data.price_cop,
+    customerConfirmed: data.customer_confirmed_at !== null,
     barber: { id: data.barber_id, name: data.barbers?.display_name ?? "" },
     services: [...data.appointment_services]
       .sort((a, b) => a.position - b.position)

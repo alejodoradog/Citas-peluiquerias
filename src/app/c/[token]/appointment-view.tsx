@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { cancelAppointment } from "@/modulos/agenda/acciones/manage";
+import {
+  cancelAppointment,
+  confirmAppointment,
+} from "@/modulos/agenda/acciones/manage";
 import { routes } from "@/lib/routes";
 import { buttonClasses } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
-import { CalendarIcon, CloseIcon } from "@/ui/icons";
+import { CalendarIcon, CheckIcon, CloseIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { Sheet } from "@/ui/sheet";
 import { textos } from "@/ui/textos";
@@ -38,7 +41,10 @@ export type ManagedSummary = {
 };
 
 // C-09 "Tu cita", with C-11 (the sheet to cancel), C-12 (cancelled) and C-13
-// (inside the policy's hours: only WhatsApp and directions).
+// (inside the policy's hours: only WhatsApp and directions). From the
+// reminder (task 5.3), "Confirmo" asks "¿Vas a llegar?" with one tap, and
+// "Cancelar" opens the sheet at once: a link never changes anything by
+// itself, since a mail scanner may open it.
 export function AppointmentView({
   token,
   shop,
@@ -48,6 +54,9 @@ export function AppointmentView({
   changeable,
   canMove,
   changed,
+  askConfirm = false,
+  askCancel = false,
+  customerConfirmed = false,
   moveHref,
 }: {
   token: string;
@@ -58,11 +67,16 @@ export function AppointmentView({
   changeable: boolean;
   canMove: boolean;
   changed: boolean;
+  askConfirm?: boolean;
+  askCancel?: boolean;
+  customerConfirmed?: boolean;
   moveHref: string;
 }) {
-  const [asking, setAsking] = useState(false);
+  const [asking, setAsking] = useState(askCancel && changeable);
   const form = useFormAction(cancelAppointment, t.errores);
+  const confirmForm = useFormAction(confirmAppointment, t.errores);
   const cancelled = form.state.status === "done";
+  const confirmed = customerConfirmed || confirmForm.state.status === "done";
 
   // This phone remembers the link, with the time it has now; a cancelled
   // one is no longer shown.
@@ -102,9 +116,40 @@ export function AppointmentView({
       <ManageHeader name={shop.name} locality={shop.locality} />
       <main className="mx-auto flex w-full max-w-md flex-col gap-3.5 px-5 pt-2.5 pb-6">
         {changed ? <Notice tone="success" title={t.cambiada} /> : null}
-        <div>
+        {confirmForm.state.status === "done" ? (
+          <Notice tone="success" title={t.confirmar.listo(shop.name)} />
+        ) : null}
+        <div className="flex flex-wrap gap-2">
           <Chip tone="brand">{t.confirmada}</Chip>
+          {confirmed ? (
+            <Chip tone="success">{t.confirmar.yaConfirmaste}</Chip>
+          ) : null}
         </div>
+        {askConfirm && !confirmed ? (
+          <section
+            aria-labelledby="confirmar-cita"
+            className="border-line rounded-card flex flex-col gap-3 border bg-white p-4"
+          >
+            <div className="flex flex-col gap-1">
+              <h2 id="confirmar-cita" className="text-section">
+                {t.confirmar.pregunta}
+              </h2>
+              <p className="text-help text-muted">
+                {t.confirmar.detalle(shop.name)}
+              </p>
+            </div>
+            <ActionForm form={confirmForm} className="flex flex-col gap-3">
+              <input type="hidden" name="token" value={token} />
+              {confirmForm.formError ? (
+                <Notice tone="danger" title={confirmForm.formError} />
+              ) : null}
+              <SubmitButton pendingText={t.confirmar.confirmando}>
+                <CheckIcon size={18} />
+                <span>{t.confirmar.si}</span>
+              </SubmitButton>
+            </ActionForm>
+          </section>
+        ) : null}
         <h1 className="text-title">{t.titulo(customerName)}</h1>
         <dl className="border-line rounded-card flex flex-col gap-3.5 border bg-white p-4">
           <Item label={c.cuando}>

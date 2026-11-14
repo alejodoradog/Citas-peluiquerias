@@ -216,6 +216,9 @@ function Column({
                   )}
                 >
                   {name}
+                  {appointment.customerConfirmed ? (
+                    <span aria-hidden="true"> ✓</span>
+                  ) : null}
                 </span>
                 {/* The name comes from what the card shows, then what it has
                     no room for (WCAG 2.5.3): services, time and state. */}
@@ -228,6 +231,9 @@ function Column({
                 )}
                 <span className="sr-only">
                   , {t.cita(timeLabel(item.start), t.estados[look])}
+                  {appointment.customerConfirmed
+                    ? `, ${t.clienteConfirmo}`
+                    : ""}
                 </span>
               </Link>
             );

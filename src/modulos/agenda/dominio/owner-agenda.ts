@@ -86,6 +86,8 @@ export type AgendaAppointment = Interval & {
   createdAt: Date;
   customerName: string;
   serviceNames: readonly string[];
+  // "Confirmo" from the reminder (task 5.3).
+  customerConfirmed?: boolean;
 };
 
 export type AgendaBlock = Interval & {

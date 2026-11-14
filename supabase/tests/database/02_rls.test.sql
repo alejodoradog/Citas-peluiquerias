@@ -181,6 +181,8 @@ select is(
     -- Task 4.2: what the owner does with an appointment and a block.
     'public.change_appointment_services_checked:authenticated',
     'public.complete_barbershop_setup:authenticated',
+    'public.confirm_appointment_by_token:anon',
+    'public.confirm_appointment_by_token:authenticated',
     'public.create_barbershop:authenticated',
     'public.create_manual_appointment:authenticated',
     'public.create_time_block:authenticated',

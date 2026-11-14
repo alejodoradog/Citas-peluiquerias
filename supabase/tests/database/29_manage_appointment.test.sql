@@ -50,7 +50,7 @@ select is(
   (select pg_get_function_result('public.managed_appointment(text)'::regprocedure)),
   'TABLE(barbershop_id uuid, slug text, starts_at timestamp with time zone, ends_at timestamp with time zone, '
     'price_cop integer, barber_id uuid, barber_name text, service_names text[], customer_first_name text, '
-    'cancellation_notice_hours integer, changeable boolean)',
+    'cancellation_notice_hours integer, changeable boolean, customer_confirmed boolean)',
   'managed_appointment returns what C-09 shows, and no email, phone or hash'
 );
 
