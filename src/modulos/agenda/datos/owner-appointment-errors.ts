@@ -41,6 +41,7 @@ export const OWNER_REFUSALS = [
   "slot_taken",
   "not_confirmed",
   "not_started",
+  "already_started",
   "status_invalid",
   "appointment_closed",
   "overlaps_appointment",

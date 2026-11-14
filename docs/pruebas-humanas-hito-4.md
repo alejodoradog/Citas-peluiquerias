@@ -30,7 +30,8 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
   1. En una cita que ya empezó, tocar "No asistió" y confirmar en la hoja.
   2. Después corregir a "Atendida".
   3. En una cita que todavía no empieza no deben salir esos botones.
-  4. Con 2 inasistencias, la ficha del cliente muestra la alerta.
+  4. En una cita que ya empezó no sale "Reprogramar" (4.2b): si el cliente no llegó, se marca "No asistió" y él separa otra.
+  5. Con 2 inasistencias, la ficha del cliente muestra la alerta.
 - [ ] **6. Cancelar.**
   1. Tocar "Cancelar cita" y confirmar. La hora queda libre en la agenda.
   2. La cita cancelada ya no ofrece ningún botón.

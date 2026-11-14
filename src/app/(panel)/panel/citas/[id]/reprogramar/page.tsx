@@ -8,6 +8,7 @@ import {
   getOwnerAppointment,
   loadOwnerBookingData,
 } from "@/modulos/agenda/datos/owner-appointment";
+import { appointmentActions } from "@/modulos/agenda/dominio/owner-slots";
 import { FlowShell } from "@/ui/flow-shell";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
@@ -54,11 +55,12 @@ async function Reschedule({ params }: { params: Promise<{ id: string }> }) {
   ]);
   const appointment = await getOwnerAppointment(barbershop.id, id);
   if (!appointment) notFound();
-  if (appointment.status !== "confirmed") {
-    redirect(routes.panelAppointment(appointment.id));
-  }
   await connection();
   const instant = now();
+  // Only a confirmed appointment that has not started moves (task 4.2b).
+  if (!appointmentActions(appointment, instant).reschedule) {
+    redirect(routes.panelAppointment(appointment.id));
+  }
   const data = await loadOwnerBookingData(barbershop.id, instant);
   const minutes = Math.round(
     (appointment.end.getTime() - appointment.start.getTime()) / 60_000,

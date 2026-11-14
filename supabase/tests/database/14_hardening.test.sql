@@ -80,9 +80,13 @@ select is(
   'a super admin has no member barbershops'
 );
 
--- 2. A session updates only the columns the panel needs ----------------------------------
+-- 2. A session does not write appointments directly --------------------------------------
+-- Since task 4.2b the panel goes through the security definer functions of
+-- task 4.2. The appointments of this file are made as those functions make
+-- them: create_appointment run by its owner, with the owner's claims.
 
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
+reset role;
 
 insert into ids values ('manual', public.create_appointment(
   'aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2',
@@ -101,6 +105,8 @@ insert into ids values ('far', public.create_appointment(
 ));
 set constraints all immediate;
 set constraints all deferred;
+
+set local role authenticated;
 
 select throws_ok(
   $$update public.appointments set source = 'web' where id = (select id from ids where name = 'manual')$$,
@@ -122,27 +128,30 @@ select throws_ok(
   '42501', null,
   'a session cannot move an appointment to another barbershop'
 );
-select lives_ok(
+select throws_ok(
   $$update public.appointments set deposit_received = true, customer_id = 'aaaaaaaa-0000-0000-0000-0000000000d1'
     where id = (select id from ids where name = 'manual')$$,
-  'a session still marks the deposit and fixes the customer'
+  '42501', null,
+  'nor the deposit or the customer (task 4.2b)'
 );
 select throws_ok(
   $$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-0000000000b1',
             date_trunc('day', now()) + interval '4 days 09:00', date_trunc('day', now()) + interval '4 days 09:40', 25000, 'web')$$,
-  '42501', 'staff create manual appointments only',
-  'a session cannot insert a web booking directly either'
+  '42501', null,
+  'a session cannot insert an appointment directly'
 );
 select throws_ok(
   $$select public.create_appointment('bbbbbbbb-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-0000000000d1',
       'bbbbbbbb-0000-0000-0000-0000000000b1', date_trunc('day', now()) + interval '2 days 09:00',
       array['bbbbbbbb-0000-0000-0000-0000000000c1']::uuid[])$$,
-  '23514', 'service is inactive or unknown',
-  'an owner cannot create an appointment in another barbershop (its services are invisible to them)'
+  '42501', null,
+  'nor call create_appointment, for any barbershop (task 4.2b)'
 );
 
 -- 3. The whole block never overlaps, on every path ----------------------------------------
+
+reset role;
 
 select throws_ok(
   $$select public.change_appointment_services((select id from ids where name = 'manual'),
@@ -176,6 +185,7 @@ select throws_ok(
   '23514', 'service is inactive or unknown',
   'an inactive service cannot be added to an appointment'
 );
+set local role authenticated;
 select throws_ok(
   $$update public.appointment_services set price_cop = 1 where appointment_id = (select id from ids where name = 'far')$$,
   '42501', null,
@@ -184,7 +194,6 @@ select throws_ok(
 
 reset role;
 update public.services set active = false where id = 'aaaaaaaa-0000-0000-0000-0000000000c2';
-set local role authenticated;
 
 select lives_ok(
   $$select pg_temp.check_now($q$select public.change_appointment_services((select id from ids where name = 'far'),
@@ -202,7 +211,6 @@ update public.barbers set active = false where id = 'aaaaaaaa-0000-0000-0000-000
 -- Barber 1 stops offering the beard, and barber 2 leaves.
 delete from public.barber_services where barber_id = 'aaaaaaaa-0000-0000-0000-0000000000b1' and service_id = 'aaaaaaaa-0000-0000-0000-0000000000c2';
 update public.barbers set active = false where id = 'aaaaaaaa-0000-0000-0000-0000000000b1';
-set local role authenticated;
 
 select throws_ok(
   $$update public.appointments set status = 'confirmed' where id = (select id from ids where name = 'next')$$,
@@ -212,7 +220,6 @@ select throws_ok(
 
 reset role;
 update public.barbers set active = true where id = 'aaaaaaaa-0000-0000-0000-0000000000b1';
-set local role authenticated;
 
 select lives_ok(
   $$select pg_temp.check_now($q$update public.appointments set status = 'cancelled_by_barbershop'
