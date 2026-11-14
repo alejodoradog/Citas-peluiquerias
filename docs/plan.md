@@ -99,8 +99,7 @@ Todo se prepara en una tarde; ninguna cuenta cuesta dinero al inicio salvo tu su
 - [ ] Supabase: dos proyectos, `barberias-dev` (organización gratis) y `barberias-prod` (organización Pro, `us-east-1`, se crea en la 6.4). `barberias-dev` ya existe; falta conectarlo a Vercel (`docs/operacion/configurar-barberias-dev.md`).
 - [x] Vercel: conectado al repositorio de GitHub. Sigue en Hobby hasta la 6.4, cuando pasa a Pro (decisión 0007).
 - [ ] Cloudflare: cuenta gratis, solo para el DNS del dominio y Turnstile (decisión 0007, `docs/operacion/infraestructura-produccion.md`).
-- [ ] AWS: cuenta para Amazon SES en `us-east-1`, con permiso de Amazon para enviar a cualquier correo (antes de la tarea 5.2).
-- [ ] Dominio propio: remitente verificado para SES (antes de la tarea 5.2).
+- [ ] Resend: cuenta y dominio `yapoin.com` en `us-east-1`, con SPF, DKIM y DMARC en Cloudflare (decisión 0008; antes de la prueba real de la tarea 5.2).
 - [ ] Sentry: plan gratis, para errores.
 
 **Herramientas en tu computador (Windows)**
@@ -264,7 +263,7 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 - [x] 2.0 Sistema de diseño: tokens y componentes de "Fundamentos" (F-01) del canvas "Prototipos Barberías" en Claude Design, con la marca Yapoin, y ajuste de las pantallas de cuentas (D-01 a D-09) a ese sistema.
 - [x] 2.1 Asistente de registro: pasos 2 y 3 (servicios sugeridos → barberos y horarios, con "Yo también corto"). El paso 1 y la prueba gratis de 20 días se hicieron en la 1.4.
 - [x] 2.2 CRUD de servicios (precio en COP, duración) y de barberos (foto en Supabase Storage con URL firmada de subida, correo opcional, avisos por correo, horario semanal, servicios que hace).
-- [x] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar. (El envío por correo pasa a la 5.2, con SES; ver docs/tareas/2.3-link-privado.md.)
+- [x] 2.3 Link privado por barbero: generar, copiar o enviar por correo si el barbero tiene uno, desactivar y regenerar. (El envío por correo pasa a la 5.2, con Resend; ver docs/tareas/2.3-link-privado.md.)
 - [x] 2.4 Configuración: horario de la barbería, festivos de Colombia precargados, cierres especiales, políticas de anticipación y cancelación, WhatsApp de contacto y cambio de link con advertencia. Los datos de abono (P2, D-63) salen del hito 2 y quedan para después del lanzamiento (decisión del fundador, 2026-11-10). Construida (2.4a a 2.4e); pendiente del CI: pgTAP, tipos generados y pruebas de punta a punta (docs/tareas/2.4-configuracion.md). Verificada con el CI (PRs #31 a #35) y desplegada.
 - [x] 2.5 Pantalla Compartir: link público, QR descargable y texto para estados.
 - [x] 2.6 Selector de sede arriba en Más (D-50) y "Nueva sede" (`create_barbershop`, decisión 0006), sin abonos: los datos de abono (D-63) pasan a después del lanzamiento (decisión del fundador, 2026-11-10). Incluye el tope de 4 sedes y "Eliminar sede" (2.6b). Verificada con el CI (PRs #34 y #35) y desplegada.
@@ -294,8 +293,8 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 ### Fase 5 · Notificaciones y suscripciones (semana 5)
 
-- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados: pg_cron cada minuto y una Edge Function que envía por SES (decisión 0007). Incluye la migración 11 de la decisión 0006 (`add_notification_retention`, purga a los 90 días).
-- [ ] 5.2 Envío por correo con Amazon SES, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente. SES en `us-east-1`, plan Essentials, una llamada por destinatario y lista de supresión (decisión 0007).
+- [ ] 5.1 Cola de notificaciones en BD y tarea programada que la procesa, sin envíos duplicados: pg_cron cada minuto y una Edge Function que envía por el proveedor de correo (decisiones 0007 y 0008). Incluye la migración 11 de la decisión 0006 (`add_notification_retention`, purga a los 90 días).
+- [ ] 5.2 Envío por correo con Resend, aislado en un solo módulo: plantillas en español, dominio verificado (SPF, DKIM, DMARC), rebotes y quejas, y correos de Auth por el mismo remitente (SMTP de Resend). Resend en `us-east-1`, plan Free en desarrollo y Pro desde el piloto, con llave de idempotencia por correo (decisión 0008).
 - [ ] 5.3 Recordatorio 24 h (o 3 h) con links Confirmo / Cancelar que piden un toque, con un campo para guardar la respuesta, agregar al calendario y avisos opcionales al barbero. Presupuesto de la decisión 0007: 2 correos por cita, uno al cliente y uno al barbero; esta tarea decide cuál recibe el cliente (decisión abierta 2).
 - [ ] 5.4 Panel de plataforma: lista de barberías, ficha, "Registrar pago y activar hasta", anular un pago con rastro, suspender, Reactivar, extender prueba y métricas (P2, P-06). Incluye la migración 9 de la decisión 0006 (`add_subscription_payment_flow`) y la copia en TypeScript de la fórmula de fechas, con una prueba que compare las dos.
 - [ ] 5.5 Ciclo de suscripción automático: avisos de vencimiento, gracia de 5 días, suspensión suave, reactivación y limpieza de cuentas sin confirmar, que apartan su link (el plazo se define en esta tarea). Incluye la migración 10 de la decisión 0006 (`read_only_when_suspended`), los avisos en la agenda (D-70 a D-72, sin pantalla de suscripción) y Mis citas (P2, C-19 a C-21).
@@ -363,4 +362,4 @@ El objetivo de esta semana es cerrar la fase 0 y arrancar la 1; todo lo demás p
 - [x] Iniciar Claude Code en la carpeta y pedir la tarea 0.1 con el prompt de la fase 0.
 - [ ] Traer aquí el plan que proponga Claude Code para la fase 1 (el modelo de datos) antes de aprobarlo: es la decisión más difícil de cambiar después.
 - [ ] En paralelo, empezar el diseño de las 3 pantallas clave (reserva, agenda, registro); lo trabajamos juntos aquí.
-- [ ] Comprar el dominio, crear la cuenta de AWS y solicitar el permiso de Amazon SES, para no frenar la fase 5.
+- [ ] Comprar el dominio y crear la cuenta de Resend con el dominio verificado, para no frenar la fase 5.
