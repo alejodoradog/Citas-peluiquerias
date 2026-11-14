@@ -18,8 +18,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.3 Clientes | Fundador | Fusionada (#42) |
 | 4.4 Vista "Mi agenda" del barbero (B-01 a B-06) | Socio | Fusionada (#48) |
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
-| **5.4** Panel de plataforma (P-01 a P-06) y migración 9 | **Socio** | En curso (`hito-5-plataforma`) |
-| **4.6** Cierre del día (D-64, P2) | **Socio** | Pendiente |
+| 5.4 Panel de plataforma (P-01 a P-06) y migración 9 | Socio | Fusionada (#53) |
+| **4.6** Cierre del día (D-64, P2) | **Socio** | En curso (`hito-4-cierre-dia`) |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
 | **6.3** PWA instalable | Socio | Fuera por ahora: el socio decidió no hacer una app (2026-11-13). Falta que el fundador lo confirme |
 | 5.1 Cola de correos | Fundador | En curso (`hito-5-cola-correos`) |
