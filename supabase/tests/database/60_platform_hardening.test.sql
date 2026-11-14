@@ -14,7 +14,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(31);
+select plan(32);
 
 -- Fixtures, inserted as the table owner -------------------------------------------------------
 
@@ -92,11 +92,12 @@ select ok(
   'anon calls neither, and the old way to void is gone'
 );
 select ok(
-  not has_table_privilege('service_role', 'public.subscription_payments', 'UPDATE')
+  not has_table_privilege('service_role', 'public.subscription_payments', 'INSERT')
+    and not has_table_privilege('service_role', 'public.subscription_payments', 'UPDATE')
     and not has_table_privilege('service_role', 'public.subscription_payments', 'DELETE')
     and not has_table_privilege('service_role', 'public.subscription_payments', 'TRUNCATE')
     and not has_table_privilege('authenticated', 'public.subscription_payments', 'UPDATE'),
-  'no API role updates, deletes or truncates a payment (B5)'
+  'no API role inserts, updates, deletes or truncates a payment (B5)'
 );
 select ok(
   has_column_privilege('authenticated', 'public.subscription_payments', 'amount_cop', 'SELECT')
@@ -122,6 +123,9 @@ select is(
 select is(
   pg_temp.hint_of($$select public.register_subscription_payment('cccccccc-0000-0000-0000-000000000601', 'standard', 'nequi', '  neq-60 ')$$),
   'payment_already_registered', 'nor with other spaces or capitals');
+select is(
+  pg_temp.hint_of($$select public.register_subscription_payment('cccccccc-0000-0000-0000-000000000601', 'standard', 'nequi', chr(160) || 'NEQ-60' || chr(9) || chr(10))$$),
+  'payment_already_registered', 'nor with tabs, line breaks or non-breaking spaces');
 select is(
   (select row(count(*), max(b.expires_on) = (pg_temp.d(10) + interval '1 month')::date)::text
    from public.subscription_payments s join public.barbershops b on b.id = s.barbershop_id

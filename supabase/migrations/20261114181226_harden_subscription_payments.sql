@@ -18,9 +18,9 @@
 --    registered or voided one, and why. The super admin reads it through
 --    platform_payments.
 -- 5. B5: the guard of the ledger. Voiding needs the super admin's own
---    session, recorded as who voided it; and no API role updates, deletes or
---    truncates a payment any more (service_role kept them by default), so
---    only the functions of this ledger change a row.
+--    session, recorded as who voided it; and no API role writes a payment
+--    directly any more (service_role kept every privilege by default), so
+--    only the functions of this ledger add or change a row.
 
 -- 1. Once per method and reference -------------------------------------------------
 
@@ -46,6 +46,10 @@ declare
   shop public.barbershops;
   today date := private.today_bogota();
   paid date := coalesce(p_paid_on, private.today_bogota());
+  -- Without spaces, tabs, line breaks or non-breaking spaces at either end,
+  -- so the same reference typed another way is still the same (M1).
+  clean_reference text := regexp_replace(
+    p_reference, '^[[:space:]' || chr(160) || ']+|[[:space:]' || chr(160) || ']+$', '', 'g');
   payment_id uuid;
   payment public.subscription_payments;
 begin
@@ -81,7 +85,7 @@ begin
       chosen.code,
       chosen.monthly_price_cop,
       p_method,
-      btrim(p_reference),
+      clean_reference,
       paid,
       auth.uid()
     )
@@ -287,7 +291,8 @@ grant execute on function public.platform_payments(uuid) to authenticated;
 
 -- 5 (B5): the guard of the ledger --------------------------------------------------
 
-revoke update, delete, truncate on public.subscription_payments from anon, authenticated, service_role;
+revoke insert, update, delete, truncate, references, trigger
+  on public.subscription_payments from anon, authenticated, service_role;
 
 -- Payments are never deleted. The only updates allowed: voiding once (the
 -- three void columns, nothing else) by the super admin as themselves, or the
