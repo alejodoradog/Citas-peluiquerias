@@ -321,14 +321,14 @@ isOneToOne: false
                   ]
                 },"notifications": {
                   Row: {
-                    "appointment_id": string | null,"attempts": number,"barbershop_id": string,"created_at": string,"dedupe_key": string,"id": string,"last_error": string | null,"locked_until": string | null,"payload": Json,"scheduled_for": string,"sent_at": string | null,"status": Database["public"]['Enums']["notification_status"],"type": Database["public"]['Enums']["notification_type"],"updated_at": string
+                    "appointment_id": string | null,"attempts": number,"barbershop_id": string,"created_at": string,"dedupe_key": string,"id": string,"last_error": string | null,"lease_id": string | null,"locked_until": string | null,"payload": Json,"scheduled_for": string,"sent_at": string | null,"status": Database["public"]['Enums']["notification_status"],"type": Database["public"]['Enums']["notification_type"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "appointment_id"?: string | null,"attempts"?: number,"barbershop_id": string,"created_at"?: string,"dedupe_key": string,"id"?: string,"last_error"?: string | null,"locked_until"?: string | null,"payload"?: Json,"scheduled_for": string,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["notification_status"],"type": Database["public"]['Enums']["notification_type"],"updated_at"?: string
+                    "appointment_id"?: string | null,"attempts"?: number,"barbershop_id": string,"created_at"?: string,"dedupe_key": string,"id"?: string,"last_error"?: string | null,"lease_id"?: string | null,"locked_until"?: string | null,"payload"?: Json,"scheduled_for": string,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["notification_status"],"type": Database["public"]['Enums']["notification_type"],"updated_at"?: string
                   }
                   Update: {
-                    "appointment_id"?: string | null,"attempts"?: number,"barbershop_id"?: string,"created_at"?: string,"dedupe_key"?: string,"id"?: string,"last_error"?: string | null,"locked_until"?: string | null,"payload"?: Json,"scheduled_for"?: string,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["notification_status"],"type"?: Database["public"]['Enums']["notification_type"],"updated_at"?: string
+                    "appointment_id"?: string | null,"attempts"?: number,"barbershop_id"?: string,"created_at"?: string,"dedupe_key"?: string,"id"?: string,"last_error"?: string | null,"lease_id"?: string | null,"locked_until"?: string | null,"payload"?: Json,"scheduled_for"?: string,"sent_at"?: string | null,"status"?: Database["public"]['Enums']["notification_status"],"type"?: Database["public"]['Enums']["notification_type"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -497,7 +497,7 @@ isOneToOne: false
                            },
 "claim_notifications":
 { Args: { "p_limit"?: number }; Returns: {
-              "appointment_id": string,"attempts": number,"barbershop_id": string,"id": string,"payload": Json,"recipient": string,"type": Database["public"]['Enums']["notification_type"]
+              "appointment_id": string,"attempts": number,"barbershop_id": string,"id": string,"lease_id": string,"payload": Json,"recipient": string,"type": Database["public"]['Enums']["notification_type"]
             }[]
                            },
 "complete_barbershop_setup":
@@ -528,7 +528,7 @@ isOneToOne: false
 { Args: { "p_block_id": string,"p_token_hash": string }; Returns: undefined
                            },
 "finish_notification":
-{ Args: { "p_error"?: string,"p_notification_id": string,"p_outcome": string }; Returns: Database["public"]['Enums']["notification_status"]
+{ Args: { "p_error"?: string,"p_lease_id": string,"p_notification_id": string,"p_outcome": string }; Returns: Database["public"]['Enums']["notification_status"]
                            },
 "list_customers":
 { Args: { "p_barbershop_id": string,"p_filter"?: string,"p_limit"?: number,"p_search"?: string }; Returns: {

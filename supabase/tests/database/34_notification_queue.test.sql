@@ -18,7 +18,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(40);
+select plan(44);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ select ok(
       and not has_function_privilege('anon', f, 'EXECUTE'))
    from unnest(array[
      'public.claim_notifications(integer)',
-     'public.finish_notification(uuid, text, text)'
+     'public.finish_notification(uuid, uuid, text, text)'
    ]) f),
   'only the server key claims and finishes messages'
 );
@@ -151,6 +151,16 @@ delete from public.notifications;
 
 create temp table ids (name text primary key, id uuid);
 
+-- The lease a message holds now.
+create function pg_temp.lease(message_name text)
+returns uuid
+language sql
+stable
+as $$
+  select n.lease_id from public.notifications n
+  where n.id = (select ids.id from pg_temp.ids where ids.name = message_name)
+$$;
+
 insert into ids values ('cliente', private.enqueue_notification(
   'aaaaaaaa-0000-0000-0000-000000000001', 'appointment_confirmed', 'confirmada:e1',
   'e0000000-0000-0000-0000-000000000001', now() - interval '1 minute', '{"manage_url": "https://example.com/c/x"}'
@@ -230,11 +240,15 @@ select is((select recipient from taken where id = (select id from ids where name
   null, 'nor does a deleted customer');
 select is((select recipient from taken where id = (select id from ids where name = 'dueno')),
   'owner-a@example.com', 'the subscription messages go to the owner');
+update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000001';
+select is(private.notification_recipient((select id from ids where name = 'barbero')),
+  null, 'a barber who left receives nothing, even with the notices on');
+update public.barbers set active = true where id = 'ba000000-0000-0000-0000-000000000001';
 
 -- Finish -----------------------------------------------------------------------------------------
 
 select is(
-  public.finish_notification((select id from ids where name = 'cliente'), 'sent'),
+  public.finish_notification((select id from ids where name = 'cliente'), pg_temp.lease('cliente'), 'sent'),
   'sent'::public.notification_status, 'a sent message is marked sent'
 );
 select results_eq(
@@ -244,12 +258,12 @@ select results_eq(
   'with when it went out, and its lease released'
 );
 select is(
-  public.finish_notification((select id from ids where name = 'cliente'), 'retry', 'tarde'),
+  public.finish_notification((select id from ids where name = 'cliente'), pg_temp.lease('cliente'), 'retry', 'tarde'),
   null, 'a late report of a finished message changes nothing'
 );
 
 select is(
-  public.finish_notification((select id from ids where name = 'barbero'), 'retry', 'timeout'),
+  public.finish_notification((select id from ids where name = 'barbero'), pg_temp.lease('barbero'), 'retry', 'timeout'),
   'pending'::public.notification_status, 'a failure is tried again'
 );
 select results_eq(
@@ -266,24 +280,29 @@ select is(
   1, 'when the wait is over it is taken again'
 );
 select is(
-  public.finish_notification((select id from ids where name = 'barbero'), 'retry', 'timeout'),
+  public.finish_notification((select id from ids where name = 'barbero'), pg_temp.lease('barbero'), 'retry', 'timeout'),
   'failed'::public.notification_status, 'and the third failure is final'
 );
 
 select is(
-  public.finish_notification((select id from ids where name = 'sin-avisos'), 'cancelled', 'no recipient'),
+  public.finish_notification((select id from ids where name = 'sin-avisos'), pg_temp.lease('sin-avisos'), 'cancelled', 'no recipient'),
   'cancelled'::public.notification_status, 'a message with nobody to receive it is cancelled'
 );
 select is(
-  pg_temp.hint_of($$ select public.finish_notification((select id from ids where name = 'dueno'), 'perdido') $$),
+  pg_temp.hint_of($$ select public.finish_notification((select id from ids where name = 'dueno'), pg_temp.lease('dueno'), 'perdido') $$),
   'outcome_invalid', 'an unknown outcome is refused'
 );
 
+create temp table old_lease as select pg_temp.lease('dueno') as id;
 update public.notifications set locked_until = now() - interval '1 second'
 where id = (select id from ids where name = 'dueno');
 select is(
   (select count(*)::int from public.claim_notifications(50) c where c.id = (select id from ids where name = 'dueno')),
   1, 'a message whose lease expired (its run died) is taken again'
+);
+select is(
+  public.finish_notification((select id from ids where name = 'dueno'), (select id from old_lease), 'retry', 'timeout'),
+  null, 'and the slow run that lost it cannot finish it'
 );
 
 -- The sender call -------------------------------------------------------------------------------
@@ -304,6 +323,18 @@ select is_empty($$ select id from public.notifications $$, 'the owner does not r
 select is(
   pg_temp.hint_of($$ select * from public.claim_notifications(50) $$),
   '42501', 'nor claims it'
+);
+
+-- The super admin reads the state of the queue, never its payload or errors.
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000ad', 'admin@example.com');
+insert into public.profiles (id, full_name, is_super_admin) values ('00000000-0000-0000-0000-0000000000ad', 'Admin', true);
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000000ad", "role": "authenticated"}';
+select isnt_empty($$ select id, status, attempts from public.notifications $$, 'the super admin sees the state of the queue');
+select is(
+  pg_temp.hint_of($$ select payload, last_error from public.notifications $$),
+  '42501', 'but not the payload nor the errors'
 );
 
 reset role;
