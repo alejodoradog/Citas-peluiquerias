@@ -54,5 +54,21 @@ Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev
 - [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
 - [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
 
+## Tarea 5.5a: solo lectura y avisos en la agenda (celular A, super admin; celular B, dueño)
+
+Con una barbería de prueba que tenga servicios, barberos y una cita para mañana.
+
+- [ ] **1. Por vencer (D-70).** Con el panel de plataforma, extender la prueba hasta dentro de 2 días. En la agenda del dueño sale, en amarillo, "Tu prueba gratis vence el …" con el valor del plan y "Te enviaremos los datos de pago por correo".
+- [ ] **2. En gracia (D-71).** Con una barbería vencida hace 1 a 5 días, la agenda dice, en rojo, "Tu barbería venció el …" y "Sigues recibiendo reservas hasta el …" (5 días después). La página pública sigue recibiendo reservas.
+- [ ] **3. Pausada (D-72).** Suspender la barbería desde el panel de plataforma. La agenda del dueño dice, en gris con un candado, "Tu barbería está pausada", y:
+  1. las citas siguen a la vista;
+  2. "Nueva cita", reprogramar, cambiar servicios o bloquear horas fallan;
+  3. cambiar la comisión en "Cierre del día" muestra "Tu barbería está pausada: …";
+  4. una cita que ya empezó sí se puede marcar como atendida o "No asistió";
+  5. la página pública no deja reservar, y el cliente sí puede cancelar su cita desde el link de su correo;
+  6. el barbero, desde su link, marca atendida pero no bloquea horas.
+- [ ] **4. Otra sede sigue normal.** Si el dueño tiene otra sede activa, al cambiar a ella todo funciona.
+- [ ] **5. Reactivar.** Registrar un pago a la barbería suspendida: el aviso desaparece (o vuelve el de la prueba) y todo se puede cambiar otra vez.
+
 ## Decisiones provisionales de la 5.4 para revisar juntos
 Están en `docs/tareas/5.4-panel-plataforma.md`, de P1 a P11.
