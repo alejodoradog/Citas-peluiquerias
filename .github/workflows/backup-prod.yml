@@ -1,0 +1,61 @@
+name: Back up barberias-prod
+
+# Task 6.4 (decision 0007, point 12): a weekly copy of the production
+# database in a private S3 bucket, kept 8 weeks by the bucket's own rule, on
+# top of the daily backups of Supabase (7 days). Until the founder sets the
+# secrets, every run only warns (docs/operacion/infraestructura-produccion.md,
+# section 6). The copy holds personal data: the bucket is private and the
+# key only writes (s3:PutObject).
+
+on:
+  schedule:
+    # Sundays at 03:00 in Bogotá (08:00 UTC), when the barbershops are closed.
+    - cron: "0 8 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-prod
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      SUPABASE_PROD_DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+      BACKUP_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+    steps:
+      - name: Skip while the secrets are missing
+        if: env.SUPABASE_PROD_DB_URL == '' || env.AWS_ACCESS_KEY_ID == '' || env.BACKUP_BUCKET == ''
+        run: echo "::warning::The backup secrets are not set yet (docs/operacion/infraestructura-produccion.md, section 6)."
+      - uses: actions/checkout@v7
+        if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+      - uses: pnpm/action-setup@v6
+        if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+      - uses: actions/setup-node@v7
+        if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+        run: pnpm install --frozen-lockfile
+      - name: Dump the roles, the schema and the data
+        if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+        # The Supabase CLI runs pg_dump in a container of the project's own
+        # Postgres version.
+        run: |
+          mkdir -p backup
+          pnpm supabase db dump --db-url "$SUPABASE_PROD_DB_URL" --role-only -f backup/roles.sql
+          pnpm supabase db dump --db-url "$SUPABASE_PROD_DB_URL" -f backup/schema.sql
+          pnpm supabase db dump --db-url "$SUPABASE_PROD_DB_URL" --data-only --use-copy -f backup/data.sql
+          tar -czf "barberias-prod-$(date -u +%Y-%m-%d).tar.gz" -C backup .
+      - name: Upload to S3
+        if: env.SUPABASE_PROD_DB_URL != '' && env.AWS_ACCESS_KEY_ID != '' && env.BACKUP_BUCKET != ''
+        run: aws s3 cp barberias-prod-*.tar.gz "s3://$BACKUP_BUCKET/weekly/" --only-show-errors

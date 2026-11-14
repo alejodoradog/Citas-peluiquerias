@@ -1,0 +1,55 @@
+name: Migrate barberias-prod
+
+# Task 6.4 (decision 0007, "Integración y despliegue"): applies the migrations
+# merged into main to the production project, barberias-prod. Until the
+# founder creates the project and sets the secret, every run only warns and
+# changes nothing (docs/operacion/infraestructura-produccion.md, section 4).
+#
+# Vercel deploys main on its own; this job runs in parallel. Every migration
+# of the repo keeps the code that is already deployed working (new columns
+# and functions first, never a drop the old code still uses), so the order
+# between the two does not break production. A migration that fails stops
+# here and is fixed with a new one.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-prod
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A GitHub environment of its own, so the founder can require an approval
+    # before each run (Settings → Environments → production).
+    environment: production
+    env:
+      # Session pooler connection string of barberias-prod only.
+      SUPABASE_PROD_DB_URL: ${{ secrets.SUPABASE_PROD_DB_URL }}
+    steps:
+      - name: Skip while production does not exist
+        if: env.SUPABASE_PROD_DB_URL == ''
+        run: echo "::warning::SUPABASE_PROD_DB_URL is not set; production is created in task 6.4 (docs/operacion/infraestructura-produccion.md)."
+      - uses: actions/checkout@v7
+        if: env.SUPABASE_PROD_DB_URL != ''
+      - uses: pnpm/action-setup@v6
+        if: env.SUPABASE_PROD_DB_URL != ''
+      - uses: actions/setup-node@v7
+        if: env.SUPABASE_PROD_DB_URL != ''
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: env.SUPABASE_PROD_DB_URL != ''
+        run: pnpm install --frozen-lockfile
+      - name: Push migrations to barberias-prod
+        if: env.SUPABASE_PROD_DB_URL != ''
+        run: pnpm supabase db push --remote="$SUPABASE_PROD_DB_URL" --yes
