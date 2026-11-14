@@ -34,9 +34,12 @@ const voidPayment = vi.fn(ok);
 const suspendBarbershop = vi.fn(ok);
 const reactivateBarbershop = vi.fn(ok);
 const extendTrial = vi.fn(ok);
-const loadPlatformBarbershop = vi.fn(async () => ({
-  trialEndsOn: "2026-11-24",
-}));
+const loadPlatformBarbershop = vi.fn(
+  async (): Promise<{ trialEndsOn: string; createdAt: Date } | null> => ({
+    trialEndsOn: "2026-11-24",
+    createdAt: new Date("2026-09-01T15:00:00Z"),
+  }),
+);
 vi.mock("../datos/platform", () => ({
   currentPlan: async () => ({ code: "standard", monthlyPriceCop: 25000 }),
   registerPayment,
@@ -106,6 +109,39 @@ describe("registerPayment (P-03)", () => {
     expect(registerPayment).not.toHaveBeenCalled();
   });
 
+  it("never dates a payment before the barbershop existed (task 5.4b, B3)", async () => {
+    loadPlatformBarbershop.mockResolvedValueOnce({
+      trialEndsOn: "2026-11-24",
+      createdAt: new Date("2026-11-05T15:00:00Z"),
+    });
+    expect(
+      await actions.registerPayment(
+        IDLE,
+        form({ ...valid, fecha: "2026-11-04" }),
+      ),
+    ).toMatchObject({ status: "invalid", fieldErrors: { fecha: "invalid" } });
+    expect(registerPayment).not.toHaveBeenCalled();
+  });
+
+  it("goes back to the list when the barbershop is gone", async () => {
+    loadPlatformBarbershop.mockResolvedValueOnce(null);
+    expect(await run(() => actions.registerPayment(IDLE, form(valid)))).toEqual(
+      { redirectedTo: "/admin" },
+    );
+    expect(registerPayment).not.toHaveBeenCalled();
+  });
+
+  it("says a payment is already registered (task 5.4b, M1)", async () => {
+    registerPayment.mockResolvedValueOnce({
+      ok: false,
+      error: "already_registered",
+    });
+    expect(await actions.registerPayment(IDLE, form(valid))).toMatchObject({
+      status: "failed",
+      error: "already_registered",
+    });
+  });
+
   it("says why the database refused", async () => {
     registerPayment.mockResolvedValueOnce({ ok: false, error: "not_allowed" });
     expect(await actions.registerPayment(IDLE, form(valid))).toMatchObject({
@@ -144,7 +180,7 @@ describe("voidPayment (decision P4)", () => {
         ),
       ),
     ).toEqual({ redirectedTo: `/admin/barberias/${SHOP}?hecho=anulado` });
-    expect(voidPayment).toHaveBeenCalledWith(PAYMENT, "Duplicado");
+    expect(voidPayment).toHaveBeenCalledWith(SHOP, PAYMENT, "Duplicado");
   });
 
   it("asks for a reason", async () => {

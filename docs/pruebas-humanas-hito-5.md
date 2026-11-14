@@ -31,6 +31,16 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 - [ ] **7. Métricas.** Tocar el ícono de métricas. Las cuatro tarjetas deben sumar el total de "Todas" (una barbería por vencer cuenta en "Activas" o en "En prueba", según su estado), y el ingreso del mes debe ser la suma de los pagos no anulados de este mes.
 - [ ] **8. Solo el super admin.** Con la cuenta de un dueño, abrir `www.yapoin.com/admin`: debe llevarlo a su panel, sin mostrar nada de la plataforma.
 
+## Tarea 5.4b: correcciones del panel de plataforma (celular A, super admin)
+
+- [ ] **1. Un pago no se registra dos veces.**
+  1. Abrir "Registrar pago" de la misma barbería en dos pestañas.
+  2. Registrar el pago en la primera.
+  3. En la segunda, con el mismo medio y la misma referencia, tocar "Registrar y activar". Debe decir "Ese pago ya está registrado…", y la ficha muestra un solo pago y un solo mes.
+  4. Con otra referencia, sí se registra.
+- [ ] **2. La fecha del pago.** En una barbería creada hace pocos días, la lista de fechas de "Registrar pago" empieza el día en que se creó, no un mes atrás.
+- [ ] **3. Anular sigue funcionando.** Anular un pago desde su ficha: queda tachado con su motivo. Después se puede registrar otra vez esa misma referencia.
+
 ## Tarea 5.2: correos con Resend (celular A, dueño)
 
 Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev`.
