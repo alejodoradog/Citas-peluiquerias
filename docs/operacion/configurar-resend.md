@@ -12,6 +12,7 @@ Esto lo hace el fundador, o el socio con su acceso, **una vez por proyecto de Su
    - Agrégalos en **Cloudflare → DNS**, en modo **DNS only** (nube gris), igual que el resto (decisión 0007, punto 2).
    - Agrega también **DMARC**: un TXT en `_dmarc.yapoin.com` con `v=DMARC1; p=none; rua=mailto:<tu correo>`. Se endurece a `quarantine` cuando los envíos estén estables.
 4. Espera a que Resend marque el dominio como **Verified**. Sin eso, los correos se quedan en la cola y se reintentan (código `http_403`).
+5. **Apaga el rastreo** en el dominio (Domains → `yapoin.com` → Configuration): **Click tracking** y **Open tracking** en Off. El rastreo de clics reescribe los links, y los de gestionar una cita (5.3) llevan un token privado.
 
 ## 2. La llave y los secretos de las funciones
 1. **API Keys → Create:** permiso **Sending access**, solo para `yapoin.com`. Cópiala una sola vez.
@@ -52,6 +53,7 @@ Esto lo hace el fundador, o el socio con su acceso, **una vez por proyecto de Su
    - **Reset password:** pega `supabase/templates/recovery.html`, con el asunto "Recupera tu acceso";
    - **Confirm signup:** pega `supabase/templates/confirmation.html`, con el asunto "Confirma tu correo".
 3. El SMTP de SES que tenía `barberias-dev` se reemplaza por este.
+4. **Sube el límite de envíos de Auth:** Authentication → Rate Limits → "Rate limit for sending emails". Con SMTP propio arranca en 30 por hora; ponlo en unos 100 por hora para el piloto.
 
 ## 5. Comprobar
 1. Regístrate con un correo nuevo en `www.yapoin.com`. El correo de confirmación debe llegar desde `citas@yapoin.com` a la bandeja de entrada, no a spam. Prueba en Gmail y en Outlook.
@@ -64,5 +66,9 @@ Esto lo hace el fundador, o el socio con su acceso, **una vez por proyecto de Su
 
 ## Si algo falla
 - **El correo no sale y la cola dice `http_401` o `http_403`:** la llave está mal o el dominio no está verificado. Los correos esperan y se reintentan solos.
-- **`no_template`:** es un tipo de correo sin plantilla todavía (los de citas llegan con la 5.3).
+- **Códigos de un correo cancelado en la cola:**
+  - `no_template`: un tipo de correo sin plantilla todavía (los de citas llegan con la 5.3);
+  - `no_barbershop`: la barbería ya no existe;
+  - `no_payment`: el pago del aviso se anuló o no existe;
+  - `outdated`: el aviso quedó viejo, porque la barbería pagó y su vencimiento cambió.
 - **Llega a spam:** revisa que SPF, DKIM y DMARC estén verificados en Resend.

@@ -13,6 +13,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { eventCodeOf, notificationIdOf, verifySvix } from "./verify.ts";
 
+const MAX_BODY_BYTES = 256 * 1024;
+
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -22,7 +24,13 @@ function json(status: number, body: unknown): Response {
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json(405, { error: "method" });
+  // Resend's events are small; a large body is refused before reading it.
+  const length = Number(request.headers.get("content-length") ?? "0");
+  if (!Number.isFinite(length) || length > MAX_BODY_BYTES) {
+    return json(413, { error: "size" });
+  }
   const body = await request.text();
+  if (body.length > MAX_BODY_BYTES) return json(413, { error: "size" });
   const verified = await verifySvix(
     Deno.env.get("RESEND_WEBHOOK_SECRET") ?? "",
     {

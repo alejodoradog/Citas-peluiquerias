@@ -62,6 +62,8 @@ describe("verifySvix", () => {
   it("refuses a delivery more than 5 minutes off, so it cannot be replayed", async () => {
     const old = await headers(BODY, String(NOW - 301));
     expect(await verifySvix(SECRET, old, BODY, NOW)).toBe(false);
+    const ahead = await headers(BODY, String(NOW + 301));
+    expect(await verifySvix(SECRET, ahead, BODY, NOW)).toBe(false);
   });
 
   it("refuses everything while the secret is not set up", async () => {

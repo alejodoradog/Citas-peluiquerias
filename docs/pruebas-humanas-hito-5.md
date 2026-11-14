@@ -36,7 +36,11 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev`.
 
 - [ ] **1. Auth.** Registrarse con un correo nuevo de Gmail y con uno de Outlook. El correo de confirmación llega a la bandeja de entrada (no a spam), en español y desde `citas@yapoin.com`. Lo mismo con "Recuperar clave".
-- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba (paso 5 de la guía). En un minuto llega "Tu prueba gratis vence el …", con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`.
+- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba cuyo dueño tenga Gmail, y otra vez para una cuyo dueño tenga Outlook (paso 5 de la guía):
+  1. en un minuto llega "Tu prueba gratis vence el …" a la bandeja de entrada, no a spam, con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`;
+  2. en la tabla `notifications` de `barberias-dev`, ese correo quedó `sent`.
+
+  Es la mitad del criterio de cierre del hito 5.
 - [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
 - [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
 

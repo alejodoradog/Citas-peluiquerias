@@ -9,7 +9,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(7);
+select plan(8);
 
 select ok(
   has_function_privilege('service_role', 'public.record_email_event(uuid, text)', 'EXECUTE')
@@ -47,6 +47,11 @@ select is(
   public.record_email_event((select id from ids), 'complained'),
   true,
   'a complaint replaces it'
+);
+select is(
+  (select last_error from public.notifications where id = (select id from ids)),
+  'complained',
+  'and it is the one kept'
 );
 select is(
   public.record_email_event(gen_random_uuid(), 'bounced'),
