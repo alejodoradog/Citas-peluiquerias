@@ -200,7 +200,7 @@ Incluye todas las funciones del MVP y los links privados de los barberos. No hay
 
 El correo es el único canal de mensajes automáticos, y no se usan códigos OTP. WhatsApp no envía nada: queda solo como dato de contacto de la barbería, con un link en su página pública para quien quiera escribirle. La razón es el costo y la simplicidad: sin número dedicado, sin verificación de Meta y sin aprobación de plantillas. El porqué y los riesgos aceptados están en `docs/decisiones/0006-correo-unico-canal.md`.
 
-**Costo estimado por barbería:** unas 1.200 citas al mes × 2 correos (uno al cliente y uno al barbero) = 2.400 correos. Con Amazon SES Essentials, a US$0,16 por cada 1.000 ([precios](https://aws.amazon.com/ses/pricing/)), son unos US$0,38 al mes (decisión 0007, que fija ese presupuesto de 2 correos por cita).
+**Costo estimado por barbería:** unas 1.200 citas al mes × 2 correos (uno al cliente y uno al barbero) = 2.400 correos. Con Resend (decisión 0008) va por planes: Pro, US$20 al mes, cubre 50.000 correos, unas 20 sedes; a escala son unos US$1,15 por sede al mes (decisión 0007 para el presupuesto de 2 correos por cita).
 
 **Mensajes del MVP**
 
@@ -258,7 +258,7 @@ La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo leng
 | Base de datos, login e imágenes | Supabase Pro en `us-east-1` (PostgreSQL, Auth, Row Level Security, Storage) | Separa los datos de cada barbería desde la base de datos; copias de seguridad diarias y sin pausas |
 | Hosting | Vercel Pro, funciones en `iad1` (Hobby solo en desarrollo) | Next.js sin adaptadores y despliegue automático desde GitHub; el plan gratis no permite uso comercial |
 | Tareas programadas | pg_cron + Edge Functions de Supabase | Envío de la cola, recordatorios, avisos y purgas |
-| Correo | Amazon SES en `us-east-1`, aislado en un solo módulo | Único canal de mensajes; el costo más bajo por correo y sin mensualidad |
+| Correo | Resend en `us-east-1`, aislado en un solo módulo (decisión 0008) | Único canal de mensajes; Amazon SES no se pudo usar |
 | DNS, dominio y anti-bots | Cloudflare (solo DNS, Registrar y Turnstile) | Gratis; los registros van en "DNS only", sin proxy delante de Vercel |
 | Errores | Sentry (plan gratis, a confirmar en la 6.4) | Enterarte antes que el cliente |
 
@@ -268,12 +268,12 @@ La recomendación es Next.js + Supabase + Vercel: un solo proyecto, un solo leng
 | --- | --- | --- | --- |
 | Supabase Pro | US$25 | ≈US$30 | ≈US$76 |
 | Vercel Pro | ≈US$40 | ≈US$120 | ≈US$125 |
-| Correo (SES Essentials, US$0,16 por cada 1.000) | ≈US$19 | ≈US$230 | ≈US$384 |
+| Correo (Resend: Pro hasta 100.000 al mes, luego Scale) | ≈US$53 | ≈US$825 | ≈US$1.150 |
 | Cloudflare | US$0 | US$0 | US$0 |
-| **Total** | **≈US$84** | **≈US$380** | **≈US$585** |
-| Sobre el ingreso, a 25.000 COP por sede | ≈21% | ≈8,1% | ≈7,4% |
+| **Total** | **≈US$118** | **≈US$975** | **≈US$1.351** |
+| Sobre el ingreso, a 25.000 COP por sede | ≈30% | ≈21% | ≈17% |
 
-A una TRM de 3.183, el costo fijo de Supabase y Vercel se cubre con unas 9 sedes pagando, y con 1.000 sedes son ≈1,86 millones de pesos al mes. El dominio se paga aparte, una vez al año.
+A una TRM de 3.183, el costo fijo de Supabase y Vercel se cubre con unas 9 sedes pagando, y con 1.000 sedes son ≈4,3 millones de pesos al mes. A escala, el correo es la mayor parte del costo: la 0007 ("Cuándo escalar") pide revisarlo al pasar de 100.000 correos al mes. El dominio se paga aparte, una vez al año.
 
 ## Plan de construcción
 
@@ -281,7 +281,7 @@ Con un desarrollador dedicado de tiempo completo, el MVP queda listo en 6 semana
 
 &#91;embedded content: plan de construcción · 6 semanas, piloto de 4, 2 compuertas\]
 
-El piloto ya usa el correo como único canal, con dominio propio y Amazon SES, y mide si las inasistencias bajan. Si las barberías piloto no lo usan a diario, se corrige antes de vender, no después.
+El piloto ya usa el correo como único canal, con dominio propio y Resend, y mide si las inasistencias bajan. Si las barberías piloto no lo usan a diario, se corrige antes de vender, no después.
 
 ## Fuera de alcance y fase 2
 

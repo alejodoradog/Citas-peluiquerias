@@ -1975,6 +1975,42 @@ export const textos = {
       string
     >,
   },
+  cierre: {
+    // "Cierre del día" (task 4.6, D-64).
+    titulo: "Cierre del día",
+    cargando: "Cargando el cierre…",
+    volver: "Volver a Más",
+    anterior: "Día anterior",
+    siguiente: "Día siguiente",
+    totalAtendido: "Total atendido",
+    serviciosAtendidos: "Servicios atendidos",
+    noAsistio: "No asistió",
+    pendientes: "Pendientes",
+    porBarbero: "Por barbero",
+    atendidos: (cantidad: number) =>
+      cantidad === 1 ? "1 atendido" : `${cantidad} atendidos`,
+    comisionDe: (valor: string, porcentaje: number) =>
+      `Comisión ${valor} (${porcentaje}%)`,
+    sinComision: "Comisión —",
+    comision: "Comisión de los barberos",
+    porcentaje: (valor: number) => `${valor}%`,
+    guardarComision: "Guardar comisión",
+    guardado: "Comisión guardada.",
+    noGuardado: "No pudimos guardar la comisión. Intenta de nuevo.",
+    descargar: "Descargar resumen",
+    sinAtendidos: "No hay servicios atendidos este día.",
+    // The CSV of "Descargar resumen" (decision C3).
+    csv: {
+      encabezado: [
+        "Barbero",
+        "Servicios atendidos",
+        "Total",
+        "Comisión",
+      ] as const,
+      total: "Total",
+      archivo: (dia: string) => `cierre-${dia}.csv`,
+    },
+  },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.
   proximamente: {
