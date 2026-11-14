@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { expirePublicProfile } from "@/lib/cache-tags";
+import { LEGAL_VERSION } from "@/lib/legal/version";
 import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
@@ -27,7 +28,7 @@ import {
 import { slugFromName } from "../dominio/slug";
 
 export type RegistrationField =
-  "ownerName" | "barbershopName" | "phone" | "email" | "password";
+  "ownerName" | "barbershopName" | "phone" | "email" | "password" | "acepto";
 
 export type RegistrationState = FormState<
   RegistrationField,
@@ -42,7 +43,14 @@ export async function registerBarbershop(
   formData: FormData,
 ): Promise<RegistrationState> {
   const form = readForm(formData, {
-    fields: ["ownerName", "barbershopName", "phone", "email", "password"],
+    fields: [
+      "ownerName",
+      "barbershopName",
+      "phone",
+      "email",
+      "password",
+      "acepto",
+    ],
     secret: ["password"],
     parse: parseRegistration,
   });
@@ -66,6 +74,8 @@ export async function registerBarbershop(
           slugFromName(registration.barbershopName),
         ),
         phone: registration.phone,
+        // Kept in the profile as proof of the authorization (task 6.5).
+        terms_version: LEGAL_VERSION,
       },
     },
   });

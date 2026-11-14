@@ -29,7 +29,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |
-| 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
+| 6.5 Términos de uso y política de datos personales | Fundador | En curso (`hito-6-legal`) |
 | 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 

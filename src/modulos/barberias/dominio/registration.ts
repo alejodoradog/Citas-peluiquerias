@@ -13,7 +13,8 @@ export type BarbershopErrorCode =
   | "owner_name_too_long"
   | "barbershop_name_required"
   | "barbershop_name_too_long"
-  | "phone_invalid";
+  | "phone_invalid"
+  | "terms_required";
 
 export type RegistrationErrorCode = BarbershopErrorCode | CredentialCode;
 
@@ -37,17 +38,22 @@ export const colombianMobileSchema = z
     return phone;
   });
 
-const registrationSchema = z.object({
-  ownerName: z
-    .string({ error: "owner_name_required" })
-    .trim()
-    .min(1, "owner_name_required")
-    .max(100, "owner_name_too_long"),
-  barbershopName: barbershopNameSchema,
-  phone: colombianMobileSchema,
-  email: emailSchema,
-  password: passwordSchema,
-});
+const registrationSchema = z
+  .object({
+    ownerName: z
+      .string({ error: "owner_name_required" })
+      .trim()
+      .min(1, "owner_name_required")
+      .max(100, "owner_name_too_long"),
+    barbershopName: barbershopNameSchema,
+    phone: colombianMobileSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    // The express authorization of Ley 1581 (task 6.5): the box, marked.
+    acepto: z.literal("on", { error: "terms_required" }),
+  })
+  // The box is proof enough once checked; the data carries the rest.
+  .transform(({ acepto: _accepted, ...registration }) => registration);
 
 export type Registration = z.output<typeof registrationSchema>;
 

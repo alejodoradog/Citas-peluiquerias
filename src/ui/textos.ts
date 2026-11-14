@@ -1,4 +1,5 @@
 import type { ImageUploadErrorCode } from "@/lib/imagenes/keys";
+import { LEGAL_VERSION } from "@/lib/legal/version";
 import type { BookingActionErrorCode } from "@/modulos/agenda/acciones/booking";
 import type { AppointmentWriteError } from "@/modulos/agenda/datos/appointment-errors";
 import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
@@ -103,12 +104,197 @@ export const textos = {
         "No pudimos descargar el QR. Intenta de nuevo o toma una captura de pantalla.",
     },
   },
+  // Task 6.5: the terms of use and the personal data policy (Ley 1581 de
+  // 2012, Decreto 1377 de 2013 compiled in the Decreto 1074 de 2015, Ley 1480
+  // de 2011), written by Claude Code as the project's lawyer at the founder's
+  // request (2026-11-14). The version is the date: a new text gets a new
+  // date, and the database keeps which one each person accepted.
   legal: {
-    terminos: { titulo: "Términos de uso" },
-    privacidad: { titulo: "Política de datos" },
-    enPreparacion:
-      "Estamos terminando este documento. Muy pronto lo vas a encontrar aquí.",
+    version: LEGAL_VERSION,
+    fecha: "14 de noviembre de 2026",
+    vigencia: (fecha: string) => `Vigente desde el ${fecha}.`,
+    correo: "manuelalejo429@gmail.com",
     volver: "Volver al inicio",
+    terminos: {
+      titulo: "Términos de uso",
+      intro:
+        "Estos términos regulan el uso de Yapoin por parte de las barberías y peluquerías que crean una cuenta. Al registrarte y marcar la casilla de aceptación, los aceptas.",
+      secciones: [
+        {
+          titulo: "1. Qué es Yapoin",
+          parrafos: [
+            "Yapoin es una aplicación web para que las barberías y peluquerías de Colombia reciban reservas en línea, organicen su agenda y su equipo, y envíen recordatorios por correo a sus clientes. Se usa desde el navegador: no hay app que descargar.",
+          ],
+        },
+        {
+          titulo: "2. La cuenta",
+          parrafos: [
+            "Para crear una cuenta debes ser mayor de edad y dar datos verdaderos: tu nombre, el de tu barbería, un celular y un correo. Tú respondes por lo que se haga con tu cuenta, así que guarda bien tu contraseña y los links privados de tus barberos.",
+            "Una cuenta puede tener varias sedes. Cada sede es una barbería con su propia página, su agenda y su suscripción.",
+          ],
+        },
+        {
+          titulo: "3. La prueba gratis",
+          parrafos: [
+            "Cada cuenta tiene 20 días de prueba gratis con todas las funciones, desde el día en que se registra. No pedimos tarjeta. Las sedes que crees durante la prueba comparten su fecha de vencimiento.",
+          ],
+        },
+        {
+          titulo: "4. El precio y el pago",
+          parrafos: [
+            "Después de la prueba, cada sede paga una suscripción mensual según el número de barberos activos, contando al dueño si también corta: $25.000 al mes de 1 a 4 barberos y $40.000 al mes de 5 a 8. Con 9 o más barberos, el precio se acuerda con el área financiera de Yapoin.",
+            "El pago se hace por transferencia (Bre-B, Nequi o transferencia bancaria) a los datos que Yapoin te envía, y el comprobante se envía al correo de Yapoin. Cuando lo verificamos, registramos el pago y la sede queda activa por un mes más. Cada pago cubre un mes y no hay reembolsos por meses parciales.",
+            "Yapoin puede cambiar los precios avisándote por correo con al menos 30 días de anticipación. El cambio aplica desde el siguiente pago.",
+          ],
+        },
+        {
+          titulo: "5. Vencimiento, gracia y suspensión",
+          parrafos: [
+            "Te avisamos por correo antes de que venza tu mes. Si no pagas, la sede sigue funcionando 5 días más, con un aviso en la agenda. Pasados esos días, la página deja de recibir reservas nuevas y el panel queda en solo lectura: las citas ya tomadas se respetan, se pueden marcar como atendidas, y los clientes pueden cancelar la suya.",
+            "No borramos ningún dato por falta de pago. Al registrar tu pago, todo vuelve a funcionar al instante.",
+          ],
+        },
+        {
+          titulo: "6. Lo que te comprometes a hacer",
+          parrafos: [
+            "Usar Yapoin solo para la reserva y la gestión de citas de tu barbería, con información verdadera.",
+            "No usar Yapoin para enviar publicidad, cadenas, engaños ni links a otras páginas, ni registrar personas o correos sin su conocimiento.",
+            "Tratar los datos de tus clientes conforme a la Ley 1581 de 2012: frente a ellos, tu barbería es la responsable de esos datos, y Yapoin los trata por encargo tuyo (ver la política de datos).",
+            "Pagar la suscripción de cada sede que tengas activa.",
+          ],
+        },
+        {
+          titulo: "7. Disponibilidad del servicio",
+          parrafos: [
+            "Hacemos lo razonable para que Yapoin funcione todo el tiempo, pero puede haber interrupciones por mantenimiento, fallas de nuestros proveedores o causas fuera de nuestro control. Los correos dependen además de los proveedores de correo de cada persona, así que no podemos garantizar que siempre lleguen a la bandeja de entrada.",
+          ],
+        },
+        {
+          titulo: "8. Responsabilidad",
+          parrafos: [
+            "Yapoin es una herramienta: no responde por las inasistencias de los clientes, por los acuerdos o pagos entre tu barbería y sus clientes, ni por la calidad de los servicios que prestas.",
+            "En lo que la ley permita, la responsabilidad de Yapoin frente a una barbería por cualquier daño se limita a lo que esa barbería pagó por su suscripción en los últimos 3 meses. Nada en estos términos limita los derechos que te dé la Ley 1480 de 2011 cuando seas consumidor.",
+          ],
+        },
+        {
+          titulo: "9. Propiedad",
+          parrafos: [
+            "Yapoin, su marca, su diseño y su código son de Yapoin. Los datos de tu barbería y de tus clientes son tuyos y de ellos: no los vendemos ni los usamos para publicidad.",
+          ],
+        },
+        {
+          titulo: "10. Terminación",
+          parrafos: [
+            "Puedes dejar de usar Yapoin cuando quieras y eliminar una sede desde el panel, cuando no tenga citas por venir. Yapoin puede suspender o cerrar una cuenta que incumpla estos términos, por ejemplo por usarla para enviar engaños o publicidad, avisándote por correo.",
+          ],
+        },
+        {
+          titulo: "11. Cambios a estos términos",
+          parrafos: [
+            "Si cambiamos estos términos, publicamos la nueva versión aquí con su fecha y te avisamos por correo. Si sigues usando Yapoin después del aviso, aceptas la nueva versión.",
+          ],
+        },
+        {
+          titulo: "12. Ley y contacto",
+          parrafos: [
+            "Estos términos se rigen por las leyes de Colombia. Cualquier diferencia se intentará resolver primero de forma directa, escribiéndonos a manuelalejo429@gmail.com, y si no, ante los jueces de Colombia.",
+          ],
+        },
+      ],
+    },
+    privacidad: {
+      titulo: "Política de datos",
+      intro:
+        "Esta es la política de tratamiento de datos personales de Yapoin, conforme a la Ley 1581 de 2012 y sus decretos reglamentarios. Explica qué datos tratamos, para qué, con quién los compartimos y cómo puedes ejercer tus derechos.",
+      secciones: [
+        {
+          titulo: "1. Quién trata tus datos",
+          parrafos: [
+            "Yapoin trata los datos de los dueños de las barberías y de sus barberos como responsable. Los datos de los clientes de cada barbería los trata por encargo de esa barbería, que es su responsable: cuando reservas en una barbería, autorizas a esa barbería y a Yapoin, como su encargado, a tratar tus datos para gestionar tu cita.",
+            "Para cualquier consulta o reclamo sobre tus datos, escríbenos a manuelalejo429@gmail.com.",
+          ],
+        },
+        {
+          titulo: "2. Qué datos tratamos",
+          parrafos: [
+            "De los dueños: nombre, correo, celular, los datos de su barbería (nombre, dirección, horarios, servicios y fotos) y los pagos de su suscripción.",
+            "De los barberos: nombre, foto si el dueño la sube y correo si el dueño lo agrega para los avisos.",
+            "De los clientes: nombre, correo, celular si lo dan, sus citas en cada barbería y las notas que la barbería escriba sobre ellos.",
+            "Datos técnicos: la sesión de quien ingresa al panel y, para frenar abusos, una huella cifrada de la dirección IP que no permite saber cuál es. No pedimos datos sensibles ni datos de menores de edad.",
+          ],
+        },
+        {
+          titulo: "3. Para qué los usamos",
+          parrafos: [
+            'Para prestar el servicio: mostrar la página de la barbería, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas".',
+            "Para la suscripción: avisar los vencimientos y registrar los pagos.",
+            "Para la seguridad: verificar que quien reserva o se registra no es un robot y limitar los abusos.",
+            "No vendemos tus datos, no los usamos para publicidad y no los compartimos con nadie fuera de los proveedores de la sección 5.",
+          ],
+        },
+        {
+          titulo: "4. Tu autorización",
+          parrafos: [
+            "Al registrarte o al reservar, marcas una casilla con la que autorizas el tratamiento de tus datos según esta política. Guardamos la fecha y la versión que aceptaste, como prueba de esa autorización. Puedes revocarla en cualquier momento escribiéndonos, salvo cuando tengamos el deber legal o contractual de conservar los datos.",
+          ],
+        },
+        {
+          titulo: "5. Con quién los compartimos",
+          parrafos: [
+            "Usamos proveedores que guardan o procesan los datos por nuestra cuenta, con contratos que los obligan a protegerlos: Supabase (base de datos y archivos), Vercel (servidores de la aplicación), Resend (envío de correos) y Cloudflare (dominio y verificación contra robots). Sus servidores están en Estados Unidos, así que tus datos se transfieren a ese país; al aceptar esta política, autorizas esa transferencia.",
+          ],
+        },
+        {
+          titulo: "6. Cuánto tiempo los guardamos",
+          parrafos: [
+            "Los datos de una cuenta se guardan mientras exista. La cola de correos enviados se borra a los 90 días. Los links privados de los correos vencen solos.",
+            "Cuando una barbería borra a un cliente, su nombre, correo, celular y notas se eliminan, y su historial de citas queda sin ningún dato que lo identifique. Las copias de seguridad se borran solas en un plazo máximo de 8 semanas.",
+          ],
+        },
+        {
+          titulo: "7. Tus derechos",
+          parrafos: [
+            "Como titular de los datos, tienes derecho a: conocer, actualizar y rectificar tus datos; pedir prueba de la autorización que diste; saber cómo se han usado; presentar quejas ante la Superintendencia de Industria y Comercio; revocar la autorización y pedir que se supriman tus datos; y acceder a ellos gratis.",
+          ],
+        },
+        {
+          titulo: "8. Cómo ejercerlos",
+          parrafos: [
+            "Escríbenos a manuelalejo429@gmail.com con tu nombre, el correo o celular con el que te registraste o reservaste, la barbería y lo que pides.",
+            "Respondemos las consultas en un máximo de 10 días hábiles y los reclamos en un máximo de 15 días hábiles. Si necesitamos más tiempo, te avisamos el motivo antes de que venza el plazo.",
+            "Si eres cliente de una barbería, también puedes pedírselo a ella. Si nos llega a nosotros, se lo trasladamos y te avisamos.",
+          ],
+        },
+        {
+          titulo: "9. Seguridad",
+          parrafos: [
+            "Todo viaja cifrado. Cada barbería solo ve sus propios datos. Los links privados de las citas y de los barberos se guardan como huellas que no se pueden convertir de nuevo en el link, y el acceso al panel exige tu contraseña.",
+          ],
+        },
+        {
+          titulo: "10. Cookies y datos en tu celular",
+          parrafos: [
+            "Usamos solo las cookies necesarias para que funcione el servicio: la de la sesión del panel, la que recuerda la sede activa y una que dura 30 minutos para mostrarte tu cita al reservar. No usamos cookies de publicidad ni de seguimiento.",
+            'Al reservar, tu celular guarda tu nombre, correo y celular para llenar más rápido la próxima reserva, y el link de tus citas. Puedes borrarlos con "Borrar mis datos" en la reserva o desde la configuración de tu navegador.',
+          ],
+        },
+        {
+          titulo: "11. Cambios a esta política",
+          parrafos: [
+            "Si cambiamos esta política, publicamos la nueva versión aquí con su fecha. Si el cambio afecta para qué usamos tus datos, te pediremos de nuevo tu autorización.",
+          ],
+        },
+      ],
+    },
+    // The required box of the sign-up (D-02) and the booking (C-06).
+    casilla: {
+      registro:
+        "Acepto los términos de uso y autorizo el tratamiento de mis datos según la política de datos.",
+      reserva: (barberia: string) =>
+        `Autorizo a ${barberia} y a Yapoin a tratar mis datos para gestionar mi cita, según la política de datos.`,
+      leerTerminos: "Leer los términos de uso",
+      leerPolitica: "Leer la política de datos",
+    },
   },
   agenda: {
     // The owner's agenda (task 4.1): D-30 to D-33.
@@ -433,6 +619,8 @@ export const textos = {
         "El nombre es muy largo. Usa máximo 100 caracteres.",
       phone_invalid:
         "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+      terms_required:
+        "Para crear la cuenta, acepta los términos de uso y la política de datos.",
     } satisfies Record<BarbershopErrorCode, string>,
   },
   cuentas: {
@@ -453,7 +641,7 @@ export const textos = {
         password: "Mínimo 8 caracteres.",
       },
       legal: {
-        antes: "Al crear la cuenta aceptas los ",
+        antes: "Lee los ",
         terminos: "términos de uso",
         y: " y la ",
         privacidad: "política de datos",
@@ -1586,9 +1774,9 @@ export const textos = {
       celular: "Celular",
       celularAyuda: "Solo para que la barbería te pueda llamar.",
       celularEjemplo: "300 123 4567",
-      aceptas: "Al reservar aceptas la",
+      aceptas: "Lee la",
       politica: "política de datos",
-      deLaBarberia: "de la barbería.",
+      deLaBarberia: "de la barbería y de Yapoin.",
       total: "Total en la barbería",
       confirmar: "Confirmar reserva",
       confirmando: "Reservando…",
@@ -1711,6 +1899,7 @@ export const textos = {
       name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
       name_invalid: "Escribe tu nombre en una sola línea.",
       name_has_link: "Escribe solo tu nombre, sin links ni páginas web.",
+      privacy_required: "Para reservar, autoriza el tratamiento de tus datos.",
       email_invalid: "Escribe un correo válido, como nombre@correo.com.",
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:

@@ -5,6 +5,7 @@ import { routes } from "@/lib/routes";
 import { registerBarbershop } from "@/modulos/barberias/acciones/barbershops";
 import { AuthHeading } from "@/ui/auth-shell";
 import { ButtonLink } from "@/ui/button";
+import { Checkbox } from "@/ui/checkbox";
 import { Field } from "@/ui/field";
 import { ActionForm, useFormAction } from "@/ui/form";
 import { ProtectedSubmit } from "@/ui/turnstile-field";
@@ -81,6 +82,20 @@ export function RegistrationForm() {
           error={form.fieldError("password")}
           required
         />
+        {/* The express authorization of Ley 1581 (task 6.5). */}
+        <div className="flex flex-col gap-1">
+          <Checkbox
+            name="acepto"
+            label={textos.legal.casilla.registro}
+            defaultChecked={form.value("acepto") === "on"}
+            aria-invalid={form.fieldError("acepto") ? true : undefined}
+          />
+          {form.fieldError("acepto") ? (
+            <p role="alert" className="text-danger text-help">
+              {form.fieldError("acepto")}
+            </p>
+          ) : null}
+        </div>
         <p className="text-help text-muted leading-[1.45]">
           {t.legal.antes}
           <TextLink href={routes.terms}>{t.legal.terminos}</TextLink>

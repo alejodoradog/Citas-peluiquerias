@@ -7,6 +7,7 @@ import {
   bookAppointment,
   type BookingState,
 } from "@/modulos/agenda/acciones/booking";
+import { Checkbox } from "@/ui/checkbox";
 import { Field } from "@/ui/field";
 import { ActionForm, useFormAction } from "@/ui/form";
 import { ProtectedSubmit } from "@/ui/turnstile-field";
@@ -22,12 +23,14 @@ const t = textos.reservas.datos;
 // from the browser); "Borrar mis datos" forgets it.
 export function DetailsForm({
   header,
+  shopName,
   hidden,
   priceCop,
   servicesHref,
   children,
 }: {
   header: ReactNode;
+  shopName: string;
   hidden: {
     slug: string;
     servicios: string[];
@@ -150,6 +153,20 @@ export function DetailsForm({
             help={t.celularAyuda}
             error={form.fieldError("phone")}
           />
+        </div>
+        {/* The express authorization of Ley 1581 (task 6.5). */}
+        <div className="flex flex-col gap-1">
+          <Checkbox
+            name="acepto"
+            label={textos.legal.casilla.reserva(shopName)}
+            defaultChecked={form.value("acepto") === "on"}
+            aria-invalid={form.fieldError("acepto") ? true : undefined}
+          />
+          {form.fieldError("acepto") ? (
+            <p role="alert" className="text-danger text-help">
+              {form.fieldError("acepto")}
+            </p>
+          ) : null}
         </div>
         <p className="text-help text-muted">
           {t.aceptas} <Link href={routes.privacy}>{t.politica}</Link>{" "}

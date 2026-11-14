@@ -38,9 +38,11 @@ const createPublicBooking = vi.fn(
     barberId: booking.barberId ?? BARBER,
   }),
 );
+const recordPrivacyAcceptance = vi.fn(async () => undefined);
 vi.mock("../datos/public-booking", () => ({
   loadPublicProfile,
   createPublicBooking,
+  recordPrivacyAcceptance,
 }));
 
 // A token easy to look for; the hash is the real one.
@@ -85,6 +87,7 @@ const VALID = {
   name: "  Camila Rojas ",
   email: " Camila@Correo.COM ",
   phone: "300 123 4567",
+  acepto: "on",
 };
 
 async function run(data: FormData) {

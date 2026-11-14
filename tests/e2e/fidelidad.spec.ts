@@ -11,6 +11,7 @@ import {
 import { textos } from "../../src/ui/textos";
 import { finishSetup } from "./helpers/asistente";
 import {
+  acceptDataPolicy,
   chooseServicesAndBarber,
   chooseTomorrowAt,
   fillAndConfirm,
@@ -972,6 +973,7 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     .getByRole("textbox", { name: r.datos.correo })
     .filter({ visible: true })
     .fill("camila@correo.com");
+  await acceptDataPolicy(page);
   await page
     .getByRole("button", { name: r.datos.confirmar })
     .filter({ visible: true })

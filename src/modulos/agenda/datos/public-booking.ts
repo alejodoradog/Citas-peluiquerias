@@ -268,3 +268,22 @@ export async function createPublicBooking(
     barberId: row.barber_id,
   };
 }
+
+// Task 6.5: the customer accepted the data policy at the booking; the
+// database keeps when and which version (record_privacy_acceptance, only
+// the server key).
+export async function recordPrivacyAcceptance(
+  barbershopId: string,
+  appointmentId: string,
+  version: string,
+): Promise<void> {
+  const { error } = await createSupabaseAdminClient().rpc(
+    "record_privacy_acceptance",
+    {
+      p_barbershop_id: barbershopId,
+      p_appointment_id: appointmentId,
+      p_version: version,
+    },
+  );
+  if (error) throw new Error(error.message);
+}
