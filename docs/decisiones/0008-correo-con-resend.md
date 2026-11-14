@@ -1,6 +1,6 @@
 # 0008 Correo con Resend en vez de Amazon SES
 
-Fecha: 2026-11-13 · Tareas: 5.1, 5.2, 5.3 y 6.4 · Estado: **propuesta**. La redactó Claude Code y falta que el fundador la acepte.
+Fecha: 2026-11-13 · Tareas: 5.1, 5.2, 5.3 y 6.4 · Estado: **aceptada por el fundador** (2026-11-14). La redactó Claude Code.
 
 Cambia solo el proveedor de correo de la decisión 0007 (punto 6, "Correo con SES" y sus filas de costos, riesgos y secretos). El resto de la 0007 sigue igual:
 - dos correos por cita;
@@ -8,17 +8,17 @@ Cambia solo el proveedor de correo de la decisión 0007 (punto 6, "Correo con SE
 - el módulo de envío aislado;
 - Supabase y Vercel en `us-east-1` / `iad1`.
 
-Mientras no se acepte, `CLAUDE.md` sigue nombrando Amazon SES.
+Con la aceptación, `CLAUDE.md`, la spec, el plan y la 0007 nombran Resend.
 
 ## Contexto
 
-- **El fundador anticipa que no podrá usar Amazon SES** (2026-11-13) y que lo más probable es usar Resend. La razón se anota aquí al aceptar.
+- **El fundador no podrá usar Amazon SES** (2026-11-13) y eligió Resend (2026-11-14).
 - **Ya en la 0007 Resend fue la alternativa descartada por precio:** con 1.000 sedes costaba ~5 veces más que SES.
 - **Lo que no cambia con el proveedor:** la 5.1 (la cola, sin duplicados, y su proceso cada minuto) no depende de él. El proveedor entra en la 5.2, en un solo módulo.
 
-## Decisión propuesta
+## Decisión
 
-| # | Tema | Propuesta |
+| # | Tema | Decisión |
 | --- | --- | --- |
 | 1 | Proveedor | **Resend**, para los correos de citas, los avisos de suscripción y los de Supabase Auth. |
 | 2 | Región | **North Virginia (`us-east-1`)**, la misma de Supabase y Vercel. La región decide desde dónde sale el correo. Los datos de la cuenta (registros y metadatos) viven en EE. UU. en cualquier caso. |

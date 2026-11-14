@@ -91,8 +91,8 @@ La 5.1 dejó la cola completa: guarda los correos, los toma cada minuto sin dupl
 
 **Lee primero, en este orden:**
 1. `docs/tareas/5.1-cola-de-correos.md`: cómo funciona la cola, cómo se activa y las decisiones Q1 a Q5. **Q4 y Q5 son reglas para ti.**
-2. `docs/decisiones/0008-correo-con-resend.md`: el proveedor, la región, el plan, Auth, el dominio y los rebotes. Si todavía dice "propuesta", **confirma con el fundador que está aceptada** antes de empezar. El plan (`docs/plan.md`, 5.2) y `CLAUDE.md` todavía dicen SES: con la 0008 aceptada, vale Resend.
-3. `docs/decisiones/0007-infraestructura.md`: los puntos 6 a 8, "Correo con SES" (el mismo diseño, con otro proveedor) y la tabla de secretos.
+2. `docs/decisiones/0008-correo-con-resend.md`: el proveedor, la región, el plan, Auth, el dominio y los rebotes. **El fundador la aceptó el 2026-11-14: el proveedor es Resend.** `CLAUDE.md`, la spec, el plan y la 0007 ya lo dicen.
+3. `docs/decisiones/0007-infraestructura.md`: los puntos 6 a 8, "Correo con SES" (el mismo diseño, ahora con Resend) y la tabla de secretos.
 4. `docs/spec.md`, "Mensajes del MVP": qué correo va a quién y cuándo.
 5. El código de la 5.1:
    - `supabase/functions/send-notifications/run-queue.ts`: la lógica y la interfaz `Sender`;
@@ -160,7 +160,6 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
 
 **Lo que hace el fundador, y cuándo pedírselo:**
 - **Antes de probar de verdad:**
-  - aceptar la 0008;
   - crear la cuenta de Resend;
   - agregar `yapoin.com` en `us-east-1`;
   - poner los registros SPF, DKIM y DMARC en Cloudflare, en modo "DNS only".

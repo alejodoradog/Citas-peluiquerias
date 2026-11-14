@@ -2,6 +2,9 @@
 
 Fecha: 2026-11-05, revisión 2 del mismo día · Tareas: 1.10 (`docs/tareas/1.10-infraestructura-base.md`), 2.2, 3.5, 4.5, 5.1, 5.2, 5.3 y 6.4 · Estado: **aceptada por el fundador** (2026-11-05).
 
+> [!important] El correo pasó a Resend (2026-11-14)
+> La decisión `0008-correo-con-resend.md`, aceptada, reemplaza a Amazon SES. Donde este documento dice SES, vale lo de la 0008: los puntos 2, 6 y 16, "Correo con SES", los ambientes, los secretos, los costos, "Cuándo escalar", el plan de ejecución (filas 3 y 7) y los riesgos. El resto sigue igual: dos correos por cita, la cola en la base de datos con pg_cron y una Edge Function, y el módulo de envío aislado.
+
 Complementa la decisión 0006 (esquema de base de datos final), que dejaba pendiente la aprobación de infraestructura. Reemplaza la tabla "Stack técnico y costos" de la spec y el precio de SES de la decisión 0006 (correo único canal, punto 2 y "Costos"). El procedimiento paso a paso para crear las cuentas está en `docs/operacion/infraestructura-produccion.md`.
 
 > **Revisión 2, 2026-11-05: decisiones finales del fundador.** Cambios frente a la propuesta (revisión 1, commit `860f274`):
@@ -197,8 +200,8 @@ Precios de lista consultados el 2026-11-05, en US$, sin impuestos (Vercel los su
 | Peticiones de CDN de Vercel | Cambio de nivel | Revisar que lo estático tenga caché; aceptar el nivel |
 | Gasto por uso de Vercel | >US$100 al mes | Volver a evaluar Cloudflare Workers, si para entonces el soporte de `proxy.ts` en OpenNext ya no es experimental |
 | Invocaciones de Edge Functions | >1,8 M al mes | Revisar el tamaño de los lotes del envío |
-| Cuota diaria de SES | >60% de uso | Pedir aumento de cuota en `us-east-1` |
-| Rebotes y quejas de SES | >2% y >0,1% | Revisar los correos inválidos y las plantillas |
+| Correos al mes en Resend (decisión 0008) | >100.000 | Pasar de Pro a Scale, y revisar volver a SES, Enterprise o mandar menos correos |
+| Rebotes y quejas de Resend | >2% y >0,1% | Revisar los correos inválidos y las plantillas |
 | Infraestructura sobre el ingreso | >10% después de 100 sedes | Revisar precios o el presupuesto de correos |
 
 Se revisa cada mes con las facturas reales, y esta decisión se actualiza si cambia una pieza.
