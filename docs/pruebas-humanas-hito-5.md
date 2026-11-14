@@ -31,5 +31,14 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 - [ ] **7. Métricas.** Tocar el ícono de métricas. Las cuatro tarjetas deben sumar el total de "Todas" (una barbería por vencer cuenta en "Activas" o en "En prueba", según su estado), y el ingreso del mes debe ser la suma de los pagos no anulados de este mes.
 - [ ] **8. Solo el super admin.** Con la cuenta de un dueño, abrir `www.yapoin.com/admin`: debe llevarlo a su panel, sin mostrar nada de la plataforma.
 
+## Tarea 5.2: correos con Resend (celular A, dueño)
+
+Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev`.
+
+- [ ] **1. Auth.** Registrarse con un correo nuevo de Gmail y con uno de Outlook. El correo de confirmación llega a la bandeja de entrada (no a spam), en español y desde `citas@yapoin.com`. Lo mismo con "Recuperar clave".
+- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba (paso 5 de la guía). En un minuto llega "Tu prueba gratis vence el …", con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`.
+- [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
+- [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
+
 ## Decisiones provisionales de la 5.4 para revisar juntos
 Están en `docs/tareas/5.4-panel-plataforma.md`, de P1 a P11.
