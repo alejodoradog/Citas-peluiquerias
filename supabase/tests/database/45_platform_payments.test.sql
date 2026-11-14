@@ -107,8 +107,7 @@ begin
 end;
 $$;
 
--- The copy in TypeScript also checks one case the database cannot, below:
--- the first case of the list made its way (a typo here is caught there).
+-- Each case: the expiry the database leaves is the expected one.
 select is(pg_temp.replay(c.trial_ends_on, c.paid_on, c.n), c.expires_on, c.name)
 from (select *, row_number() over ()::integer as n from formula_cases) c;
 
