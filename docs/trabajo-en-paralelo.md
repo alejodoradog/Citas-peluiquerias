@@ -23,7 +23,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | Pendiente (después de la 5.4) |
 | **6.3** PWA instalable | Socio | Fuera por ahora: el socio decidió no hacer una app (2026-11-13). Falta que el fundador lo confirme |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
-| **5.2** Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | **Socio** (antes del fundador) | En curso (`hito-5-correos`) |
+| 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
 | 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |

@@ -18,7 +18,7 @@
 // works the batch in the background (EdgeRuntime.waitUntil).
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { emailData, type EmailDb } from "./content.ts";
-import { render } from "./render.ts";
+import { composeEmail } from "./render.ts";
 import { resendSender } from "./resend-sender.ts";
 import {
   type Queue,
@@ -33,15 +33,25 @@ declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
 const env = (name: string) => Deno.env.get(name)?.trim() || null;
 
+// A read that fails throws, so the queue tries the message again later
+// (run-queue turns it into a retry); null means only that the row does not
+// exist.
+function rowOf<T>(result: { data: T | null; error: unknown }): T | null {
+  if (result.error) throw new Error("read_failed");
+  return result.data;
+}
+
 // Every read filters by the barbershop of the message (content.ts).
 function emailDb(db: SupabaseClient): EmailDb {
   return {
     async barbershop(id) {
-      const { data } = await db
-        .from("barbershops")
-        .select("name, slug, subscription_status, plan, expires_on")
-        .eq("id", id)
-        .maybeSingle();
+      const data = rowOf(
+        await db
+          .from("barbershops")
+          .select("name, slug, subscription_status, plan, expires_on")
+          .eq("id", id)
+          .maybeSingle(),
+      );
       return data
         ? {
             name: data.name,
@@ -54,33 +64,42 @@ function emailDb(db: SupabaseClient): EmailDb {
     },
     async planPrice(code) {
       const query = db.from("plans").select("monthly_price_cop");
-      const { data } = await (code
-        ? query.eq("code", code)
-        : query.eq("active", true).order("sort_order")
-      )
-        .limit(1)
-        .maybeSingle();
+      const data = rowOf(
+        await (code
+          ? query.eq("code", code)
+          : query.eq("active", true).order("sort_order")
+        )
+          .limit(1)
+          .maybeSingle(),
+      );
       return data?.monthly_price_cop ?? null;
     },
     async ownerName(barbershopId) {
-      const { data } = await db
-        .from("memberships")
-        .select("profiles(full_name)")
-        .eq("barbershop_id", barbershopId)
-        .eq("role", "owner")
-        .order("created_at")
-        .limit(1)
-        .maybeSingle();
+      const data = rowOf(
+        await db
+          .from("memberships")
+          .select("profiles(full_name)")
+          .eq("barbershop_id", barbershopId)
+          .eq("role", "owner")
+          .order("created_at")
+          .order("user_id")
+          .limit(1)
+          .maybeSingle(),
+      );
       const profile = data?.profiles as { full_name?: string } | null;
       return profile?.full_name?.split(" ")[0] ?? null;
     },
     async payment(barbershopId, paymentId) {
-      const { data } = await db
-        .from("subscription_payments")
-        .select("amount_cop")
-        .eq("barbershop_id", barbershopId)
-        .eq("id", paymentId)
-        .maybeSingle();
+      const data = rowOf(
+        await db
+          .from("subscription_payments")
+          .select("amount_cop")
+          .eq("barbershop_id", barbershopId)
+          .eq("id", paymentId)
+          // A payment voided before the notice left is not announced.
+          .is("voided_at", null)
+          .maybeSingle(),
+      );
       return data ? { amountCop: data.amount_cop } : null;
     },
   };
@@ -105,7 +124,7 @@ function senderFromEnv(db: SupabaseClient): Sender | null {
     from,
     async compose(message) {
       const data = await emailData(content, message, settings);
-      return data ? render(message.type, data) : null;
+      return composeEmail(message.type, message.payload, data);
     },
   });
 }

@@ -186,3 +186,35 @@ export function render(type: string, data: EmailData): Email | null {
       return null;
   }
 }
+
+// The subscription notices that carry, in their payload, the expiry that
+// made them due (the contract for task 5.5: payload.expires_on). If the
+// barbershop paid in between, the expiry moved and the notice is outdated.
+const DATED_NOTICES = new Set([
+  "subscription_expiring",
+  "subscription_expired",
+  "subscription_suspended",
+]);
+
+// What to send for one message, or the short code of why it is not sent any
+// more: its barbershop is gone, the notice is outdated, the payment was voided
+// (or never was), or the type has no template yet.
+export function composeEmail(
+  type: string,
+  payload: Record<string, unknown>,
+  data: EmailData | null,
+): Email | { cancel: string } {
+  if (!data) return { cancel: "no_barbershop" };
+  const dueFor = payload.expires_on;
+  if (
+    DATED_NOTICES.has(type) &&
+    typeof dueFor === "string" &&
+    dueFor !== data.subscription.expiresOn
+  ) {
+    return { cancel: "outdated" };
+  }
+  if (type === "subscription_payment_registered" && !data.payment) {
+    return { cancel: "no_payment" };
+  }
+  return render(type, data) ?? { cancel: "no_template" };
+}

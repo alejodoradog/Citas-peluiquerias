@@ -82,6 +82,14 @@ describe("emailData", () => {
     expect(data?.payment).toBeNull();
   });
 
+  it("lets a failed read reach the queue, which tries the message again", async () => {
+    const db = fakeDb();
+    db.ownerName = vi.fn(async () => {
+      throw new Error("read_failed");
+    });
+    await expect(emailData(db, message(), env)).rejects.toThrow("read_failed");
+  });
+
   it("gives nothing for a barbershop that no longer exists", async () => {
     const db = fakeDb();
     expect(

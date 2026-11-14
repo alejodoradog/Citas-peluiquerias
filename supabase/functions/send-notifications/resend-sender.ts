@@ -29,8 +29,9 @@ export function resendSender({
   fetch: typeof globalThis.fetch;
   apiKey: string;
   from: string;
-  // The email of a message, or null when it has no template.
-  compose: (message: Message) => Promise<Email | null>;
+  // The email of a message, or why it is not sent any more (a short code:
+  // no_template, no_barbershop, no_payment, outdated).
+  compose: (message: Message) => Promise<Email | { cancel: string }>;
   minGapMs?: number;
   sleep?: (ms: number) => Promise<unknown>;
   now?: () => number;
@@ -39,7 +40,9 @@ export function resendSender({
   return {
     async send(message): Promise<SendResult> {
       const email = await compose(message);
-      if (!email) return { ok: false, permanent: true, code: "no_template" };
+      if ("cancel" in email) {
+        return { ok: false, permanent: true, code: email.cancel };
+      }
 
       const wait = lastCall + minGapMs - now();
       if (wait > 0) await sleep(wait);
