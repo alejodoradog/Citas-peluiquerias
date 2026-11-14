@@ -1807,8 +1807,10 @@ export const textos = {
     } satisfies Record<BarberRefusal | BlockFormCode | "invalid", string>,
   },
   plataforma: {
-    // The platform panel of the super admin (task 5.4): P-01 to P-06.
-    titulo: "Barberías",
+    // The platform panel of the super admin (task 5.4): P-01 to P-06. P-01
+    // says "Barberías", the repo's provisional name that no copy uses
+    // (textos.test.ts).
+    titulo: "Lista de barberías",
     cargando: "Cargando…",
     verMetricas: "Métricas",
     buscar: {
@@ -1900,8 +1902,7 @@ export const textos = {
       quedaHasta: "Queda activa hasta",
       aTiempo: (vence: string) =>
         `Pagó antes de vencer: el mes se suma a la fecha de vencimiento (${vence}). Si hubiera pagado vencida, contaría desde el día del pago.`,
-      tarde: (vence: string) =>
-        `Pagó vencida (venció el ${vence}): el mes cuenta desde el día del pago.`,
+      tarde: "Pagó vencida: el mes cuenta desde el día del pago.",
       enviar: "Registrar y activar",
       enviando: "Registrando…",
     },

@@ -415,7 +415,7 @@ begin
     raise exception 'search too long' using errcode = 'invalid_parameter_value';
   end if;
   -- The words typed, literally: % and _ are not wildcards here.
-  pattern := '%' || replace(replace(replace(btrim(coalesce(p_search, '')), '\', '\'), '%', '\%'), '_', '\_') || '%';
+  pattern := '%' || replace(replace(replace(btrim(coalesce(p_search, '')), '\', '\\'), '%', '\%'), '_', '\_') || '%';
 
   return query
   select

@@ -96,6 +96,9 @@ export type PlatformPayment = {
   paidOn: BogotaDate;
   coversFrom: BogotaDate;
   coversUntil: BogotaDate;
+  // The order the payments were registered in, which the replay follows
+  // among payments of the same day.
+  createdAt: Date;
   voided: { at: Date; reason: string } | null;
 };
 
@@ -158,6 +161,7 @@ export async function loadPlatformBarbershop(
       paidOn: row.paid_on,
       coversFrom: row.covers_from,
       coversUntil: row.covers_until,
+      createdAt: new Date(row.created_at),
       voided:
         row.voided_at && row.void_reason
           ? { at: new Date(row.voided_at), reason: row.void_reason }

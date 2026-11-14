@@ -6,6 +6,7 @@ import {
   addMonth,
   EXPIRING_DAYS,
   filterOf,
+  metricCounts,
   platformCounts,
   platformState,
   paymentPreview,
@@ -120,17 +121,54 @@ describe("replayPayments", () => {
 
 describe("paymentPreview (P-03)", () => {
   it("adds the month to the expiry when paid on time", () => {
-    expect(paymentPreview("2026-11-09", "2026-11-07")).toEqual({
+    expect(paymentPreview("2026-11-09", [], "2026-11-07")).toEqual({
       until: "2026-12-09",
       late: false,
+      expiredBefore: "2026-11-09",
     });
   });
 
   it("counts from the payment day when paid late", () => {
-    expect(paymentPreview("2026-11-09", "2026-11-12")).toEqual({
+    expect(paymentPreview("2026-11-09", [], "2026-11-12")).toEqual({
       until: "2026-12-11",
       late: true,
+      expiredBefore: null,
     });
+  });
+
+  it("replays the payments already registered, as the database does", () => {
+    // The trial ended on 5 Nov; a late payment of 10 Nov covers to 9 Dec. A
+    // payment dated 3 Nov goes first: 6 Nov to 5 Dec, and then the 10 Nov
+    // one adds its month to 5 Jan.
+    expect(
+      paymentPreview(
+        "2026-11-05",
+        [{ id: "a", paidOn: "2026-11-10" }],
+        "2026-11-03",
+      ),
+    ).toEqual({
+      until: "2027-01-05",
+      late: false,
+      expiredBefore: "2026-11-05",
+    });
+  });
+});
+
+describe("metricCounts (P-06, decision P11)", () => {
+  it("counts one about to expire by its own status", () => {
+    const today = "2026-11-07";
+    expect(
+      metricCounts(
+        [
+          shop({ expiresOn: "2026-11-09" }),
+          shop({ subscriptionStatus: "active", expiresOn: "2026-11-09" }),
+          shop({ subscriptionStatus: "active", expiresOn: "2026-12-09" }),
+          shop({ expiresOn: "2026-11-04" }),
+          shop({ phase: "suspended" }),
+        ],
+        today,
+      ),
+    ).toEqual({ activas: 2, prueba: 1, vencidas: 1, suspendidas: 1 });
   });
 });
 

@@ -25,10 +25,10 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 - [ ] **4. Anular el pago.** Tocar "Anular" en el pago, escribir el motivo y confirmar. El pago queda tachado con su motivo, y la fecha de vencimiento vuelve a la anterior.
 - [ ] **5. Extender la prueba** (en una barbería que todavía no ha pagado). Tocar "Extender prueba", elegir los días y confirmar. La nueva fecha debe ser la que mostró la hoja.
 - [ ] **6. Suspender y reactivar.**
-  1. Tocar "Suspender" y "Suspender ahora". En otro celular, su página pública deja de recibir reservas y el panel del dueño queda en solo lectura.
+  1. Tocar "Suspender" y "Suspender ahora". En otro celular, su página pública deja de recibir reservas. (El panel del dueño en solo lectura llega con la 5.5: todavía no se prueba.)
   2. Tocar "Reactivar" y confirmar. Todo vuelve a funcionar.
   3. En una barbería vencida y suspendida, "Reactivar" debe pedir que se registre un pago. Al registrarlo, se reactiva sola.
-- [ ] **7. Métricas.** Tocar el ícono de métricas. Los números deben coincidir con los filtros de "Barberías" y con los pagos del mes.
+- [ ] **7. Métricas.** Tocar el ícono de métricas. Las cuatro tarjetas deben sumar el total de "Todas" (una barbería por vencer cuenta en "Activas" o en "En prueba", según su estado), y el ingreso del mes debe ser la suma de los pagos no anulados de este mes.
 - [ ] **8. Solo el super admin.** Con la cuenta de un dueño, abrir `www.yapoin.com/admin`: debe llevarlo a su panel, sin mostrar nada de la plataforma.
 
 ## Decisiones provisionales de la 5.4 para revisar juntos

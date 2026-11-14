@@ -10,7 +10,7 @@ import {
   loadRecentPayments,
 } from "@/modulos/suscripciones/datos/platform";
 import {
-  platformCounts,
+  metricCounts,
   revenue,
 } from "@/modulos/suscripciones/dominio/subscription";
 import { cx } from "@/ui/cx";
@@ -41,11 +41,11 @@ async function Metrics() {
     listPlatformBarbershops(),
     loadRecentPayments(today),
   ]);
-  const counts = platformCounts(shops, today);
+  const counts = metricCounts(shops, today);
   const money = revenue(payments, today);
   const cards = [
     {
-      value: counts.activas + counts.porVencer,
+      value: counts.activas,
       label: t.activas,
       tone: "text-success",
     },

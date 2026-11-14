@@ -50,17 +50,23 @@ async function Payment({
   ]);
   if (!shop) notFound();
 
+  // The payments that count, in the order they were registered: the new one
+  // is replayed with them, as the database will do.
+  const registered = shop.payments
+    .filter((payment) => !payment.voided)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .map((payment) => ({ id: payment.id, paidOn: payment.paidOn }));
   // Each possible payment day with what it would leave, worked out here so
   // the form only picks among them.
   const days = paymentDayOptions(today).map((date) => {
-    const preview = paymentPreview(shop.expiresOn, date);
+    const preview = paymentPreview(shop.trialEndsOn, registered, date);
     return {
       value: date,
       label: weekdayLongDate(date),
       until: longDate(preview.until),
-      explanation: preview.late
-        ? t.tarde(dayMonth(shop.expiresOn))
-        : t.aTiempo(dayMonth(shop.expiresOn)),
+      explanation: preview.expiredBefore
+        ? t.aTiempo(dayMonth(preview.expiredBefore))
+        : t.tarde,
     };
   });
 

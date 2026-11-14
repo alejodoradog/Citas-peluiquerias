@@ -63,13 +63,27 @@ export function replayPayments(
   return { expiresOn: expiry, coverages };
 }
 
-// P-03, "Queda activa hasta": what a payment on paidOn leaves, and whether it
-// was paid late (then it counts from the payment day).
+// P-03, "Queda activa hasta": the expiry a new payment on paidOn leaves,
+// replayed with the payments the barbershop already has (not voided, in the
+// order they were registered), as the database will do. late: it counts
+// from the payment day; otherwise the month is added to expiredBefore.
 export function paymentPreview(
-  expiresOn: BogotaDate,
+  trialEndsOn: BogotaDate,
+  payments: readonly { id: string; paidOn: BogotaDate }[],
   paidOn: BogotaDate,
-): { until: BogotaDate; late: boolean } {
-  return { until: coverage(expiresOn, paidOn).until, late: paidOn > expiresOn };
+): { until: BogotaDate; late: boolean; expiredBefore: BogotaDate | null } {
+  const NEW = "\u0000new";
+  const replay = replayPayments(trialEndsOn, [
+    ...payments,
+    { id: NEW, paidOn },
+  ]);
+  const own = replay.coverages.find((item) => item.id === NEW)!;
+  const late = own.from === paidOn;
+  return {
+    until: replay.expiresOn,
+    late,
+    expiredBefore: late ? null : addDays(own.from, -1),
+  };
 }
 
 // private.barbershop_phase.
@@ -166,6 +180,25 @@ export function platformCounts(
 }
 
 // P-06 -------------------------------------------------------------------------------------------
+
+// The four cards of P-06 (decision P11): a barbershop about to expire counts
+// as active or in trial by its own status, since P-06 has no "por vencer".
+export function metricCounts(
+  shops: readonly PlatformBarbershop[],
+  today: BogotaDate,
+): { activas: number; prueba: number; vencidas: number; suspendidas: number } {
+  const counts = { activas: 0, prueba: 0, vencidas: 0, suspendidas: 0 };
+  for (const shop of shops) {
+    const state = platformState(shop, today);
+    if (state === "expiring") {
+      counts[shop.subscriptionStatus === "trial" ? "prueba" : "activas"] += 1;
+    } else {
+      const filter = filterOf(state);
+      if (filter !== "porVencer") counts[filter] += 1;
+    }
+  }
+  return counts;
+}
 
 // "Ingreso del mes" and "Mes anterior" (decision P9): the payments that are
 // not voided, by the Bogotá month of their payment day.

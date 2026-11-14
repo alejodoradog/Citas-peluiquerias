@@ -15,7 +15,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(44);
+select plan(49);
 
 -- Fixtures, inserted as the table owner -------------------------------------------------------
 
@@ -43,6 +43,8 @@ select pg_temp.new_shop('aaaaaaaa-0000-0000-0000-000000000002', 'sede-borrada', 
 insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-00000000000a', 'aaaaaaaa-0000-0000-0000-000000000001', 'owner');
 update public.barbershops set deleted_at = now() where id = 'aaaaaaaa-0000-0000-0000-000000000002';
+select pg_temp.new_shop('aaaaaaaa-0000-0000-0000-000000000004', 'sede-barra', 10);
+update public.barbershops set name = 'Barbería Barra \ Uno' where id = 'aaaaaaaa-0000-0000-0000-000000000004';
 
 -- The hint of the error a statement raises (or its SQLSTATE), or 'no error'.
 create function pg_temp.hint_of(statement text)
@@ -180,6 +182,12 @@ select is(
 select is(
   pg_temp.hint_of($$select * from public.platform_barbershops()$$),
   '42501', 'nor list the platform''s barbershops');
+select is(
+  pg_temp.hint_of($$select public.reactivate_barbershop('aaaaaaaa-0000-0000-0000-000000000001')$$),
+  '42501', 'nor reactivate');
+select is(
+  pg_temp.hint_of($$select public.void_subscription_payment(gen_random_uuid(), 'Motivo')$$),
+  '42501', 'nor void a payment');
 
 -- The super admin --------------------------------------------------------------------------------
 
@@ -200,6 +208,22 @@ select is(
   (select count(*)::integer from public.platform_barbershops('%')),
   0,
   'a % in the search is a character, not a wildcard'
+);
+select is(
+  (select count(*)::integer from public.platform_barbershops('sede_pagos')),
+  0,
+  'nor is a _'
+);
+select is(
+  (select array_agg(name) from public.platform_barbershops('Barra \ Uno')),
+  array['Barbería Barra \ Uno'],
+  'and a \ finds itself'
+);
+select is(
+  (select array_agg(p.q || ':' || (select count(*) from public.platform_barbershops(p.q))) from
+     unnest(array['sede-pagos', 'Barbería sede-pagos', 'dueño uno']) p(q)),
+  array['sede-pagos:1', 'Barbería sede-pagos:1', 'dueño uno:1'],
+  'it finds a barbershop by its link, its name and its owner''s name, in any case'
 );
 
 -- Register: one month at the plan's price, read from the catalog.

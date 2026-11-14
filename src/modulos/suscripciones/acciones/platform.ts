@@ -137,7 +137,11 @@ export async function extendTrial(
   }
   const shop = await loadPlatformBarbershop(id, toBogotaDate(now()));
   if (!shop) return { status: "failed", error: "not_found", values };
-  const result = await extendTrialData(id, addDays(shop.trialEndsOn, days));
+  // From the end of the trial, or from today if it already ended, so the
+  // new date is always ahead (decision P3).
+  const today = toBogotaDate(now());
+  const base = shop.trialEndsOn > today ? shop.trialEndsOn : today;
+  const result = await extendTrialData(id, addDays(base, days));
   if (!result.ok) return { status: "failed", error: result.error, values };
   backToBarbershop(id, "extendida");
 }

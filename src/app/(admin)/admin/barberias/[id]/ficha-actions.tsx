@@ -33,7 +33,6 @@ export function FichaActions({
   name: string;
   inTrial: boolean;
   suspended: boolean;
-  trialEndsOn: string;
   trialEndsLabel: string;
   extendOptions: { days: number; until: string }[];
 }) {

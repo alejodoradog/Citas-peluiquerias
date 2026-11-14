@@ -1,8 +1,10 @@
 import { addDays, isBogotaDate, type BogotaDate } from "@/lib/fechas/fechas";
 import type { ParseResult } from "@/lib/validacion/parse";
 
-// The forms of the platform panel (task 5.4). The database checks them again
-// (migration add_subscription_payment_flow).
+// The forms of the platform panel (task 5.4). The database checks the plan,
+// the method, the reference and the reason again (migration
+// add_subscription_payment_flow); the window of the payment day and the
+// days to extend are rules of the app (decisions P3 and P8).
 
 export const PAYMENT_METHODS = [
   "bre_b",

@@ -8,6 +8,7 @@ import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
 import { loadPlatformBarbershop } from "@/modulos/suscripciones/datos/platform";
+import { EXTEND_DAYS } from "@/modulos/suscripciones/dominio/platform-forms";
 import { platformState } from "@/modulos/suscripciones/dominio/subscription";
 import { buttonClasses } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -65,6 +66,9 @@ async function Barbershop({
   if (!shop) notFound();
 
   const state = platformState(shop, today);
+  // P-04 counts from the end of the trial, or from today if it ended
+  // (decision P3), as extendTrial does.
+  const extendFrom = shop.trialEndsOn > today ? shop.trialEndsOn : today;
   const done = (await searchParams).hecho;
   const notice = NOTICES.find((key) => key === done);
   const lastMonth = addDays(`${today.slice(0, 7)}-01`, -1);
@@ -177,11 +181,10 @@ async function Barbershop({
           name={shop.name}
           inTrial={shop.subscriptionStatus === "trial"}
           suspended={shop.subscriptionStatus === "suspended"}
-          trialEndsOn={shop.trialEndsOn}
           trialEndsLabel={shortDate(shop.trialEndsOn)}
-          extendOptions={[3, 7, 14, 30].map((days) => ({
+          extendOptions={EXTEND_DAYS.map((days) => ({
             days,
-            until: longDate(addDays(shop.trialEndsOn, days)),
+            until: longDate(addDays(extendFrom, days)),
           }))}
         />
       </main>
