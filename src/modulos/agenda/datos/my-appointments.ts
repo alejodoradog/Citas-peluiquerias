@@ -9,8 +9,8 @@ import {
 
 // "Mis citas" (C-19 to C-21, migration add_my_appointments). Asking for the
 // email goes through the app's server (after Turnstile, with the IP limit);
-// the list is read with the link's token as anon, and only its hash reaches
-// the database.
+// the list is read with the link's token as anon: the database receives the
+// token and hashes it itself, so what it keeps is never a working link.
 
 export type MyAppointmentsRequest =
   { ok: true } | { ok: false; error: "too_many_from_ip" | "unknown" };
@@ -61,7 +61,7 @@ export async function loadMyAppointments(
   if (!isLinkToken(token)) return null;
   const { data, error } = await createSupabasePublicClient().rpc(
     "my_appointments",
-    { p_token_hash: hashLinkToken(token) },
+    { p_token: token },
   );
   if (error) throw new Error(error.message);
   const first = data?.[0];
@@ -83,7 +83,8 @@ export async function loadMyAppointments(
   };
 }
 
-// The link of one appointment of the list (/c/<token>, task 3.4), or null.
+// The link of one appointment of the list (/c/<token>, task 3.4), made when
+// the customer taps it, or null.
 export async function linkOfMyAppointment(
   listToken: string,
   appointmentId: string,
@@ -93,7 +94,7 @@ export async function linkOfMyAppointment(
   const { error } = await createSupabasePublicClient().rpc(
     "issue_my_appointment_link",
     {
-      p_customer_token_hash: hashLinkToken(listToken),
+      p_customer_token: listToken,
       p_appointment_id: appointmentId,
       p_token_hash: hashLinkToken(token),
     },

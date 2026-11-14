@@ -549,7 +549,7 @@ isOneToOne: false
 { Args: { "p_barbershop_id": string,"p_customer_id": string,"p_token_hash": string }; Returns: undefined
                            },
 "issue_my_appointment_link":
-{ Args: { "p_appointment_id": string,"p_customer_token_hash": string,"p_token_hash": string }; Returns: undefined
+{ Args: { "p_appointment_id": string,"p_customer_token": string,"p_token_hash": string }; Returns: undefined
                            },
 "list_customers":
 { Args: { "p_barbershop_id": string,"p_filter"?: string,"p_limit"?: number,"p_search"?: string }; Returns: {
@@ -565,7 +565,7 @@ isOneToOne: false
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"],"p_token_hash": string }; Returns: undefined
                            },
 "my_appointments":
-{ Args: { "p_token_hash": string }; Returns: {
+{ Args: { "p_token": string }; Returns: {
               "appointment_id": string,"barber_name": string,"barbershop_name": string,"barbershop_slug": string,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"starts_at": string
             }[]
                            },

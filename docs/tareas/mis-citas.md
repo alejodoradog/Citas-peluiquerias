@@ -40,7 +40,7 @@ Spec: función 6, "Ver 'mis citas' con un link que llega al correo, sin código"
 - crea el token al azar y guarda su hash con `issue_customer_link`.
 
 ## Pruebas
-- **pgTAP `62_my_appointments`** (18 pruebas):
+- **pgTAP `62_my_appointments`** (21 pruebas):
   - los permisos;
   - la misma respuesta para cualquier correo;
   - quién recibe;
@@ -57,7 +57,25 @@ Spec: función 6, "Ver 'mis citas' con un link que llega al correo, sin código"
 1. **(M1) Por barbería,** como los clientes de la base: el link muestra las citas de ese correo en esa barbería, no en todas.
 2. **(M2) El link vive 24 horas,** y "Mis citas" no se guarda en el celular; para volver, se pide otro.
 3. **(M3) Sin citas próximas no sale correo,** para no gastar envíos. La pantalla dice lo mismo.
-4. **(M4) Topes:** 3 correos por hora por cliente y 5 pedidos por hora desde la misma conexión, por barbería.
+4. **(M4) Topes:**
+   - por cliente: 3 correos por hora y 5 al día;
+   - por dirección de correo: 10 al día entre todas las barberías;
+   - por barbería: 100 al día;
+   - por conexión: 5 pedidos por hora y por barbería. Sin IP conocida, todos comparten un mismo grupo.
+
+## Revisión de seguridad (2026-11-14)
+`revisor-seguridad` no encontró nada alto. Se corrigieron:
+- **Los medios:**
+  - los topes diarios (M1);
+  - el candado por cliente contra pedidos en paralelo (M2);
+  - que `my_appointments` e `issue_my_appointment_link` reciban el token y no el hash, así lo que guarda la base no abre nada (M3).
+- **Los bajos:**
+  - el link de una cita se crea al tocar "Ver o cambiar", no al abrir la lista (B1);
+  - las cabeceras de link privado en `next.config.ts` (B2), un archivo compartido;
+  - el grupo sin IP (B3);
+  - un índice para los conteos (B4);
+  - pruebas nuevas (B5).
+- **Lo que queda:** las funciones de la 3.4 (`managed_appointment` y las demás) todavía reciben el hash. Pasarlas al token toca la 3.4 y la 5.3, y queda para después.
 
 ## Riesgos
-- **Abrir la lista crea un link nuevo por cita cada vez** (como máximo 20 por cita). Los viejos siguen sirviendo hasta que la cita pasa.
+- **Cada toque en "Ver o cambiar" crea un link nuevo,** como máximo 20 por cita. Los anteriores siguen sirviendo hasta que la cita pasa.

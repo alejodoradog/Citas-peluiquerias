@@ -12,7 +12,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(18);
+select plan(21);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000062aa', 'owner-m@example.com');
@@ -32,15 +32,19 @@ insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000000062', 'ba000000-0000-0000-0000-000000000062', '5e000000-0000-0000-0000-000000000062');
 insert into public.customers (id, barbershop_id, full_name, email, phone) values
   ('c0000000-0000-0000-0000-000000000621', 'aaaaaaaa-0000-0000-0000-000000000062', 'Camila Rojas', 'camila@example.com', '+573001234567'),
-  ('c0000000-0000-0000-0000-000000000622', 'aaaaaaaa-0000-0000-0000-000000000062', 'Sin Citas', 'sin@example.com', null);
+  ('c0000000-0000-0000-0000-000000000622', 'aaaaaaaa-0000-0000-0000-000000000062', 'Sin Citas', 'sin@example.com', null),
+  ('c0000000-0000-0000-0000-000000000623', 'aaaaaaaa-0000-0000-0000-000000000062', 'Otra Clienta', 'otra@example.com', null);
 insert into public.appointments (id, barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source) values
   ('e0000000-0000-0000-0000-000000000621', 'aaaaaaaa-0000-0000-0000-000000000062', 'c0000000-0000-0000-0000-000000000621',
    'ba000000-0000-0000-0000-000000000062', now() + interval '2 days', now() + interval '2 days 30 minutes', 25000, 'web'),
   ('e0000000-0000-0000-0000-000000000622', 'aaaaaaaa-0000-0000-0000-000000000062', 'c0000000-0000-0000-0000-000000000621',
-   'ba000000-0000-0000-0000-000000000062', now() - interval '2 days', now() - interval '2 days' + interval '30 minutes', 25000, 'web');
+   'ba000000-0000-0000-0000-000000000062', now() - interval '2 days', now() - interval '2 days' + interval '30 minutes', 25000, 'web'),
+  ('e0000000-0000-0000-0000-000000000623', 'aaaaaaaa-0000-0000-0000-000000000062', 'c0000000-0000-0000-0000-000000000623',
+   'ba000000-0000-0000-0000-000000000062', now() + interval '3 days', now() + interval '3 days 30 minutes', 25000, 'web');
 insert into public.appointment_services (barbershop_id, appointment_id, position, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000000062', 'e0000000-0000-0000-0000-000000000621', 1, '5e000000-0000-0000-0000-000000000062'),
-  ('aaaaaaaa-0000-0000-0000-000000000062', 'e0000000-0000-0000-0000-000000000622', 1, '5e000000-0000-0000-0000-000000000062');
+  ('aaaaaaaa-0000-0000-0000-000000000062', 'e0000000-0000-0000-0000-000000000622', 1, '5e000000-0000-0000-0000-000000000062'),
+  ('aaaaaaaa-0000-0000-0000-000000000062', 'e0000000-0000-0000-0000-000000000623', 1, '5e000000-0000-0000-0000-000000000062');
 delete from public.notifications;
 
 create function pg_temp.hint_of(statement text)
@@ -125,6 +129,23 @@ select pg_temp.hint_of($$select public.request_my_appointments('aaaaaaaa-0000-00
 select is(pg_temp.hint_of($$select public.request_my_appointments('aaaaaaaa-0000-0000-0000-000000000062', 'x@example.com', pg_temp.h('ip 2'))$$),
   'too_many_from_ip', 'and 5 requests an hour per place');
 
+-- 5 a day per customer, even spread over hours.
+reset role;
+update public.notifications set created_at = now() - interval '2 hours' where type = 'customer_appointments';
+insert into public.notifications (barbershop_id, type, scheduled_for, dedupe_key, payload, created_at)
+values ('aaaaaaaa-0000-0000-0000-000000000062', 'customer_appointments', now(), 'viejo-1',
+        '{"customer_id": "c0000000-0000-0000-0000-000000000621"}', now() - interval '3 hours'),
+       ('aaaaaaaa-0000-0000-0000-000000000062', 'customer_appointments', now(), 'viejo-2',
+        '{"customer_id": "c0000000-0000-0000-0000-000000000621"}', now() - interval '3 hours');
+set local role service_role;
+select pg_temp.hint_of($$select public.request_my_appointments('aaaaaaaa-0000-0000-0000-000000000062', 'camila@example.com', pg_temp.h('ip 3'))$$);
+reset role;
+select is(
+  (select count(*)::int from public.notifications where type = 'customer_appointments'),
+  5, 'and at most 5 a day'
+);
+set local role service_role;
+
 -- The link -------------------------------------------------------------------------------------------
 
 select is(pg_temp.hint_of($$select public.issue_customer_link('aaaaaaaa-0000-0000-0000-000000000062', 'c0000000-0000-0000-0000-000000000621', pg_temp.h('lista'))$$),
@@ -136,28 +157,34 @@ reset role;
 set local role anon;
 select is(
   (select array_agg(row(customer_first_name, appointment_id, service_names)::text)
-   from public.my_appointments(pg_temp.h('lista'))),
+   from public.my_appointments('lista')),
   array['(Camila,e0000000-0000-0000-0000-000000000621,{Corte})'],
   'the link lists the upcoming appointments of that customer, never past ones'
 );
 select is(
-  (select count(*)::int from public.my_appointments(pg_temp.h('no existe'))),
+  (select count(*)::int from public.my_appointments('no existe')),
   0, 'an unknown link lists nothing'
 );
-select is(pg_temp.hint_of($$select public.issue_my_appointment_link(pg_temp.h('lista'), 'e0000000-0000-0000-0000-000000000621', pg_temp.h('cita desde la lista'))$$),
+select is(pg_temp.hint_of($$select public.issue_my_appointment_link('lista', 'e0000000-0000-0000-0000-000000000621', pg_temp.h('cita desde la lista'))$$),
   'no error', 'from the list, a link of each appointment');
 select is(
   (select count(*)::int from public.managed_appointment(pg_temp.h('cita desde la lista'))),
   1, 'that opens the appointment (task 3.4)'
 );
-select is(pg_temp.hint_of($$select public.issue_my_appointment_link(pg_temp.h('lista'), 'e0000000-0000-0000-0000-000000000622', pg_temp.h('pasada'))$$),
+select is(pg_temp.hint_of($$select public.issue_my_appointment_link('lista', 'e0000000-0000-0000-0000-000000000622', pg_temp.h('pasada'))$$),
   'link_invalid', 'never for a past appointment');
+select is(pg_temp.hint_of($$select public.issue_my_appointment_link('lista', 'e0000000-0000-0000-0000-000000000623', pg_temp.h('ajena'))$$),
+  'link_invalid', 'nor for an appointment of another customer of the barbershop');
+select is(
+  (select count(*)::int from public.my_appointments(pg_temp.h('lista'))),
+  0, 'the stored hash is not a working link: the functions take the token'
+);
 reset role;
 
 update private.customer_links set expires_at = now() - interval '1 minute' where token_hash = pg_temp.h('lista');
 set local role anon;
 select is(
-  (select count(*)::int from public.my_appointments(pg_temp.h('lista'))),
+  (select count(*)::int from public.my_appointments('lista')),
   0, 'after 24 hours the link lists nothing'
 );
 reset role;

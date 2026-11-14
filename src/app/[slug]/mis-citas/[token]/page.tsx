@@ -5,10 +5,8 @@ import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { toBogotaDate, toBogotaTime } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
-import {
-  linkOfMyAppointment,
-  loadMyAppointments,
-} from "@/modulos/agenda/datos/my-appointments";
+import { openMyAppointment } from "@/modulos/agenda/acciones/my-appointments";
+import { loadMyAppointments } from "@/modulos/agenda/datos/my-appointments";
 import { loadPublicProfile } from "@/modulos/agenda/datos/public-booking";
 import { buttonClasses } from "@/ui/button";
 import { LoadingState } from "@/ui/states";
@@ -26,9 +24,9 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-// C-21: the upcoming appointments of the customer of the link, each with its
-// own link to "Gestionar mi cita" (task 3.4). After 24 hours the link asks
-// for a new one.
+// C-21: the upcoming appointments of the customer of the link; tapping one
+// makes its own link to "Gestionar mi cita" (task 3.4). After 24 hours the
+// link asks for a new one.
 export default function MyAppointmentsListPage({
   params,
 }: PageProps<"/[slug]/mis-citas/[token]">) {
@@ -73,12 +71,7 @@ async function MyAppointmentsList({
     );
   }
 
-  const rows = await Promise.all(
-    list.appointments.map(async (appointment) => ({
-      appointment,
-      link: await linkOfMyAppointment(token, appointment.id),
-    })),
-  );
+  const rows = list.appointments;
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -104,7 +97,7 @@ async function MyAppointmentsList({
           </>
         ) : (
           <ul className="flex flex-col gap-3">
-            {rows.map(({ appointment, link }) => {
+            {rows.map((appointment) => {
               const minutes = Math.round(
                 (appointment.end.getTime() - appointment.start.getTime()) /
                   60_000,
@@ -126,14 +119,17 @@ async function MyAppointmentsList({
                   <p className="text-body font-semibold">
                     {formatPesos(appointment.priceCop)}
                   </p>
-                  {link ? (
-                    <Link
-                      href={routes.manageAppointment(link)}
+                  <form action={openMyAppointment}>
+                    <input type="hidden" name="slug" value={list.slug} />
+                    <input type="hidden" name="lista" value={token} />
+                    <input type="hidden" name="cita" value={appointment.id} />
+                    <button
+                      type="submit"
                       className={buttonClasses({ variant: "secondary" })}
                     >
                       {t.lista.ver}
-                    </Link>
-                  ) : null}
+                    </button>
+                  </form>
                 </li>
               );
             })}

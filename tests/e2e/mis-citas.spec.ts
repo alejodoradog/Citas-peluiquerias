@@ -74,7 +74,7 @@ test("a customer gets the link to their appointments and opens one", async ({
   ).toBeVisible(FIRST_VISIT);
   await expectAccessible(page);
   await expectTouchTargets(page);
-  await page.getByRole("link", { name: m.lista.ver }).click();
+  await page.getByRole("button", { name: m.lista.ver }).click();
   await expect(
     page.getByRole("heading", { level: 1, name: t.gestionar.titulo("Camila") }),
   ).toBeVisible(FIRST_VISIT);

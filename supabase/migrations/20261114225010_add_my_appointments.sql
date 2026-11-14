@@ -6,15 +6,18 @@
 -- 1. request_my_appointments (only the app's server, after Turnstile): the
 --    screen always answers the same, whether the email exists or not. An
 --    email is queued only for a customer with upcoming appointments, at most
---    3 an hour per customer, and the IP is limited like the booking (5 an
---    hour per barbershop).
+--    3 an hour and 5 a day per customer, 10 a day per email address across
+--    barbershops and 100 a day per barbershop; the IP is limited like the
+--    booking (5 an hour per barbershop). Security review of 2026-11-14.
 -- 2. The link lives 24 hours. Like the appointments' links (task 5.3), the
 --    Edge Function makes a random token when it sends the email and only its
 --    hash is kept (private.customer_links).
--- 3. my_appointments(hash): the upcoming confirmed appointments of that
---    customer in that barbershop, without email or phone.
--- 4. issue_my_appointment_link: from that list, a link of each appointment
---    (/c/<token>, task 3.4), only for an appointment of that customer.
+-- 3. my_appointments(token): the upcoming confirmed appointments of that
+--    customer in that barbershop, without email or phone. It takes the token
+--    itself, never its hash, so what the table keeps is not a working link.
+-- 4. issue_my_appointment_link: from that list, when the customer taps an
+--    appointment, a link of it (/c/<token>, task 3.4), only for an
+--    appointment of that customer.
 -- 5. The recipient of the new email is the customer of the payload, who must
 --    still have an email (a deleted customer, task 4.3, gets nothing).
 
@@ -46,6 +49,11 @@ create table private.my_appointments_hits (
 
 create index my_appointments_hits_lookup
   on private.my_appointments_hits (barbershop_id, ip_hash, created_at);
+
+-- The emails of "Mis citas" of a customer, for the limits.
+create index notifications_my_appointments_idx
+  on public.notifications (barbershop_id, ((payload ->> 'customer_id')), created_at)
+  where type = 'customer_appointments';
 
 alter table private.my_appointments_hits enable row level security;
 revoke all on private.my_appointments_hits from public, anon, authenticated, service_role;
@@ -86,6 +94,7 @@ set search_path = ''
 as $$
 declare
   found_customer uuid;
+  found_email text;
 begin
   if p_client_ip_hash is not null then
     if not private.is_token_hash(p_client_ip_hash) then
@@ -108,7 +117,7 @@ begin
     values (p_barbershop_id, p_client_ip_hash);
   end if;
 
-  select c.id into found_customer
+  select c.id, c.email into found_customer, found_email
   from public.customers c
   join public.barbershops b on b.id = c.barbershop_id
   where c.barbershop_id = p_barbershop_id
@@ -128,13 +137,30 @@ begin
     return;
   end if;
 
+  -- One request at a time per customer, so the counts hold.
+  perform pg_advisory_xact_lock(hashtextextended('my_appointments_customer:' || found_customer::text, 0));
   if (
-    select count(*) from public.notifications n
+    select count(*) filter (where n.created_at > now() - interval '1 hour') >= 3
+        or count(*) >= 5
+    from public.notifications n
     where n.barbershop_id = p_barbershop_id
       and n.type = 'customer_appointments'
       and n.payload ->> 'customer_id' = found_customer::text
-      and n.created_at > now() - interval '1 hour'
-  ) >= 3 then
+      and n.created_at > now() - interval '1 day'
+  ) or (
+    select count(*) >= 100 from public.notifications n
+    where n.barbershop_id = p_barbershop_id
+      and n.type = 'customer_appointments'
+      and n.created_at > now() - interval '1 day'
+  ) or (
+    select count(*) >= 10
+    from public.notifications n
+    join public.customers c
+      on c.barbershop_id = n.barbershop_id and c.id::text = n.payload ->> 'customer_id'
+    where n.type = 'customer_appointments'
+      and c.email = found_email
+      and n.created_at > now() - interval '1 day'
+  ) then
     return;
   end if;
 
@@ -185,7 +211,7 @@ grant execute on function public.issue_customer_link(uuid, uuid, text) to servic
 
 -- 3. my_appointments --------------------------------------------------------------------------------
 
-create function public.my_appointments(p_token_hash text)
+create function public.my_appointments(p_token text)
 returns table (
   barbershop_slug text,
   barbershop_name text,
@@ -218,7 +244,7 @@ as $$
       where l.barbershop_id = a.barbershop_id and l.appointment_id = a.id
       order by l.position
     )
-  from private.customer_by_link(p_token_hash) k
+  from private.customer_by_link(encode(sha256(convert_to(coalesce(p_token, ''), 'UTF8')), 'hex')) k
   join public.barbershops b on b.id = k.barbershop_id
   join public.customers c on c.barbershop_id = k.barbershop_id and c.id = k.customer_id
   left join public.appointments a
@@ -233,10 +259,10 @@ $$;
 revoke all on function public.my_appointments(text) from public;
 grant execute on function public.my_appointments(text) to anon, authenticated;
 
--- 4. A link of each appointment of the list (task 3.4). At most 20 links per
--- appointment, so a list opened again and again does not grow without end.
+-- 4. A link of an appointment of the list (task 3.4), made when the customer
+-- taps it. At most 20 links per appointment.
 create function public.issue_my_appointment_link(
-  p_customer_token_hash text,
+  p_customer_token text,
   p_appointment_id uuid,
   p_token_hash text
 )
@@ -252,7 +278,8 @@ begin
   if not private.is_token_hash(p_token_hash) then
     raise exception 'not a token hash' using errcode = 'P0001', hint = 'link_invalid';
   end if;
-  select * into owner_link from private.customer_by_link(p_customer_token_hash);
+  select * into owner_link
+  from private.customer_by_link(encode(sha256(convert_to(coalesce(p_customer_token, ''), 'UTF8')), 'hex'));
   if not found then
     raise exception 'unknown link' using errcode = 'P0001', hint = 'link_invalid';
   end if;

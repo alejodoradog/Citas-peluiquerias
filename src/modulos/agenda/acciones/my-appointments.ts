@@ -1,13 +1,20 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
+import { routes } from "@/lib/routes";
+import { isLinkToken } from "@/lib/tokens/link-token";
+import { isSlug } from "@/modulos/barberias/dominio/slug";
 import { clientIp, hashClientIp } from "@/lib/turnstile/client-ip";
 import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
 import { verifyTurnstile } from "@/lib/turnstile/verify";
 import { parseWith } from "@/lib/validacion/parse";
 import { emailSchema } from "@/lib/validacion/credentials";
 import { z } from "zod";
-import { requestMyAppointments } from "../datos/my-appointments";
+import {
+  linkOfMyAppointment,
+  requestMyAppointments,
+} from "../datos/my-appointments";
 import { loadPublicProfile } from "../datos/public-booking";
 import { ipLimitKey } from "../dominio/booking-limits";
 
@@ -48,10 +55,27 @@ export async function askForMyAppointments(
   const result = await requestMyAppointments({
     barbershopId: profile.id,
     email: form.data.email,
-    clientIpHash: ip ? hashClientIp(ipLimitKey(ip)) : null,
+    // Without a known IP (it should not happen on Vercel), every such request
+    // shares one bucket, so the limit still holds.
+    clientIpHash: hashClientIp(ip ? ipLimitKey(ip) : "sin-ip"),
   });
   if (!result.ok) {
     return { status: "failed", error: result.error, values: form.values };
   }
   return { status: "done" };
+}
+
+// C-21 → C-09: the customer taps an appointment of the list, and only then
+// its link is made (security review: not on every view of the list).
+export async function openMyAppointment(formData: FormData): Promise<void> {
+  const slug = String(formData.get("slug") ?? "");
+  const list = String(formData.get("lista") ?? "");
+  const appointmentId = String(formData.get("cita") ?? "");
+  // Never a path built from something that is not a slug or a token.
+  if (!isSlug(slug) || !isLinkToken(list)) redirect(routes.home);
+  const token = z.uuid().safeParse(appointmentId).success
+    ? await linkOfMyAppointment(list, appointmentId)
+    : null;
+  if (token) redirect(routes.manageAppointment(token));
+  redirect(routes.myAppointmentsList(slug, list));
 }
