@@ -284,6 +284,10 @@ select is(
   pg_temp.hint_of($$ select public.anonymize_customer('aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-0000000000a1') $$),
   'customer_not_found', 'deleting her again finds nobody'
 );
+-- The guard is a trigger, so it holds for any writer. Since task 4.2b a
+-- session writes appointments only through security definer functions, which
+-- write as their owner: these run that way.
+reset role;
 select is(
   pg_temp.hint_of($$ select public.create_appointment('aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-0000000000a1',
                        'ba000000-0000-0000-0000-0000000000a1', pg_temp.at(3, '10:00'),
@@ -306,6 +310,7 @@ select is(
                        and starts_at < now() - interval '7 days' $$),
   'no error', 'her past appointments can still be marked'
 );
+set local role authenticated;
 
 select is(
   pg_temp.hint_of($$ select public.anonymize_customer('aaaaaaaa-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-0000000000a3') $$),

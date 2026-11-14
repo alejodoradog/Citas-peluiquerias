@@ -30,7 +30,8 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
   1. En una cita que ya empezó, tocar "No asistió" y confirmar en la hoja.
   2. Después corregir a "Atendida".
   3. En una cita que todavía no empieza no deben salir esos botones.
-  4. Con 2 inasistencias, la ficha del cliente muestra la alerta.
+  4. En una cita que ya empezó no sale "Reprogramar" (4.2b): si el cliente no llegó, se marca "No asistió" y él separa otra.
+  5. Con 2 inasistencias, la ficha del cliente muestra la alerta.
 - [ ] **6. Cancelar.**
   1. Tocar "Cancelar cita" y confirmar. La hora queda libre en la agenda.
   2. La cita cancelada ya no ofrece ningún botón.
@@ -42,6 +43,21 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
 - [ ] **8. Quitar un bloqueo.** Tocar el bloque rayado en la agenda y luego "Quitar bloqueo". La hora vuelve a estar libre.
 - [ ] **9. Toda la barbería.** Bloquear una hora a "Toda la barbería". Debe salir en la columna de todos los barberos, y la página pública no debe ofrecer esa hora.
 - [ ] **10. Dos personas a la vez (celulares A y B).** Mientras A tiene abierta "Nueva cita" en una hora, B reserva esa misma hora desde la página pública. Cuando A toque "Crear cita", debe decir "Esa hora ya la tomaron".
+
+## Tarea 4.4: "Mi agenda" del barbero (celular A, dueño, y celular B, barbero)
+
+- [ ] **1. Abrir el link.**
+  1. En el celular A, ir a Más › Barberos › un barbero › Link y tocar "Copiar link nuevo".
+  2. Pasarlo al celular B y abrirlo sin sesión. Debe salir "Hola, …" con sus citas de hoy y "Hoy tienes N citas · la próxima a las …".
+- [ ] **2. Nada de dinero ni de otros barberos.** En el día, la semana y el detalle de una cita no debe salir ningún precio, total, correo ni celular del cliente, ni las citas de otro barbero.
+- [ ] **3. La semana.** Tocar "Semana". Cada día muestra su horario o "Descansas", y cuántas citas tiene. Tocar un día abre ese día.
+- [ ] **4. Marcar.** En una cita que ya empezó, tocar "Atendida". En el celular A, la agenda la muestra como atendida. Una cita que todavía no empieza no tiene esos botones.
+- [ ] **5. Bloquear horas.**
+  1. En el celular B, tocar "Bloquear horas", elegir un rango libre y "Almuerzo", y tocar "Bloquear".
+  2. El bloqueo sale en el día del barbero y en la agenda del celular A.
+  3. Intentar bloquear un rango con una cita: debe decir que tiene una cita en ese rango.
+  4. Tocar "Quitar" en el bloqueo. Desaparece en los dos celulares.
+- [ ] **6. Link desactivado.** En el celular A, desactivar el link del barbero. Al recargar el celular B debe salir "Este link ya no funciona".
 
 ## Decisiones provisionales de la 4.2 para revisar juntos
 Están en `docs/tareas/4.2-detalle-cita.md` (M1 a M8). Las que más se notan:

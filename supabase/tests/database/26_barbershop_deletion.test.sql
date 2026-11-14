@@ -401,8 +401,7 @@ select lives_ok(
 -- The upcoming appointment, cancelled; then the last sede -----------------------------------------------
 
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
-update public.appointments set status = 'cancelled_by_barbershop'
-where id = 'e0000000-0000-0000-0000-0000000000a3';
+select public.set_appointment_status('e0000000-0000-0000-0000-0000000000a3', 'cancelled_by_barbershop');
 select lives_ok(
   $$select public.delete_barbershop('aaaaaaaa-0000-0000-0000-000000000003')$$,
   'once its appointment is cancelled, the sede is deleted'

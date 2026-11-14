@@ -184,6 +184,20 @@ describe("appointmentActions", () => {
     });
   });
 
+  it("does not move an appointment that already started", () => {
+    expect(
+      appointmentActions({ status: "confirmed", start: earlier }, now),
+    ).toEqual({
+      mark: true,
+      cancel: true,
+      reschedule: false,
+      editServices: true,
+    });
+    expect(
+      appointmentActions({ status: "confirmed", start: now }, now).reschedule,
+    ).toBe(false);
+  });
+
   it("does nothing with a cancelled appointment", () => {
     for (const status of [
       "cancelled_by_customer",

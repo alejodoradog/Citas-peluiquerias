@@ -13,7 +13,8 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
-          include: ["src/**/*.test.ts"],
+          // The Edge Functions keep their logic in plain TypeScript (task 5.1).
+          include: ["src/**/*.test.ts", "supabase/functions/**/*.test.ts"],
         },
       },
       {
