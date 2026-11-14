@@ -176,13 +176,15 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 No hay pasarela: la barbería paga solo por transferencia (bancaria, Nequi o llave Bre-B), envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento. Los pagos registrados no se editan ni se borran: un registro equivocado se anula y queda el rastro.
 
-**Plan único** (decisión del fundador, decisión 0006)
+**Precio según los barberos de la sede** (decisión del fundador, 2026-11-14; antes era un plan único, decisión 0006)
 
-| Plan | Precio | Barberos |
-| --- | --- | --- |
-| Estándar | $25.000 COP por sede al mes | Hasta 5, de forma informativa: nunca se bloquea registrar más |
+| Barberos activos de la sede | Precio |
+| --- | --- |
+| 1 a 4 | $25.000 COP al mes |
+| 5 a 8 | $40.000 COP al mes |
+| 9 o más | Por acuerdo con el área financiera de Yapoin |
 
-Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6), y el precio por encima de 5 barberos sigue abierto.
+El dueño que corta cuenta como barbero, y nunca se bloquea registrar más barberos. Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6). Se construye en la tarea 5.6.
 
 **Ciclo de la suscripción**
 
@@ -306,7 +308,7 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 - [x] Nombre del producto y dominio: **Yapoin**, `yapoin.com`.
 - [ ] Quién lo desarrolla: tú, un equipo o un freelancer; esto define si el plan de 6 semanas es realista.
 - [ ] Persona natural o empresa: afecta la factura electrónica de tus ventas y las cuentas para recibir pagos (consultar con un contador). Como mínimo, sacar el RUT como persona natural antes de abrir la venta.
-- [x] Precio: plan único de $25.000 COP por sede al mes (decisión 0006). Queda abierto el precio por encima de 5 barberos.
+- [x] Precio: $25.000 COP al mes de 1 a 4 barberos, $40.000 de 5 a 8, y por acuerdo con 9 o más (decisión del fundador, 2026-11-14).
 - [ ] Ciudad y barrios para las 10 barberías piloto.
 - [ ] Correo para recibir comprobantes y cuenta bancaria o Nequi para recibir pagos.
 - [ ] Términos de uso y política de tratamiento de datos personales (Ley 1581 de 2012), porque se guardan nombres, correos y celulares de los clientes.

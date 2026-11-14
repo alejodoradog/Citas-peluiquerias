@@ -23,6 +23,18 @@ where email = 'tu-correo@ejemplo.com';
 
 Es el mismo procedimiento, en el proyecto `barberias-prod` de Supabase, y lo hace solo el dueño del proyecto. Claude Code no toca producción. Se hará en la tarea 6.4.
 
+## Cambiar la contraseña
+Supabase no guarda la contraseña, solo su huella, así que nadie la puede leer. Si se olvidó (como la de `admin-prueba@yapoin.com` en `barberias-dev`), el dueño del proyecto la cambia en el **SQL Editor**:
+
+```sql
+update auth.users
+set encrypted_password = extensions.crypt('la-nueva-contraseña', extensions.gen_salt('bf'))
+where email = 'admin-prueba@yapoin.com';
+```
+
+- Usa una contraseña larga y pásala por fuera del repo (es público).
+- Si el correo del super admin recibe mensajes, también sirve **Authentication → Users → el usuario → Send password recovery**.
+
 ## Quitar el acceso
 
 Para desactivar a un super admin sin borrar su historial (por ejemplo, los pagos que registró):
