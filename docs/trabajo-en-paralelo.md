@@ -20,7 +20,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
 | 5.4 Panel de plataforma (P-01 a P-06) y migración 9 | Socio | Fusionada (#53) |
 | 4.6 Cierre del día (D-64, P2) | Socio | Fusionada (#57) |
-| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | En curso: 5.5a en `hito-5-suscripcion` (solo lectura y avisos); 5.5b después (correos del ciclo y limpieza) |
+| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | En curso: 5.5a en `hito-5-suscripcion` (#63) (solo lectura y avisos); 5.5b después (correos del ciclo y limpieza) |
+| **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
 | 6.3 PWA instalable | Socio | Fuera: el socio propuso no hacer una app (2026-11-13) y el fundador lo confirmó (2026-11-14) |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
 | 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión fusionados (#62) |
@@ -29,10 +30,13 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
 | 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
-| 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
+| 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 6.3 queda fuera, ver el tablero).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 queda fuera, ver el tablero).
+
+> [!important] Respuestas del fundador (2026-11-14)
+> Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
 - La 5.2 va antes de la 5.5 porque es el camino crítico: la 5.3 del fundador y los correos de la 5.5 la necesitan.
 - Si una tarea queda frenada esperando una respuesta del fundador, avanza la siguiente y vuelve después.
 - Si terminas todo, pide más al fundador. No tomes una tarea de otra persona sin cambiar el tablero en un PR.
@@ -158,7 +162,7 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
    - el link lleva un token, y por Q5 no puede ir en el `payload`.
    - **Consúltalo con el fundador** antes de hacerlo. Lo natural es un PR corto después del envío real, porque toca la pantalla de barberos (del fundador).
 
-**Lo que hace el fundador, y cuándo pedírselo:**
+**La configuración de Resend la hace el socio** (decisión del fundador, 2026-11-14), con `docs/operacion/configurar-resend.md`:
 - **Antes de probar de verdad:**
   - crear la cuenta de Resend;
   - agregar `yapoin.com` en `us-east-1`;
@@ -192,6 +196,43 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
   - `supabase/functions/resend-webhook/`;
   - `docs/tareas/5.2-envio-resend.md`.
 - **`run-queue.ts` es la frontera con la cola:** si necesitas cambiar `Sender`, `Queue` o `runQueue`, mantén sus pruebas en verde y avísalo en el PR.
+
+### Respuestas del fundador (2026-11-14)
+- **Datos de pago** para los correos de suscripción (decisión E5 de la 5.2) y para los avisos de la 5.5:
+  - **llave Bre-B:** `3229381101`;
+  - **Nequi:** `3229381101`;
+  - **correo para los comprobantes:** `manuelalejo429@gmail.com`.
+
+  Son los datos del fundador, y él decidió publicarlos en este repo (es público). Van en los secretos de la Edge Function `PAYMENT_BRE_B`, `PAYMENT_NEQUI` y `PAYMENT_EMAIL` de `barberias-dev` (y de producción en la 6.4). Donde una pantalla muestre los datos de pago (D-70 a D-72), usa estos mismos.
+- **El valor del plan depende de cuántos barberos tiene la sede** (tarea 5.6):
+
+  | Barberos activos de la sede | Precio al mes |
+  | --- | --- |
+  | 1 a 4 | $25.000 |
+  | 5 a 8 | $40.000 |
+  | 9 o más | Por acuerdo con el área financiera de Yapoin |
+
+  - El dueño que corta ("Yo también corto") cuenta como barbero.
+  - Mientras no exista la 5.6, los avisos dicen $25.000.
+- **Cuentas sin confirmar:** se borran a los **7 días** (5.5). Ya lo construiste así.
+- **La configuración de Resend es tuya** (`docs/operacion/configurar-resend.md`).
+- **La contraseña de `admin-prueba@yapoin.com`:** nadie la conoce, porque Supabase guarda solo su huella. Se cambia con la sección "Cambiar la contraseña" de `docs/operacion/crear-super-admin.md`, y el fundador te la pasa por fuera del repo.
+- **Los correos E-01 a E-06 no tendrán diseño:** el fundador autorizó a Claude Code a diseñarlos. Tu base sobre E-07 se queda (decisión E4).
+- **Las pruebas humanas se hacen todas al final,** con el producto terminado. No esperes a ellas.
+
+### 5.6 Precio por número de barberos (después de la 5.5)
+- **Regla:** la tabla de "Respuestas del fundador". Cambia la spec ("Plan único" pasa a tres precios) y el catálogo `plans` (decisión 0006).
+- **Qué hay que construir:**
+  - el catálogo con los tres niveles: 1 a 4 y 5 a 8 con su precio; 9 o más sin precio fijo;
+  - `register_subscription_payment` toma el precio según los barberos activos de la sede al registrar el pago;
+  - para "por acuerdo", el super admin escribe el valor en P-03, con un tope razonable y su prueba;
+  - P-03 y la ficha (P-02) muestran el nivel y el valor;
+  - los avisos de suscripción (5.2 y 5.5) dicen el valor que le toca a esa sede.
+- **Decisiones provisionales que propone Claude Code** (confírmalas con el fundador y anótalas en `docs/tareas/5.6-precio-por-barberos.md`):
+  1. el nivel se mide al registrar cada pago, con los barberos activos ese día; agregar un barbero nunca se bloquea;
+  2. si una sede pasa de 4 a 5 barberos a mitad de mes, paga el nuevo valor desde el siguiente pago;
+  3. una sede de 9 o más sin valor acordado no se puede pagar desde P-03 hasta que el super admin escriba el valor.
+- **Ojo, es dinero:** pasa `revisor-seguridad`, como en la 5.4.
 
 ### 5.5 Ciclo de suscripción (después de la 5.4)
 - **Spec:** "Ciclo de la suscripción", pasos 2 (avisos), 5 (gracia), 6 (suspensión) y 7 (reactivación), y la fila "Suscripción por vencer, vencida, suspendida, pago registrado" de "Mensajes del MVP".
@@ -270,7 +311,7 @@ Cómo usarlas:
 - E2E de los flujos de tu tarea en `tests/e2e/<tema>.spec.ts`, con `expectAccessible`, `expectTouchTargets` y `expectNoZoomOnFocus` (`tests/e2e/helpers/pantalla.ts`). Lee `.claude/rules/pruebas.md`: Next deja montada y oculta la página anterior.
 - Revisores `revisor-spec` y `revisor-seguridad` antes de marcar el PR listo. La 5.4, la 4.6 y la 5.5 tocan permisos y dinero.
 - Documenta la tarea en `docs/tareas/<n>-<tema>.md` con el formato de `docs/tareas/3.4-gestionar-cita.md`: qué hace, base de datos, decisiones provisionales numeradas y riesgos.
-- Agrega las pruebas humanas de tu tarea a `docs/pruebas-humanas-hito-<n>.md`, para que el fundador las haga en `www.yapoin.com`.
+- Agrega las pruebas humanas de tu tarea a `docs/pruebas-humanas-hito-<n>.md`. **Se hacen todas juntas cuando el producto esté terminado** (decisión del fundador, 2026-11-14): no esperes a ellas para seguir con la siguiente tarea.
 
 ### Decisiones de negocio
 Si la spec no responde algo, **pregunta al fundador** antes de decidir. Si hay que seguir, toma la opción más conservadora, márcala como provisional en el archivo de la tarea y avísale en el PR.
