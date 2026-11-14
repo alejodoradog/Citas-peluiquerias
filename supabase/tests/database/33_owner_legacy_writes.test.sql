@@ -103,8 +103,9 @@ as $$
   select (((now() at time zone 'America/Bogota')::date + days) + hhmm::time) at time zone 'America/Bogota'
 $$;
 
--- The hint of the error a statement raises, its code if it has no hint, or
--- 'no error'.
+-- The hint of the error a statement raises, its code if it has no hint or is
+-- a missing privilege (newer Postgres adds a "Grant the required privileges"
+-- hint to those), or 'no error'.
 create function pg_temp.hint_of(statement text)
 returns text
 language plpgsql
@@ -116,6 +117,9 @@ begin
   return 'no error';
 exception when others then
   get stacked diagnostics error_hint = pg_exception_hint;
+  if sqlstate = '42501' then
+    return sqlstate;
+  end if;
   return coalesce(nullif(error_hint, ''), sqlstate);
 end;
 $$;
