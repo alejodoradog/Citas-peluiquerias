@@ -238,7 +238,7 @@ El paso a paso de lo que hace el fundador está en `docs/operacion/infraestructu
 ## Decisiones abiertas
 
 1. **Tarifa de SES:** Essentials (US$0,16) por defecto. Si AWS permite elegir "a la carta" (US$0,10), ¿se usa esa? Se confirma al abrir la cuenta.
-2. **Correo al cliente (5.3):** con un solo correo, ¿es la confirmación al reservar, el recordatorio, o la confirmación cuando la cita es para el mismo día y el recordatorio en los demás casos?
+2. **Correo al cliente (5.3): resuelta el 2026-11-14.** El cliente recibe solo el recordatorio, sin confirmación al reservar (decisión del fundador).
 3. **Nombre y dominio:** sigue pendiente en la spec, y SES lo necesita antes de la 5.2.
 4. **Vistas previas:** quedan públicas con datos de prueba, o se protegen con Vercel Authentication (incluido en Hobby y Pro).
 
