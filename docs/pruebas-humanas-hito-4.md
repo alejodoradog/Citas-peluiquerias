@@ -43,6 +43,21 @@ Pruebas que hacen **el fundador y su socio, en persona, con celulares reales**, 
 - [ ] **9. Toda la barbería.** Bloquear una hora a "Toda la barbería". Debe salir en la columna de todos los barberos, y la página pública no debe ofrecer esa hora.
 - [ ] **10. Dos personas a la vez (celulares A y B).** Mientras A tiene abierta "Nueva cita" en una hora, B reserva esa misma hora desde la página pública. Cuando A toque "Crear cita", debe decir "Esa hora ya la tomaron".
 
+## Tarea 4.4: "Mi agenda" del barbero (celular A, dueño, y celular B, barbero)
+
+- [ ] **1. Abrir el link.**
+  1. En el celular A, ir a Más › Barberos › un barbero › Link y tocar "Copiar link nuevo".
+  2. Pasarlo al celular B y abrirlo sin sesión. Debe salir "Hola, …" con sus citas de hoy y "Hoy tienes N citas · la próxima a las …".
+- [ ] **2. Nada de dinero ni de otros barberos.** En el día, la semana y el detalle de una cita no debe salir ningún precio, total, correo ni celular del cliente, ni las citas de otro barbero.
+- [ ] **3. La semana.** Tocar "Semana". Cada día muestra su horario o "Descansas", y cuántas citas tiene. Tocar un día abre ese día.
+- [ ] **4. Marcar.** En una cita que ya empezó, tocar "Atendida". En el celular A, la agenda la muestra como atendida. Una cita que todavía no empieza no tiene esos botones.
+- [ ] **5. Bloquear horas.**
+  1. En el celular B, tocar "Bloquear horas", elegir un rango libre y "Almuerzo", y tocar "Bloquear".
+  2. El bloqueo sale en el día del barbero y en la agenda del celular A.
+  3. Intentar bloquear un rango con una cita: debe decir que tiene una cita en ese rango.
+  4. Tocar "Quitar" en el bloqueo. Desaparece en los dos celulares.
+- [ ] **6. Link desactivado.** En el celular A, desactivar el link del barbero. Al recargar el celular B debe salir "Este link ya no funciona".
+
 ## Decisiones provisionales de la 4.2 para revisar juntos
 Están en `docs/tareas/4.2-detalle-cita.md` (M1 a M8). Las que más se notan:
 - **El candado de "Nueva cita"** es la entrada a "Bloquear horas", porque el diseño no dice desde dónde se abre (M6).

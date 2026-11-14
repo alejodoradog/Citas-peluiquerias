@@ -90,7 +90,7 @@ async function Barbershops({
         <form
           action={routes.admin}
           role="search"
-          className="border-line text-muted focus-within:border-brand focus-within:outline-brand flex h-12.5 items-center gap-2 rounded-xl border bg-white px-3.5 focus-within:outline-2"
+          className="border-line text-muted focus-within:border-brand focus-within:outline-brand flex h-13 items-center gap-2 rounded-xl border bg-white px-3.5 focus-within:outline-2"
         >
           <SearchIcon size={20} />
           <input
