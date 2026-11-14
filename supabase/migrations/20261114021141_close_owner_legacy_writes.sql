@@ -65,12 +65,15 @@ create policy member_insert on public.time_blocks
     and barber_id is null
   );
 
+-- A closure that already ended is history, as delete_time_block keeps it
+-- (block_ended). D-59 only lists the ones that have not ended.
 drop policy member_delete on public.time_blocks;
 create policy member_delete on public.time_blocks
   for delete to authenticated
   using (
     barbershop_id = any ((select private.member_barbershop_ids())::uuid[])
     and barber_id is null
+    and ends_at > now()
   );
 
 -- 5. reschedule_appointment: an appointment that started does not move ------------

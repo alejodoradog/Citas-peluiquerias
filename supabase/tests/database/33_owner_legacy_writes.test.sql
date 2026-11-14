@@ -12,7 +12,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(22);
+select plan(23);
 
 -- Privileges -------------------------------------------------------------------------------
 
@@ -216,6 +216,16 @@ delete from public.time_blocks where id = 'b1000000-0000-0000-0000-000000000002'
 select is(
   (select count(*)::int from public.time_blocks where id = 'b1000000-0000-0000-0000-000000000002'),
   0, 'and removes a closure directly'
+);
+reset role;
+insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
+  ('b1000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', null,
+   pg_temp.day_at(-3, '00:00'), pg_temp.day_at(-2, '00:00'), 'Inventario');
+set local role authenticated;
+delete from public.time_blocks where id = 'b1000000-0000-0000-0000-000000000003';
+select is(
+  (select count(*)::int from public.time_blocks where id = 'b1000000-0000-0000-0000-000000000003'),
+  1, 'but not one that already ended'
 );
 
 -- An appointment that started does not move (founder, 2026-11-13)
