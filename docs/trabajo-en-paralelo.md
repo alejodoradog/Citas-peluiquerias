@@ -25,7 +25,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 5.1 Cola de correos | Fundador | En curso (`hito-5-cola-correos`) |
 | 5.2 y 5.3 Envío por el proveedor (decisión 0008, propuesta) y recordatorio | Fundador | Pendiente |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
-| 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Pendiente |
+| 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | En curso (`hito-4-rutas-viejas`) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
 | 6.4 y 6.6 Producción y barberías piloto | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |

@@ -397,6 +397,8 @@ export const textos = {
       slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
       not_confirmed: "La cita cambió mientras tanto. Revísala de nuevo.",
       not_started: "La cita aún no empieza. Márcala cuando llegue la hora.",
+      already_started:
+        "Esa cita ya pasó y no se puede mover. Si el cliente quiere venir, agenda una cita nueva.",
       status_invalid: "No se puede hacer ese cambio a la cita.",
       appointment_closed: "Una cita cancelada no cambia de servicios.",
       overlaps_appointment:

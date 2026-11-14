@@ -153,7 +153,7 @@ select lives_ok(
   'and its slot is free right away'
 );
 
--- 7. The owner hits the same rule from the panel ----------------------------------
+-- 7. The panel goes through the functions of task 4.2 ----------------------------------
 
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
@@ -163,8 +163,8 @@ select throws_ok(
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-0000000000d2',
             'aaaaaaaa-0000-0000-0000-0000000000b1',
             '2026-11-10 19:20Z', '2026-11-10 20:00Z', 25000, 'manual')$$,
-  '23P01', null,
-  'a manual appointment from the panel cannot overlap either'
+  '42501', null,
+  'the panel does not insert appointments directly (task 4.2b): create_manual_appointment refuses the overlap, test 32'
 );
 
 reset role;

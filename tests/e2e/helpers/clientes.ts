@@ -5,10 +5,12 @@ import {
   toBogotaDate,
 } from "../../../src/lib/fechas/fechas";
 import { textos } from "../../../src/ui/textos";
+import { seedAppointment } from "./agenda";
 import { createBookableShop, signedInClient } from "./supabase";
 
 // The customers of the Clientes tests (task 4.3), made with the owner's own
-// session, as the panel would (RLS applies; manual appointments only):
+// session, as the panel would (RLS applies). Their appointments, past ones
+// included, go in with the server key (seedAppointment, task 4.2b):
 // - Diego Prada: 2 visits (Corte, then Corte + Barba: $65.000) and 2
 //   no-shows, all past, so his profile shows the alert;
 // - Laura Vélez: an appointment tomorrow at 4:00 p. m.;
@@ -100,27 +102,14 @@ export async function createShopWithCustomers(tag: string) {
     },
   ];
   for (const appointment of appointments) {
-    const { data: id, error: createError } = await client.rpc(
-      "create_appointment",
-      {
-        p_barbershop_id: shop.id,
-        p_customer_id: idOf(appointment.customer),
-        p_barber_id: shop.barbers.ana,
-        p_starts_at: fromBogota(
-          addDays(today, appointment.day),
-          appointment.time,
-        ).toISOString(),
-        p_service_ids: appointment.services,
-      },
-    );
-    if (createError) throw createError;
-    if (appointment.status !== "confirmed") {
-      const { error: statusError } = await client
-        .from("appointments")
-        .update({ status: appointment.status })
-        .eq("id", id);
-      if (statusError) throw statusError;
-    }
+    await seedAppointment({
+      barbershopId: shop.id,
+      customerId: idOf(appointment.customer),
+      barberId: shop.barbers.ana,
+      startsAt: fromBogota(addDays(today, appointment.day), appointment.time),
+      serviceIds: appointment.services,
+      status: appointment.status,
+    });
   }
 
   return {
