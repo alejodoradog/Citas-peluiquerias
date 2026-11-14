@@ -22,7 +22,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.6 Cierre del día (D-64, P2) | Socio | Fusionada (#57) |
 | **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | En curso (#63, 5.5a) |
 | **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
-| 6.3 PWA instalable | Socio | Fuera: el socio propuso no hacer una app (2026-11-13) y el fundador lo confirmó (2026-11-14) |
+| 6.3 eliminada: solo web | — | — |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
 | 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
 | 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
@@ -33,7 +33,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 queda fuera, ver el tablero).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 se eliminó: solo web).
 
 > [!important] Respuestas del fundador (2026-11-14)
 > Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
@@ -251,8 +251,7 @@ Edge Function send-notifications ─► responde 202 y sigue en segundo plano
   - No crees tu propia cola.
 - **No incluye "Mis citas"** (C-19 a C-21): es un link que llega por correo y lo hace el fundador.
 
-### 6.3 PWA instalable (fuera)
-Fuera del MVP: el socio propuso no hacer una app y el fundador lo confirmó el 2026-11-14. No se construye.
+### 6.3 eliminada: solo web
 
 ## 3. Diseño, sin acceso a Claude Design
 
@@ -295,7 +294,7 @@ Cómo usarlas:
 ### Archivos compartidos
 | Archivo | Regla |
 | --- | --- |
-| `src/ui/textos.ts` | Un bloque propio de primer nivel (`plataforma: { … }`, `cierre: { … }`, `suscripcion: { … }`, `pwa: { … }`), puesto **justo antes de `  proximamente: {`**. No edites bloques ajenos; si necesitas un texto de otro bloque, impórtalo. |
+| `src/ui/textos.ts` | Un bloque propio de primer nivel (`plataforma: { … }`, `cierre: { … }`, `suscripcion: { … }`), puesto **justo antes de `  proximamente: {`**. No edites bloques ajenos; si necesitas un texto de otro bloque, impórtalo. |
 | `src/lib/routes.ts` | Agrega tus rutas en un grupo con un comentario de la tarea. `barberAgenda` (`/b/<token>`) y `admin` ya existen. |
 | `src/lib/supabase/database.types.ts` | Se regenera con `pnpm db:types`; el CI lo compara con el generador. Si hay conflicto, regenéralo después de meter `main`. |
 | `src/app/(panel)/panel/page.tsx` (la agenda, del fundador) | Solo montar `SubscriptionNotice` (5.5), una línea. Avísalo en el PR. |
