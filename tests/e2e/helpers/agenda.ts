@@ -2,10 +2,11 @@ import { createHash, randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { requireLocalSupabaseUrl } from "./supabase";
 
-// The appointments of the agenda's tests (task 4.1), written the way the app
-// writes them: a web booking through book_appointment_from_app with the
-// server key (since task 3.5 only the server books), a manual one through
-// create_appointment with the owner's session.
+// The appointments of the agenda's tests (task 4.1). A web booking goes
+// through book_appointment_from_app with the server key, as the app books
+// (task 3.5). The other seeds also use the server key: since task 4.2b the
+// owner's session writes appointments and a barber's blocks only through the
+// functions of task 4.2, which refuse past times, and the tests need them.
 
 function serverClient() {
   const key = process.env.SUPABASE_SECRET_KEY;
@@ -62,30 +63,24 @@ export async function addManualAppointment(
     .select("id")
     .single();
   if (customerError) throw customerError;
-  const { data: id, error } = await owner.rpc("create_appointment", {
-    p_barbershop_id: barbershopId,
-    p_customer_id: customer.id,
-    p_barber_id: appointment.barberId,
-    p_starts_at: appointment.startsAt.toISOString(),
-    p_service_ids: appointment.serviceIds,
+  return seedAppointment({
+    barbershopId,
+    customerId: customer.id,
+    barberId: appointment.barberId,
+    startsAt: appointment.startsAt,
+    serviceIds: appointment.serviceIds,
+    status: appointment.status,
   });
-  if (error) throw error;
-  if (appointment.status) {
-    const { error: statusError } = await owner
-      .from("appointments")
-      .update({ status: appointment.status })
-      .eq("id", id);
-    if (statusError) throw statusError;
-  }
-  return id as string;
 }
 
+// The owner's session is not needed any more (task 4.2b); it stays in the
+// signature so the callers do not change.
 export async function addBlock(
-  owner: SupabaseClient,
+  _owner: SupabaseClient,
   barbershopId: string,
   block: { barberId: string; startsAt: Date; endsAt: Date; reason: string },
 ) {
-  const { error } = await owner.from("time_blocks").insert({
+  const { error } = await serverClient().from("time_blocks").insert({
     barbershop_id: barbershopId,
     barber_id: block.barberId,
     starts_at: block.startsAt.toISOString(),
@@ -93,4 +88,34 @@ export async function addBlock(
     reason: block.reason,
   });
   if (error) throw error;
+}
+
+// A manual appointment of an existing customer, at any time (past ones too),
+// with the server key, as create_manual_appointment would write it; then its
+// status, if it is not confirmed.
+export async function seedAppointment(appointment: {
+  barbershopId: string;
+  customerId: string;
+  barberId: string;
+  startsAt: Date;
+  serviceIds: string[];
+  status?: "confirmed" | "attended" | "no_show" | "cancelled_by_barbershop";
+}): Promise<string> {
+  const server = serverClient();
+  const { data: id, error } = await server.rpc("create_appointment", {
+    p_barbershop_id: appointment.barbershopId,
+    p_customer_id: appointment.customerId,
+    p_barber_id: appointment.barberId,
+    p_starts_at: appointment.startsAt.toISOString(),
+    p_service_ids: appointment.serviceIds,
+  });
+  if (error) throw error;
+  if (appointment.status && appointment.status !== "confirmed") {
+    const { error: statusError } = await server
+      .from("appointments")
+      .update({ status: appointment.status })
+      .eq("id", id);
+    if (statusError) throw statusError;
+  }
+  return id as string;
 }

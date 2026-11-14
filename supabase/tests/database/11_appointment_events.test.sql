@@ -50,8 +50,10 @@ insert into public.appointments (id, barbershop_id, customer_id, barber_id, star
    'bbbbbbbb-0000-0000-0000-0000000000b1', now() + interval '1 day', now() + interval '1 day 40 minutes', 25000, 'web');
 
 -- A signed-in owner is staff, with their account -----------------------------------------
+-- Since task 4.2b the session changes appointments only through the security
+-- definer functions of task 4.2: they write as their owner, with the caller's
+-- claims, as these updates do.
 
-set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
 
 update public.appointments set status = 'attended' where id = 'aaaaaaaa-0000-0000-0000-0000000000e1';
@@ -76,6 +78,8 @@ select results_eq(
   $$values ('rescheduled', 'staff', '01:00:00')$$,
   'a reschedule is logged with the old and new times, and a session stays staff'
 );
+
+set local role authenticated;
 
 select throws_ok(
   $$insert into public.appointment_events (barbershop_id, appointment_id, type, actor)
