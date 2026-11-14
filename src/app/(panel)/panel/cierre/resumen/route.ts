@@ -5,7 +5,7 @@ import {
   dayClose,
   parseCloseDay,
 } from "@/modulos/cierre/dominio/day-close";
-import { requireOwner } from "@/modulos/cuentas/guards";
+import { requireReadyOwner } from "../../ready-owner";
 import { textos } from "@/ui/textos";
 
 const t = textos.cierre.csv;
@@ -13,7 +13,7 @@ const t = textos.cierre.csv;
 // "Descargar resumen" of D-64 (task 4.6, decision C3): the day close of the
 // active barbershop as a CSV, for the owner only. Never cached.
 export async function GET(request: Request): Promise<Response> {
-  const { barbershop } = await requireOwner();
+  const { barbershop } = await requireReadyOwner();
   const date = parseCloseDay(
     new URL(request.url).searchParams.get("dia") ?? undefined,
     toBogotaDate(now()),

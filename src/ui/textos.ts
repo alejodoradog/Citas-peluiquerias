@@ -1996,7 +1996,7 @@ export const textos = {
     guardado: "Comisión guardada.",
     noGuardado: "No pudimos guardar la comisión. Intenta de nuevo.",
     descargar: "Descargar resumen",
-    sinAtendidos: "Aún no hay servicios atendidos este día.",
+    sinAtendidos: "No hay servicios atendidos este día.",
     // The CSV of "Descargar resumen" (decision C3).
     csv: {
       encabezado: [

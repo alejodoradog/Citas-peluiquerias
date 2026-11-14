@@ -111,9 +111,9 @@ export const COMMISSION_OPTIONS = Array.from(
 );
 
 export function parseCommission(value: string): number | null {
+  if (!/^\d{1,3}$/.test(value)) return null;
   const percent = Number(value);
-  return (COMMISSION_OPTIONS as readonly number[]).includes(percent) &&
-    value.trim() !== ""
+  return (COMMISSION_OPTIONS as readonly number[]).includes(percent)
     ? percent
     : null;
 }
@@ -135,7 +135,10 @@ export function closeCsv(
   words: { heading: readonly [string, string, string, string]; totals: string },
 ): string {
   const cell = (value: string | number | null) => {
-    const text = value === null ? "" : String(value);
+    // A name that starts like a formula (=, +, -, @) never runs in Excel.
+    const raw = value === null ? "" : String(value);
+    const text =
+      typeof value === "string" && /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
     return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
   };
   const row = (values: (string | number | null)[]) =>

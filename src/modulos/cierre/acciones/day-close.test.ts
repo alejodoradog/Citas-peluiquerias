@@ -21,6 +21,9 @@ vi.mock("@/lib/fechas/fechas", async (original) => ({
 vi.mock("@/modulos/cuentas/guards", () => ({
   requireOwner: async () => ({ kind: "owner", barbershop: { id: "shop-1" } }),
 }));
+vi.mock("@/modulos/barberias/datos/setup", () => ({
+  barbershopNeedsSetup: async () => false,
+}));
 const saveCommission = vi.fn(async () => true);
 vi.mock("../datos/day-close", () => ({ saveCommission }));
 

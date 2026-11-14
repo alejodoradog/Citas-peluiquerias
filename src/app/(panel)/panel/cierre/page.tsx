@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { addDays, getWeekday, now, toBogotaDate } from "@/lib/fechas/fechas";
-import { routes } from "@/lib/routes";
+import { routes, SAVED_PARAM } from "@/lib/routes";
 import { loadDayClose } from "@/modulos/cierre/datos/day-close";
 import { dayClose, parseCloseDay } from "@/modulos/cierre/dominio/day-close";
 import { initialsOf } from "@/ui/avatar";
@@ -101,7 +101,9 @@ async function DayCloseScreen({
         }
       />
       <main className="flex flex-col gap-3 px-5 pt-1 pb-5">
-        {params.guardado ? <Notice tone="success" title={t.guardado} /> : null}
+        {params[SAVED_PARAM] ? (
+          <Notice tone="success" title={t.guardado} />
+        ) : null}
         {params.aviso ? <Notice tone="danger" title={t.noGuardado} /> : null}
         <dl className="grid grid-cols-2 gap-2.5">
           {figures.map((figure) => (

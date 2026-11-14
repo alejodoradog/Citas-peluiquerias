@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
-import { routes } from "@/lib/routes";
+import { routes, SAVED_PARAM } from "@/lib/routes";
+import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { saveCommission } from "../datos/day-close";
 import { parseCloseDay, parseCommission } from "../dominio/day-close";
@@ -13,6 +14,8 @@ import { parseCloseDay, parseCommission } from "../dominio/day-close";
 // ?guardado=1 or ?aviso=1 says how it went.
 export async function setCommission(formData: FormData): Promise<void> {
   const { barbershop } = await requireOwner();
+  // Like every screen of the panel: the setup wizard first (task 2.1).
+  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
   const date = parseCloseDay(
     String(formData.get("dia") ?? ""),
     toBogotaDate(now()),
@@ -22,6 +25,6 @@ export async function setCommission(formData: FormData): Promise<void> {
     percent !== null && (await saveCommission(barbershop.id, percent));
   revalidatePath(routes.panelClose);
   const params = new URLSearchParams({ dia: date });
-  params.set(saved ? "guardado" : "aviso", "1");
+  params.set(saved ? SAVED_PARAM : "aviso", "1");
   redirect(`${routes.panelClose}?${params.toString()}`);
 }

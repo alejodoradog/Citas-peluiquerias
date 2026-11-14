@@ -37,8 +37,8 @@ export const metadata: Metadata = { title: t.titulo };
 // D-50: the owner's settings, for the active sede, with the sede switcher
 // on top (task 2.6). Servicios, Barberos, Datos y fotos (2.4d), Horario
 // (2.4a), Festivos y cierres (2.4c), Reservas y cancelaciones (2.4b) and Link
-// de reservas (2.4e) work now; Datos de abono (after launch, D-63) and Cierre
-// del día (4.6) show "Pronto" without a link (decision 9 of task 2.2). Its
+// de reservas (2.4e) and Cierre del día (4.6) work now; Datos de abono (after
+// launch, D-63) shows "Pronto" without a link (decision 9 of task 2.2). Its
 // top bar names the active sede, as the design does, so the whole frame
 // waits for it; "Cerrar sesión" is in "Tu cuenta".
 export default function MorePage() {

@@ -126,6 +126,9 @@ describe("parseCommission", () => {
     expect(parseCommission("42")).toBeNull();
     expect(parseCommission("105")).toBeNull();
     expect(parseCommission("abc")).toBeNull();
+    expect(parseCommission("5e0")).toBeNull();
+    expect(parseCommission(" 5")).toBeNull();
+    expect(parseCommission("")).toBeNull();
   });
 });
 
@@ -163,6 +166,19 @@ describe("closeCsv (decision C3)", () => {
         "",
       ].join("\r\n"),
     );
+  });
+
+  it("never lets a name run as a formula in Excel", () => {
+    const close = dayClose({
+      appointments: [attended("x", 1000)],
+      barbers: [
+        { id: "x", name: "=HYPERLINK(1)", isOwner: false, sortOrder: 1 },
+      ],
+      commissionPercent: 0,
+    });
+    expect(
+      closeCsv(close, { heading: ["a", "b", "c", "d"], totals: "T" }),
+    ).toContain("'=HYPERLINK(1);1;1000;");
   });
 
   it("quotes a name that could break a row", () => {
