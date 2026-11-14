@@ -20,7 +20,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
 | 5.4 Panel de plataforma (P-01 a P-06) y migración 9 | Socio | Fusionada (#53) |
 | 4.6 Cierre del día (D-64, P2) | Socio | Fusionada (#57) |
-| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | 5.5a fusionada (#63); 5.5b en curso en `hito-5-suscripcion-correos` (correos del ciclo y limpieza) |
+| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | 5.5a fusionada (#63); 5.5b en revisión (#72: correos del ciclo y limpieza) |
 | **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
 | 6.3 eliminada: solo web | — | — |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |

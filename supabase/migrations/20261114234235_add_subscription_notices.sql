@@ -19,6 +19,8 @@
 --   due:     expires_on                          subscription_expiring
 --   grace:   expires_on + 3 .. expires_on + 5   subscription_expired
 --   paused:  expires_on + 6 .. expires_on + 8   subscription_suspended
+-- "due" has no window on purpose: "vence el …" sent a day late would read
+-- wrong, and the grace notice follows 3 days after.
 -- Left out (provisional decisions S9 and S10):
 -- - a barbershop suspended by hand (suspend_barbershop, task 5.4): its owner
 --   already knows, and paying alone does not lift it (spec, step 7);
@@ -127,12 +129,17 @@ create trigger enqueue_payment_notice
 
 -- 3. Accounts never confirmed (decision S1: 7 days) ------------------------------------
 -- An owner who signed up and never confirmed their email leaves a barbershop
--- holding its slug. After p_age the account goes, with its barbershops, if
--- they are empty: no appointments, customers, payments nor other members.
--- An unconfirmed owner cannot sign in, so their barbershop holds only what
--- sign-up created; anything else that refers to it (a foreign key) keeps the
--- account, and the next one is tried. Accounts without a barbershop (made by
--- hand, such as super admins) are never touched.
+-- holding its slug. p_age after the last confirmation email (or the sign-up)
+-- the account goes, with its barbershops, if every one is untouched:
+-- - no appointments, customers, payments nor other members (a barbershop has
+--   one owner today; the check stays for when that changes);
+-- - not changed since sign-up (updated_at): an unconfirmed owner cannot sign
+--   in, so a change means the super admin extended or suspended it (5.4).
+-- Anything else that refers to a barbershop (a foreign key, on delete
+-- restrict) rolls that account back and the next one is tried; any other
+-- error too, with a warning, so one account never stops the job. Accounts
+-- without a barbershop (made by hand, such as super admins) are never
+-- touched.
 
 create function private.purge_unconfirmed_accounts(
   p_age interval default interval '7 days'
@@ -152,6 +159,7 @@ begin
     select u.id
     from auth.users u
     where u.email_confirmed_at is null
+      and coalesce(u.confirmation_sent_at, u.created_at) < now() - p_age
       and u.created_at < now() - p_age
       and exists (select 1 from public.memberships m where m.user_id = u.id)
       and not exists (
@@ -160,9 +168,11 @@ begin
       and not exists (
         select 1
         from public.memberships m
+        join public.barbershops b on b.id = m.barbershop_id
         where m.user_id = u.id
           and (
-            exists (select 1 from public.appointments a where a.barbershop_id = m.barbershop_id)
+            b.updated_at > b.created_at + interval '1 minute'
+            or exists (select 1 from public.appointments a where a.barbershop_id = m.barbershop_id)
             or exists (select 1 from public.customers c where c.barbershop_id = m.barbershop_id)
             or exists (select 1 from public.subscription_payments s where s.barbershop_id = m.barbershop_id)
             or exists (
@@ -173,17 +183,30 @@ begin
       )
   loop
     begin
+      -- Still unconfirmed now, and locked: confirming at this very moment
+      -- waits, or keeps the account.
+      perform 1 from auth.users
+      where id = account and email_confirmed_at is null
+      for update;
+      if not found then
+        continue;
+      end if;
+
       select array_agg(m.barbershop_id) into shops
       from public.memberships m
       where m.user_id = account;
+      perform 1 from public.barbershops where id = any (shops) for update;
 
       delete from public.memberships where user_id = account;
       delete from public.barbershops where id = any (shops);
       delete from auth.users where id = account;
       purged := purged + 1;
-    exception when foreign_key_violation then
-      -- Something else refers to it: the account stays as it was.
-      null;
+    exception
+      when foreign_key_violation then
+        -- Something refers to it: the account stays as it was.
+        null;
+      when others then
+        raise warning 'purge_unconfirmed_accounts kept %: %', account, sqlstate;
     end;
   end loop;
   return purged;

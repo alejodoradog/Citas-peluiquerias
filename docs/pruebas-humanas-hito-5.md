@@ -93,7 +93,7 @@ Con una barbería de prueba que tenga servicios, barberos y una cita para mañan
 
 ## Tarea 5.5b: correos del ciclo y limpieza (celular A, super admin; dueño con Gmail)
 
-- [ ] **1. Por vencer.** Con el panel de plataforma, extender la prueba de una barbería de prueba hasta dentro de 3 días. Al otro día, a las 8:00 a. m., llega "Tu prueba gratis vence el …" con el valor y los datos de pago.
+- [ ] **1. Por vencer.** Con el panel de plataforma, extender la prueba de una barbería de prueba hasta dentro de 3 días. A más tardar a las 8:00 a. m. del otro día llega "Tu prueba gratis vence el …" con el valor y los datos de pago.
 - [ ] **2. Pago registrado.** Registrar un pago a esa barbería: en un minuto llega "Recibimos tu pago" con el valor y la nueva fecha.
 - [ ] **3. Pausada.** Con una barbería vencida hace 6 días, a las 8:00 a. m. llega "Tu barbería está pausada".
 - [ ] **4. Una sola vez.** Ninguno de estos correos llega dos veces.
