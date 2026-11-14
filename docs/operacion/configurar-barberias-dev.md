@@ -72,7 +72,7 @@ En Supabase → **Authentication**:
 - **URL Configuration:**
   - **Site URL:** `https://www.yapoin.com`. Es la dirección a la que apuntan los links de los correos; no limita desde dónde se usa la app.
   - **Redirect URLs:** `https://www.yapoin.com/**` y `https://citas-peluiquerias-*-yapoin.vercel.app/**`.
-- **Plantillas de correo: esperan a la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), y el nuestro será Amazon SES (decisión 0007). Cuando esté:
+- **Plantillas de correo: van con la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), que ahora es Resend (decisión 0008; los pasos están en `docs/operacion/configurar-resend.md`). Con el SMTP puesto:
   - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
   - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
   - Se copia el archivo completo, en la pestaña **Source**, sin cambiar lo que va entre llaves dobles.

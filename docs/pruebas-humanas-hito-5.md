@@ -41,5 +41,14 @@ Se entra con `admin-prueba@yapoin.com`. Conviene usar una barbería de prueba cr
 - [ ] **2. La fecha del pago.** En una barbería creada hace pocos días, la lista de fechas de "Registrar pago" empieza el día en que se creó, no un mes atrás.
 - [ ] **3. Anular sigue funcionando.** Anular un pago desde su ficha: queda tachado con su motivo. Después se puede registrar otra vez esa misma referencia.
 
+## Tarea 5.2: correos con Resend (celular A, dueño)
+
+Antes, el fundador sigue `docs/operacion/configurar-resend.md` en `barberias-dev`.
+
+- [ ] **1. Auth.** Registrarse con un correo nuevo de Gmail y con uno de Outlook. El correo de confirmación llega a la bandeja de entrada (no a spam), en español y desde `citas@yapoin.com`. Lo mismo con "Recuperar clave".
+- [ ] **2. Un aviso de suscripción.** Encolar `subscription_expiring` para una barbería de prueba (paso 5 de la guía). En un minuto llega "Tu prueba gratis vence el …", con el botón "Abrir mi panel" que lleva a `www.yapoin.com/panel`.
+- [ ] **3. Los datos de pago.** Sin `PAYMENT_*`, el correo dice "Te enviaremos los datos de pago por correo". Con ellos, dice cómo pagar.
+- [ ] **4. En el celular.** El correo se lee bien en el celular: el texto no se corta y el botón se toca fácil.
+
 ## Decisiones provisionales de la 5.4 para revisar juntos
 Están en `docs/tareas/5.4-panel-plataforma.md`, de P1 a P11.

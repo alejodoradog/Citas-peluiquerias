@@ -565,6 +565,9 @@ isOneToOne: false
 "reactivate_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
                            },
+"record_email_event":
+{ Args: { "p_event": string,"p_notification_id": string }; Returns: boolean
+                           },
 "register_subscription_payment":
 { Args: { "p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {
               "amount_cop": number,

@@ -5,14 +5,21 @@
 // Secrets of the function (set in each Supabase project, never in the repo):
 // - NOTIFICATIONS_SECRET: the same value as the Vault secret
 //   notifications_secret, at least 32 characters.
-// - The provider's key, from task 5.2 (decision 0008).
+// - RESEND_API_KEY and EMAIL_FROM (task 5.2, decision 0008), for instance
+//   "Yapoin <citas@yapoin.com>". Without both there is no Sender: the
+//   function answers 503 and claims nothing, so due messages wait in the
+//   queue (local, the CI and any project without a key).
+// - PAYMENT_BRE_B, PAYMENT_NEQUI and PAYMENT_EMAIL: how owners pay (decision
+//   E5). Optional; without them the emails promise to send the data.
+// - SITE_URL: the app, for the button of the emails (www.yapoin.com).
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are given by Supabase.
 //
 // pg_net stops waiting after 5 s, so the function answers 202 at once and
-// works the batch in the background (EdgeRuntime.waitUntil). Until task 5.2
-// plugs the provider in there is no Sender: the function answers 503 and
-// claims nothing, so due messages wait in the queue.
-import { createClient } from "npm:@supabase/supabase-js@2";
+// works the batch in the background (EdgeRuntime.waitUntil).
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { emailData, type EmailDb } from "./content.ts";
+import { render } from "./render.ts";
+import { resendSender } from "./resend-sender.ts";
 import {
   type Queue,
   type Sender,
@@ -24,8 +31,83 @@ import {
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
-function senderFromEnv(): Sender | null {
-  return null;
+const env = (name: string) => Deno.env.get(name)?.trim() || null;
+
+// Every read filters by the barbershop of the message (content.ts).
+function emailDb(db: SupabaseClient): EmailDb {
+  return {
+    async barbershop(id) {
+      const { data } = await db
+        .from("barbershops")
+        .select("name, slug, subscription_status, plan, expires_on")
+        .eq("id", id)
+        .maybeSingle();
+      return data
+        ? {
+            name: data.name,
+            slug: data.slug,
+            status: data.subscription_status,
+            plan: data.plan,
+            expiresOn: data.expires_on,
+          }
+        : null;
+    },
+    async planPrice(code) {
+      const query = db.from("plans").select("monthly_price_cop");
+      const { data } = await (code
+        ? query.eq("code", code)
+        : query.eq("active", true).order("sort_order")
+      )
+        .limit(1)
+        .maybeSingle();
+      return data?.monthly_price_cop ?? null;
+    },
+    async ownerName(barbershopId) {
+      const { data } = await db
+        .from("memberships")
+        .select("profiles(full_name)")
+        .eq("barbershop_id", barbershopId)
+        .eq("role", "owner")
+        .order("created_at")
+        .limit(1)
+        .maybeSingle();
+      const profile = data?.profiles as { full_name?: string } | null;
+      return profile?.full_name?.split(" ")[0] ?? null;
+    },
+    async payment(barbershopId, paymentId) {
+      const { data } = await db
+        .from("subscription_payments")
+        .select("amount_cop")
+        .eq("barbershop_id", barbershopId)
+        .eq("id", paymentId)
+        .maybeSingle();
+      return data ? { amountCop: data.amount_cop } : null;
+    },
+  };
+}
+
+function senderFromEnv(db: SupabaseClient): Sender | null {
+  const apiKey = env("RESEND_API_KEY");
+  const from = env("EMAIL_FROM");
+  if (!apiKey || !from) return null;
+  const content = emailDb(db);
+  const settings = {
+    payInfo: {
+      breB: env("PAYMENT_BRE_B"),
+      nequi: env("PAYMENT_NEQUI"),
+      email: env("PAYMENT_EMAIL"),
+    },
+    siteUrl: env("SITE_URL") ?? "https://www.yapoin.com",
+  };
+  return resendSender({
+    fetch,
+    apiKey,
+    from,
+    async compose(message) {
+      const data = await emailData(content, message, settings);
+      return data ? render(message.type, data) : null;
+    },
+  });
 }
 
 function json(status: number, body: unknown): Response {
@@ -44,14 +126,13 @@ Deno.serve((request) => {
     return json(403, { error: "forbidden" });
   }
 
-  const sender = senderFromEnv();
-  if (!sender) return json(503, { error: "no_email_provider" });
-
   const db = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
+  const sender = senderFromEnv(db);
+  if (!sender) return json(503, { error: "no_email_provider" });
   const queue: Queue = {
     async claim(limit) {
       const { data, error } = await db.rpc("claim_notifications", {
