@@ -10,6 +10,11 @@
 // exception noted in docs/tareas/5.2-envio-resend.md).
 export const textos = {
   marca: "Yapoin",
+  // The wordmark of the header: "Ya" in ink and "poin" in the brand color,
+  // and the product line (Yapoin Citas, as the Auth emails).
+  marcaInicio: "Ya",
+  marcaFin: "poin",
+  producto: "Citas",
   saludo: (nombre: string | null) => (nombre ? `Hola, ${nombre}.` : "Hola."),
   abrirPanel: "Abrir mi panel",
   pie: (barberia: string) =>
@@ -117,13 +122,19 @@ function payLine(data: EmailData): string | null {
 }
 
 function frame(data: EmailData, subject: string, paragraphs: string[]): Email {
-  const panel = `${data.siteUrl.replace(/\/$/, "")}/panel`;
+  const site = data.siteUrl.replace(/\/$/, "");
+  const panel = `${site}/panel`;
   const lines = [t.saludo(data.ownerName), ...paragraphs];
   const footer = t.pie(data.barbershop.name);
   const html = [
     '<!doctype html><html lang="es-CO"><body style="margin:0;background:#f4f7f6;font-family:Arial,Helvetica,sans-serif;color:#16211f">',
     '<div style="max-width:480px;margin:0 auto;padding:24px 20px">',
-    `<p style="margin:0 0 20px;font-size:18px;font-weight:700;color:#145a63">${escapeHtml(t.marca)}</p>`,
+    // The icon of the app (public/icon-192.png) next to the wordmark.
+    '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px"><tr>',
+    `<td style="padding-right:10px;vertical-align:middle"><img src="${escapeHtml(site)}/icon-192.png" width="40" height="40" alt="${escapeHtml(t.marca)}" style="display:block;border:0;border-radius:10px"></td>`,
+    `<td style="vertical-align:middle"><span style="font-size:26px;font-weight:700;color:#16211f">${escapeHtml(t.marcaInicio)}</span><span style="font-size:26px;font-weight:700;color:#1e7f8c">${escapeHtml(t.marcaFin)}</span>`,
+    `<span style="font-size:12px;font-weight:700;letter-spacing:2px;color:#1e7f8c;text-transform:uppercase;padding-left:8px">${escapeHtml(t.producto)}</span></td>`,
+    "</tr></table>",
     `<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3">${escapeHtml(subject)}</h1>`,
     ...lines.map(
       (line) =>
