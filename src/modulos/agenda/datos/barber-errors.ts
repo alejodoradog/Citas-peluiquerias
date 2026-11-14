@@ -43,6 +43,8 @@ export function toBarberRefusal(error: {
 }): BarberRefusal {
   const hint = error.hint ?? "";
   if (KNOWN.has(hint)) return hint as BarberRefusal;
+  // The triggers of task 5.5 (read_only_when_suspended), by any path.
+  if (hint === "barbershop_read_only") return "read_only";
   // status_invalid never comes from the screens: they send attended or
   // no_show only.
   return "unknown";

@@ -20,15 +20,15 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
 | 5.4 Panel de plataforma (P-01 a P-06) y migración 9 | Socio | Fusionada (#53) |
 | 4.6 Cierre del día (D-64, P2) | Socio | Fusionada (#57) |
-| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | En curso (#63, 5.5a) |
+| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | En curso: 5.5a en `hito-5-suscripcion` (#63) (solo lectura y avisos); 5.5b después (correos del ciclo y limpieza) |
 | **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
 | 6.3 PWA instalable | Socio | Fuera: el socio propuso no hacer una app (2026-11-13) y el fundador lo confirmó (2026-11-14) |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
-| 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
+| 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión fusionados (#62) |
 | 5.3 Correos de las citas y recordatorio | Fundador | Pendiente (después de la 5.2) |
 | "Mis citas" del cliente (C-19 a C-21, P2; sale de la 5.5) | Fundador | Pendiente (después de la 5.2) |
 | 4.2b Cerrar las rutas viejas de edición de citas para el dueño | Fundador | Fusionada (#54) |
-| 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | En curso (`hito-5-plataforma-correcciones`) |
+| 5.4b Correcciones de la revisión de seguridad de la 5.4 (pagos repetidos, anular, fechas en la base, rastro) | Fundador | Fusionada (#60) |
 | 6.5 Términos de uso y política de datos personales | Fundador | Pendiente |
 | 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | Pendiente (necesita sus cuentas) |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
