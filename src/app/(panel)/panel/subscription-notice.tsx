@@ -72,7 +72,7 @@ export async function SubscriptionNotice({
     case "paused":
       return (
         <Notice tone="neutral" title={t.pausada}>
-          {`${t.pausadaDetalle} ${payLine(pay)}`}
+          {`${notice.firstPayment ? t.pausadaPrimerPago : t.pausadaDetalle} ${payLine(pay)}`}
         </Notice>
       );
   }

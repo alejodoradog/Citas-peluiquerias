@@ -28,11 +28,12 @@ export async function setCommission(formData: FormData): Promise<void> {
     percent !== null && (await saveCommission(barbershop.id, percent));
   // A paused barbershop changes nothing (task 5.5): the database refuses it
   // and the screen says why.
-  const paused =
-    !saved &&
-    percent !== null &&
-    (await loadSubscriptionNotice(barbershop.id, today))?.notice.kind ===
-      "paused";
+  const notice =
+    !saved && percent !== null
+      ? (await loadSubscriptionNotice(barbershop.id, today))?.notice
+      : null;
+  // A sede awaiting its first payment can be configured: not why.
+  const paused = notice?.kind === "paused" && !notice.firstPayment;
   revalidatePath(routes.panelClose);
   const params = new URLSearchParams({ dia: date });
   if (saved) params.set(SAVED_PARAM, "1");

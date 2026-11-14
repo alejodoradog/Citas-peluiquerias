@@ -27,7 +27,9 @@ vi.mock("@/modulos/barberias/datos/setup", () => ({
 const saveCommission = vi.fn(async () => true);
 vi.mock("../datos/day-close", () => ({ saveCommission }));
 const loadSubscriptionNotice = vi.fn(
-  async (): Promise<{ notice: { kind: string } } | null> => null,
+  async (): Promise<{
+    notice: { kind: string; firstPayment?: boolean };
+  } | null> => null,
 );
 vi.mock("@/modulos/suscripciones/datos/notice", () => ({
   loadSubscriptionNotice,
@@ -86,7 +88,7 @@ describe("setCommission", () => {
   it("says the barbershop is paused when that is why it did not save (task 5.5)", async () => {
     saveCommission.mockResolvedValueOnce(false);
     loadSubscriptionNotice.mockResolvedValueOnce({
-      notice: { kind: "paused" },
+      notice: { kind: "paused", firstPayment: false },
     });
     expect(
       await redirectOf(() =>
@@ -94,5 +96,17 @@ describe("setCommission", () => {
       ),
     ).toBe("/panel/cierre?dia=2026-11-05&aviso=pausada");
     expect(loadSubscriptionNotice).toHaveBeenCalledWith("shop-1", "2026-11-07");
+  });
+
+  it("does not blame the pause of a sede awaiting its first payment", async () => {
+    saveCommission.mockResolvedValueOnce(false);
+    loadSubscriptionNotice.mockResolvedValueOnce({
+      notice: { kind: "paused", firstPayment: true },
+    });
+    expect(
+      await redirectOf(() =>
+        setCommission(form({ comision: "40", dia: "2026-11-05" })),
+      ),
+    ).toBe("/panel/cierre?dia=2026-11-05&aviso=1");
   });
 });

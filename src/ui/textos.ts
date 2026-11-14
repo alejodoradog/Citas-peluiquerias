@@ -2022,6 +2022,9 @@ export const textos = {
     pausada: "Tu barbería está pausada",
     pausadaDetalle:
       "Tu página no recibe reservas nuevas y la agenda es solo de lectura. Las citas tomadas siguen en pie.",
+    // A sede awaiting its first payment (decision S4): configurable.
+    pausadaPrimerPago:
+      "Tu página no recibe reservas hasta que registremos el primer pago de esta sede. Mientras tanto puedes configurarla.",
     // How to pay (decision S2): the founder's data once it exists, or a
     // promise to send it.
     pago: {

@@ -15,7 +15,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(26);
+select plan(39);
 
 -- Fixtures, inserted as the table owner -------------------------------------------------------
 
@@ -124,6 +124,10 @@ insert into public.appointment_services (barbershop_id, appointment_id, position
 select 'aaaaaaaa-0000-0000-0000-000000000001', a.id, 1, '5e000000-0000-0000-0000-000000000001', 25000, 30
 from public.appointments a where a.barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000001';
 
+insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at, reason) values
+  ('b1000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001',
+   'ba000000-0000-0000-0000-000000000001', pg_temp.at(3, '13:00'), pg_temp.at(3, '14:00'), 'Almuerzo');
+
 -- The phase (decision 0006): the fifth day of grace and the sixth.
 select is(
   private.barbershop_phase('active', 'standard', private.today_bogota() - 40, private.today_bogota() - 5, private.today_bogota() - 60),
@@ -183,6 +187,13 @@ select isnt(
   pg_temp.hint_of($$select public.set_barbershop_hours('aaaaaaaa-0000-0000-0000-000000000001',
     '[{"weekday": 1, "start": "09:00", "end": "18:00"}]'::jsonb)$$),
   'no error', 'nor its hours');
+select is(
+  pg_temp.hint_of($$select public.delete_time_block('b1000000-0000-0000-0000-000000000001')$$),
+  'barbershop_read_only', 'nor removes a block');
+select isnt(
+  pg_temp.hint_of($$insert into public.customers (barbershop_id, full_name)
+    values ('aaaaaaaa-0000-0000-0000-000000000001', 'Cliente Nuevo')$$),
+  'no error', 'nor adds a customer');
 
 -- Another sede of the same owner, and one awaiting its first payment.
 update public.services set price_cop = 30000 where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000002';
@@ -224,6 +235,8 @@ select isnt(
   'no error', 'but does not move it');
 select is(public.barbershop_accepts_bookings('aaaaaaaa-0000-0000-0000-000000000001'), false,
   'the public page takes no booking');
+select is(public.barbershop_accepts_bookings('aaaaaaaa-0000-0000-0000-000000000003'), false,
+  'nor the one of a sede awaiting its first payment');
 
 -- The actor rules of the trigger, for any path ------------------------------------------------------
 
@@ -236,6 +249,10 @@ select set_config('yapoin.actor', 'customer', true);
 select is(
   pg_temp.hint_of($$update public.appointments set status = 'attended' where id = 'a0000000-0000-0000-0000-000000000004'$$),
   'barbershop_read_only', 'a customer never marks attended');
+select set_config('yapoin.actor', 'staff', true);
+select is(
+  pg_temp.hint_of($$update public.appointments set status = 'attended', price_cop = 1 where id = 'a0000000-0000-0000-0000-000000000004'$$),
+  'barbershop_read_only', 'marking does not carry another change');
 select set_config('yapoin.actor', '', true);
 select is(
   pg_temp.hint_of($$update public.appointments set status = 'attended' where id = 'a0000000-0000-0000-0000-000000000004'$$),
@@ -246,6 +263,54 @@ update public.barbershops set subscription_status = 'trial' where id = 'aaaaaaaa
 select is(
   pg_temp.hint_of($$update public.appointments set status = 'attended' where id = 'a0000000-0000-0000-0000-000000000004'$$),
   'no error', 'an active barbershop changes again');
+
+-- Its first payment (task 5.4 sets the plan) opens the sede awaiting it.
+update public.barbershops set plan = 'standard', expires_on = private.today_bogota() + 30
+where id = 'aaaaaaaa-0000-0000-0000-000000000003';
+select is(private.phase_of('aaaaaaaa-0000-0000-0000-000000000003'), 'active',
+  'its first payment makes a sede active');
+select is(public.barbershop_accepts_bookings('aaaaaaaa-0000-0000-0000-000000000003'), true,
+  'and its page takes bookings');
+
+-- An expired barbershop (the sixth day) is read only too.
+update public.barbershops
+set plan = 'standard', trial_ends_on = private.today_bogota() - 6, expires_on = private.today_bogota() - 6
+where id = 'aaaaaaaa-0000-0000-0000-000000000002';
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
+update public.services set price_cop = 1 where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+select is(
+  (select price_cop from public.services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000002'),
+  30000, 'an expired barbershop changes nothing');
+
+-- Deleting a suspended sede with history works (section 8).
+reset role;
+update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
+-- Taking a barber's access away works in every phase (section 7).
+update public.barbers set link_active = false where id = 'ba000000-0000-0000-0000-000000000001';
+update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000001';
+select is(
+  (select row(link_active, active)::text from public.barbers where id = 'ba000000-0000-0000-0000-000000000001'),
+  '(f,f)', 'the owner turns off a barber''s link and deactivates the barber');
+select is(
+  pg_temp.hint_of($$update public.barbers set active = true where id = 'ba000000-0000-0000-0000-000000000001'$$),
+  'barbershop_read_only', 'but does not turn them on again');
+select is(
+  pg_temp.hint_of($$update public.barbers set display_name = 'Otro' where id = 'ba000000-0000-0000-0000-000000000001'$$),
+  'barbershop_read_only', 'nor changes anything else of a barber');
+
+select is(
+  pg_temp.hint_of($$select public.delete_barbershop('aaaaaaaa-0000-0000-0000-000000000001')$$),
+  'no error', 'the owner deletes a suspended sede with history');
+reset role;
+select is(
+  (select count(*)::integer from public.appointment_services where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000001')
+  + (select count(*)::integer from public.time_blocks where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000001'),
+  0, 'with its appointment lines and blocks');
+select is(coalesce(current_setting('yapoin.deleting_barbershop', true), ''), '',
+  'and the setting does not outlive the function');
 
 select * from finish();
 rollback;

@@ -55,15 +55,15 @@ describe("subscriptionNotice (task 5.5: D-70, D-71, D-72)", () => {
   it("pauses on the sixth day, when suspended or awaiting its first payment (D-72)", () => {
     expect(
       subscriptionNotice({ ...shop, expiresOn: "2026-11-14" }, today),
-    ).toEqual({ kind: "paused" });
+    ).toEqual({ kind: "paused", firstPayment: false });
     expect(subscriptionNotice({ ...shop, status: "suspended" }, today)).toEqual(
-      { kind: "paused" },
+      { kind: "paused", firstPayment: false },
     );
     expect(
       subscriptionNotice(
         { ...shop, trialEndsOn: "2026-11-01", expiresOn: "2026-11-01" },
         today,
       ),
-    ).toEqual({ kind: "paused" });
+    ).toEqual({ kind: "paused", firstPayment: true });
   });
 });

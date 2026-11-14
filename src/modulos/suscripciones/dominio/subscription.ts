@@ -239,13 +239,18 @@ export type SubscriptionNotice =
   | { kind: "trial"; until: BogotaDate }
   | { kind: "expiring"; trial: boolean; on: BogotaDate }
   | { kind: "grace"; expiredOn: BogotaDate; bookingsUntil: BogotaDate }
-  | { kind: "paused" };
+  // firstPayment: a sede awaiting its first payment, which can still be
+  // configured (decision S4).
+  | { kind: "paused"; firstPayment: boolean };
 
 export function subscriptionNotice(
   shop: Parameters<typeof phaseOf>[0],
   today: BogotaDate,
 ): SubscriptionNotice | null {
-  if (phaseOf(shop, today) !== "active") return { kind: "paused" };
+  const phase = phaseOf(shop, today);
+  if (phase !== "active") {
+    return { kind: "paused", firstPayment: phase === "awaiting_first_payment" };
+  }
   if (today > shop.expiresOn) {
     return {
       kind: "grace",
