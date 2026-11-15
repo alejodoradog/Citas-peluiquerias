@@ -728,3 +728,32 @@ export async function issueMyAppointmentsLink(
   if (linkError) throw linkError;
   return token;
 }
+
+// Task 6.1: the emails of the queue of a barbershop of one type, and the
+// version of the terms an owner accepted at sign-up (task 6.5).
+export async function queuedEmails(barbershopId: string, type: string) {
+  const { data, error } = await adminClient()
+    .from("notifications")
+    .select("type, status, payload")
+    .eq("barbershop_id", barbershopId)
+    .eq("type", type);
+  if (error) throw error;
+  return data;
+}
+
+export async function acceptedTermsOf(email: string) {
+  const admin = adminClient();
+  const { data: users, error } = await admin.auth.admin.listUsers({
+    perPage: 1000,
+  });
+  if (error) throw error;
+  const user = users.users.find((one) => one.email === email);
+  if (!user) return null;
+  const { data, error: profileError } = await admin
+    .from("profiles")
+    .select("terms_version, terms_accepted_at")
+    .eq("id", user.id)
+    .single();
+  if (profileError) throw profileError;
+  return data;
+}
