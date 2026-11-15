@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
+import { publicImageUrl } from "@/lib/imagenes/keys";
 import { formatWallClock, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import {
@@ -133,6 +134,17 @@ function Profile({
               <OutsideLink href={directions}>{t.perfil.comoLlegar}</OutsideLink>
             ) : null}
           </div>
+          {/* The preview of where it is (decision 0009), before the
+              customer books; tapping it opens their maps app. */}
+          {profile.location ? (
+            <ShopMap
+              location={profile.location}
+              name={profile.name}
+              logoUrl={
+                profile.logoPath ? publicImageUrl(profile.logoPath) : null
+              }
+            />
+          ) : null}
         </div>
 
         {profile.services.length > 0 ? (
@@ -211,7 +223,7 @@ function Profile({
           </dl>
         </section>
 
-        {address || profile.location ? (
+        {address ? (
           <section
             aria-labelledby="ubicacion"
             className="flex flex-col gap-2.5 px-5 pt-5.5"
@@ -219,15 +231,10 @@ function Profile({
             <SectionTitle>
               <span id="ubicacion">{t.perfil.ubicacion}</span>
             </SectionTitle>
-            {profile.location ? (
-              <ShopMap location={profile.location} name={profile.name} />
-            ) : null}
-            {address ? (
-              <p className="border-line rounded-card flex items-start gap-2 border bg-white p-4 text-[0.9375rem]">
-                <MapPinIcon size={18} />
-                {address}
-              </p>
-            ) : null}
+            <p className="border-line rounded-card flex items-start gap-2 border bg-white p-4 text-[0.9375rem]">
+              <MapPinIcon size={18} />
+              {address}
+            </p>
           </section>
         ) : null}
       </main>

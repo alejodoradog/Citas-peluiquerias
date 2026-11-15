@@ -17,10 +17,10 @@ Agrega un servicio externo a la 0007, gratis y sin cuenta: los mapas de OpenFree
 | # | Tema | Decisión |
 | --- | --- | --- |
 | 1 | Librería | **MapLibre GL** (`maplibre-gl`), la misma sobre la que está hecho mapcn. Un componente propio, pequeño: `src/ui/shop-map.tsx`. |
-| 2 | Mapas | **OpenFreeMap** (`tiles.openfreemap.org`, estilo `positron`): gratis y sin tope de visitas, permite uso comercial, no pide registro ni llave y no pone cookies. |
+| 2 | Mapas | **OpenFreeMap** (`tiles.openfreemap.org`, estilo `bright`, "colores suaves", elegido por el socio): gratis y sin tope de visitas, permite uso comercial, no pide registro ni llave y no pone cookies. |
 | 3 | Crédito | El de OpenStreetMap, obligatorio. MapLibre lo pone solo, plegado en su botón ⓘ. |
-| 4 | Dónde se ve | En los datos de la barbería del panel (D-57) y en la página pública, cuando la barbería tiene su ubicación guardada. |
-| 5 | Cómo se ve | Un mapa quieto, con el pin en el color de la marca: no se arrastra ni hace zoom, para que en el celular no atrape el scroll. Carga cuando la persona baja hasta él. |
+| 4 | Dónde se ve | En los datos de la barbería del panel (D-57) y arriba en la página pública, debajo de "Cómo llegar", como vista previa antes de reservar. Solo cuando la barbería tiene su ubicación guardada. |
+| 5 | Cómo se ve | Un mapa quieto, con el pin del logo de la barbería (o sus iniciales sin logo), elegido por el socio: no se arrastra ni hace zoom, para que en el celular no atrape el scroll. Carga cuando la persona baja hasta él. |
 | 6 | Al tocarlo | Se abre la app de mapas de la persona:<br>- **Android:** el celular muestra sus apps de mapas (link `geo:`) o abre la predeterminada.<br>- **iPhone:** una hoja con Apple Maps, Google Maps y Waze, porque el iPhone no tiene esa lista.<br>- **Computador:** Google Maps en otra pestaña. |
 | 7 | Código propio | El worker de MapLibre se sirve desde la app (`public/maplibre`), no desde un CDN. Una prueba avisa si queda distinto del que trae la versión instalada. |
 

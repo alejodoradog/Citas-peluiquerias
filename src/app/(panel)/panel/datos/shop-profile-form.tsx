@@ -155,6 +155,7 @@ export function ShopProfileForm({
           saved={saved.location}
           initial={initialLocation}
           shopName={saved.name}
+          logoUrl={saved.logoUrl}
           error={form.fieldError("location")}
         />
         <Field
