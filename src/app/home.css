@@ -1,0 +1,518 @@
+/* The home page (approved by the partner, 2026-11-15): a teal gradient that
+   breathes, the app's comb next to the name, a word of the title that turns
+   with each kind of business, and one animated character per business.
+   Classes start with yp- so nothing else in the app can collide with them. */
+
+.yp-home {
+  --yp-deep: #0f444b;
+  --yp-top: #1f8d99;
+  --yp-mint: #bfeef2;
+  --yp-amber: #ffc857;
+  --yp-pink: #ff8fa3;
+  --yp-green: #8fd694;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--color-white);
+  background: linear-gradient(
+    165deg,
+    var(--yp-top),
+    var(--color-brand) 38%,
+    var(--yp-deep)
+  );
+}
+
+/* Two soft lights drift over the gradient: it breathes. */
+.yp-home::before,
+.yp-home::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(36px);
+}
+.yp-home::before {
+  width: 22rem;
+  height: 22rem;
+  left: -8rem;
+  top: -6rem;
+  background: rgb(127 224 233 / 0.4);
+  animation: yp-glow-a 9s ease-in-out infinite alternate;
+}
+.yp-home::after {
+  width: 19rem;
+  height: 19rem;
+  right: -9rem;
+  top: 20rem;
+  background: rgb(10 50 55 / 0.55);
+  animation: yp-glow-b 11s ease-in-out infinite alternate;
+}
+@keyframes yp-glow-a {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(5.5rem, 7.5rem) scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(2rem, 16rem) scale(0.9);
+    opacity: 0.6;
+  }
+}
+@keyframes yp-glow-b {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-7rem, -5.5rem) scale(1.2);
+  }
+  100% {
+    transform: translate(-2.5rem, 7.5rem) scale(0.95);
+  }
+}
+
+.yp-comb {
+  filter: drop-shadow(0 3px 6px rgb(10 50 55 / 0.35));
+}
+
+/* The word of the title that turns. */
+.yp-word {
+  display: inline-grid;
+  vertical-align: bottom;
+}
+.yp-word > span {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(60%);
+  transition:
+    opacity 0.45s,
+    transform 0.45s;
+}
+.yp-word > span.yp-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* The scenes. */
+.yp-scenes {
+  position: relative;
+  width: 100%;
+  height: 13rem;
+}
+.yp-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.86) translateY(10px);
+  transition:
+    opacity 0.45s,
+    transform 0.55s cubic-bezier(0.2, 1.2, 0.3, 1);
+}
+.yp-scene.yp-on {
+  opacity: 1;
+  transform: none;
+}
+.yp-flat {
+  width: 11rem;
+  height: 11rem;
+  overflow: visible;
+}
+.yp-ink {
+  fill: var(--color-ink);
+}
+.yp-w {
+  fill: #fff;
+}
+.yp-am {
+  fill: var(--yp-amber);
+}
+.yp-pk {
+  fill: var(--yp-pink);
+}
+.yp-gr {
+  fill: var(--yp-green);
+}
+.yp-mt {
+  fill: var(--yp-mint);
+}
+.yp-dk {
+  fill: var(--yp-deep);
+}
+.yp-st {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.yp-sw {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.yp-shadow {
+  fill: rgb(10 50 55 / 0.3);
+}
+
+/* Shared motions. */
+.yp-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+}
+.yp-on .yp-pop {
+  animation: yp-pop 0.4s cubic-bezier(0.2, 1.7, 0.4, 1) forwards;
+  animation-delay: var(--d, 0.3s);
+}
+@keyframes yp-pop {
+  to {
+    transform: scale(1);
+  }
+}
+.yp-twk {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: yp-twinkle 1.2s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes yp-twinkle {
+  0%,
+  100% {
+    transform: scale(0.3);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.yp-beat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: yp-beat 0.9s ease-in-out infinite;
+}
+@keyframes yp-beat {
+  40% {
+    transform: scale(1.3);
+  }
+}
+
+/* Barbershop: the scissors cut and the hair gets shorter. */
+.yp-hair {
+  transform-origin: 60px 66px;
+}
+.yp-on .yp-hair {
+  animation: yp-trim 3.4s ease-in-out forwards;
+}
+@keyframes yp-trim {
+  0%,
+  20% {
+    transform: scaleY(1.35);
+  }
+  32%,
+  46% {
+    transform: scaleY(1.15);
+  }
+  58%,
+  72% {
+    transform: scaleY(0.98);
+  }
+  84%,
+  100% {
+    transform: scaleY(0.84);
+  }
+}
+.yp-bl1,
+.yp-bl2 {
+  transform-origin: 62px 60px;
+}
+.yp-bl1 {
+  animation: yp-snip-a 0.38s ease-in-out infinite alternate;
+}
+.yp-bl2 {
+  animation: yp-snip-b 0.38s ease-in-out infinite alternate;
+}
+@keyframes yp-snip-a {
+  from {
+    transform: rotate(-13deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+@keyframes yp-snip-b {
+  from {
+    transform: rotate(13deg);
+  }
+  to {
+    transform: rotate(-7deg);
+  }
+}
+.yp-bit {
+  animation: yp-fall 0.8s linear infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes yp-fall {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-6px, 38px) rotate(-60deg);
+  }
+}
+
+/* Dental office: the missing tooth falls into the smile. */
+.yp-tooth {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translateY(-78px) rotate(-40deg);
+}
+.yp-on .yp-tooth {
+  animation: yp-tooth 1.2s 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) forwards;
+}
+@keyframes yp-tooth {
+  to {
+    transform: none;
+  }
+}
+
+/* Vet: the puppy moves its ears and pants. */
+.yp-earL {
+  transform-origin: 40px 48px;
+  animation: yp-ear-l 0.5s ease-in-out infinite alternate;
+}
+.yp-earR {
+  transform-origin: 80px 48px;
+  animation: yp-ear-r 0.5s ease-in-out infinite alternate;
+}
+@keyframes yp-ear-l {
+  to {
+    transform: rotate(16deg);
+  }
+}
+@keyframes yp-ear-r {
+  to {
+    transform: rotate(-16deg);
+  }
+}
+.yp-tongue {
+  transform-origin: 60px 82px;
+  animation: yp-pant 0.28s ease-in-out infinite alternate;
+}
+@keyframes yp-pant {
+  to {
+    transform: scaleY(1.4);
+  }
+}
+
+/* Psychology: the tangled thought turns into a heart. */
+.yp-on .yp-scrib {
+  animation: yp-scrib 3.4s ease forwards;
+}
+@keyframes yp-scrib {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  10%,
+  30% {
+    transform: translateX(-2px);
+  }
+  20% {
+    transform: translateX(2px);
+  }
+  52%,
+  100% {
+    opacity: 0;
+  }
+}
+.yp-on .yp-heart2 {
+  animation: yp-pop 0.45s 1.9s cubic-bezier(0.2, 1.7, 0.4, 1) forwards;
+}
+
+/* Spa: steam rises. */
+.yp-steam {
+  opacity: 0;
+  animation: yp-steam 2s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes yp-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* Nails: painted one by one. */
+.yp-paint {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+.yp-on .yp-paint {
+  animation: yp-paint 0.5s ease-out forwards;
+  animation-delay: var(--d, 0.3s);
+}
+@keyframes yp-paint {
+  to {
+    transform: scaleY(1);
+  }
+}
+.yp-on .yp-brush {
+  animation: yp-brush 3.2s ease-in-out forwards;
+}
+@keyframes yp-brush {
+  0%,
+  18% {
+    transform: none;
+  }
+  28%,
+  46% {
+    transform: translateX(29px);
+  }
+  56%,
+  78% {
+    transform: translateX(58px);
+  }
+  100% {
+    transform: translate(58px, -14px);
+  }
+}
+
+/* The booking story: a tap, the check, the way and the arrival. */
+.yp-story {
+  width: 100%;
+  max-width: 18rem;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+.yp-tap {
+  transform-origin: 47px 96px;
+}
+.yp-on .yp-tap {
+  animation: yp-tap 3.6s forwards;
+}
+@keyframes yp-tap {
+  0%,
+  6% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  24%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+.yp-okk,
+.yp-way {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.yp-on .yp-okk {
+  animation: yp-draw 0.4s 0.7s forwards;
+}
+.yp-on .yp-way {
+  animation: yp-draw 1.3s 1.1s ease-in-out forwards;
+}
+@keyframes yp-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.yp-walker {
+  offset-path: path("M74 78C120 20 170 130 236 92");
+  offset-distance: 0%;
+  opacity: 0;
+}
+.yp-on .yp-walker {
+  animation: yp-walk 1.3s 1.1s ease-in-out forwards;
+}
+@keyframes yp-walk {
+  0% {
+    opacity: 1;
+    offset-distance: 0%;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    offset-distance: 100%;
+  }
+}
+.yp-pin {
+  transform: translateY(-26px);
+  opacity: 0;
+}
+.yp-on .yp-pin {
+  animation: yp-pin 0.5s 2.3s cubic-bezier(0.3, 1.6, 0.5, 1) forwards;
+}
+@keyframes yp-pin {
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.yp-door {
+  opacity: 0.3;
+}
+.yp-on .yp-door {
+  animation: yp-door 0.3s 2.6s forwards;
+}
+@keyframes yp-door {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Still, for whoever asks the system for less motion: every scene complete. */
+@media (prefers-reduced-motion: reduce) {
+  .yp-home *,
+  .yp-home::before,
+  .yp-home::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .yp-pop,
+  .yp-paint,
+  .yp-tooth,
+  .yp-pin {
+    transform: none;
+    opacity: 1;
+  }
+  .yp-okk,
+  .yp-way {
+    stroke-dashoffset: 0;
+  }
+  .yp-scrib {
+    opacity: 0;
+  }
+}
