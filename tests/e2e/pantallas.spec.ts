@@ -26,7 +26,9 @@ async function checkScreen(page: Page, browserName: string) {
 }
 
 const screens: Array<{ id: string; path: string; heading: string }> = [
-  { id: "D-01", path: "/", heading: textos.inicio.titulo },
+  // The landing took yapoin.com and the owners' entry moved to /app (2026-11-15).
+  { id: "landing", path: "/", heading: textos.landing.titulo },
+  { id: "D-01", path: "/app", heading: textos.inicio.titulo },
   { id: "D-02", path: "/registro", heading: t.registro.titulo },
   {
     id: "D-04",
@@ -82,7 +84,7 @@ for (const screen of screens) {
 }
 
 test("D-01 offers to sign up and to sign in @ui", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/app");
   await expect(page.locator("html")).toHaveAttribute("lang", "es-CO");
   await expect(page.getByText(textos.marca, { exact: true })).toBeVisible();
   await expect(page.getByText(textos.inicio.nota)).toBeVisible();
