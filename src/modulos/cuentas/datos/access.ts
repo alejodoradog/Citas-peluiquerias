@@ -59,13 +59,29 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
     return { kind: "anonymous" };
   }
 
+  // The profile, the memberships and the sede cookie depend only on the
+  // user, so they are read at once; the checks below keep their order.
   // A failed query throws instead of passing for "no access", so a network
   // hiccup never signs a valid owner out.
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("full_name, is_super_admin")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [
+    { data: profile, error: profileError },
+    { data: memberships, error: membershipsError },
+    chosenId,
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name, is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("memberships")
+      .select(
+        "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at)",
+      )
+      .eq("user_id", user.id)
+      .eq("role", "owner"),
+    readActiveBarbershopChoice(),
+  ]);
   if (profileError) {
     throw profileError;
   }
@@ -80,17 +96,8 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   // The active one is the one the cookie names, but only if it is in this
   // list, which RLS filters to the owner's own memberships; otherwise the
   // oldest one, the same one create_barbershop takes the company trial from.
-  const [{ data: memberships, error: membershipsError }, chosenId] =
-    await Promise.all([
-      supabase
-        .from("memberships")
-        .select(
-          "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at)",
-        )
-        .eq("user_id", user.id)
-        .eq("role", "owner"),
-      readActiveBarbershopChoice(),
-    ]);
+  // A failed memberships query only matters here: it never changes what a
+  // super admin or an account without a profile gets.
   if (membershipsError) {
     throw membershipsError;
   }
