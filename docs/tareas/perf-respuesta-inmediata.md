@@ -43,6 +43,7 @@ La prioridad del fundador: que todo toque muestre una respuesta al instante.
 - **El servidor sigue calculando la disponibilidad** con el mismo motor. Manda una sola vez las horas libres de los 31 días (unos 10 KB), y el navegador solo las muestra.
 - **Al navegador solo llegan fechas y horas libres.** No viajan rangos ocupados, ni qué barbero atiende cada hora, ni datos de clientes.
 - **La hora se sigue validando al confirmar,** en la base, igual que antes.
+- **Las horas libres no envejecen:** como ya ningún toque las vuelve a pedir, el paso las pide solo cada minuto y al volver a la pestaña, igual que la agenda del dueño (`LiveRefresh`). Una hora que deja de estar libre se quita de la selección.
 - **El primer "Continuar"** (después de los servicios) ya no recarga la página entera y su botón muestra la espera. Sin JavaScript sigue funcionando como un formulario normal.
 - **Siguen yendo al servidor:** elegir el barbero y el "Continuar" hacia los datos. Ahora se marcan "en espera" como cualquier enlace.
 
@@ -50,13 +51,26 @@ La prioridad del fundador: que todo toque muestre una respuesta al instante.
 - **La dirección ya no cambia al tocar un día o una hora.** Si la persona recarga la página en ese paso, la selección vuelve a hoy. "Atrás" desde los datos sí conserva el día y la hora.
 
 ## Pruebas
-- **Unitarias:** 1.501, todas en verde. Nuevas:
+- **Unitarias:** 1.503, todas en verde. Nuevas:
   - `tap-feedback` (11): qué enlaces y formularios se marcan, y cuándo se quita la marca;
   - `pending-button`, `appointment-actions`, `sign-out-button`, `commission-form` y `barber-form`: cada control muestra la espera y no se envía dos veces;
-  - `time-chooser`, `reschedule-chooser`, `slot-days` y `services-step` (15): el día y la hora sin navegar, el estado inicial desde la dirección, un día sin horas;
+  - `time-chooser`, `reschedule-chooser`, `slot-days` y `services-step` (17): el día y la hora sin navegar, el estado inicial desde la dirección, un día sin horas;
   - `access` (4 casos nuevos) y la acción de citas: la marca del asistente llega sin consulta propia y un dueño sin asistente no escribe nada.
 - **E2E, ajustadas porque los chips pasaron de enlaces a botones:** `helpers/reserva.ts`, `reservar.spec.ts`, `gestionar-cita.spec.ts` y `fidelidad.spec.ts`. No se corrieron en local; las corre el CI.
 - **Lint y typecheck:** en verde.
+
+## Revisiones (2026-11-15)
+- **`revisor-seguridad`:** nada alto ni medio. Comprobó que toda acción sigue pasando por `getUser` antes de escribir, que la marca del asistente sale de la misma fila de la sede activa, que las cargas en paralelo no se adelantan al chequeo de pertenencia y que al navegador solo llegan horas libres. Dejó dos hallazgos bajos que ya existían antes de este PR y no se tocan aquí:
+  - los cambios de barberos, servicios y horarios de barbero no refrescan el perfil público en caché (puede tardar de 1 minuto a 1 hora en verse);
+  - el paso de servicios manda al navegador el perfil público completo, aunque solo usa el nombre y los servicios.
+- **`revisor-spec`:** ninguna regla de negocio rota. Se corrigió lo que encontró:
+  - las horas libres ya no se recalculaban en cada toque: ahora se piden cada minuto;
+  - el aviso "Alguien reservó las…" se quedaba todo el paso: ahora se quita con la primera elección, como antes;
+  - "Ir al …" perdía el foco: ahora pasa al día elegido;
+  - en el asistente, "Quitar barbero" mostraba "Guardando…" en el botón de guardar;
+  - los comentarios y la ficha de la 3.2 y 3.3 que decían que el día y la hora viven en la URL;
+  - el pulso bajaba demasiado el contraste: ahora nada baja de 0,7 de opacidad en reposo (el mismo valor de un botón apagado) ni de 0,5 en el punto más bajo del pulso.
+- **Sin corregir, para decidir:** el estado de "presionado", el pulso y el color del toque no están en los fundamentos de diseño (F-01), que solo definen "Cargando: bloques grises". Los pide el objetivo de este PR.
 
 ## Archivos del socio que toca
 - La 4.4 (link del barbero): `src/app/b/[token]/page.tsx` y `day-list.tsx`.

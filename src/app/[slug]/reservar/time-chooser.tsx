@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatCalendarDay, formatWallClock } from "@/lib/fechas/fechas";
 import { buttonClasses } from "@/ui/button";
 import { CalendarIcon, WarningIcon } from "@/ui/icons";
@@ -89,13 +89,29 @@ export function TimeChooser({
     value === today
       ? t.hoy.toLocaleLowerCase("es-CO")
       : t.hora.elDia(formatCalendarDay(value));
-  const chooseDay = (value: string) => setChoice({ date: value, time: null });
+  // "Alguien reservó las…" is about the hour the customer came back from:
+  // it leaves with the first choice, as it did when a choice was a new page.
+  const [chose, setChose] = useState(false);
+  const chooseDay = (value: string) => {
+    setChoice({ date: value, time: null });
+    setChose(true);
+  };
+  // "Ir al …" disappears when its day opens: the focus goes to that day's
+  // chip, not back to the top of the page.
+  const root = useRef<HTMLDivElement>(null);
+  const [jumps, setJumps] = useState(0);
+  useEffect(() => {
+    if (jumps === 0) return;
+    root.current
+      ?.querySelector<HTMLElement>('[role="group"] button[aria-pressed="true"]')
+      ?.focus();
+  }, [jumps]);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div ref={root} className="flex min-h-full flex-1 flex-col">
       <StepHeader shopName={shopName} backHref={backHref} step={3} />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-5 pt-2.5 pb-4">
-        {taken ? (
+        {taken && !chose ? (
           <div
             role="status"
             className="bg-danger-soft flex gap-2.5 rounded-[14px] px-3.5 py-3"
@@ -140,7 +156,10 @@ export function TimeChooser({
             {next ? (
               <button
                 type="button"
-                onClick={() => chooseDay(next.date)}
+                onClick={() => {
+                  chooseDay(next.date);
+                  setJumps((count) => count + 1);
+                }}
                 className={buttonClasses({ variant: "secondary", size: "md" })}
               >
                 {t.hora.ir(formatCalendarDay(next.date))}
@@ -157,7 +176,10 @@ export function TimeChooser({
           <HourGrid
             day={day}
             time={time}
-            onChoose={(value) => setChoice({ date, time: value })}
+            onChoose={(value) => {
+              setChoice({ date, time: value });
+              setChose(true);
+            }}
           />
         )}
       </main>

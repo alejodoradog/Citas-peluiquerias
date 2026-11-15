@@ -168,4 +168,24 @@ describe("TimeChooser", () => {
       within(box).queryByRole("button", { name: /^Ir al/ }),
     ).not.toBeInTheDocument();
   });
+
+  it("drops the notice of the taken hour with the first choice", async () => {
+    const user = userEvent.setup();
+    renderChooser({ date: "2026-11-21", taken: "09:00" });
+    expect(screen.getByRole("status")).toHaveTextContent(t.hora.tomada.titulo);
+    await user.click(hourButton("10:00 a. m."));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByText("Corte · 30 min · Ana")).toBeInTheDocument();
+  });
+
+  it("moves the focus to the day it jumps to", async () => {
+    const user = userEvent.setup();
+    renderChooser();
+    await user.click(
+      screen.getByRole("button", {
+        name: t.hora.ir(formatCalendarDay("2026-11-21")),
+      }),
+    );
+    expect(dayButton("2026-11-21")).toHaveFocus();
+  });
 });

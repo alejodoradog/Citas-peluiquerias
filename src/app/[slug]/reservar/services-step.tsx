@@ -153,7 +153,7 @@ export function ServicesStep({
               buttonClasses(),
               // The pulse of a tapped link (globals.css, tap-pending).
               leaving &&
-                "animate-[tap-pending_0.9s_ease-in-out_infinite] cursor-progress motion-reduce:animate-none motion-reduce:opacity-55",
+                "animate-[tap-pending_0.9s_ease-in-out_infinite] cursor-progress motion-reduce:animate-none motion-reduce:opacity-70",
             )}
           >
             {t.continuar}

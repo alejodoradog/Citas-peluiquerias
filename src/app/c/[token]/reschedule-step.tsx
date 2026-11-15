@@ -1,3 +1,4 @@
+import { LiveRefresh } from "@/app/(panel)/panel/live-refresh";
 import { routes } from "@/lib/routes";
 import type { DayAvailability } from "@/modulos/agenda/dominio/availability";
 import type { ManageSelection } from "@/modulos/agenda/dominio/manage-flow";
@@ -30,18 +31,23 @@ export function RescheduleStep({
   priceCop: number;
 }) {
   return (
-    <RescheduleChooser
-      token={token}
-      backHref={routes.manageAppointment(token)}
-      days={toDayTimes(days)}
-      today={today}
-      date={selection.date}
-      time={selection.time}
-      taken={selection.taken}
-      current={current}
-      summary={summary}
-      barberName={barberName}
-      priceCop={priceCop}
-    />
+    <>
+      {/* No tap asks the server again: the free times are asked for every
+          minute while the step is open (as in the booking, time-step.tsx). */}
+      <LiveRefresh />
+      <RescheduleChooser
+        token={token}
+        backHref={routes.manageAppointment(token)}
+        days={toDayTimes(days)}
+        today={today}
+        date={selection.date}
+        time={selection.time}
+        taken={selection.taken}
+        current={current}
+        summary={summary}
+        barberName={barberName}
+        priceCop={priceCop}
+      />
+    </>
   );
 }

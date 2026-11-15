@@ -13,6 +13,8 @@ import { MAX_SERVICES_PER_BOOKING } from "./booking";
 // in the URL, so "atrás" works and a link can be shared:
 // /<slug>/reservar?servicios=<id>&servicios=<id>&barbero=<id|primero>
 //   &dia=2026-11-24&hora=10:30&paso=datos
+// The day and the time are chosen in the browser, with no request, and reach
+// the URL when the customer continues to the details.
 // Everything in the URL is untrusted: anything that is not well formed is
 // dropped, and the database checks the booking again.
 

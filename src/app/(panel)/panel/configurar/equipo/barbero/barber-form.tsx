@@ -47,6 +47,8 @@ function BarberFormFields({ hoursSummary }: { hoursSummary: string }) {
   // The draft is saved in the browser, but the team screen still has to load:
   // the buttons show that and lock until it arrives.
   const [leaving, startLeaving] = useTransition();
+  // Which of the two buttons started it: only that one says so.
+  const [removing, setRemoving] = useState(false);
 
   function backToTeam() {
     startLeaving(() => router.push(routes.setupTeam));
@@ -97,15 +99,21 @@ function BarberFormFields({ hoursSummary }: { hoursSummary: string }) {
         }
         actions={
           <>
-            <Button type="submit" disabled={leaving} aria-busy={leaving}>
-              {leaving ? t.guardando : t.guardar}
+            <Button
+              type="submit"
+              disabled={leaving}
+              aria-busy={leaving && !removing}
+            >
+              {leaving && !removing ? t.guardando : t.guardar}
             </Button>
             {barber ? (
               <Button
                 variant="text"
                 size="md"
                 disabled={leaving}
+                aria-busy={leaving && removing}
                 onClick={() => {
+                  setRemoving(true);
                   dispatch({ type: "remove_barber", key: barber.key });
                   backToTeam();
                 }}

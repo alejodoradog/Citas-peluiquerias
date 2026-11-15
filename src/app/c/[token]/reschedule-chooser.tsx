@@ -49,6 +49,9 @@ export function RescheduleChooser({
     date: initialDate,
     time: initialTime,
   }));
+  // "Alguien reservó las…" leaves with the first choice, as it did when a
+  // choice was a new page.
+  const [chose, setChose] = useState(false);
   const known = (value: string | null): value is string =>
     value !== null && days.some((day) => day.date === value);
   // The day asked for, else the appointment's own, else today.
@@ -78,7 +81,7 @@ export function RescheduleChooser({
         backHref={backHref}
       />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-5 pt-1.5 pb-4">
-        {taken ? (
+        {taken && !chose ? (
           <div
             role="status"
             className="bg-danger-soft flex gap-2.5 rounded-[14px] px-3.5 py-3"
@@ -109,7 +112,10 @@ export function RescheduleChooser({
             days={days}
             today={today}
             date={date}
-            onChoose={(value) => setChoice({ date: value, time: null })}
+            onChoose={(value) => {
+              setChoice({ date: value, time: null });
+              setChose(true);
+            }}
           />
         ) : null}
 
@@ -129,7 +135,10 @@ export function RescheduleChooser({
             day={day}
             skip={own}
             time={time}
-            onChoose={(value) => setChoice({ date, time: value })}
+            onChoose={(value) => {
+              setChoice({ date, time: value });
+              setChose(true);
+            }}
           />
         )}
       </main>
