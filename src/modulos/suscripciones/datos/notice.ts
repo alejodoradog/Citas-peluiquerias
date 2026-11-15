@@ -47,6 +47,10 @@ export async function loadSubscriptionNotice(
     today,
   );
   if (!notice) return null;
+  // The trial's notice shows no price, so it asks for none.
+  if (notice.kind === "trial") {
+    return { notice, pay: { priceCop: null, ...PAYMENT_DETAILS } };
+  }
 
   // What it pays by its active barbers (task 5.6); null when it is agreed.
   // Without it, the notice still shows and promises the payment data.
