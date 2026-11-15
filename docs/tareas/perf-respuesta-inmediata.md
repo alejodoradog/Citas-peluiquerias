@@ -1,5 +1,5 @@
 # Respuesta inmediata en todos los toques
-Estado: construida el 2026-11-15 en la rama `perf-respuesta-inmediata`, por el fundador con Claude Code. Son las correcciones 1 a 4 del diagnóstico (`docs/tareas/rendimiento-diagnostico.md`), en un solo PR por decisión del fundador. Falta que pase el CI y volver a medir en el sitio desplegado.
+Estado: construida el 2026-11-15 en la rama `perf-respuesta-inmediata` (#84), por el fundador con Claude Code. Son las correcciones 1 a 4 del diagnóstico (`docs/tareas/rendimiento-diagnostico.md`), en un solo PR por decisión del fundador. El CI pasó completo, con las pruebas de punta a punta. Falta volver a medir en el sitio desplegado.
 
 La prioridad del fundador: que todo toque muestre una respuesta al instante.
 
@@ -56,7 +56,7 @@ La prioridad del fundador: que todo toque muestre una respuesta al instante.
   - `pending-button`, `appointment-actions`, `sign-out-button`, `commission-form` y `barber-form`: cada control muestra la espera y no se envía dos veces;
   - `time-chooser`, `reschedule-chooser`, `slot-days` y `services-step` (17): el día y la hora sin navegar, el estado inicial desde la dirección, un día sin horas;
   - `access` (4 casos nuevos) y la acción de citas: la marca del asistente llega sin consulta propia y un dueño sin asistente no escribe nada.
-- **E2E, ajustadas porque los chips pasaron de enlaces a botones:** `helpers/reserva.ts`, `reservar.spec.ts`, `gestionar-cita.spec.ts` y `fidelidad.spec.ts`. No se corrieron en local; las corre el CI.
+- **E2E, ajustadas porque los chips pasaron de enlaces a botones:** `helpers/reserva.ts`, `reservar.spec.ts`, `gestionar-cita.spec.ts` y `fidelidad.spec.ts`. No se corrieron en local; pasaron en el CI.
 - **Lint y typecheck:** en verde.
 
 ## Revisiones (2026-11-15)
