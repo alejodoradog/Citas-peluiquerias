@@ -110,7 +110,10 @@ async function OwnerAgenda({
     <div className="flex flex-col gap-2.5 px-4 pb-3">
       {/* After "Eliminar sede" (task 2.6b), which sede went away. */}
       <DeletedBarbershopNotice />
-      <SubscriptionNotice barbershopId={barbershop.id} today={today} />
+      {/* On its own boundary: the agenda does not wait for it. */}
+      <Suspense fallback={null}>
+        <SubscriptionNotice barbershopId={barbershop.id} today={today} />
+      </Suspense>
     </div>
   );
   // Every view ends with the "+"; the day of today also asks the server
