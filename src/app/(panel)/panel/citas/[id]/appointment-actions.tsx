@@ -16,6 +16,7 @@ import { cx } from "@/ui/cx";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
 import { CheckIcon, CircleCheckIcon, EditIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
+import { PendingButton } from "@/ui/pending-button";
 import { Sheet } from "@/ui/sheet";
 import { textos } from "@/ui/textos";
 
@@ -108,30 +109,30 @@ function MarkForm({ appointmentId }: { appointmentId: string }) {
       <input type="hidden" name="cita" value={appointmentId} />
       <p className="text-body text-muted">{t.marcar.cuerpo}</p>
       {form.formError ? <Notice tone="danger" title={form.formError} /> : null}
-      <button
-        type="submit"
+      <PendingButton
         name="estado"
         value="attended"
+        pendingText={t.marcar.enviando}
         className={cx(
           choice,
-          "border-success bg-success-soft text-success min-h-13.5 border-2",
+          "border-success bg-success-soft text-success min-h-13.5 border-2 disabled:opacity-70",
         )}
       >
         <CircleCheckIcon size={22} />
         {t.detalleCita.atendida}
-      </button>
-      <button
-        type="submit"
+      </PendingButton>
+      <PendingButton
         name="estado"
         value="no_show"
+        pendingText={t.marcar.enviando}
         // 52 px, as D-35: its border is 1 px, the chosen one's 2.
         className={cx(
           choice,
-          "border-line text-danger min-h-13 border bg-white",
+          "border-line text-danger min-h-13 border bg-white disabled:opacity-70",
         )}
       >
         {t.detalleCita.noAsistio}
-      </button>
+      </PendingButton>
       <p className="text-help text-muted">{t.marcar.nota}</p>
     </ActionForm>
   );

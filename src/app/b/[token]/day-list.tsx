@@ -6,6 +6,7 @@ import { minutesBetween } from "@/modulos/agenda/dominio/owner-agenda";
 import { Chip, type ChipTone } from "@/ui/chip";
 import { cx } from "@/ui/cx";
 import { LockIcon } from "@/ui/icons";
+import { PendingButton } from "@/ui/pending-button";
 import { textos } from "@/ui/textos";
 import { blockLabel, servicesLabel, timeLabel } from "./labels";
 import { MarkButtons } from "./mark-buttons";
@@ -104,13 +105,13 @@ export function DayList({
                 <input type="hidden" name="bloqueo" value={item.block.id} />
                 <input type="hidden" name="volver" value={date} />
                 {/* 44 px tall, the design's 32 grown for F-01's touch targets. */}
-                <button
-                  type="submit"
+                <PendingButton
+                  pendingText={t.quitando}
                   aria-label={t.quitarDe(label)}
-                  className="border-line text-ink min-h-11 rounded-lg border bg-white px-2.5 text-[13px] font-semibold"
+                  className="border-line text-ink min-h-11 rounded-lg border bg-white px-2.5 text-[13px] font-semibold disabled:opacity-70"
                 >
                   {t.quitar}
-                </button>
+                </PendingButton>
               </form>
             ) : null}
           </li>

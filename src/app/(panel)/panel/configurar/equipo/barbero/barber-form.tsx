@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent } from "react";
 import { routes } from "@/lib/routes";
 import {
   parseBarberForm,
@@ -44,9 +44,12 @@ function BarberFormFields({ hoursSummary }: { hoursSummary: string }) {
   const services = offeredServices(draft);
   const [name, setName] = useState(barber?.displayName ?? "");
   const [errors, setErrors] = useState<Errors>({});
+  // The draft is saved in the browser, but the team screen still has to load:
+  // the buttons show that and lock until it arrives.
+  const [leaving, startLeaving] = useTransition();
 
   function backToTeam() {
-    router.push(routes.setupTeam);
+    startLeaving(() => router.push(routes.setupTeam));
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -94,11 +97,14 @@ function BarberFormFields({ hoursSummary }: { hoursSummary: string }) {
         }
         actions={
           <>
-            <Button type="submit">{t.guardar}</Button>
+            <Button type="submit" disabled={leaving} aria-busy={leaving}>
+              {leaving ? t.guardando : t.guardar}
+            </Button>
             {barber ? (
               <Button
                 variant="text"
                 size="md"
+                disabled={leaving}
                 onClick={() => {
                   dispatch({ type: "remove_barber", key: barber.key });
                   backToTeam();
