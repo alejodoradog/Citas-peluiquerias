@@ -85,9 +85,6 @@ test("D-01 offers to sign up and to sign in @ui", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "es-CO");
   await expect(page.getByText(textos.marca, { exact: true })).toBeVisible();
-  for (const benefit of textos.inicio.beneficios) {
-    await expect(page.getByText(benefit)).toBeVisible();
-  }
   await expect(page.getByText(textos.inicio.nota)).toBeVisible();
   await page.getByRole("link", { name: textos.inicio.crearCuenta }).click();
   await expect(page).toHaveURL(/\/registro$/);

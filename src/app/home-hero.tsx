@@ -57,23 +57,28 @@ export function HomeHero({
         </span>
       </h1>
       {children}
-      <div className="yp-scenes" aria-hidden="true">
-        {CHARACTERS.map((markup, i) => (
-          <div key={i} className={cx("yp-scene", i === index && "yp-on")}>
+      {/* The scenes take the free height, so the buttons sit at the foot. */}
+      <div className="flex flex-1 items-center">
+        <div className="yp-scenes" aria-hidden="true">
+          {CHARACTERS.map((markup, i) => (
+            <div key={i} className={cx("yp-scene", i === index && "yp-on")}>
+              <svg
+                className="yp-flat"
+                viewBox="0 0 120 120"
+                // Static markup of this module, never from user input.
+                dangerouslySetInnerHTML={{ __html: markup }}
+              />
+            </div>
+          ))}
+          <div
+            className={cx("yp-scene", index === CHARACTERS.length && "yp-on")}
+          >
             <svg
-              className="yp-flat"
-              viewBox="0 0 120 120"
-              // Static markup of this module, never from user input.
-              dangerouslySetInnerHTML={{ __html: markup }}
+              className="yp-story"
+              viewBox="0 0 300 132"
+              dangerouslySetInnerHTML={{ __html: BOOKING_STORY }}
             />
           </div>
-        ))}
-        <div className={cx("yp-scene", index === CHARACTERS.length && "yp-on")}>
-          <svg
-            className="yp-story"
-            viewBox="0 0 300 132"
-            dangerouslySetInnerHTML={{ __html: BOOKING_STORY }}
-          />
         </div>
       </div>
     </>

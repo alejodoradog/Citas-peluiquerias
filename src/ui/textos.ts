@@ -75,6 +75,8 @@ export const textos = {
       "negocio",
     ],
     bajada: "Tus clientes reservan a cualquier hora, desde un link.",
+    // Not on the home page since its redesign (2026-11-15): kept for the
+    // landing page that comes later.
     beneficios: [
       "Menos mensajes contestando horarios",
       "Recordatorios por correo para que no te dejen plantado",

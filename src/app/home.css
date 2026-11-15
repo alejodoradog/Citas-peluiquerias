@@ -78,13 +78,16 @@
   filter: drop-shadow(0 3px 6px rgb(10 50 55 / 0.35));
 }
 
-/* The word of the title that turns. */
+/* The word of the title that turns. Only the word on screen takes room, so
+   a short one keeps "Tu" on its line. */
 .yp-word {
-  display: inline-grid;
-  vertical-align: bottom;
+  position: relative;
+  display: inline-block;
 }
 .yp-word > span {
-  grid-area: 1 / 1;
+  position: absolute;
+  left: 0;
+  top: 0;
   white-space: nowrap;
   opacity: 0;
   transform: translateY(60%);
@@ -93,15 +96,17 @@
     transform 0.45s;
 }
 .yp-word > span.yp-on {
+  position: relative;
   opacity: 1;
   transform: none;
 }
 
 /* The scenes. */
+/* They grow with the phone's height, from 13rem to 21rem. */
 .yp-scenes {
   position: relative;
   width: 100%;
-  height: 13rem;
+  height: clamp(13rem, 40svh, 21rem);
 }
 .yp-scene {
   position: absolute;
@@ -120,9 +125,19 @@
   transform: none;
 }
 .yp-flat {
-  width: 11rem;
-  height: 11rem;
+  width: clamp(11rem, 32svh, 17rem);
+  height: clamp(11rem, 32svh, 17rem);
   overflow: visible;
+}
+/* Short phones: smaller scenes, so the buttons fit on the first screen. */
+@media (max-height: 700px) {
+  .yp-scenes {
+    height: 10rem;
+  }
+  .yp-flat {
+    width: 9rem;
+    height: 9rem;
+  }
 }
 .yp-ink {
   fill: var(--color-ink);
@@ -402,7 +417,7 @@
 /* The booking story: a tap, the check, the way and the arrival. */
 .yp-story {
   width: 100%;
-  max-width: 18rem;
+  max-width: 21rem;
   fill: none;
   stroke: #fff;
   stroke-width: 2.5;
