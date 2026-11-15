@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
+import { publicImageUrl } from "@/lib/imagenes/keys";
 import { formatWallClock, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import {
@@ -136,7 +137,13 @@ function Profile({
           {/* The preview of where it is (decision 0009), before the
               customer books; tapping it opens their maps app. */}
           {profile.location ? (
-            <ShopMap location={profile.location} name={profile.name} />
+            <ShopMap
+              location={profile.location}
+              name={profile.name}
+              logoUrl={
+                profile.logoPath ? publicImageUrl(profile.logoPath) : null
+              }
+            />
           ) : null}
         </div>
 

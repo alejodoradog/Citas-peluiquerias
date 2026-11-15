@@ -34,6 +34,7 @@ export function LocationField({
   initial,
   error,
   shopName,
+  logoUrl,
 }: {
   // What the database holds, to tell "saved" from "marked".
   saved: ShopLocation | null;
@@ -42,8 +43,9 @@ export function LocationField({
   initial: ShopLocation | null;
   // An error of the server about it.
   error?: string;
-  // The barbershop's name, for the map and the maps app.
+  // The barbershop's name and saved logo, for the map and the maps app.
   shopName: string;
+  logoUrl: string | null;
 }) {
   const [location, setLocation] = useState(initial);
   const [locating, setLocating] = useState(false);
@@ -94,7 +96,7 @@ export function LocationField({
       />
       {location ? (
         <div className="flex flex-col gap-1.5">
-          <ShopMap location={location} name={shopName} />
+          <ShopMap location={location} name={shopName} logoUrl={logoUrl} />
           <p className="text-help text-muted flex flex-wrap items-center gap-x-2 font-semibold">
             <span className="text-ink flex items-center gap-1.5">
               <MapPinIcon size={16} />

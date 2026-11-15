@@ -5,6 +5,7 @@ import {
   mapLinks,
   type ShopLocation,
 } from "@/modulos/barberias/dominio/profile";
+import { initialsOf } from "./avatar";
 import { cx } from "./cx";
 import { Sheet } from "./sheet";
 import { textos } from "./textos";
@@ -31,6 +32,30 @@ function isAndroid(): boolean {
   return /Android/.test(navigator.userAgent);
 }
 
+// The pin: the barbershop's logo (or initials) in a dark rounded square with
+// a white border and a point below, like its logo on the public page.
+function shopPin(name: string, logoUrl: string | null): HTMLElement {
+  const pin = document.createElement("div");
+  pin.className =
+    "flex flex-col items-center drop-shadow-[0_3px_5px_rgba(22,33,31,0.35)]";
+  const box = document.createElement("div");
+  box.className =
+    "bg-ink flex size-11 items-center justify-center overflow-hidden rounded-xl border-[3px] border-white text-base font-bold text-white";
+  if (logoUrl) {
+    const image = document.createElement("img");
+    image.src = logoUrl;
+    image.alt = "";
+    image.className = "size-full object-cover";
+    box.append(image);
+  } else {
+    box.textContent = initialsOf(name);
+  }
+  const point = document.createElement("div");
+  point.className = "-mt-2 size-3 rotate-45 bg-white";
+  pin.append(box, point);
+  return pin;
+}
+
 // A still map of the barbershop with its pin, in D-57 and on its public page.
 // It loads when it scrolls into view, since MapLibre is heavy, and never moves
 // or zooms, so it never traps the page's scroll on a phone. The whole map is
@@ -42,10 +67,14 @@ function isAndroid(): boolean {
 export function ShopMap({
   location,
   name,
+  logoUrl = null,
   className,
 }: {
   location: ShopLocation;
   name: string;
+  // The barbershop's logo on the pin, or its initials without one (decision
+  // 0009, chosen by the partner).
+  logoUrl?: string | null;
   className?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
@@ -76,10 +105,7 @@ export function ShopMap({
         interactive: false,
         attributionControl: { compact: true },
       });
-      const pin = document.createElement("div");
-      pin.className =
-        "size-5 rounded-full border-[3px] border-white bg-brand shadow-[0_2px_6px_rgba(22,33,31,0.35)]";
-      new maplibre.Marker({ element: pin })
+      new maplibre.Marker({ element: shopPin(name, logoUrl), anchor: "bottom" })
         .setLngLat([longitude, latitude])
         .addTo(created);
       // The credit (OpenStreetMap's, required) starts folded into its ⓘ.
@@ -106,7 +132,7 @@ export function ShopMap({
       observer.disconnect();
       map?.remove();
     };
-  }, [latitude, longitude]);
+  }, [latitude, longitude, name, logoUrl]);
 
   function open() {
     if (isApple()) {
