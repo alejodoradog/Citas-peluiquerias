@@ -173,46 +173,10 @@ test("D-02 matches the design", async ({ page }) => {
   await design.close();
 });
 
-test("D-01 matches the design", async ({ page }) => {
-  await page.goto("/");
-  const design = await openDesign(page, "D01-Inicio.dc.html");
-
-  await compare(
-    "título",
-    page.getByRole("heading", { level: 1 }),
-    design.locator("h1"),
-    ["font-size", "font-weight", "line-height", "color"],
-  );
-  await compare(
-    "botón principal",
-    page.getByRole("link", { name: textos.inicio.crearCuenta }),
-    design.getByRole("link", { name: "Crear cuenta gratis" }),
-    [
-      "height",
-      "border-radius",
-      "background-color",
-      "color",
-      "font-size",
-      "font-weight",
-    ],
-  );
-  await compare(
-    "botón secundario",
-    page.getByRole("link", { name: textos.inicio.ingresar, exact: true }),
-    design.getByRole("link", { name: "Ingresar", exact: true }),
-    [
-      "height",
-      "border-radius",
-      "background-color",
-      "color",
-      "font-size",
-      "font-weight",
-    ],
-  );
-
-  await attachSideBySide(page, design, "D-01");
-  await design.close();
-});
+// D-01 is no longer compared with docs/diseno/D01-Inicio.dc.html: the home
+// page was redesigned with the partner on 2026-11-15 (src/app/page.tsx).
+// pantallas.spec.ts and inicio.spec.ts still check its copy, its links and
+// its accessibility.
 
 test("D-05 matches the design", async ({ page }) => {
   await page.goto("/ingresar?confirmado=1");

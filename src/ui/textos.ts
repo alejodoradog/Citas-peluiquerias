@@ -58,16 +58,30 @@ function duracion(minutos: number): string {
 export const textos = {
   marca: "Yapoin",
   inicio: {
-    titulo: "Tu barbería recibe citas sola, desde un link",
-    bajada:
-      "Tus clientes reservan a cualquier hora en menos de un minuto. Tú ves la agenda de todos tus barberos en el celular.",
+    // The title as screen readers hear it; on screen one word turns with
+    // each kind of business (src/app/home-hero.tsx).
+    titulo: "Tu negocio recibe citas sola",
+    tituloInicio: "Tu",
+    tituloFin: "recibe citas sola",
+    // One per scene, in the order of src/app/home-scenes.ts: the characters,
+    // then the booking story.
+    negocios: [
+      "barbería",
+      "consultorio dental",
+      "veterinaria",
+      "consultorio",
+      "spa",
+      "salón de uñas",
+      "negocio",
+    ],
+    bajada: "Tus clientes reservan a cualquier hora, desde un link.",
     beneficios: [
       "Menos mensajes contestando horarios",
       "Recordatorios por correo para que no te dejen plantado",
       "Configuras todo en 10 minutos, sin descargar nada",
     ],
     descripcion:
-      "Agenda de citas para barberías en Colombia: tus clientes reservan solos desde un link.",
+      "Agenda de citas para barberías, spas, consultorios y más en Colombia: tus clientes reservan solos desde un link.",
     crearCuenta: "Crear cuenta gratis",
     ingresar: "Ingresar",
     nota: `${TRIAL_DAYS} días gratis. No pedimos tarjeta.`,
