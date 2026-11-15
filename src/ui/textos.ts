@@ -489,6 +489,7 @@ export const textos = {
       titulo: "Marcar cita",
       cuerpo: "Elige cómo terminó la cita. Puedes cambiarlo después.",
       nota: "Con 2 o más inasistencias, la ficha del cliente muestra una alerta.",
+      enviando: "Guardando…",
     },
     cancelar: {
       titulo: "¿Cancelar esta cita?",
@@ -735,6 +736,7 @@ export const textos = {
       cargando: "Revisando tu link…",
     },
     salir: "Cerrar sesión",
+    saliendo: "Cerrando sesión…",
     errores: {
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
       password_required: "Escribe tu contraseña.",
@@ -836,6 +838,7 @@ export const textos = {
       horarioPropio:
         "Si trabaja otro horario, lo cambias después en Más › Barberos.",
       guardar: "Guardar barbero",
+      guardando: "Guardando…",
       quitar: "Quitar barbero",
     },
     listo: {
@@ -1932,6 +1935,7 @@ export const textos = {
         bajada: "Toca una cita para confirmarla, cambiarla o cancelarla.",
         vacia: "No tienes citas próximas en esta barbería.",
         ver: "Ver o cambiar",
+        abriendo: "Abriendo…",
         reservar: "Reservar una cita",
       },
       vencido: {
@@ -1994,6 +1998,7 @@ export const textos = {
       guardando: "Guardando…",
     },
     quitar: "Quitar",
+    quitando: "Quitando…",
     quitarDe: (bloqueo: string) => `Quitar, ${bloqueo}`,
     bloquearHoras: "Bloquear horas",
     soloTuyo: "Este link es solo tuyo. No lo compartas.",
@@ -2269,6 +2274,7 @@ export const textos = {
     comision: "Comisión de los barberos",
     porcentaje: (valor: number) => `${valor}%`,
     guardarComision: "Guardar comisión",
+    guardando: "Guardando comisión…",
     guardado: "Comisión guardada.",
     noGuardado: "No pudimos guardar la comisión. Intenta de nuevo.",
     descargar: "Descargar resumen",

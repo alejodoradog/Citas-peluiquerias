@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
-import {
-  addDays,
-  now,
-  toBogotaDate,
-} from "@/lib/fechas/fechas";
+import { addDays, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { newAppointmentHref, routes } from "@/lib/routes";
 import {
   hasAnyAppointment,
@@ -21,7 +17,6 @@ import {
   weekSummary,
   type AgendaItem,
 } from "@/modulos/agenda/dominio/owner-agenda";
-import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BottomNav } from "@/ui/bottom-nav";
 import { removeOwnerBlock } from "@/modulos/agenda/acciones/owner-appointment";
@@ -84,7 +79,7 @@ async function OwnerAgenda({
     requireOwner(),
   ]);
   // A barbershop without services has not finished the wizard (task 2.1).
-  if (await barbershopNeedsSetup(barbershop.id)) {
+  if (barbershop.needsSetup) {
     redirect(routes.setup);
   }
   await connection();

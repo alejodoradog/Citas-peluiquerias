@@ -73,6 +73,34 @@
     outline: 2px solid var(--color-brand-strong);
     outline-offset: 2px;
   }
+
+  /* Every tap answers at once, before the server does. The phone's own flash
+     comes back (Tailwind removes it), in the brand's color. */
+  html {
+    -webkit-tap-highlight-color: rgb(20 90 99 / 0.14);
+  }
+
+  /* Pressed: anything that can be tapped dims while the finger is on it. */
+  :where(a, button:not(:disabled), summary, [role="button"]):active {
+    opacity: 0.7;
+  }
+
+  /* Waiting: the link that was tapped, or the button of a search, until its
+     screen arrives (src/ui/tap-feedback.tsx). */
+  [data-pending] {
+    cursor: progress;
+    animation: tap-pending 0.9s ease-in-out infinite;
+  }
+}
+
+@keyframes tap-pending {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* The teeth of a barber's comb, the brand mark next to the name. */
@@ -104,5 +132,11 @@
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  /* Without the pulse, what waits stays dimmed. */
+  [data-pending] {
+    animation: none;
+    opacity: 0.7;
   }
 }

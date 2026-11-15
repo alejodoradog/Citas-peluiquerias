@@ -9,6 +9,7 @@ import { openMyAppointment } from "@/modulos/agenda/acciones/my-appointments";
 import { loadMyAppointments } from "@/modulos/agenda/datos/my-appointments";
 import { loadPublicProfile } from "@/modulos/agenda/datos/public-booking";
 import { buttonClasses } from "@/ui/button";
+import { PendingButton } from "@/ui/pending-button";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { ManageHeader } from "../../../c/[token]/manage-header";
@@ -123,12 +124,12 @@ async function MyAppointmentsList({
                     <input type="hidden" name="slug" value={list.slug} />
                     <input type="hidden" name="lista" value={token} />
                     <input type="hidden" name="cita" value={appointment.id} />
-                    <button
-                      type="submit"
+                    <PendingButton
+                      pendingText={t.lista.abriendo}
                       className={buttonClasses({ variant: "secondary" })}
                     >
                       {t.lista.ver}
-                    </button>
+                    </PendingButton>
                   </form>
                 </li>
               );

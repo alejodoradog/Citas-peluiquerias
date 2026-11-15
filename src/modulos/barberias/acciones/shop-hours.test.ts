@@ -20,17 +20,18 @@ vi.mock("next/navigation", () => ({
 const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const OTHER_SHOP = "bbbbbbbb-0000-4000-8000-000000000000";
 
-const requireOwner = vi.fn(async () => ({ barbershop: { id: SHOP } }));
+const requireOwner = vi.fn(async () => ({
+  barbershop: { id: SHOP, needsSetup: false },
+}));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
 
-const barbershopNeedsSetup = vi.fn(async () => false);
 const setBarbershopHours = vi.fn<
   (
     shop: string,
     shifts: ReadonlyArray<{ weekday: number; start: string; end: string }>,
   ) => Promise<"saved" | "overlap" | "closed" | "failed">
 >(async () => "saved");
-vi.mock("../datos/setup", () => ({ barbershopNeedsSetup, setBarbershopHours }));
+vi.mock("../datos/setup", () => ({ setBarbershopHours }));
 
 const { saveShopHours } = await import("./shop-hours");
 
@@ -76,10 +77,11 @@ describe("saveShopHours", () => {
         "/panel/mas",
         "/panel/horario",
         "/panel/barberos",
-        "/panel/barberos/[id]",
-        "/panel/barberos/[id]/horario",
       ]),
     );
+    // Literal paths only: a route pattern without the (panel) group matches
+    // no page, and one with it would expire every barber's screen.
+    expect(paths.some((path) => path.includes("["))).toBe(false);
   });
 
   it("ignores any barbershop the browser sends", async () => {
@@ -156,7 +158,9 @@ describe("saveShopHours", () => {
   });
 
   it("sends an owner without the setup back to the wizard", async () => {
-    barbershopNeedsSetup.mockResolvedValueOnce(true);
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, needsSetup: true },
+    });
     expect(
       await run(week([{ weekday: 1, start: "09:00", end: "18:00" }])),
     ).toEqual({ redirectedTo: "/panel/configurar" });

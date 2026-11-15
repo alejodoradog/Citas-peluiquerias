@@ -8,7 +8,6 @@ import { isOwnImageKey } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { imageExists, removeImages } from "../datos/images";
-import { barbershopNeedsSetup } from "../datos/setup";
 import {
   clearShopImage,
   getShopProfile,
@@ -94,10 +93,10 @@ const echoOf = (choice: ImageChoice) =>
   choice.kind === "new" ? choice.path : "";
 
 function revalidatePanel() {
-  // The name and the photos show across the panel: Más, Compartir (D-62),
-  // the end of the wizard (D-14) and D-57 itself.
-  revalidatePath(routes.panel, "layout");
-  // Named too: no layout file sits at /panel.
+  // The name and the photos show in Más, Compartir (D-62), the end of the
+  // wizard (D-14) and D-57 itself. The other panel screens that show the
+  // name (the agenda's header) are fetched again by the router
+  // (src/lib/cache-tags.ts).
   for (const path of [
     routes.panelMore,
     routes.panelShare,
@@ -118,7 +117,7 @@ export async function saveShopProfile(
   formData: FormData,
 ): Promise<ShopProfileState> {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
 
   const saved = await getShopProfile(barbershop.id);
   const logo = readImage(formData, barbershop.id, saved, "logo");

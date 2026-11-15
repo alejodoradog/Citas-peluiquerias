@@ -29,9 +29,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-// C-02 to C-07 (tasks 3.2 and 3.3). The choices live in the URL
-// (booking-flow.ts), so "atrás" and sharing work. The profile comes from the
-// short cache; the free times are always computed live.
+// C-02 to C-07 (tasks 3.2 and 3.3). The services, the barber and the step
+// live in the URL (booking-flow.ts), so "atrás" and sharing work; the day and
+// the time are chosen in the browser and reach the URL with "Continuar"
+// (time-chooser.tsx). The profile comes from the short cache; the free times
+// are always computed live, and again every minute while their step is open.
 export default function BookingFlowPage({
   params,
   searchParams,

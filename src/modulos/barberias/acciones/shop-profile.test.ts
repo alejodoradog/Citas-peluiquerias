@@ -28,11 +28,10 @@ const NEW_LOGO = key(SHOP, "logo", 2);
 const OLD_COVER = key(SHOP, "cover", 3);
 const NEW_COVER = key(SHOP, "cover", 4);
 
-const requireOwner = vi.fn(async () => ({ barbershop: { id: SHOP } }));
+const requireOwner = vi.fn(async () => ({
+  barbershop: { id: SHOP, needsSetup: false },
+}));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
-
-const barbershopNeedsSetup = vi.fn(async () => false);
-vi.mock("../datos/setup", () => ({ barbershopNeedsSetup }));
 
 const saved = (): SavedShopProfile => ({
   name: "Barbería La Esquina",
@@ -120,8 +119,11 @@ describe("saveShopProfile", () => {
       {},
     );
     expect(result).toEqual({ redirectedTo: "/panel/mas" });
-    // The name shows across the panel (Más, Compartir, the wizard's end).
-    expect(revalidatePath).toHaveBeenCalledWith("/panel", "layout");
+    // The name shows in Más, Compartir and the wizard's end, named one by
+    // one: nothing that expires every screen of the panel.
+    expect(revalidatePath.mock.calls.every((call) => call.length === 1)).toBe(
+      true,
+    );
     const paths = revalidatePath.mock.calls.map((call) => call[0]);
     expect(paths).toEqual(
       expect.arrayContaining([
@@ -147,7 +149,9 @@ describe("saveShopProfile", () => {
   });
 
   it("sends a barbershop still in its wizard back to it", async () => {
-    barbershopNeedsSetup.mockResolvedValueOnce(true);
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, needsSetup: true },
+    });
     expect(await run(form())).toEqual({ redirectedTo: "/panel/configurar" });
     expect(updateShopProfile).not.toHaveBeenCalled();
   });
@@ -278,7 +282,7 @@ describe("removeShopImage", () => {
     expect(await removeShopImage("logo")).toEqual({ ok: true });
     expect(clearShopImage).toHaveBeenCalledWith(SHOP, "logo", OLD_LOGO);
     expect(removeImages).toHaveBeenCalledWith([OLD_LOGO]);
-    expect(revalidatePath).toHaveBeenCalledWith("/panel", "layout");
+    expect(revalidatePath).toHaveBeenCalledWith("/panel/datos");
   });
 
   it("empties the cover and then deletes its file", async () => {

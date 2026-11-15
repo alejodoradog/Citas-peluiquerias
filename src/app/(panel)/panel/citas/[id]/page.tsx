@@ -6,10 +6,7 @@ import { Suspense, type ReactNode } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { agendaHref, routes } from "@/lib/routes";
-import {
-  getOwnerAppointment,
-  loadBarberServices,
-} from "@/modulos/agenda/datos/owner-appointment";
+import { getOwnerAppointmentWithOffer } from "@/modulos/agenda/datos/owner-appointment";
 import { appointmentLook } from "@/modulos/agenda/dominio/owner-agenda";
 import {
   appointmentActions,
@@ -99,8 +96,9 @@ async function Appointment({
     searchParams,
     requireReadyOwner(),
   ]);
-  const appointment = await getOwnerAppointment(barbershop.id, id);
-  if (!appointment) notFound();
+  const found = await getOwnerAppointmentWithOffer(barbershop.id, id);
+  if (!found) notFound();
+  const { appointment, barberServices } = found;
   // Always live: what the owner may do depends on the clock.
   await connection();
   const instant = now();
@@ -108,9 +106,7 @@ async function Appointment({
   const actions = appointmentActions(appointment, instant);
   // What the barber offers today, plus what the appointment already has
   // (kept with its own price and length, even if deactivated since, M11).
-  const offered = actions.editServices
-    ? await loadBarberServices(barbershop.id, appointment.barber.id)
-    : [];
+  const offered = actions.editServices ? barberServices : [];
   const options = [
     ...appointment.services,
     ...offered.filter((s) => !appointment.services.some((c) => c.id === s.id)),

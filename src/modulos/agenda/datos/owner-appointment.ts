@@ -43,6 +43,8 @@ export type OwnerAppointmentDetail = {
   };
 };
 
+type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
 // D-34. Null for an id that is not one, or an appointment of another
 // barbershop.
 export async function getOwnerAppointment(
@@ -51,6 +53,40 @@ export async function getOwnerAppointment(
 ): Promise<OwnerAppointmentDetail | null> {
   if (!isId(id)) return null;
   const supabase = await createSupabaseServerClient();
+  const data = await readAppointment(supabase, barbershopId, id);
+  if (!data) return null;
+  const history = await readVisits(supabase, barbershopId, data.customer_id);
+  return toDetail(data, history);
+}
+
+// D-34 with the sheet of "Editar servicios": the appointment and what its
+// barber offers. Both follow from the appointment alone, so they are read at
+// once: one round trip after the appointment instead of two. The services
+// are read whatever the status; the page offers them only when the
+// appointment can still change.
+export async function getOwnerAppointmentWithOffer(
+  barbershopId: string,
+  id: string,
+): Promise<{
+  appointment: OwnerAppointmentDetail;
+  barberServices: OwnerService[];
+} | null> {
+  if (!isId(id)) return null;
+  const supabase = await createSupabaseServerClient();
+  const data = await readAppointment(supabase, barbershopId, id);
+  if (!data) return null;
+  const [history, barberServices] = await Promise.all([
+    readVisits(supabase, barbershopId, data.customer_id),
+    readBarberServices(supabase, barbershopId, data.barber_id),
+  ]);
+  return { appointment: toDetail(data, history), barberServices };
+}
+
+async function readAppointment(
+  supabase: Supabase,
+  barbershopId: string,
+  id: string,
+) {
   const { data, error } = await supabase
     .from("appointments")
     .select(
@@ -60,16 +96,31 @@ export async function getOwnerAppointment(
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  if (!data) return null;
+  return data;
+}
 
-  const history = await supabase
+type AppointmentRow = NonNullable<Awaited<ReturnType<typeof readAppointment>>>;
+
+// The customer's attended and no-show appointments in this barbershop.
+async function readVisits(
+  supabase: Supabase,
+  barbershopId: string,
+  customerId: string,
+) {
+  const { data, error } = await supabase
     .from("appointments")
     .select("status")
     .eq("barbershop_id", barbershopId)
-    .eq("customer_id", data.customer_id)
+    .eq("customer_id", customerId)
     .in("status", ["attended", "no_show"]);
-  if (history.error) throw history.error;
+  if (error) throw error;
+  return data;
+}
 
+function toDetail(
+  data: AppointmentRow,
+  history: ReadonlyArray<{ status: string }>,
+): OwnerAppointmentDetail {
   return {
     id: data.id,
     status: data.status,
@@ -93,8 +144,8 @@ export async function getOwnerAppointment(
       name: data.customers?.full_name ?? "",
       email: data.customers?.email ?? null,
       phone: data.customers?.phone ?? null,
-      visits: history.data.filter((row) => row.status === "attended").length,
-      noShows: history.data.filter((row) => row.status === "no_show").length,
+      visits: history.filter((row) => row.status === "attended").length,
+      noShows: history.filter((row) => row.status === "no_show").length,
       anonymized: data.customers?.anonymized_at != null,
     },
   };
@@ -177,9 +228,7 @@ export type OwnerWrite<T = void> =
   { ok: true; value: T } | { ok: false; error: OwnerRefusal };
 
 async function write<T>(
-  call: (
-    supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
-  ) => PromiseLike<{
+  call: (supabase: Supabase) => PromiseLike<{
     data: T | null;
     error: { code?: string; hint?: string | null } | null;
   }>,
@@ -286,11 +335,11 @@ export function deleteOwnerBlock(id: string): Promise<OwnerWrite> {
 
 // The sheet of D-34 "Editar servicios": the active services the barber of
 // the appointment offers.
-export async function loadBarberServices(
+async function readBarberServices(
+  supabase: Supabase,
   barbershopId: string,
   barberId: string,
 ): Promise<OwnerService[]> {
-  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("barber_services")
     .select("services(id, name, duration_minutes, price_cop, active)")

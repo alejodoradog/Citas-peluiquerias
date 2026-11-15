@@ -107,7 +107,7 @@ De los tres guardados del horario, vistos desde Supabase (de 590 a 760 ms) y des
 | Pintar la pantalla siguiente (las mismas cuatro esperas, con los permisos leídos otra vez) | ~175 |
 | Red, envío y navegador | 150 a 250 |
 
-El tiempo muerto no es de Supabase. Por el código, lo más probable es la invalidación de la caché (cinco `revalidatePath` y la etiqueta del perfil público) y el `redirect`. Esto es una lectura, no una medida: hay que confirmarlo con un cronómetro en una vista previa.
+El tiempo muerto no es de Supabase. **Actualización (2026-11-15, al hacer la corrección):** sale del `redirect()`. En Next 16.4, la pantalla siguiente no se pinta en la misma petición: es una petición nueva al propio sitio, que vuelve a pasar por Vercel y por el proxy. Por eso los permisos se leen dos veces. El detalle está en `docs/tareas/perf-respuesta-inmediata.md`.
 
 ### Arranque en frío y picos
 **Después de unos minutos sin uso, abrir el panel tardó 2,8 s.** En caliente, la misma carga tardó 0,7 s.

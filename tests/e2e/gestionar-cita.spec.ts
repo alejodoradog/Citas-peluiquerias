@@ -76,15 +76,15 @@ test("the customer moves and cancels the appointment from its link", async ({
       .getByText(g.reprogramar.liberada, { exact: true })
       .filter({ visible: true }),
   ).toBeVisible(FIRST_VISIT);
-  const hour = page.getByRole("link", {
+  const hour = page.getByRole("button", {
     name: formatWallClock("11:00"),
     exact: true,
   });
   await hour.click();
-  await expect(hour).toHaveAttribute("aria-current", "true", FIRST_VISIT);
+  await expect(hour).toHaveAttribute("aria-pressed", "true");
   // Its own time is not offered as a change.
   await expect(
-    page.getByRole("link", { name: formatWallClock("10:00"), exact: true }),
+    page.getByRole("button", { name: formatWallClock("10:00"), exact: true }),
   ).toHaveCount(0);
   await screen(page);
   const change = page.getByRole("button", { name: g.reprogramar.boton });

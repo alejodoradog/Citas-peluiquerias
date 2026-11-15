@@ -4,10 +4,7 @@ import { Suspense } from "react";
 import { formatBogotaDayMonth, startOfBogotaDay } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { publicBookingUrl, qrFileName } from "@/lib/sitio";
-import {
-  barbershopNeedsSetup,
-  countActiveBarbers,
-} from "@/modulos/barberias/datos/setup";
+import { countActiveBarbers } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BookingLinkCard } from "@/ui/booking-link-card";
 import { buttonClasses } from "@/ui/button";
@@ -36,7 +33,7 @@ export default function SetupDonePage() {
 
 async function SetupDone() {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) {
+  if (barbershop.needsSetup) {
     redirect(routes.setup);
   }
   const hasBarbers = (await countActiveBarbers(barbershop.id)) > 0;

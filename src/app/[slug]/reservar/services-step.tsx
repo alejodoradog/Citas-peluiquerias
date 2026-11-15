@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition, type FormEvent } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
 import type { PublicProfile } from "@/modulos/agenda/datos/public-booking";
 import { MAX_SERVICES_PER_BOOKING } from "@/modulos/agenda/dominio/booking";
-import type { BookingSelection } from "@/modulos/agenda/dominio/booking-flow";
+import {
+  bookingQuery,
+  type BookingSelection,
+} from "@/modulos/agenda/dominio/booking-flow";
 import { buttonClasses } from "@/ui/button";
 import { cx } from "@/ui/cx";
 import { CheckIcon } from "@/ui/icons";
@@ -20,8 +24,10 @@ import {
 
 const t = textos.reservas;
 
-// C-02: one or more services (up to 5). A plain GET form: the choice goes to
-// the URL, so the barber step and "atrás" read it from there.
+// C-02: one or more services (up to 5). The choice goes to the URL, so the
+// barber step and "atrás" read it from there. A GET form that, once the page
+// runs, moves on inside the app instead of loading the whole document again,
+// and says so from the tap while the barber step arrives.
 export function ServicesStep({
   profile,
   selection,
@@ -38,6 +44,8 @@ export function ServicesStep({
   const minutes = picked.reduce((sum, s) => sum + s.durationMinutes, 0);
   const price = picked.reduce((sum, s) => sum + s.priceCop, 0);
   const tooMany = chosen.length > MAX_SERVICES_PER_BOOKING;
+  const router = useRouter();
+  const [leaving, startLeaving] = useTransition();
 
   function toggle(id: string, on: boolean) {
     setChosen((current) =>
@@ -45,10 +53,22 @@ export function ServicesStep({
     );
   }
 
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (leaving || chosen.length === 0 || tooMany) return;
+    // In the order of the list, as the form itself would send them.
+    const href =
+      routes.bookingFlow(profile.slug) +
+      bookingQuery({ serviceIds: picked.map((service) => service.id) });
+    // Pending until the barber step is on screen.
+    startLeaving(() => router.push(href));
+  }
+
   return (
     <form
       method="get"
       action={routes.bookingFlow(profile.slug)}
+      onSubmit={onSubmit}
       className="flex min-h-full flex-1 flex-col"
     >
       <StepHeader
@@ -125,7 +145,17 @@ export function ServicesStep({
         {chosen.length === 0 || tooMany ? (
           <DisabledContinue />
         ) : (
-          <button type="submit" className={buttonClasses()}>
+          <button
+            type="submit"
+            aria-disabled={leaving || undefined}
+            aria-busy={leaving || undefined}
+            className={cx(
+              buttonClasses(),
+              // The pulse of a tapped link (globals.css, tap-pending).
+              leaving &&
+                "animate-[tap-pending_0.9s_ease-in-out_infinite] cursor-progress motion-reduce:animate-none motion-reduce:opacity-70",
+            )}
+          >
             {t.continuar}
           </button>
         )}

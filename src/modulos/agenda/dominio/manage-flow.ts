@@ -4,7 +4,8 @@ import type { SearchParams } from "./booking-flow";
 // The screens of "Gestionar mi cita" (task 3.4) live in the query of
 // /c/<token>, like the booking flow: "atrás" and reloading keep them.
 // - no paso: C-09 (C-13 inside the policy's hours);
-// - paso=cambiar: C-10, with the day and the time chosen so far;
+// - paso=cambiar: C-10. The day and the time are chosen in the browser;
+//   dia and hora only say which ones it opens on;
 // - cambiada=1: C-09 says the appointment moved;
 // - tomada=HH:MM: C-10 says that time was taken in the meantime;
 // - confirmo=1 and cancelar=1: the buttons of the reminder (task 5.3): C-09

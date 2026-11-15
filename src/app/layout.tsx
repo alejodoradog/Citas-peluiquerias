@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
+import { Suspense } from "react";
+import { TapFeedback } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import "./globals.css";
 
@@ -26,7 +28,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es-CO" className={`${bricolage.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {/* It reads the address, which no page has until it is asked for. */}
+        <Suspense fallback={null}>
+          <TapFeedback />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

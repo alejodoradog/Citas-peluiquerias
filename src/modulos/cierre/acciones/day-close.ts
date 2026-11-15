@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes, SAVED_PARAM } from "@/lib/routes";
-import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { loadSubscriptionNotice } from "@/modulos/suscripciones/datos/notice";
 import { saveCommission } from "../datos/day-close";
@@ -20,7 +19,7 @@ import {
 export async function setCommission(formData: FormData): Promise<void> {
   const { barbershop } = await requireOwner();
   // Like every screen of the panel: the setup wizard first (task 2.1).
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
   const today = toBogotaDate(now());
   const date = parseCloseDay(String(formData.get("dia") ?? ""), today);
   const percent = parseCommission(String(formData.get("comision") ?? ""));
