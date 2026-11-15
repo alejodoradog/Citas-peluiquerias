@@ -1,5 +1,5 @@
 # Respuesta inmediata en todos los toques
-Estado: construida el 2026-11-15 en la rama `perf-respuesta-inmediata` (#84), por el fundador con Claude Code. Son las correcciones 1 a 4 del diagnóstico (`docs/tareas/rendimiento-diagnostico.md`), en un solo PR por decisión del fundador. El CI pasó completo, con las pruebas de punta a punta. Falta volver a medir en el sitio desplegado.
+Estado: fusionada el 2026-11-15 (#84 y el ajuste #85), por el fundador con Claude Code. Son las correcciones 1 a 4 del diagnóstico (`docs/tareas/rendimiento-diagnostico.md`). Medida después en `www.yapoin.com`: la respuesta al toque se cumple; guardar y el arranque en frío siguen pendientes.
 
 La prioridad del fundador: que todo toque muestre una respuesta al instante.
 
@@ -86,9 +86,26 @@ El fundador lo notó al probar el #84: "Día" y "Semana" marcaban la espera, per
 - La 4.6 (cierre): `commission-form.tsx` y la acción `day-close.ts`.
 - El acceso del panel, que el socio cambió en el #79: `src/modulos/cuentas/datos/access.ts`.
 
+## Medido después, en `www.yapoin.com` (2026-11-15)
+Computador con buena red, los mismos toques del diagnóstico. Milisegundos.
+
+| Toque | Antes: algo cambia en la pantalla | Ahora: algo cambia | Ahora: contenido listo |
+|---|---|---|---|
+| Panel: "Día", "Semana", día siguiente y anterior | nada hasta los 375–757 | 1–2 (el estado de carga) | 330–534 |
+| Panel: ir a otra pantalla | 4–19 | 7–40 | 331–420 (mediana 403; antes 411) |
+| Panel: guardar el horario | 3–12 (el botón) | 5–13 (el botón) | 895–1.257 (antes 841–1.106) |
+| Reserva: elegir día | nada hasta los 369 | 5–11, sin petición | 5–11 |
+| Reserva: elegir hora | nada hasta los 352 | 2–6, sin petición | 2–6 |
+| Reserva: "Continuar" y barbero | nada hasta los 321–489 | 1–4 | 455–751 |
+
+- **La meta de respuesta en menos de 100 ms se cumple** en todos los toques medidos.
+- **El tiempo hasta el contenido no cambió de forma medible** en el panel: la espera que se quitó (unos 45 ms) queda dentro de la variación de la muestra.
+- **Guardar sigue cerca de 1 s,** como se esperaba tras el hallazgo del `redirect()`.
+- **Justo después de guardar, el toque siguiente salió lento** (el estado de carga a los 375 ms y el contenido a los 1.357 ms en una muestra): guardar hace que el navegador descarte las pantallas precargadas. Es el punto 2 de "Propuesto para después".
+
 ## Falta
-- **Volver a medir en `www.yapoin.com`** con la misma matriz del diagnóstico, cuando se fusione.
 - **El arranque en frío (corrección 6 del diagnóstico)** no se toca aquí: sigue siendo la causa número uno y es decisión del fundador y del socio.
+- **Probar en un celular real con datos móviles.**
 
 ## Propuesto para después
 1. **Guardar sin redirigir** en las pantallas que vuelven a sí mismas (horario, festivos, link, cierre): la acción devuelve "guardado" y Next vuelve a pintar en la misma petición, sin el salto de red ni el proxy. Es lo que más bajaría el tiempo de guardar. Cambia cuatro formularios y sus pruebas.
