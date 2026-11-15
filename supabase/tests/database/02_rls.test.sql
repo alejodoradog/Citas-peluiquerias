@@ -615,7 +615,9 @@ select is((select count(id) from public.profiles where id in (
   '00000000-0000-0000-0000-00000000000c', '00000000-0000-0000-0000-0000000000ad')), 4::bigint, 'super admin sees every profile');
 -- A and B, plus the customer owner A created above.
 select is((select count(id) from public.customers where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 3::bigint, 'super admin sees every customer');
-select is((select count(id) from public.notifications where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 2::bigint, 'super admin sees the message queue');
+-- The two queued above, plus "Recibimos tu pago" of each payment of the
+-- fixtures (task 5.5b).
+select is((select count(id) from public.notifications where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 4::bigint, 'super admin sees the message queue');
 select is((select count(id) from public.subscription_payments where barbershop_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', 'cccccccc-0000-0000-0000-000000000000')), 2::bigint, 'super admin sees every payment');
 
 select throws_ok(
