@@ -53,15 +53,20 @@ async function Reschedule({ params }: { params: Promise<{ id: string }> }) {
     params,
     requireReadyOwner(),
   ]);
-  const appointment = await getOwnerAppointment(barbershop.id, id);
-  if (!appointment) notFound();
   await connection();
   const instant = now();
+  // The free times depend on the barbershop and the clock only, not on the
+  // appointment, so both are read at once; they are shown only if the
+  // appointment exists and can still move.
+  const [appointment, data] = await Promise.all([
+    getOwnerAppointment(barbershop.id, id),
+    loadOwnerBookingData(barbershop.id, instant),
+  ]);
+  if (!appointment) notFound();
   // Only a confirmed appointment that has not started moves (task 4.2b).
   if (!appointmentActions(appointment, instant).reschedule) {
     redirect(routes.panelAppointment(appointment.id));
   }
-  const data = await loadOwnerBookingData(barbershop.id, instant);
   const minutes = Math.round(
     (appointment.end.getTime() - appointment.start.getTime()) / 60_000,
   );

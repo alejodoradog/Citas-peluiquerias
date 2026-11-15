@@ -1,24 +1,11 @@
 import "server-only";
-import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { WeeklyShift } from "../dominio/hours";
 import type { SetupPayload } from "../dominio/setup";
 
-// A barbershop that has not finished the setup wizard (task 2.1): the panel
-// sends its owner there. The wizard sets the mark once, for good. Cached for
-// the request: a page and its guard ask the same thing.
-export const barbershopNeedsSetup = cache(
-  async (barbershopId: string): Promise<boolean> => {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("barbershops")
-      .select("setup_completed_at")
-      .eq("id", barbershopId)
-      .single();
-    if (error) throw error;
-    return data.setup_completed_at === null;
-  },
-);
+// Whether a barbershop still needs the setup wizard (task 2.1) is not read
+// here: it comes with the owner's access (getCurrentAccess), in the same query
+// as the active barbershop, so no screen or action spends a round trip on it.
 
 export async function countActiveBarbers(
   barbershopId: string,

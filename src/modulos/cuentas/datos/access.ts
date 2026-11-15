@@ -38,6 +38,10 @@ export type Access =
       barbershop: OwnerBarbershop & {
         subscriptionStatus: SubscriptionStatus;
         expiresOn: BogotaDate;
+        // It has not finished the setup wizard (task 2.1), so the panel
+        // sends the owner there. Read with the barbershop itself, in the
+        // same query, so the panel spends no extra round trip on it.
+        needsSetup: boolean;
       };
       // Every barbershop of the owner, oldest first, the active one included.
       barbershops: OwnerBarbershop[];
@@ -48,7 +52,11 @@ export type Access =
   | { kind: "super_admin"; name: string };
 
 // The session is checked against the current time (token expiry), so this
-// always runs at request time, never while prerendering.
+// always runs at request time, never while prerendering. React's cache keeps
+// the answer for one render only; a Server Action runs outside any render, so
+// it reads everything again, and the page it redirects to is a request of its
+// own. Nothing read here outlives the request, so the wizard's mark and the
+// sede cookie are always the ones in the database and the browser now.
 export const getCurrentAccess = cache(async (): Promise<Access> => {
   await connection();
   const supabase = await createSupabaseServerClient();
@@ -76,7 +84,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
     supabase
       .from("memberships")
       .select(
-        "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at)",
+        "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at, setup_completed_at)",
       )
       .eq("user_id", user.id)
       .eq("role", "owner"),
@@ -132,6 +140,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
       ...summary(active),
       subscriptionStatus: active.subscription_status,
       expiresOn: active.expires_on,
+      needsSetup: active.setup_completed_at === null,
     },
     barbershops: owned.map(summary),
     companyTrialEndsOn: oldest.trial_ends_on,

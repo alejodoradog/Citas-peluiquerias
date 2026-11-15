@@ -6,7 +6,7 @@ import type { FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { getBarber, setBarberSchedule } from "../datos/barbers";
-import { barbershopNeedsSetup, getBarbershopHours } from "../datos/setup";
+import { getBarbershopHours } from "../datos/setup";
 import { isId } from "../dominio/service";
 import {
   dayField,
@@ -39,7 +39,7 @@ export async function saveBarberSchedule(
 ): Promise<ScheduleState> {
   const { barbershop } = await requireOwner();
   // Before the wizard ends there are no barbershop hours to fit into.
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
 
   const usesBarbershopHours = formData.get("usesBarbershopHours") === "on";
   const sent = formData.get("shifts");

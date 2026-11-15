@@ -66,11 +66,17 @@ async function BarberAgenda({
   const from = days[0]!;
   const until = days.at(-1)!;
 
-  const data = await loadBarberAgenda(token, from, until);
-  const todays =
-    data && from <= today && today <= until
-      ? data
-      : await loadBarberAgenda(token, today, today);
+  // The summary is always of today. When the days shown leave today out,
+  // today is read too, at the same time: it depends on the link only.
+  const [data, todays] =
+    from <= today && today <= until
+      ? await loadBarberAgenda(token, from, until).then(
+          (agenda) => [agenda, agenda] as const,
+        )
+      : await Promise.all([
+          loadBarberAgenda(token, from, until),
+          loadBarberAgenda(token, today, today),
+        ]);
   if (!data || !todays) return <BarberLinkGone />;
 
   const summary = todaySummary(todays, today, instant);

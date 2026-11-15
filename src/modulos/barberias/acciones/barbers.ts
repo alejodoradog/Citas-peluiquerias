@@ -172,8 +172,8 @@ function revalidateTeam(barberId?: string) {
   revalidatePath(routes.panelBarbers);
   if (barberId) revalidatePath(routes.panelBarberEdit(barberId));
   revalidatePath(routes.panelMore);
-  // The service editor lists the active barbers (D-52).
-  revalidatePath(routes.panelServices, "layout");
+  // The service editor lists the active barbers (D-52): the router fetches
+  // it again after any of the calls above (src/lib/cache-tags.ts).
 }
 
 function afterSave(barberId: string): never {

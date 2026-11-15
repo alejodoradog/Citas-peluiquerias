@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { routes } from "@/lib/routes";
-import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import type { Access } from "@/modulos/cuentas/datos/access";
 import { requireOwner } from "@/modulos/cuentas/guards";
 
@@ -18,7 +17,7 @@ export async function SetupStepGate({
   ) => ReactNode;
 }) {
   const access = await requireOwner();
-  if (!(await barbershopNeedsSetup(access.barbershop.id))) {
+  if (!access.barbershop.needsSetup) {
     redirect(routes.panel);
   }
   return children(access);

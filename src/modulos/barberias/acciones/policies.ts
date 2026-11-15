@@ -7,7 +7,6 @@ import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { getPolicies, updatePolicies } from "../datos/policies";
-import { barbershopNeedsSetup } from "../datos/setup";
 import { parsePoliciesForm, type PolicyErrorCode } from "../dominio/policies";
 
 // - *_invalid: a value the screen does not offer (nor the one saved).
@@ -30,7 +29,7 @@ export async function savePolicies(
   formData: FormData,
 ): Promise<PoliciesState> {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
 
   const saved = await getPolicies(barbershop.id);
   const form = readForm(formData, {

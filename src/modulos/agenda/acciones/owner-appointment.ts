@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { agendaHref, routes } from "@/lib/routes";
-import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { isId } from "@/modulos/barberias/dominio/service";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { textos } from "@/ui/textos";
@@ -42,7 +41,7 @@ import { DONE_PARAM, type DoneCode } from "../dominio/owner-slots";
 
 async function readyBarbershop() {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
   return barbershop;
 }
 

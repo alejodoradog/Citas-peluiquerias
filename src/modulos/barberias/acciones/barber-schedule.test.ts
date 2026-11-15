@@ -18,10 +18,9 @@ const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const BARBER = "cccccccc-0000-4000-8000-000000000000";
 
 vi.mock("@/modulos/cuentas/guards", () => ({
-  requireOwner: async () => ({ barbershop: { id: SHOP } }),
+  requireOwner: async () => ({ barbershop: { id: SHOP, needsSetup: false } }),
 }));
 vi.mock("../datos/setup", () => ({
-  barbershopNeedsSetup: async () => false,
   getBarbershopHours: async () => [
     { weekday: 1, start: "09:00", end: "20:00" },
   ],

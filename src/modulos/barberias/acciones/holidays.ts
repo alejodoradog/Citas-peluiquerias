@@ -12,7 +12,6 @@ import {
   insertClosure,
   setHolidayOpenings,
 } from "../datos/holidays";
-import { barbershopNeedsSetup } from "../datos/setup";
 import {
   parseClosureForm,
   type ClosureErrorCode,
@@ -31,7 +30,7 @@ export type HolidaysState = FormState<"open", "unknown">;
 async function requireReadyShop(): Promise<string> {
   const { barbershop } = await requireOwner();
   // The wizard sets the first hours; until it ends, it is the place to go.
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
   return barbershop.id;
 }
 

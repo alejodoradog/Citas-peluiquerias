@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
-import { barbershopNeedsSetup } from "@/modulos/barberias/datos/setup";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import {
   anonymizeCustomer,
@@ -29,7 +28,7 @@ const MAX_NOTES_ECHO = 2000;
 
 async function readyBarbershop() {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
   return barbershop;
 }
 

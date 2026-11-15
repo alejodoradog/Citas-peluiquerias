@@ -21,11 +21,10 @@ vi.mock("next/navigation", () => ({
 const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const OTHER_SHOP = "bbbbbbbb-0000-4000-8000-000000000000";
 
-const requireOwner = vi.fn(async () => ({ barbershop: { id: SHOP } }));
+const requireOwner = vi.fn(async () => ({
+  barbershop: { id: SHOP, needsSetup: false },
+}));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
-
-const barbershopNeedsSetup = vi.fn(async () => false);
-vi.mock("../datos/setup", () => ({ barbershopNeedsSetup }));
 
 const getPolicies = vi.fn<(shop: string) => Promise<Policies>>(async () => ({
   minBookingNoticeMinutes: 60,
@@ -138,7 +137,9 @@ describe("savePolicies", () => {
   });
 
   it("sends an owner without the setup back to the wizard", async () => {
-    barbershopNeedsSetup.mockResolvedValueOnce(true);
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, needsSetup: true },
+    });
     expect(
       await run(form({ minBookingNotice: "60", cancellationNotice: "2" })),
     ).toEqual({ redirectedTo: "/panel/configurar" });

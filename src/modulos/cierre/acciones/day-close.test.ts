@@ -19,10 +19,10 @@ vi.mock("@/lib/fechas/fechas", async (original) => ({
   now: () => new Date("2026-11-07T15:00:00Z"),
 }));
 vi.mock("@/modulos/cuentas/guards", () => ({
-  requireOwner: async () => ({ kind: "owner", barbershop: { id: "shop-1" } }),
-}));
-vi.mock("@/modulos/barberias/datos/setup", () => ({
-  barbershopNeedsSetup: async () => false,
+  requireOwner: async () => ({
+    kind: "owner",
+    barbershop: { id: "shop-1", needsSetup: false },
+  }),
 }));
 const saveCommission = vi.fn(async () => true);
 vi.mock("../datos/day-close", () => ({ saveCommission }));

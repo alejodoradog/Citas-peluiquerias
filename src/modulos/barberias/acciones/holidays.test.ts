@@ -21,11 +21,10 @@ const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const OTHER_SHOP = "bbbbbbbb-0000-4000-8000-000000000000";
 const CLOSURE = "cccccccc-0000-4000-8000-000000000000";
 
-const requireOwner = vi.fn(async () => ({ barbershop: { id: SHOP } }));
+const requireOwner = vi.fn(async () => ({
+  barbershop: { id: SHOP, needsSetup: false },
+}));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
-
-const barbershopNeedsSetup = vi.fn(async () => false);
-vi.mock("../datos/setup", () => ({ barbershopNeedsSetup }));
 
 const setHolidayOpenings = vi.fn<
   (
@@ -142,7 +141,9 @@ describe("saveHolidayOpenings", () => {
   });
 
   it("sends an owner without the setup back to the wizard", async () => {
-    barbershopNeedsSetup.mockResolvedValueOnce(true);
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, needsSetup: true },
+    });
     expect(await save(form({}))).toEqual({
       redirectedTo: "/panel/configurar",
     });

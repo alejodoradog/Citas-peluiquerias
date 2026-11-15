@@ -18,6 +18,7 @@ type Shop = {
   expires_on: string;
   trial_ends_on: string;
   created_at: string;
+  setup_completed_at: string | null;
 };
 
 const norte: Shop = {
@@ -29,6 +30,7 @@ const norte: Shop = {
   expires_on: "2026-11-24",
   trial_ends_on: "2026-11-24",
   created_at: "2026-11-04T15:00:00+00:00",
+  setup_completed_at: "2026-11-04T15:20:00+00:00",
 };
 const sur: Shop = {
   id: SUR,
@@ -39,16 +41,24 @@ const sur: Shop = {
   expires_on: "2026-12-30",
   trial_ends_on: "2026-11-24",
   created_at: "2026-11-09T15:00:00+00:00",
+  // A new sede: its wizard is still pending.
+  setup_completed_at: null,
 };
 
 let memberships: { barbershops: Shop | null }[] = [];
 let cookie: string | undefined;
+let tables: string[] = [];
+let selects: string[] = [];
 
 // Each query ends where the code awaits it: maybeSingle for the profile, the
 // last eq for the memberships.
 function query(table: string) {
+  tables.push(table);
   const builder = {
-    select: () => builder,
+    select: (columns: string) => {
+      selects.push(columns);
+      return builder;
+    },
     eq: (column: string) =>
       table === "memberships" && column === "role"
         ? Promise.resolve({ data: memberships, error: null })
@@ -81,6 +91,8 @@ beforeEach(() => {
   // Newest first on purpose: the order is the access's job.
   memberships = [{ barbershops: sur }, { barbershops: norte }];
   cookie = undefined;
+  tables = [];
+  selects = [];
 });
 
 async function owner() {
@@ -109,6 +121,7 @@ describe("getCurrentAccess for an owner with two sedes", () => {
       logoPath: sur.logo_path,
       subscriptionStatus: "active",
       expiresOn: "2026-12-30",
+      needsSetup: true,
     });
   });
 
@@ -141,5 +154,43 @@ describe("getCurrentAccess for an owner with two sedes", () => {
     const access = await owner();
     expect(access.barbershop.id).toBe(NORTE);
     expect(access.barbershops).toHaveLength(1);
+  });
+});
+
+describe("getCurrentAccess and the setup wizard", () => {
+  it("reads the mark with the memberships, in no query of its own", async () => {
+    await owner();
+    expect(tables.sort()).toEqual(["memberships", "profiles"]);
+    expect(selects.find((columns) => columns.includes("barbershops("))).toMatch(
+      /setup_completed_at/,
+    );
+  });
+
+  it("says whether the ACTIVE sede still needs the wizard", async () => {
+    expect((await owner()).barbershop.needsSetup).toBe(false);
+    cookie = SUR;
+    expect((await owner()).barbershop.needsSetup).toBe(true);
+  });
+
+  it("follows a forged cookie to the oldest sede's own mark", async () => {
+    cookie = ALIEN;
+    const { barbershop } = await owner();
+    expect(barbershop.id).toBe(NORTE);
+    expect(barbershop.needsSetup).toBe(false);
+  });
+
+  it("reads the mark again on every call, so a finished wizard counts at once", async () => {
+    cookie = SUR;
+    expect((await owner()).barbershop.needsSetup).toBe(true);
+    memberships = [
+      {
+        barbershops: {
+          ...sur,
+          setup_completed_at: "2026-11-15T12:00:00+00:00",
+        },
+      },
+      { barbershops: norte },
+    ];
+    expect((await owner()).barbershop.needsSetup).toBe(false);
   });
 });

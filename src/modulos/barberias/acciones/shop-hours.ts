@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import type { FormState } from "@/lib/formularios/form-state";
 import { SAVED_PARAM, routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
-import { barbershopNeedsSetup, setBarbershopHours } from "../datos/setup";
+import { setBarbershopHours } from "../datos/setup";
 import {
   dayField,
   toRpcShifts,
@@ -43,7 +43,7 @@ export async function saveShopHours(
 ): Promise<ShopHoursState> {
   const { barbershop } = await requireOwner();
   // The wizard sets the first hours; until it ends, it is the place to do it.
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
 
   const sent = formData.get("shifts");
   const values = { shifts: echoWeek(sent) };
@@ -88,9 +88,9 @@ export async function saveShopHours(
   refreshPublicProfile(barbershop.id);
   revalidatePath(routes.panelMore);
   revalidatePath(routes.panelShopHours);
-  // The team and each barber's screens show the barbershop's hours.
+  // The team and each barber's screens show the barbershop's hours. A
+  // barber's screens get no call of their own: no route pattern reaches them
+  // from here, and the router fetches them again anyway (src/lib/cache-tags.ts).
   revalidatePath(routes.panelBarbers);
-  revalidatePath("/panel/barberos/[id]", "page");
-  revalidatePath("/panel/barberos/[id]/horario", "page");
   redirect(`${routes.panelShopHours}?${SAVED_PARAM}=1`);
 }

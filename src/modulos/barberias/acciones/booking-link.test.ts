@@ -22,12 +22,9 @@ const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
 const OTHER_SHOP = "bbbbbbbb-0000-4000-8000-000000000000";
 
 const requireOwner = vi.fn(async () => ({
-  barbershop: { id: SHOP, slug: "la-esquina" },
+  barbershop: { id: SHOP, slug: "la-esquina", needsSetup: false },
 }));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
-
-const barbershopNeedsSetup = vi.fn(async () => false);
-vi.mock("../datos/setup", () => ({ barbershopNeedsSetup }));
 
 const isSlugAvailable = vi.fn<(slug: string, shop: string) => Promise<boolean>>(
   async () => true,
@@ -110,7 +107,6 @@ describe("changeBookingLink", () => {
     const paths = revalidatePath.mock.calls.map((call) => call[0]);
     expect(paths).toEqual(
       expect.arrayContaining([
-        "/panel",
         "/panel/mas",
         "/panel/compartir",
         "/panel/configurar/listo",
@@ -118,6 +114,10 @@ describe("changeBookingLink", () => {
         "/la-esquina",
         "/la-esquina-norte",
       ]),
+    );
+    // Literal paths only: nothing that expires every screen of the panel.
+    expect(revalidatePath.mock.calls.every((call) => call.length === 1)).toBe(
+      true,
     );
   });
 
@@ -129,7 +129,9 @@ describe("changeBookingLink", () => {
   });
 
   it("sends an owner who has not finished the wizard back to it", async () => {
-    barbershopNeedsSetup.mockResolvedValueOnce(true);
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, slug: "la-esquina", needsSetup: true },
+    });
     expect(await run(form({ slug: "nueva" }))).toEqual({
       redirectedTo: "/panel/configurar",
     });

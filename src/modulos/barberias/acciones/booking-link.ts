@@ -7,7 +7,6 @@ import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { SAVED_PARAM, routes } from "@/lib/routes";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { updateBookingLink } from "../datos/booking-link";
-import { barbershopNeedsSetup } from "../datos/setup";
 import { isSlugAvailable } from "../datos/slugs";
 import { parseNewSlug, type NewSlugErrorCode } from "../dominio/slug";
 
@@ -58,9 +57,9 @@ export async function checkBookingLink(input: unknown): Promise<SlugCheck> {
 }
 
 function revalidateLink(oldSlug: string, newSlug: string) {
-  // The link shows across the panel: Más, Compartir (D-62), the end of the
-  // wizard (D-14) and D-61 itself; and both public pages change.
-  revalidatePath(routes.panel, "layout");
+  // The link shows in Más, Compartir (D-62), the end of the wizard (D-14)
+  // and D-61 itself; and both public pages change. Any other panel screen
+  // is fetched again by the router (src/lib/cache-tags.ts).
   for (const path of [
     routes.panelMore,
     routes.panelShare,
@@ -83,7 +82,7 @@ export async function changeBookingLink(
   formData: FormData,
 ): Promise<BookingLinkState> {
   const { barbershop } = await requireOwner();
-  if (await barbershopNeedsSetup(barbershop.id)) redirect(routes.setup);
+  if (barbershop.needsSetup) redirect(routes.setup);
 
   const form = readForm(formData, {
     fields: ["slug"],
