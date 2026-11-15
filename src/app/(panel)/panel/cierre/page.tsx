@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { addDays, getWeekday, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes, SAVED_PARAM } from "@/lib/routes";
@@ -16,6 +15,7 @@ import { buttonClasses } from "@/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import { requireReadyOwner } from "../ready-owner";
@@ -51,9 +51,9 @@ export default function DayClosePage({
   searchParams,
 }: PageProps<"/panel/cierre">) {
   return (
-    <Suspense fallback={<LoadingState label={t.cargando} />}>
+    <ScreenSuspense fallback={<LoadingState label={t.cargando} />}>
       <DayCloseScreen searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 
