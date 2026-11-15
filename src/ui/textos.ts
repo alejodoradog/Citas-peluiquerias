@@ -2332,6 +2332,109 @@ export const textos = {
     waze: "Waze",
     cerrar: "Cerrar",
   },
+  // The landing page at yapoin.com (approved by the partner, 2026-11-15):
+  // the owners' entry moved to /app (textos.inicio).
+  landing: {
+    titulo: "Tu negocio recibe citas sola",
+    tituloInicio: "Tu",
+    tituloFin: "recibe citas sola.",
+    negocios: ["barbería", "spa", "consultorio", "veterinaria", "salón"],
+    bajada:
+      "Tus clientes reservan desde un link en menos de un minuto. A ti te llega a la agenda al instante, sin una sola llamada.",
+    crearCuenta: "Crear cuenta gratis",
+    ingresar: "Ingresar",
+    nota: (dias: number) =>
+      `${dias} días gratis, sin tarjeta. Desde $25.000 al mes.`,
+    navegacion: "Yapoin",
+    pasos: [
+      { titulo: "Reserva", texto: "Desde tu link, a cualquier hora." },
+      {
+        titulo: "Recordatorio",
+        texto: 'Un correo el día antes, con "Confirmo".',
+      },
+      { titulo: "Llega", texto: "Con el mapa y la hora a la mano." },
+    ],
+    pasosEtiqueta: "Cómo funciona",
+    precios: {
+      abrir: "Precios",
+      titulo: "Precios",
+      prueba: (dias: number) =>
+        `Los primeros ${dias} días son gratis, con todo incluido. No pedimos tarjeta.`,
+      planes: [
+        {
+          quien: "1 a 4 profesionales",
+          detalle: "La mayoría de negocios",
+          valor: "$25.000",
+          mes: true,
+        },
+        {
+          quien: "5 a 8 profesionales",
+          detalle: "Equipos más grandes",
+          valor: "$40.000",
+          mes: true,
+        },
+        {
+          quien: "9 o más",
+          detalle: "Hablemos de tu caso",
+          valor: "Por acuerdo",
+          mes: false,
+        },
+      ],
+      porMes: "/mes",
+      incluye:
+        "Cada sede paga su mes. Incluye reservas por link, agenda, recordatorios por correo, links para tu equipo y cierre del día. Pagas mes a mes.",
+    },
+    contacto: {
+      abrir: "Contáctanos",
+      titulo: "Contáctanos",
+      bajada:
+        "¿Tienes una pregunta antes de empezar? Escríbenos por WhatsApp o por correo y te respondemos.",
+      whatsapp: "Escribir por WhatsApp",
+      // The message WhatsApp opens with.
+      mensaje:
+        "Hola, vi Yapoin y me interesa para mi negocio. Tengo una pregunta:",
+      correoEtiqueta: "Correo",
+      correo: "yapoin927@gmail.com",
+      donde: "Somos una empresa de Cali, Colombia.",
+    },
+    instalar: {
+      boton: "Añadir la app a tu celular",
+      titulo: "Añade Yapoin a tu celular",
+      bajada:
+        "Queda como una app en tu pantalla de inicio, para entrar a tu agenda de un toque.",
+      iphone: [
+        "En Safari, toca el botón Compartir (el cuadro con una flecha hacia arriba).",
+        'Elige "Agregar a inicio".',
+        'Toca "Agregar".',
+      ],
+      android: [
+        "En Chrome, toca el menú ⋮ de arriba a la derecha.",
+        'Elige "Agregar a la pantalla principal" o "Instalar app".',
+        'Confirma con "Agregar" o "Instalar".',
+      ],
+      computador:
+        'Abre yapoin.com en tu celular y toca "Añadir la app a tu celular".',
+      listo: "Entendido",
+    },
+    demo: {
+      negocio: "Barbería La Esquina",
+      horario: "Abierto hasta 7:00 p. m.",
+      servicio: "Servicio",
+      servicios: [
+        ["Corte", "$25.000"],
+        ["Corte + barba", "$35.000"],
+      ],
+      dia: "Día",
+      dias: ["Hoy", "Mañana", "Jue", "Vie"],
+      hora: "Hora",
+      horas: ["9:00", "10:30", "11:00", "2:00", "3:30", "4:00"],
+      reservar: "Reservar cita",
+      reservada: "¡Cita reservada!",
+      detalle: "Mañana · 10:30 a. m. con Mario",
+      aviso: "Nueva cita",
+      avisoDetalle: "Corte · mañana 10:30",
+    },
+  },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.
   proximamente: {

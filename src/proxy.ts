@@ -9,6 +9,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/panel/:path*",
+    // The owners' entry sends a signed-in owner to their agenda.
+    "/app",
     "/admin/:path*",
     "/registro",
     "/ingresar",

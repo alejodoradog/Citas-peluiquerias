@@ -1,0 +1,16 @@
+{
+  "name": "Yapoin",
+  "short_name": "Yapoin",
+  "description": "Agenda de citas: tus clientes reservan solos desde un link.",
+  "id": "/app",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f444b",
+  "theme_color": "#1e7f8c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

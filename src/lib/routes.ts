@@ -3,6 +3,8 @@
 // The proxy matcher in src/proxy.ts must stay literal, so it repeats them.
 export const routes = {
   home: "/",
+  // The owners' entry, the one they add to their home screen (2026-11-15).
+  app: "/app",
   signUp: "/registro",
   signIn: "/ingresar",
   recoverPassword: "/recuperar-clave",
