@@ -14,11 +14,13 @@ const t = textos.plataforma.pago;
 
 // P-03: the form wraps the whole screen so "Registrar y activar" sits in the
 // bottom bar. The value and the period are the plan's (decision P1): shown,
-// never typed.
+// never typed, except the agreed value of 9 barbers or more (task 5.6).
 export function PaymentForm({
   barbershopId,
   barbershopName,
   close,
+  plan,
+  planLine,
   amount,
   methods,
   days,
@@ -26,7 +28,10 @@ export function PaymentForm({
   barbershopId: string;
   barbershopName: string;
   close: string;
-  amount: string;
+  plan: string;
+  planLine: string;
+  // Null for a plan by agreement: the super admin types it.
+  amount: string | null;
   methods: SelectOption[];
   days: { value: string; label: string; until: string; explanation: string }[];
 }) {
@@ -37,6 +42,7 @@ export function PaymentForm({
   return (
     <ActionForm form={form} className="flex min-h-full flex-1 flex-col">
       <input type="hidden" name="barberia" value={barbershopId} />
+      <input type="hidden" name="plan" value={plan} />
       <FlowShell
         header={
           <TopBar
@@ -53,7 +59,26 @@ export function PaymentForm({
         {form.formError ? (
           <Notice tone="danger" title={form.formError} />
         ) : null}
-        <Field label={t.valor} name="valor" value={amount} readOnly />
+        {amount === null ? (
+          <Field
+            label={t.acordado}
+            name="acordado"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={12}
+            defaultValue={form.value("acordado")}
+            help={`${planLine}. ${t.ayudaAcordado}`}
+            error={form.fieldError("acordado")}
+          />
+        ) : (
+          <Field
+            label={t.valor}
+            name="valor"
+            value={amount}
+            help={planLine}
+            readOnly
+          />
+        )}
         <Field
           label={t.periodo}
           name="periodo"

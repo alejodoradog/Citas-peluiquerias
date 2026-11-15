@@ -8,9 +8,9 @@ import { readForm, type FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
 import {
-  currentPlan,
   extendTrial as extendTrialData,
   loadPlatformBarbershop,
+  loadQuote,
   reactivateBarbershop as reactivateData,
   registerPayment as registerPaymentData,
   suspendBarbershop as suspendData,
@@ -19,6 +19,7 @@ import {
 import type { PlatformRefusal } from "../datos/platform-errors";
 import {
   earliestPaymentDay,
+  parseAgreedAmount,
   parseExtendDays,
   parsePaymentForm,
   parseVoidReason,
@@ -46,8 +47,8 @@ function backToBarbershop(id: string, notice: string): never {
 }
 
 export type PaymentState = FormState<
-  PaymentField,
-  PaymentFormCode | PlatformRefusal
+  PaymentField | "acordado",
+  PaymentFormCode | PlatformRefusal | "amount_invalid"
 >;
 
 // P-03: one month of the plan, then P-02 says so.
@@ -68,11 +69,32 @@ export async function registerPayment(
   });
   if (!form.valid) return form.state;
 
-  const plan = await currentPlan();
+  // The plan P-03 showed; the database refuses it if the barbers changed
+  // in between (task 5.6, plan_changed).
+  const quote = await loadQuote(id);
+  if (!quote) redirect(routes.admin);
+  const shownPlan = String(formData.get("plan") ?? "");
+  // A plan that is not the one of now: the screen is old, open it again.
+  if (shownPlan !== quote.planCode) {
+    return { status: "failed", error: "plan_changed", values: form.values };
+  }
+  let amountCop: number | null = null;
+  if (quote.byAgreement) {
+    const typed = String(formData.get("acordado") ?? "");
+    amountCop = parseAgreedAmount(typed);
+    if (amountCop === null) {
+      return {
+        status: "invalid",
+        fieldErrors: { acordado: "amount_invalid" },
+        values: { ...form.values, acordado: typed },
+      };
+    }
+  }
   const result = await registerPaymentData({
     barbershopId: id,
-    plan: plan.code,
+    plan: shownPlan,
     ...form.data,
+    amountCop,
   });
   if (!result.ok) {
     return { status: "failed", error: result.error, values: form.values };

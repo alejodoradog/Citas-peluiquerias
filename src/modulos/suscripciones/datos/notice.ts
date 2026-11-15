@@ -48,20 +48,21 @@ export async function loadSubscriptionNotice(
   );
   if (!notice) return null;
 
-  // The barbershop's plan, or the first one on sale (as the emails do).
-  const plans = supabase.from("plans").select("monthly_price_cop");
-  const { data: plan, error: planError } = await (
-    shop.plan ? plans.eq("code", shop.plan) : plans.eq("active", true)
-  )
-    .order("sort_order")
-    .limit(1)
-    .maybeSingle();
-  if (planError) throw new Error(planError.message);
+  // What it pays by its active barbers (task 5.6); null when it is agreed.
+  // Without it, the notice still shows and promises the payment data.
+  const { data: quote, error: quoteError } = await supabase.rpc(
+    "subscription_quote",
+    { p_barbershop_id: barbershopId },
+  );
+  if (quoteError)
+    console.error(
+      JSON.stringify({ event: "quote_failed", code: quoteError.code }),
+    );
 
   return {
     notice,
     pay: {
-      priceCop: plan?.monthly_price_cop ?? null,
+      priceCop: quote?.[0]?.price_cop ?? null,
       ...PAYMENT_DETAILS,
     },
   };

@@ -14,9 +14,9 @@ export type EmailDb = {
     plan: string | null;
     expiresOn: string;
   } | null>;
-  // The monthly price of a plan, or of the plan on sale when the barbershop
-  // has none yet (in its trial).
-  planPrice(code: string | null): Promise<number | null>;
+  // What the barbershop pays a month by its active barbers (task 5.6), or
+  // null when its price is agreed with Yapoin.
+  planPrice(barbershopId: string): Promise<number | null>;
   ownerName(barbershopId: string): Promise<string | null>;
   payment(
     barbershopId: string,
@@ -43,7 +43,7 @@ export async function emailData(
   if (!shop) return null;
   const paymentId = message.payload.payment_id;
   const [planPriceCop, ownerName, payment] = await Promise.all([
-    db.planPrice(shop.plan),
+    db.planPrice(message.barbershopId),
     db.ownerName(message.barbershopId),
     typeof paymentId === "string" && ID.test(paymentId)
       ? db.payment(message.barbershopId, paymentId)

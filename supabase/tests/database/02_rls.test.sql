@@ -221,6 +221,7 @@ select is(
     'public.set_barbershop_hours:authenticated',
     'public.set_holiday_openings:authenticated',
     'public.set_service_barbers:authenticated',
+    'public.subscription_quote:authenticated',
     'public.suspend_barbershop:authenticated',
     'public.void_subscription_payment:authenticated'
   ],

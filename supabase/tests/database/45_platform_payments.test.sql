@@ -143,7 +143,7 @@ select ok(
   (select bool_and(prosecdef and proconfig @> array['search_path=""'])
    from pg_proc
    where oid in (
-     'public.register_subscription_payment(uuid, text, public.payment_method, text, date)'::regprocedure,
+     'public.register_subscription_payment(uuid, text, public.payment_method, text, date, integer)'::regprocedure,
      'public.void_subscription_payment(uuid, uuid, text)'::regprocedure,
      'public.suspend_barbershop(uuid)'::regprocedure,
      'public.reactivate_barbershop(uuid)'::regprocedure,
@@ -155,7 +155,7 @@ select ok(
 select ok(
   (select bool_and(not has_function_privilege('anon', f, 'EXECUTE'))
    from unnest(array[
-     'public.register_subscription_payment(uuid, text, public.payment_method, text, date)',
+     'public.register_subscription_payment(uuid, text, public.payment_method, text, date, integer)',
      'public.void_subscription_payment(uuid, uuid, text)',
      'public.suspend_barbershop(uuid)',
      'public.reactivate_barbershop(uuid)',

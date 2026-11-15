@@ -20,8 +20,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 4.5 Agenda en vivo (consultar cada 60 s) | Fundador | Fusionada (#51) |
 | 5.4 Panel de plataforma (P-01 a P-06) y migración 9 | Socio | Fusionada (#53) |
 | 4.6 Cierre del día (D-64, P2) | Socio | Fusionada (#57) |
-| **5.5** Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | **Socio** | 5.5a fusionada (#63); 5.5b en revisión (#72: correos del ciclo y limpieza) |
-| **5.6** Precio por número de barberos (25.000, 40.000 o por acuerdo) | **Socio** | Pendiente (después de la 5.5) |
+| 5.5 Ciclo de suscripción, migración 10 y avisos en la agenda (D-70 a D-72) | Socio | Fusionada (5.5a #63, 5.5b #72) |
+| 5.6 Precio por número de barberos (25.000, 40.000 o por acuerdo) | Fundador (la tomó del socio el 2026-11-14) | En curso (`hito-5-precio-barberos`) |
 | 6.3 eliminada: solo web | — | — |
 | 5.1 Cola de correos | Fundador | Fusionada (#56) |
 | 5.2 Envío con Resend: el `Sender`, las plantillas, los rebotes y el SMTP de Auth (decisión 0008) | Socio (antes del fundador) | Fusionada (#61); ajustes de la revisión en `hito-5-correos-ajustes` |
@@ -33,7 +33,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | El código está fusionado (#70). La nube la crean el fundador y el socio con `docs/operacion/infraestructura-produccion.md` |
 | 6.1 y 6.2 E2E de los 3 flujos y prueba en celulares reales | Los dos | Al final del hito 5 |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5 → 5.6** (la 6.3 se eliminó: solo web).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web).
 
 > [!important] Respuestas del fundador (2026-11-14)
 > Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
