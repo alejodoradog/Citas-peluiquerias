@@ -32,7 +32,8 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.5 Términos de uso y política de datos personales | Fundador | Fusionada (#69) |
 | 6.4 y 6.6 Producción y barberías piloto (las piloto se registran por el camino normal) | Fundador | El código está fusionado (#70). La nube la crean el fundador y el socio con `docs/operacion/infraestructura-produccion.md` |
 | 6.1 E2E de los 3 flujos | Fundador | Fusionada (#74) |
-| Diagnóstico de rendimiento: por qué un toque tarda cerca de 1 s (`docs/tareas/rendimiento-diagnostico.md`) | Fundador | Diagnóstico terminado (#81); el informe trae las causas y el plan correctivo. Las correcciones esperan la decisión del fundador: salen una por PR (`perf-<tema>`) y se avisan aquí antes de empezar |
+| Diagnóstico de rendimiento: por qué un toque tarda cerca de 1 s (`docs/tareas/rendimiento-diagnostico.md`) | Fundador | Diagnóstico terminado (#81); el informe trae las causas y el plan correctivo. El fundador decidió hacer las correcciones 1 a 4 en un solo PR (la fila siguiente); la 5, la 6 y la 7 siguen en espera |
+| Correcciones de rendimiento 1 a 4 del diagnóstico: respuesta inmediata en todos los toques, una espera menos por pantalla, guardar y la reserva sin viajes (`docs/tareas/perf-respuesta-inmediata.md`) | Fundador | En curso (`perf-respuesta-inmediata`). Toca el link del barbero (4.4), el cierre (4.6) y `access.ts` (#79): se avisa en el PR |
 | 6.2 Prueba en celulares reales | Los dos | Al final, con las pruebas humanas |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web).
