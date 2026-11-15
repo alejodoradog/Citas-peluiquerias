@@ -14,7 +14,7 @@ const t = textos.mapa;
 // The map (decision 0009): MapLibre, the library mapcn is built on, with the
 // free OpenFreeMap tiles (no account, no key, no cookies). Its worker is
 // served by the app itself (public/maplibre), never by a CDN.
-const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+const STYLE_URL = "https://tiles.openfreemap.org/styles/bright";
 const WORKER_URL = "/maplibre/maplibre-gl-worker.mjs";
 const ZOOM = 15.5;
 
