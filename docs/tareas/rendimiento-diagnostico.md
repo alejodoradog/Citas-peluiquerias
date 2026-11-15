@@ -65,7 +65,34 @@ Las fuentes no dependen de nadie: `next/font` las sirve desde el mismo sitio.
 Desde un computador en Colombia, las páginas públicas preconstruidas (inicio, ingresar, registro, términos) responden en 350 a 400 ms. De eso, unos 220 ms son abrir la conexión con Washington (`iad1`). Lo estático no explica el segundo.
 
 ## Resultados
-Pendiente.
+Parciales al 2026-11-15. Falta el panel medido en el navegador, el build de producción en local y el panel de Vercel.
+
+### Del lado de Supabase (registros de las últimas 24 horas de `barberias-dev`)
+Son de antes del #79, que se fusionó a las 18:55 UTC.
+- **Pintar una pantalla del panel:** 12 llamadas a Supabase (mediana), en 6 a 8 esperas en fila de 35 a 45 ms cada una. De la primera llamada a la última respuesta pasan 266 ms de mediana, 366 ms en el percentil 75 y 1.248 ms en el 95.
+- **La base no es la causa:** cada consulta tarda de 1 a 5 ms. Con 5 citas y 4 barberías, el volumen no pesa. El resto de cada espera es el viaje entre Vercel y Supabase.
+- **Guardar repite los permisos (H3, confirmada):** en la única muestra completa, la acción y la pantalla siguiente sumaron unos 0,9 s solo del lado de Supabase, y `getUser`, el perfil y las sedes se leyeron dos veces.
+- **Renovar la sesión es lo más lento:** `POST /auth/v1/token` tarda 671 ms de mediana y hasta 1.562 ms. Le toca a un toque cada hora.
+- **`getClaims` del proxy no va a la red:** hay un solo `/auth/v1/user` por pantalla, y el JWKS se pide solo en instancias nuevas. El proxy queda descartado.
+- **Los peores casos** (perfil y sedes de más de 1,2 s) son la primera petición después de un rato sin uso: arranques en frío.
+
+### La reserva pública en el navegador (`www.yapoin.com`, 5 repeticiones con caché fría)
+Milisegundos, mediana / máximo. "Respuesta" es el primer cambio visible después del toque.
+
+| Toque | Computador: respuesta | Computador: contenido | Celular simulado: respuesta | Celular simulado: contenido |
+|---|---|---|---|---|
+| "Reservar" | 30 / 32 | 322 / 336 | 88 / 130 | 393 / 435 |
+| "Continuar" (servicios) | 489 / 575 | 477 / 557 | 635 / 644 | 591 / 604 |
+| Barbero | 361 / 426 | 362 / 429 | 450 / 494 | 459 / 507 |
+| Día | 369 / 937 | 372 / 941 | 414 / 675 | 431 / 691 |
+| Hora | 352 / 375 | 358 / 381 | 387 / 464 | 392 / 549 |
+| "Continuar" (a los datos) | 321 / 408 | 322 / 415 | 388 / 526 | 403 / 544 |
+
+- **H1, confirmada en la reserva:** del barbero en adelante no cambia nada en la pantalla hasta que llega el contenido. Son de 320 a 450 ms sin respuesta en el computador y hasta 640 ms en el celular simulado.
+- **H5, confirmada:** cada toque pide su pantalla al servidor en ese momento, y "Continuar" en los servicios recarga la página entera (5 de 5).
+- **H4, confirmada en parte:** solo "Reservar" muestra el esqueleto al instante (a los 30 ms). En los demás pasos solo se precarga la ruta base, no la dirección con el servicio, el barbero, el día y la hora.
+- **El celular lento no cambia el cuadro:** agrega de 40 a 100 ms por toque. La primera carga sí sube, de 0,6 s a 2,2 s.
+- **Primera carga de las páginas públicas:** el servidor responde a los 300 ms; el contenido principal se ve a los 850 ms en el computador y a los 1.400 ms en el celular simulado.
 
 ## Causas, en orden
 Pendiente.
