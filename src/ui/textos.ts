@@ -243,6 +243,7 @@ export const textos = {
           titulo: "5. Con quién los compartimos",
           parrafos: [
             "Usamos proveedores que guardan o procesan los datos por nuestra cuenta, con contratos que los obligan a protegerlos: Supabase (base de datos y archivos), Vercel (servidores de la aplicación), Resend (envío de correos) y Cloudflare (dominio y verificación contra robots). Sus servidores están en Estados Unidos, así que tus datos se transfieren a ese país; al aceptar esta política, autorizas esa transferencia.",
+            "La página de cada barbería muestra un mapa de OpenFreeMap, con datos de OpenStreetMap. Al verlo, tu navegador le pide a ese servicio las imágenes del mapa y él ve tu dirección IP, como cualquier sitio que visitas. No le enviamos ningún otro dato tuyo y no pone cookies.",
           ],
         },
         {

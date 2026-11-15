@@ -28,5 +28,6 @@ Agrega un servicio externo a la 0007, gratis y sin cuenta: los mapas de OpenFree
 
 - **Costo:** cero. OpenFreeMap vive de donaciones.
 - **Si OpenFreeMap se cae o cierra:** el recuadro queda rayado, como antes, y tocarlo sigue abriendo la app de mapas. Cambiar de proveedor es cambiar una dirección (`STYLE_URL`): por ejemplo, MapTiler o Stadia, que tienen planes gratis con cuenta.
-- **Privacidad (Ley 1581):** el navegador del cliente le pide los mapas a OpenFreeMap, que ve su IP, como cualquier sitio. No pone cookies ni pide datos. Conviene nombrarlo en la política de datos (6.5).
+- **Privacidad (Ley 1581):** el navegador del cliente le pide los mapas a OpenFreeMap, que ve su IP, como cualquier sitio. No pone cookies ni pide datos. La política de datos (6.5, punto 5) ya lo nombra; la versión no cambia porque nadie la había aceptado todavía.
+- **En el panel**, al tocar "Usar mi ubicación actual", el mapa pide las imágenes de ese punto antes de guardarlo: OpenFreeMap ve la IP del dueño cerca de esa posición, aunque no la guarde. Se acepta, porque el dueño necesita ver el punto antes de guardarlo y no se envía ningún otro dato.
 - **Peso:** MapLibre pesa unos 300 KB comprimidos. Solo se descarga cuando el mapa entra en pantalla.

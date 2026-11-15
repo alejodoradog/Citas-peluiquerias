@@ -191,6 +191,16 @@ describe("mapLinks", () => {
   });
 });
 
+describe("mapLinks with parentheses in the name", () => {
+  it("keeps them inside the label of geo:", () => {
+    expect(
+      mapLinks({ latitude: 4.667123, longitude: -74.0545 }, "Barber) X (Y").geo,
+    ).toBe(
+      "geo:4.667123,-74.054500?q=4.667123,-74.054500(Barber%29%20X%20%28Y)",
+    );
+  });
+});
+
 describe("mapsUrl", () => {
   it("opens the point in Google Maps without any key", () => {
     expect(mapsUrl({ latitude: 4.667123, longitude: -74.0545 })).toBe(

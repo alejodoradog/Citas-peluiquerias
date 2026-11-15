@@ -90,8 +90,12 @@ export type MapLinks = {
 
 export function mapLinks(location: ShopLocation, name: string): MapLinks {
   const point = formatLocation(location);
+  // geo: puts the label in parentheses, which encodeURIComponent leaves.
+  const label = encodeURIComponent(name).replace(/[()]/g, (c) =>
+    c === "(" ? "%28" : "%29",
+  );
   return {
-    geo: `geo:${point}?q=${point}(${encodeURIComponent(name)})`,
+    geo: `geo:${point}?q=${point}(${label})`,
     apple: `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}`,
     google: mapsUrl(location),
     waze: `https://waze.com/ul?ll=${encodeURIComponent(point)}&navigate=yes`,
