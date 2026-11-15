@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { routes } from "@/lib/routes";
-import { CircleCheckIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
 import { HomeHero } from "./home-hero";
 import "./home.css";
@@ -12,7 +11,7 @@ const button =
 
 // D-01, redesigned with the partner (2026-11-15): the teal gradient that
 // breathes, the app's comb next to the name, and one animated character per
-// kind of business (./home-hero.tsx, ./home.css). The benefits stay below.
+// kind of business (./home-hero.tsx, ./home.css).
 export default function Home() {
   return (
     <div className="yp-home flex min-h-full flex-1 flex-col">
@@ -44,16 +43,6 @@ export default function Home() {
           </Link>
           <p className="text-help text-center">{t.nota}</p>
         </div>
-        <ul className="mt-4 flex flex-col gap-2.5">
-          {t.beneficios.map((beneficio) => (
-            <li key={beneficio} className="text-body flex items-start gap-2.5">
-              <span className="flex text-[#bfeef2]">
-                <CircleCheckIcon />
-              </span>
-              {beneficio}
-            </li>
-          ))}
-        </ul>
       </main>
     </div>
   );
