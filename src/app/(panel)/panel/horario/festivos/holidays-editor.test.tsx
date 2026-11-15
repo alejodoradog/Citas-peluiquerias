@@ -191,14 +191,21 @@ describe("HolidaysEditor", () => {
     expect(within(sheet).queryByRole("combobox")).toBeNull();
 
     await user.click(allDay);
-    const from = within(sheet).getByRole("combobox", {
+    // The hours appear and follow the chosen start after a render: under the
+    // load of the whole suite, waiting for them keeps the test from failing
+    // while the screen is right.
+    const from = await within(sheet).findByRole("combobox", {
       name: t.hoja.desdeHora,
     });
-    const to = within(sheet).getByRole("combobox", { name: t.hoja.hastaHora });
+    const to = await within(sheet).findByRole("combobox", {
+      name: t.hoja.hastaHora,
+    });
     await user.selectOptions(from, "14:00");
-    expect(
-      within(to).getByRole("option", { selected: true }),
-    ).toHaveTextContent(t.opcionMedianoche);
+    await waitFor(() =>
+      expect(
+        within(to).getByRole("option", { selected: true }),
+      ).toHaveTextContent(t.opcionMedianoche),
+    );
     await user.type(
       within(sheet).getByRole("textbox", { name: /Motivo/ }),
       "Nochebuena",
@@ -217,7 +224,10 @@ describe("HolidaysEditor", () => {
       reason: "Nochebuena",
     });
     expect(await screen.findByText(t.agregado)).toBeInTheDocument();
-    expect(screen.queryByRole("dialog", { name: t.hoja.titulo })).toBeNull();
+    // The sheet closes a render after the notice shows.
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: t.hoja.titulo })).toBeNull(),
+    );
   });
 
   it("shows what to fix in the sheet", async () => {
