@@ -243,6 +243,7 @@ export const textos = {
           titulo: "5. Con quién los compartimos",
           parrafos: [
             "Usamos proveedores que guardan o procesan los datos por nuestra cuenta, con contratos que los obligan a protegerlos: Supabase (base de datos y archivos), Vercel (servidores de la aplicación), Resend (envío de correos) y Cloudflare (dominio y verificación contra robots). Sus servidores están en Estados Unidos, así que tus datos se transfieren a ese país; al aceptar esta política, autorizas esa transferencia.",
+            "La página de cada barbería muestra un mapa de OpenFreeMap, con datos de OpenStreetMap. Al verlo, tu navegador le pide a ese servicio las imágenes del mapa y él ve tu dirección IP, como cualquier sitio que visitas. No le enviamos ningún otro dato tuyo y no pone cookies.",
           ],
         },
         {
@@ -1380,9 +1381,6 @@ export const textos = {
       marcada: "Ubicación marcada",
       marcadaDetalle: "Se guarda al tocar Guardar.",
       guardada: "Ubicación guardada",
-      ver: "Ver en el mapa",
-      // The link opens another tab; screen readers hear it.
-      verNuevaPestana: "Ver en el mapa (se abre en otra pestaña)",
       quitar: "Quitar ubicación",
       errores: {
         denied:
@@ -2300,6 +2298,17 @@ export const textos = {
     // A change refused because the barbershop is paused.
     soloLectura:
       "Tu barbería está pausada: la agenda es solo de lectura hasta que registremos tu pago.",
+  },
+  // The map of a barbershop (decision 0009): in D-57 and on its public page.
+  // Tapping it opens the person's maps app.
+  mapa: {
+    abrir: (barberia: string) =>
+      `Abrir la ubicación de ${barberia} en tu app de mapas`,
+    elegir: "¿Con qué app la abres?",
+    apple: "Apple Maps",
+    google: "Google Maps",
+    waze: "Waze",
+    cerrar: "Cerrar",
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

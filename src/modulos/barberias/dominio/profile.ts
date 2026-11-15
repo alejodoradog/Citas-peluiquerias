@@ -76,6 +76,32 @@ export function mapsUrl(location: ShopLocation): string {
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
+// The point in each maps app (task "mapa"): tapping the map opens the
+// person's own app.
+// - geo: Android lists every maps app the phone has (or opens its default);
+// - apple, google, waze: the choices on an iPhone, which has no such list.
+//   Each one opens its app if installed, or its website.
+export type MapLinks = {
+  geo: string;
+  apple: string;
+  google: string;
+  waze: string;
+};
+
+export function mapLinks(location: ShopLocation, name: string): MapLinks {
+  const point = formatLocation(location);
+  // geo: puts the label in parentheses, which encodeURIComponent leaves.
+  const label = encodeURIComponent(name).replace(/[()]/g, (c) =>
+    c === "(" ? "%28" : "%29",
+  );
+  return {
+    geo: `geo:${point}?q=${point}(${label})`,
+    apple: `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}`,
+    google: mapsUrl(location),
+    waze: `https://waze.com/ul?ll=${encodeURIComponent(point)}&navigate=yes`,
+  };
+}
+
 // A saved WhatsApp as the owner would type it: "300 123 4567" for a
 // Colombian mobile; anything else exactly as saved.
 export function displayWhatsapp(phone: string | null): string {
