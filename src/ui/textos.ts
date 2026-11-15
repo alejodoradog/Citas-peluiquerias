@@ -1380,9 +1380,6 @@ export const textos = {
       marcada: "Ubicación marcada",
       marcadaDetalle: "Se guarda al tocar Guardar.",
       guardada: "Ubicación guardada",
-      ver: "Ver en el mapa",
-      // The link opens another tab; screen readers hear it.
-      verNuevaPestana: "Ver en el mapa (se abre en otra pestaña)",
       quitar: "Quitar ubicación",
       errores: {
         denied:
@@ -2300,6 +2297,17 @@ export const textos = {
     // A change refused because the barbershop is paused.
     soloLectura:
       "Tu barbería está pausada: la agenda es solo de lectura hasta que registremos tu pago.",
+  },
+  // The map of a barbershop (decision 0009): in D-57 and on its public page.
+  // Tapping it opens the person's maps app.
+  mapa: {
+    abrir: (barberia: string) =>
+      `Abrir la ubicación de ${barberia} en tu app de mapas`,
+    elegir: "¿Con qué app la abres?",
+    apple: "Apple Maps",
+    google: "Google Maps",
+    waze: "Waze",
+    cerrar: "Cerrar",
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.

@@ -44,6 +44,8 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "coverage/**",
     "src/lib/supabase/database.types.ts",
+    // MapLibre's worker, copied as it is from node_modules (src/ui/shop-map.tsx).
+    "public/maplibre/**",
   ]),
 ]);
 

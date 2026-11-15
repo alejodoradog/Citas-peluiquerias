@@ -4,6 +4,7 @@ import {
   LOCALITY_MAX_LENGTH,
   displayWhatsapp,
   formatLocation,
+  mapLinks,
   mapsUrl,
   parseShopProfile,
 } from "./profile";
@@ -171,6 +172,21 @@ describe("formatLocation", () => {
     expect(parseShopProfile(input({ location: text }), SAVED)).toMatchObject({
       success: true,
       data: { location: { latitude: 4.667123, longitude: -74.0545 } },
+    });
+  });
+});
+
+describe("mapLinks", () => {
+  it("opens the point in each maps app, with the barbershop's name", () => {
+    expect(
+      mapLinks({ latitude: 4.667123, longitude: -74.0545 }, "La Esquina & Co"),
+    ).toEqual({
+      geo: "geo:4.667123,-74.054500?q=4.667123,-74.054500(La%20Esquina%20%26%20Co)",
+      apple:
+        "https://maps.apple.com/?ll=4.667123,-74.054500&q=La%20Esquina%20%26%20Co",
+      google:
+        "https://www.google.com/maps/search/?api=1&query=4.667123%2C-74.054500",
+      waze: "https://waze.com/ul?ll=4.667123%2C-74.054500&navigate=yes",
     });
   });
 });

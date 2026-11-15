@@ -132,9 +132,12 @@ test("an owner changes the data, the logo, the cover and the location", async ({
   await expect(
     page.getByText(t.ubicacion.marcada).filter({ visible: true }),
   ).toBeVisible();
+  // The map of the marked point (decision 0009), which opens the maps app.
   await expect(
-    page.getByRole("link", { name: t.ubicacion.verNuevaPestana }),
-  ).toHaveAttribute("href", /query=3\.451647%2C-76\.532013$/);
+    page
+      .getByRole("button", { name: textos.mapa.abrir("Barbería El Parche") })
+      .filter({ visible: true }),
+  ).toBeVisible();
   await save(page);
 
   // Más names the barbershop by its new name, in its top bar and in the card

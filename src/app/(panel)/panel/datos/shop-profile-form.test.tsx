@@ -282,18 +282,19 @@ describe("ShopProfileForm", () => {
     );
     expect(hidden("location")).toHaveValue("4.667123,-74.054500");
     expect(screen.getByText(t.ubicacion.marcada)).toBeInTheDocument();
-    const map = screen.getByRole("link", { name: t.ubicacion.verNuevaPestana });
-    expect(map).toHaveAttribute(
-      "href",
-      "https://www.google.com/maps/search/?api=1&query=4.667123%2C-74.054500",
-    );
-    expect(map).toHaveAttribute("target", "_blank");
-    expect(map).toHaveAttribute("rel", "noopener noreferrer");
+    // The map, which opens the person's maps app (decision 0009).
+    expect(
+      screen.getByRole("button", {
+        name: textos.mapa.abrir("Barbería La Esquina"),
+      }),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: t.ubicacion.quitar }));
     expect(hidden("location")).toHaveValue("");
     expect(
-      screen.queryByRole("link", { name: t.ubicacion.verNuevaPestana }),
+      screen.queryByRole("button", {
+        name: textos.mapa.abrir("Barbería La Esquina"),
+      }),
     ).not.toBeInTheDocument();
   });
 

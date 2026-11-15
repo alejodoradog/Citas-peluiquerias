@@ -154,6 +154,7 @@ export function ShopProfileForm({
           key={echoed ?? "saved"}
           saved={saved.location}
           initial={initialLocation}
+          shopName={saved.name}
           error={form.fieldError("location")}
         />
         <Field

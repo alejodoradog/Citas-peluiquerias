@@ -14,6 +14,7 @@ import { openingOf, weekRows } from "@/modulos/agenda/dominio/booking-flow";
 import { resolveRetiredSlug } from "@/modulos/barberias/datos/public-barbershop";
 import { buttonClasses } from "@/ui/button";
 import { ClockIcon, InfoIcon, MapPinIcon } from "@/ui/icons";
+import { ShopMap } from "@/ui/shop-map";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { KeptAppointments } from "./kept-appointments";
@@ -210,7 +211,7 @@ function Profile({
           </dl>
         </section>
 
-        {address ? (
+        {address || profile.location ? (
           <section
             aria-labelledby="ubicacion"
             className="flex flex-col gap-2.5 px-5 pt-5.5"
@@ -218,10 +219,15 @@ function Profile({
             <SectionTitle>
               <span id="ubicacion">{t.perfil.ubicacion}</span>
             </SectionTitle>
-            <p className="border-line rounded-card flex items-start gap-2 border bg-white p-4 text-[0.9375rem]">
-              <MapPinIcon size={18} />
-              {address}
-            </p>
+            {profile.location ? (
+              <ShopMap location={profile.location} name={profile.name} />
+            ) : null}
+            {address ? (
+              <p className="border-line rounded-card flex items-start gap-2 border bg-white p-4 text-[0.9375rem]">
+                <MapPinIcon size={18} />
+                {address}
+              </p>
+            ) : null}
           </section>
         ) : null}
       </main>

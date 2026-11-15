@@ -3,12 +3,12 @@
 import { useState } from "react";
 import {
   formatLocation,
-  mapsUrl,
   type ShopLocation,
 } from "@/modulos/barberias/dominio/profile";
 import { Button } from "@/ui/button";
 import { MapPinIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
+import { ShopMap } from "@/ui/shop-map";
 import { textos } from "@/ui/textos";
 
 const t = textos.datos.ubicacion;
@@ -25,15 +25,15 @@ const POSITION_OPTIONS: PositionOptions = {
 const sameLocation = (a: ShopLocation | null, b: ShopLocation | null) =>
   a && b ? formatLocation(a) === formatLocation(b) : a === b;
 
-// D-57's location (decision P2 of task 2.4, provisional). The design's map
-// with a pin would need a map service, which decision 0007 does not have:
-// the owner, usually at the barbershop, marks it with the phone's location,
-// and checks it in Google Maps through a plain link. It travels with the
-// form as "location" ("lat,lng", or empty to remove it).
+// D-57's location (decision P2 of task 2.4). The owner, usually at the
+// barbershop, marks it with the phone's location and sees it on the map
+// (decision 0009), which opens their maps app when tapped. It travels with
+// the form as "location" ("lat,lng", or empty to remove it).
 export function LocationField({
   saved,
   initial,
   error,
+  shopName,
 }: {
   // What the database holds, to tell "saved" from "marked".
   saved: ShopLocation | null;
@@ -42,6 +42,8 @@ export function LocationField({
   initial: ShopLocation | null;
   // An error of the server about it.
   error?: string;
+  // The barbershop's name, for the map and the maps app.
+  shopName: string;
 }) {
   const [location, setLocation] = useState(initial);
   const [locating, setLocating] = useState(false);
@@ -90,28 +92,27 @@ export function LocationField({
         name="location"
         value={location ? formatLocation(location) : ""}
       />
-      <div className="image-placeholder rounded-card text-help text-muted flex h-32.5 flex-col items-center justify-center gap-1.5 px-4 text-center font-semibold">
-        <span className="flex items-center gap-2">
-          <MapPinIcon size={18} />
-          <span className={location ? "text-ink" : undefined}>
-            {location ? (isSaved ? t.guardada : t.marcada) : t.ayuda}
+      {location ? (
+        <div className="flex flex-col gap-1.5">
+          <ShopMap location={location} name={shopName} />
+          <p className="text-help text-muted flex flex-wrap items-center gap-x-2 font-semibold">
+            <span className="text-ink flex items-center gap-1.5">
+              <MapPinIcon size={16} />
+              {isSaved ? t.guardada : t.marcada}
+            </span>
+            {isSaved ? null : (
+              <span className="font-normal">{t.marcadaDetalle}</span>
+            )}
+          </p>
+        </div>
+      ) : (
+        <div className="image-placeholder rounded-card text-help text-muted flex h-32.5 flex-col items-center justify-center gap-1.5 px-4 text-center font-semibold">
+          <span className="flex items-center gap-2">
+            <MapPinIcon size={18} />
+            <span>{t.ayuda}</span>
           </span>
-        </span>
-        {location && !isSaved ? (
-          <span className="font-normal">{t.marcadaDetalle}</span>
-        ) : null}
-        {location ? (
-          <a
-            href={mapsUrl(location)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={t.verNuevaPestana}
-            className="text-brand-strong inline-flex min-h-11 items-center font-bold underline"
-          >
-            {t.ver}
-          </a>
-        ) : null}
-      </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3.5">
         <Button
           variant="secondary"
