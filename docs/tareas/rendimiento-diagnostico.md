@@ -45,6 +45,22 @@ Tres capas, sin tocar el producto.
 
 **Tres condiciones por toque,** con cinco repeticiones: computador con buena red; celular simulado (red 4G lenta y procesador 4 veces más lento); y el primer toque tras 15 minutos sin uso.
 
+## Servicios de terceros que entran en la medición
+Cada servicio que participa en un toque se mide por separado, para saber cuánto pone cada uno.
+
+| Servicio | Qué hace en un toque | Qué se revisa |
+|---|---|---|
+| **Vercel** | Recibe cada petición y corre el servidor (funciones en `iad1`, plan Hobby) | Por dónde entra la petición desde Colombia (`x-vercel-id`); el arranque en frío contra la función caliente; qué sale de la caché del borde; la duración de las funciones en su panel de observabilidad; Fluid Compute, la memoria y los límites de Hobby |
+| **Supabase Auth** | Valida la sesión en cada pantalla y la renueva cada hora | El tiempo de `getUser` y el de la renovación del token |
+| **Supabase (API y base)** | Los datos de cada pantalla | Cuántas llamadas, en qué orden y cuánto tarda cada una; el tamaño Nano de `barberias-dev` |
+| **Supabase Storage** | Los logos y las fotos | El peso y el tiempo de las imágenes en la página pública y en el panel |
+| **Cloudflare DNS** | Resuelve `yapoin.com` | El tiempo de resolución en la primera visita |
+| **Cloudflare Turnstile** | Protege ingresar, el registro, la reserva y "Mis citas"; el botón espera su respuesta | Cuánto tarda en cargar el script y en entregar el token; cuánto tarda la verificación del lado del servidor |
+| **OpenFreeMap** | Los mapas de la página pública | Si cargar el mapa frena los toques de esa página |
+| **Resend** | Los correos | No participa en un toque: los correos se encolan en la base y salen después. Se comprueba que ninguna acción lo espere |
+
+Las fuentes no dependen de nadie: `next/font` las sirve desde el mismo sitio.
+
 ## Primera medida (2026-11-15)
 Desde un computador en Colombia, las páginas públicas preconstruidas (inicio, ingresar, registro, términos) responden en 350 a 400 ms. De eso, unos 220 ms son abrir la conexión con Washington (`iad1`). Lo estático no explica el segundo.
 
