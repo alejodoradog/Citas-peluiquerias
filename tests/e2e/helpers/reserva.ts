@@ -46,23 +46,23 @@ export async function chooseServicesAndBarber(page: Page, barber: string) {
 }
 
 export async function chooseTomorrowAt(page: Page, time: string) {
-  // Each choice is a navigation: wait for it to land before the next one,
-  // or the next tap lands on the page that is going away.
+  // The day and the hour are chosen in the browser, without a navigation:
+  // each chip says it is pressed as soon as it is tapped.
   // Exact: after closing time today has no hours left, and the button
   // "Ir al jueves 12 de noviembre" also contains the day's name.
   const day = page
-    .getByRole("link", {
+    .getByRole("button", {
       name: capitalize(formatCalendarDay(tomorrow())),
       exact: true,
     })
     .filter({ visible: true });
   await day.click();
-  await expect(day).toHaveAttribute("aria-current", "date", FIRST_VISIT);
+  await expect(day).toHaveAttribute("aria-pressed", "true");
   const hour = page
-    .getByRole("link", { name: formatWallClock(time), exact: true })
+    .getByRole("button", { name: formatWallClock(time), exact: true })
     .filter({ visible: true });
   await hour.click();
-  await expect(hour).toHaveAttribute("aria-current", "true", FIRST_VISIT);
+  await expect(hour).toHaveAttribute("aria-pressed", "true");
   // "Continuar" rests in the bar at the bottom of the screen. A finger lands
   // on what is on top at that point: it must be the button, not the list of
   // hours under it. Checked where it is drawn, without scrolling.

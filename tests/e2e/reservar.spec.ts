@@ -117,7 +117,7 @@ test("a time someone else took sends the customer back to choose (C-07)", async 
   await expect(second).toHaveURL(/paso=hora/);
   await expect(second).toHaveURL(/tomada=09%3A00/);
   await expect(
-    second.getByRole("link", { name: formatWallClock("09:00"), exact: true }),
+    second.getByRole("button", { name: formatWallClock("09:00"), exact: true }),
   ).toHaveCount(0);
   expect(await webAppointments(shop.id)).toHaveLength(1);
 

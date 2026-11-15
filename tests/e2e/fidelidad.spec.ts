@@ -851,33 +851,30 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: r.hora.titulo }),
   ).toBeVisible({ timeout: 20_000 });
   const day = formatCalendarDay(addDays(toBogotaDate(new Date()), 1));
-  const dayLink = page
-    .getByRole("link", {
+  const dayChip = page
+    .getByRole("button", {
       // Exact: after closing time the button "Ir al …" also has this name.
       name: day.charAt(0).toLocaleUpperCase("es-CO") + day.slice(1),
       exact: true,
     })
     .filter({ visible: true });
-  await dayLink.click();
-  // A navigation: the hour below must be tomorrow's, not today's.
-  await expect(dayLink).toHaveAttribute("aria-current", "date", {
-    timeout: 20_000,
-  });
+  await dayChip.click();
+  // Chosen in the browser: the hour below must be tomorrow's, not today's.
+  await expect(dayChip).toHaveAttribute("aria-pressed", "true");
   await page
-    .getByRole("link", { name: "10:00 a. m.", exact: true })
+    .getByRole("button", { name: "10:00 a. m.", exact: true })
     .filter({ visible: true })
     .click();
-  // The chosen hour is a navigation: measure once it has landed.
   await expect(
     page
-      .getByRole("link", { name: "10:00 a. m.", exact: true })
+      .getByRole("button", { name: "10:00 a. m.", exact: true })
       .filter({ visible: true }),
-  ).toHaveAttribute("aria-current", "true", { timeout: 20_000 });
+  ).toHaveAttribute("aria-pressed", "true");
   design = await openDesign(page, "C04-Hora.dc.html");
   await compare(
     "hora",
     page
-      .getByRole("link", { name: "11:00 a. m.", exact: true })
+      .getByRole("button", { name: "11:00 a. m.", exact: true })
       .filter({ visible: true }),
     design.getByRole("button", { name: "11:00" }),
     ["height", "border-radius", "background-color", "font-size", "font-weight"],
@@ -885,7 +882,7 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
   await compare(
     "hora elegida",
     page
-      .getByRole("link", { name: "10:00 a. m.", exact: true })
+      .getByRole("button", { name: "10:00 a. m.", exact: true })
       .filter({ visible: true }),
     design.getByRole("button", { name: "10:40" }),
     ["height", "border-radius", "background-color", "color", "font-weight"],
@@ -1042,11 +1039,9 @@ test("C-09 to C-13 and C-16 match the design", async ({ page }) => {
   ).toBeVisible({
     timeout: 20_000,
   });
-  const hour = page.getByRole("link", { name: "11:00 a. m.", exact: true });
+  const hour = page.getByRole("button", { name: "11:00 a. m.", exact: true });
   await hour.click();
-  await expect(hour).toHaveAttribute("aria-current", "true", {
-    timeout: 20_000,
-  });
+  await expect(hour).toHaveAttribute("aria-pressed", "true");
   await page.mouse.move(0, 0);
   design = await openDesign(page, "C10-Reprogramar.dc.html");
   await compare(
