@@ -15,8 +15,8 @@ select hasnt_column('public', 'subscription_payments', 'billing_period', 'a paym
 
 select results_eq(
   $$select code, monthly_price_cop, included_barbers from public.plans where code = 'standard'$$,
-  $$values ('standard', 25000, 5)$$,
-  'the single plan costs 25.000 pesos a month and includes 5 barbers'
+  $$values ('standard', 25000, 4)$$,
+  'the first plan costs 25.000 pesos a month, up to 4 barbers (task 5.6)'
 );
 
 insert into public.plans (code, name, monthly_price_cop, included_barbers, active)
@@ -46,8 +46,8 @@ set local role anon;
 
 select results_eq(
   $$select code from public.plans order by code$$,
-  $$values ('standard')$$,
-  'anon reads the active plan and not the retired one'
+  $$values ('plus'), ('por_acuerdo'), ('standard')$$,
+  'anon reads the active plans (task 5.6) and not the retired one'
 );
 select throws_ok(
   $$insert into public.plans (code, name, monthly_price_cop, included_barbers) values ('gratis', 'Gratis', 1, 99)$$,

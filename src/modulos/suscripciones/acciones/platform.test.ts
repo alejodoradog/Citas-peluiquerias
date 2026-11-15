@@ -34,6 +34,20 @@ const voidPayment = vi.fn(ok);
 const suspendBarbershop = vi.fn(ok);
 const reactivateBarbershop = vi.fn(ok);
 const extendTrial = vi.fn(ok);
+type Quote = {
+  planCode: string;
+  planName: string;
+  priceCop: number | null;
+  byAgreement: boolean;
+  activeBarbers: number;
+};
+const loadQuote = vi.fn(async (): Promise<Quote | null> => ({
+  planCode: "standard",
+  planName: "Hasta 4 barberos",
+  priceCop: 25000,
+  byAgreement: false,
+  activeBarbers: 2,
+}));
 const loadPlatformBarbershop = vi.fn(
   async (): Promise<{ trialEndsOn: string; createdAt: Date } | null> => ({
     trialEndsOn: "2026-11-24",
@@ -41,7 +55,7 @@ const loadPlatformBarbershop = vi.fn(
   }),
 );
 vi.mock("../datos/platform", () => ({
-  currentPlan: async () => ({ code: "standard", monthlyPriceCop: 25000 }),
+  loadQuote,
   registerPayment,
   voidPayment,
   suspendBarbershop,
@@ -96,7 +110,37 @@ describe("registerPayment (P-03)", () => {
       method: "nequi",
       reference: "NEQ-1",
       paidOn: "2026-11-07",
+      amountCop: null,
     });
+  });
+
+  it("asks for the agreed value of 9 barbers or more (task 5.6)", async () => {
+    const agreed = {
+      planCode: "por_acuerdo",
+      planName: "9 barberos o más",
+      priceCop: null,
+      byAgreement: true,
+      activeBarbers: 9,
+    };
+    loadQuote.mockResolvedValueOnce(agreed);
+    expect(
+      await actions.registerPayment(IDLE, form({ ...valid, acordado: "abc" })),
+    ).toMatchObject({
+      status: "invalid",
+      fieldErrors: { acordado: "amount_invalid" },
+    });
+    expect(registerPayment).not.toHaveBeenCalled();
+
+    loadQuote.mockResolvedValueOnce(agreed);
+    await run(() =>
+      actions.registerPayment(
+        IDLE,
+        form({ ...valid, plan: "por_acuerdo", acordado: "$ 120.000" }),
+      ),
+    );
+    expect(registerPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ plan: "por_acuerdo", amountCop: 120000 }),
+    );
   });
 
   it("shows what to fix without calling the database", async () => {

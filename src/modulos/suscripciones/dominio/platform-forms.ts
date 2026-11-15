@@ -30,7 +30,8 @@ export function earliestPaymentDay(
 }
 
 export type PaymentField = "metodo" | "referencia" | "fecha";
-export type PaymentFormCode = "reference_required" | "reference_too_long";
+export type PaymentFormCode =
+  "reference_required" | "reference_too_long" | "amount_invalid";
 
 // P-03: the method, the bank's reference and the day it was paid, between
 // `earliest` and today.
@@ -109,4 +110,22 @@ export function parseVoidReason(
     { motivo: value },
   );
   return result.success ? { success: true, data: result.data.motivo } : result;
+}
+
+// Task 5.6: the price agreed with a barbershop of 9 or more barbers, typed
+// in pesos ("120.000", "$ 120000"), between $1.000 and $5.000.000, as the
+// database checks it.
+export const AGREED_AMOUNT = { min: 1000, max: 5_000_000 } as const;
+
+const agreedAmountSchema = z
+  .string()
+  .transform((value) => value.replace(/[$\s.]/g, ""))
+  .pipe(z.string().regex(/^\d{1,9}$/))
+  .transform(Number)
+  .pipe(z.number().int().min(AGREED_AMOUNT.min).max(AGREED_AMOUNT.max));
+
+export function parseAgreedAmount(value: string): number | null {
+  if (!/^[$\s\d.]+$/.test(value)) return null;
+  const amount = agreedAmountSchema.safeParse(value);
+  return amount.success ? amount.data : null;
 }

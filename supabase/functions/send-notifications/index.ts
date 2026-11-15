@@ -70,18 +70,12 @@ function emailDb(db: SupabaseClient): EmailDb {
           }
         : null;
     },
-    async planPrice(code) {
-      const query = db.from("plans").select("monthly_price_cop");
+    // Task 5.6: the price of the barbershop's tier by its active barbers.
+    async planPrice(barbershopId) {
       const data = rowOf(
-        await (
-          code
-            ? query.eq("code", code)
-            : query.eq("active", true).order("sort_order")
-        )
-          .limit(1)
-          .maybeSingle(),
+        await db.rpc("subscription_quote", { p_barbershop_id: barbershopId }),
       );
-      return data?.monthly_price_cop ?? null;
+      return data?.[0]?.price_cop ?? null;
     },
     async ownerName(barbershopId) {
       const data = rowOf(

@@ -5,6 +5,8 @@
 //   (hint subscription_payment_required): register a payment instead;
 // - already_registered: a payment with that method and reference is already
 //   there (hint payment_already_registered, task 5.4b);
+// - plan_changed: the barbers changed since P-03 opened, and another price
+//   applies (task 5.6): open it again;
 // - not_found: the payment was already voided, the barbershop is not
 //   suspended, or its trial cannot be extended any more (no_data_found);
 // - invalid: a value the database refused (an unknown plan, an empty reason,
@@ -15,6 +17,7 @@ export type PlatformRefusal =
   | "not_allowed"
   | "payment_required"
   | "already_registered"
+  | "plan_changed"
   | "not_found"
   | "invalid"
   | "unknown";
@@ -25,6 +28,7 @@ export function toPlatformRefusal(error: {
 }): PlatformRefusal {
   if (error.hint === "subscription_payment_required") return "payment_required";
   if (error.hint === "payment_already_registered") return "already_registered";
+  if (error.hint === "plan_changed") return "plan_changed";
   switch (error.code) {
     case "42501":
       return "not_allowed";

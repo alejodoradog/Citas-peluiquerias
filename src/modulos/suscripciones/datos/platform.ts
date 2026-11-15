@@ -165,22 +165,33 @@ export async function loadPlatformBarbershop(
   };
 }
 
-// The plan a payment buys: the spec sells one plan (decision 0006), the
-// active one first in the catalog, at its monthly price.
-export async function currentPlan(): Promise<{
-  code: string;
-  monthlyPriceCop: number;
-}> {
+// What a barbershop pays today (task 5.6): its tier by active barbers, and
+// the price, or null when it is agreed with Yapoin (9 or more barbers).
+export type SubscriptionQuote = {
+  planCode: string;
+  planName: string;
+  priceCop: number | null;
+  byAgreement: boolean;
+  activeBarbers: number;
+};
+
+export async function loadQuote(
+  barbershopId: string,
+): Promise<SubscriptionQuote | null> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("plans")
-    .select("code, monthly_price_cop")
-    .eq("active", true)
-    .order("sort_order")
-    .limit(1)
-    .single();
+  const { data, error } = await supabase.rpc("subscription_quote", {
+    p_barbershop_id: barbershopId,
+  });
   if (error) throw new Error(error.message);
-  return { code: data.code, monthlyPriceCop: data.monthly_price_cop };
+  const row = data?.[0];
+  if (!row) return null;
+  return {
+    planCode: row.plan_code,
+    planName: row.plan_name,
+    priceCop: row.price_cop,
+    byAgreement: row.by_agreement,
+    activeBarbers: row.active_barbers,
+  };
 }
 
 // P-06: the payments of this month and the last one, voided ones included
@@ -214,6 +225,8 @@ export async function registerPayment(payment: {
   method: PaymentMethod;
   reference: string;
   paidOn: BogotaDate;
+  // The agreed price, for a plan by agreement (task 5.6).
+  amountCop?: number | null;
 }): Promise<PlatformResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("register_subscription_payment", {
@@ -222,6 +235,7 @@ export async function registerPayment(payment: {
     p_method: payment.method,
     p_reference: payment.reference,
     p_paid_on: payment.paidOn,
+    ...(payment.amountCop ? { p_amount_cop: payment.amountCop } : {}),
   });
   return done(error);
 }

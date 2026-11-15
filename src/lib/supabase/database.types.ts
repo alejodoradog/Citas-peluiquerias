@@ -347,14 +347,14 @@ isOneToOne: false
                   ]
                 },"plans": {
                   Row: {
-                    "active": boolean,"code": string,"created_at": string,"included_barbers": number,"monthly_price_cop": number,"name": string,"sort_order": number,"updated_at": string
+                    "active": boolean,"by_agreement": boolean,"code": string,"created_at": string,"included_barbers": number,"max_barbers": number | null,"min_barbers": number,"monthly_price_cop": number | null,"name": string,"sort_order": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"code": string,"created_at"?: string,"included_barbers": number,"monthly_price_cop": number,"name": string,"sort_order"?: number,"updated_at"?: string
+                    "active"?: boolean,"by_agreement"?: boolean,"code": string,"created_at"?: string,"included_barbers": number,"max_barbers"?: number | null,"min_barbers"?: number,"monthly_price_cop"?: number | null,"name": string,"sort_order"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "active"?: boolean,"code"?: string,"created_at"?: string,"included_barbers"?: number,"monthly_price_cop"?: number,"name"?: string,"sort_order"?: number,"updated_at"?: string
+                    "active"?: boolean,"by_agreement"?: boolean,"code"?: string,"created_at"?: string,"included_barbers"?: number,"max_barbers"?: number | null,"min_barbers"?: number,"monthly_price_cop"?: number | null,"name"?: string,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -589,7 +589,7 @@ isOneToOne: false
 { Args: { "p_appointment_id": string,"p_barbershop_id": string,"p_version": string }; Returns: undefined
                            },
 "register_subscription_payment":
-{ Args: { "p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {
+{ Args: { "p_amount_cop"?: number,"p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {
               "amount_cop": number,
 "barbershop_id": string,
 "covers_from": string,
@@ -640,6 +640,11 @@ isOneToOne: false
                            },
 "set_service_barbers":
 { Args: { "p_barber_ids": (string)[],"p_service_id": string }; Returns: undefined
+                           },
+"subscription_quote":
+{ Args: { "p_barbershop_id": string }; Returns: {
+              "active_barbers": number,"by_agreement": boolean,"plan_code": string,"plan_name": string,"price_cop": number
+            }[]
                            },
 "suspend_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined

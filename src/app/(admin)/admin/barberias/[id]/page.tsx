@@ -7,7 +7,10 @@ import { addDays, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
-import { loadPlatformBarbershop } from "@/modulos/suscripciones/datos/platform";
+import {
+  loadPlatformBarbershop,
+  loadQuote,
+} from "@/modulos/suscripciones/datos/platform";
 import { EXTEND_DAYS } from "@/modulos/suscripciones/dominio/platform-forms";
 import { platformState } from "@/modulos/suscripciones/dominio/subscription";
 import { buttonClasses } from "@/ui/button";
@@ -62,7 +65,10 @@ async function Barbershop({
   await connection();
   const { id } = await params;
   const today = toBogotaDate(now());
-  const shop = await loadPlatformBarbershop(id, today);
+  const [shop, quote] = await Promise.all([
+    loadPlatformBarbershop(id, today),
+    loadQuote(id),
+  ]);
   if (!shop) notFound();
 
   const state = platformState(shop, today);
@@ -77,6 +83,16 @@ async function Barbershop({
     { term: t.ficha.correo, value: shop.owner.email },
     { term: t.ficha.celular, value: shop.owner.phone },
     { term: t.ficha.link, value: `yapoin.com/${shop.slug}` },
+    // Task 5.6: what it pays by its active barbers.
+    {
+      term: t.ficha.plan,
+      value: quote
+        ? t.ficha.planValor(
+            quote.planName,
+            quote.priceCop === null ? null : formatPesos(quote.priceCop),
+          )
+        : null,
+    },
   ];
   const numbers = [
     {

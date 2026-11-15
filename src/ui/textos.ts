@@ -2112,6 +2112,9 @@ export const textos = {
       citasEn: (mes: string) => `Citas en ${mes}`,
       barberos: "Barberos",
       registro: "Registro",
+      plan: "Plan",
+      planValor: (plan: string, valor: string | null) =>
+        valor ? `${plan} · ${valor} al mes` : `${plan} · valor por acuerdo`,
       pagos: "Pagos",
       sinPagos: "Aún no tiene pagos.",
       pagoLinea: (fecha: string, valor: string) => `${fecha} · ${valor}`,
@@ -2135,6 +2138,12 @@ export const textos = {
       titulo: "Registrar pago",
       cerrar: "Cerrar",
       valor: "Valor recibido",
+      // Task 5.6: the tier by active barbers.
+      plan: (nombre: string, barberos: number) =>
+        `${nombre} · ${barberos === 1 ? "1 barbero activo" : `${barberos} barberos activos`}`,
+      acordado: "Valor acordado",
+      ayudaAcordado:
+        "Con 9 barberos o más el valor se acuerda con la barbería. Escríbelo en pesos.",
       periodo: "Periodo",
       unMes: "1 mes",
       // Decision P1: one payment is one month at the plan's price.
@@ -2210,6 +2219,9 @@ export const textos = {
         "Su vigencia ya venció: registra un pago para reactivarla.",
       already_registered:
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
+      plan_changed:
+        "La barbería cambió su número de barberos y ahora le toca otro valor. Vuelve a abrir Registrar pago.",
+      amount_invalid: "Escribe un valor entre $1.000 y $5.000.000.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
       invalid: "Revisa este dato.",
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",

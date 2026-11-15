@@ -7,8 +7,8 @@ import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
 import {
-  currentPlan,
   loadPlatformBarbershop,
+  loadQuote,
 } from "@/modulos/suscripciones/datos/platform";
 import {
   earliestPaymentDay,
@@ -45,11 +45,11 @@ async function Payment({
   await connection();
   const { id } = await params;
   const today = toBogotaDate(now());
-  const [shop, plan] = await Promise.all([
+  const [shop, quote] = await Promise.all([
     loadPlatformBarbershop(id, today),
-    currentPlan(),
+    loadQuote(id),
   ]);
-  if (!shop) notFound();
+  if (!shop || !quote) notFound();
 
   // The payments that count, in the order they were registered: the new one
   // is replayed with them, as the database will do.
@@ -77,7 +77,10 @@ async function Payment({
       barbershopId={shop.id}
       barbershopName={shop.name}
       close={routes.adminBarbershop(shop.id)}
-      amount={formatPesos(plan.monthlyPriceCop)}
+      // Task 5.6: the price of its tier, or a field for the agreed one.
+      plan={quote.planCode}
+      planLine={t.plan(quote.planName, quote.activeBarbers)}
+      amount={quote.priceCop === null ? null : formatPesos(quote.priceCop)}
       methods={PAYMENT_METHODS.map((method) => ({
         value: method,
         label: t.medios[method],
