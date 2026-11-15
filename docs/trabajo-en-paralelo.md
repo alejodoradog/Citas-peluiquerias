@@ -39,18 +39,15 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 > [!important] Respuestas del fundador (2026-11-14)
 > Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
 
-> [!warning] Para el fundador: dos pruebas inestables del horario (D-58), por arreglar (2026-11-15)
-> El socio encontró que dos pruebas de `src/app/(panel)/panel/horario/shop-hours-editor.test.tsx` fallan a veces. La pantalla funciona bien: el problema está en la prueba. Puede tumbar el CI de cualquier PR, también en `main`, así que conviene arreglarlo pronto.
+> [!note] Pruebas inestables del horario: arreglado (2026-11-15)
+> El socio avisó que dos pruebas de `src/app/(panel)/panel/horario/shop-hours-editor.test.tsx` fallaban a veces con `pnpm test:coverage`, porque `findBy…` esperaba solo 1 segundo.
 >
-> - **Qué pruebas:**
->   - `ShopHoursEditor › shows the error the server sends back` (línea 167);
->   - `ShopHoursEditor, hidden and shown again › starts again from the saved week, without the draft or its error` (línea 221).
-> - **Cuándo fallan:** con la suite completa, sobre todo con cobertura (`pnpm test:coverage`, lo que corre el CI). Solas pasan siempre (`pnpm vitest run "src/app/(panel)/panel/horario/shop-hours-editor.test.tsx"`: 10 de 10). En el computador del socio fallan casi siempre con `pnpm test:coverage`, también en `main`. En el CI de GitHub han pasado, pero quedan al límite.
-> - **Por qué:** las dos esperan el mensaje de error con `await screen.findByRole("alert")` (líneas 177 y 228). `findBy…` espera por defecto **1 segundo**. Con la suite completa, el ciclo de guardar (`user.click` → la acción falsa → `useActionState` → nuevo render) tarda más que eso, y la prueba falla aunque la alerta sí aparece: en la corrida fallida, la prueba duró 1.855 ms.
-> - **Cómo arreglarlo** (cualquiera de las dos):
->   1. **Solo en esas pruebas:** darle más tiempo a la espera, por ejemplo `await screen.findByRole("alert", undefined, { timeout: 5_000 })`.
->   2. **Para todas las pruebas de pantalla:** subir la espera por defecto en `src/ui/pruebas/setup.ts` con `configure({ asyncUtilTimeout: 5_000 })` de `@testing-library/react`. Evita que otras pruebas con `findBy…` caigan en lo mismo.
-> - **Cómo comprobarlo:** correr `pnpm test:coverage` tres veces seguidas sin fallos.
+> - **El arreglo:** `src/ui/pruebas/setup.ts` sube la espera por defecto a 5 segundos para todas las pruebas de pantalla (`configure({ asyncUtilTimeout: 5_000 })`), la opción 2 de su nota.
+> - **Otra prueba inestable:** en las corridas apareció una más, `holidays-editor.test.tsx › adds a closure from its sheet`. Revisaba que la hoja estuviera cerrada justo cuando salía el aviso, y la hoja se cierra un instante después. Ahora espera a que se cierre y a que las horas se actualicen.
+> - **Comprobación:** con los dos arreglos, `pnpm test:coverage` pasó 4 veces seguidas sin fallos (1.461 pruebas). Antes, la de festivos falló en 2 de 9 corridas.
+>
+> Si escribes una prueba de pantalla nueva, usa `findBy…` o `waitFor` para lo que aparece después de un clic, nunca `getBy…` justo después.
+
 - La 5.2 va antes de la 5.5 porque es el camino crítico: la 5.3 del fundador y los correos de la 5.5 la necesitan.
 - Si una tarea queda frenada esperando una respuesta del fundador, avanza la siguiente y vuelve después.
 - Si terminas todo, pide más al fundador. No tomes una tarea de otra persona sin cambiar el tablero en un PR.
