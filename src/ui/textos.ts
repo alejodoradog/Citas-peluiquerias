@@ -2221,7 +2221,8 @@ export const textos = {
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       plan_changed:
         "La barbería cambió su número de barberos y ahora le toca otro valor. Vuelve a abrir Registrar pago.",
-      amount_invalid: "Escribe un valor entre $1.000 y $5.000.000.",
+      amount_invalid:
+        "Escribe un valor entre $40.000 y $5.000.000, con punto solo para los miles.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
       invalid: "Revisa este dato.",
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",

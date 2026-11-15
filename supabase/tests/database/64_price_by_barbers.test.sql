@@ -6,13 +6,15 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(16);
+select plan(20);
 
 insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-0000000064cc', 'nadie-p@example.com'),
   ('00000000-0000-0000-0000-0000000064aa', 'owner-p@example.com'),
   ('00000000-0000-0000-0000-0000000064bb', 'owner-q@example.com'),
   ('00000000-0000-0000-0000-0000000064ad', 'admin-p@example.com');
 insert into public.profiles (id, full_name, phone, is_super_admin) values
+  ('00000000-0000-0000-0000-0000000064cc', 'Nadie P', '+573001110003', false),
   ('00000000-0000-0000-0000-0000000064aa', 'Dueño P', '+573001110001', false),
   ('00000000-0000-0000-0000-0000000064bb', 'Dueño Q', '+573001110002', false),
   ('00000000-0000-0000-0000-0000000064ad', 'Admin P', null, true);
@@ -69,6 +71,18 @@ select throws_ok(
   $$insert into public.plans (code, name, monthly_price_cop, included_barbers, by_agreement) values ('raro', 'Raro', null, 1, false)$$,
   '23514', null, 'a plan has a price, or its price is agreed'
 );
+select is(
+  (select count(*)::int from generate_series(1, 60) n
+   where (select count(*) from public.plans p
+          where p.active and n >= p.min_barbers and (p.max_barbers is null or n <= p.max_barbers)) <> 1),
+  0, 'every number of barbers falls in exactly one active plan'
+);
+select ok(
+  not has_table_privilege('service_role', 'public.plans', 'INSERT')
+    and not has_table_privilege('service_role', 'public.plans', 'UPDATE')
+    and not has_table_privilege('authenticated', 'public.plans', 'INSERT'),
+  'no API role writes the catalog, not even the server key'
+);
 
 -- What each one pays --------------------------------------------------------------------------------
 
@@ -91,6 +105,18 @@ select is(
   (select row(plan_code, price_cop, by_agreement, active_barbers)::text from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000643')),
   '(por_acuerdo,,t,9)', 'nine barbers: the price is agreed'
 );
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000064cc", "role": "authenticated"}';
+select is(
+  pg_temp.hint_of($$select * from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000641')$$),
+  '42501', 'nor does a session that is not a member'
+);
+reset role;
+set local role service_role;
+set local request.jwt.claims to '{"role": "service_role"}';
+select is(
+  (select price_cop from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000642')),
+  40000, 'the server key reads it, for the emails'
+);
 reset role;
 select ok(
   not has_function_privilege('anon', 'public.subscription_quote(uuid)', 'EXECUTE'),
@@ -110,8 +136,8 @@ select is(
   'plan_changed', 'a payment for a tier that no longer applies is refused, so the screen shows the new price'
 );
 select is(
-  (select row(plan, amount_cop)::text from public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000642', 'plus', 'nequi', 'P-2')),
-  '(plus,40000)', 'five barbers pay $40.000'
+  (select row(plan, amount_cop, active_barbers)::text from public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000642', 'plus', 'nequi', 'P-2')),
+  '(plus,40000,5)', 'five barbers pay $40.000, and the payment keeps how many were counted'
 );
 select is(
   (select plan from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000642'),
@@ -122,8 +148,8 @@ select is(
   'agreed_amount_required', 'an agreed plan needs its amount'
 );
 select is(
-  pg_temp.hint_of($$select public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000643', 'por_acuerdo', 'nequi', 'P-3', null, 999)$$),
-  'agreed_amount_required', 'of at least $1.000'
+  pg_temp.hint_of($$select public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000643', 'por_acuerdo', 'nequi', 'P-3', null, 39999)$$),
+  'agreed_amount_required', 'of at least $40.000, never less than 5 to 8 barbers'
 );
 select is(
   pg_temp.hint_of($$select public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000643', 'por_acuerdo', 'nequi', 'P-3', null, 5000001)$$),

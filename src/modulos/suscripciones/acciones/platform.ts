@@ -74,6 +74,10 @@ export async function registerPayment(
   const quote = await loadQuote(id);
   if (!quote) redirect(routes.admin);
   const shownPlan = String(formData.get("plan") ?? "");
+  // A plan that is not the one of now: the screen is old, open it again.
+  if (shownPlan !== quote.planCode) {
+    return { status: "failed", error: "plan_changed", values: form.values };
+  }
   let amountCop: number | null = null;
   if (quote.byAgreement) {
     const typed = String(formData.get("acordado") ?? "");
@@ -88,7 +92,7 @@ export async function registerPayment(
   }
   const result = await registerPaymentData({
     barbershopId: id,
-    plan: /^[a-z][a-z0-9_]{1,29}$/.test(shownPlan) ? shownPlan : quote.planCode,
+    plan: shownPlan,
     ...form.data,
     amountCop,
   });

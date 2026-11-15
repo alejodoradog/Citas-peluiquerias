@@ -178,6 +178,7 @@ export type SubscriptionQuote = {
 export async function loadQuote(
   barbershopId: string,
 ): Promise<SubscriptionQuote | null> {
+  if (!z.uuid().safeParse(barbershopId).success) return null;
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("subscription_quote", {
     p_barbershop_id: barbershopId,

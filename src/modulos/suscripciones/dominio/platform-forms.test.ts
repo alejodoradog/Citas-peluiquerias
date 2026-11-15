@@ -114,11 +114,13 @@ describe("parseVoidReason (decision P4)", () => {
 });
 
 describe("parseAgreedAmount (task 5.6)", () => {
-  it("reads pesos as they are typed, between $1.000 and $5.000.000", () => {
+  it("reads pesos as they are typed, between $40.000 and $5.000.000", () => {
     expect(parseAgreedAmount("120.000")).toBe(120000);
     expect(parseAgreedAmount("$ 120000")).toBe(120000);
-    expect(parseAgreedAmount("1.000")).toBe(1000);
-    expect(parseAgreedAmount("999")).toBeNull();
+    expect(parseAgreedAmount("40.000")).toBe(40000);
+    expect(parseAgreedAmount("39.999")).toBeNull();
+    expect(parseAgreedAmount("120.00")).toBeNull();
+    expect(parseAgreedAmount("1.2.3.4")).toBeNull();
     expect(parseAgreedAmount("5.000.001")).toBeNull();
     expect(parseAgreedAmount("12,5")).toBeNull();
     expect(parseAgreedAmount("")).toBeNull();

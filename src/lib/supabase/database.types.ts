@@ -395,14 +395,14 @@ isOneToOne: false
                   ]
                 },"subscription_payments": {
                   Row: {
-                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                    "active_barbers": number | null,"amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at"?: string,"id"?: string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "active_barbers"?: number | null,"amount_cop": number,"barbershop_id": string,"covers_from": string,"covers_until": string,"created_at"?: string,"id"?: string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"plan": string,"reference": string,"registered_by": string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Update: {
-                    "amount_cop"?: number,"barbershop_id"?: string,"covers_from"?: string,"covers_until"?: string,"created_at"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_on"?: string,"plan"?: string,"reference"?: string,"registered_by"?: string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "active_barbers"?: number | null,"amount_cop"?: number,"barbershop_id"?: string,"covers_from"?: string,"covers_until"?: string,"created_at"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_on"?: string,"plan"?: string,"reference"?: string,"registered_by"?: string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -590,7 +590,8 @@ isOneToOne: false
                            },
 "register_subscription_payment":
 { Args: { "p_amount_cop"?: number,"p_barbershop_id": string,"p_method": Database["public"]['Enums']["payment_method"],"p_paid_on"?: string,"p_plan": string,"p_reference": string }; Returns: {
-              "amount_cop": number,
+              "active_barbers": number | null,
+"amount_cop": number,
 "barbershop_id": string,
 "covers_from": string,
 "covers_until": string,
@@ -651,7 +652,8 @@ isOneToOne: false
                            },
 "void_subscription_payment":
 { Args: { "p_barbershop_id": string,"p_payment_id": string,"p_reason": string }; Returns: {
-              "amount_cop": number,
+              "active_barbers": number | null,
+"amount_cop": number,
 "barbershop_id": string,
 "covers_from": string,
 "covers_until": string,

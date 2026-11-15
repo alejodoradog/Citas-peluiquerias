@@ -92,6 +92,7 @@ beforeEach(() => {
 describe("registerPayment (P-03)", () => {
   const valid = {
     barberia: SHOP,
+    plan: "standard",
     metodo: "nequi",
     referencia: " NEQ-1 ",
     fecha: "2026-11-07",
@@ -124,7 +125,10 @@ describe("registerPayment (P-03)", () => {
     };
     loadQuote.mockResolvedValueOnce(agreed);
     expect(
-      await actions.registerPayment(IDLE, form({ ...valid, acordado: "abc" })),
+      await actions.registerPayment(
+        IDLE,
+        form({ ...valid, plan: "por_acuerdo", acordado: "abc" }),
+      ),
     ).toMatchObject({
       status: "invalid",
       fieldErrors: { acordado: "amount_invalid" },
@@ -172,6 +176,13 @@ describe("registerPayment (P-03)", () => {
     expect(await run(() => actions.registerPayment(IDLE, form(valid)))).toEqual(
       { redirectedTo: "/admin" },
     );
+    expect(registerPayment).not.toHaveBeenCalled();
+  });
+
+  it("says the plan changed when the screen showed another one (task 5.6)", async () => {
+    expect(
+      await actions.registerPayment(IDLE, form({ ...valid, plan: "plus" })),
+    ).toMatchObject({ status: "failed", error: "plan_changed" });
     expect(registerPayment).not.toHaveBeenCalled();
   });
 

@@ -7,7 +7,9 @@
 -- barber is never blocked (spec): the tier is measured when each payment is
 -- registered, with the active barbers of that day, so a barbershop that
 -- grows pays the new price from its next payment (provisional decisions P1
--- and P2 of the task).
+-- and P2 of the task). Each payment keeps how many barbers were counted, so
+-- a barbershop that deactivates barbers on payment day shows up (security
+-- review, M1). No API role writes the catalog, not even the server key.
 
 -- 1. The catalog ---------------------------------------------------------------------------------
 
@@ -29,7 +31,24 @@ insert into public.plans (code, name, monthly_price_cop, included_barbers, min_b
 values
   ('plus', 'De 5 a 8 barberos', 40000, 8, 5, 8, false, 2),
   ('por_acuerdo', '9 barberos o más', null, 9, 9, null, true, 3)
-on conflict (code) do nothing;
+on conflict (code) do update set
+  name = excluded.name,
+  monthly_price_cop = excluded.monthly_price_cop,
+  included_barbers = excluded.included_barbers,
+  min_barbers = excluded.min_barbers,
+  max_barbers = excluded.max_barbers,
+  by_agreement = excluded.by_agreement,
+  sort_order = excluded.sort_order,
+  active = true;
+
+revoke insert, update, delete, truncate, references, trigger
+  on public.plans from anon, authenticated, service_role;
+
+-- How many barbers a payment counted.
+alter table public.subscription_payments
+  add column active_barbers integer check (active_barbers >= 0);
+
+grant select (active_barbers) on public.subscription_payments to authenticated;
 
 -- 2. The plan of a barbershop ----------------------------------------------------------------------
 
@@ -90,7 +109,7 @@ begin
   if not (
     private.is_super_admin()
     or p_barbershop_id = any ((select private.member_barbershop_ids())::uuid[])
-    or coalesce(current_setting('request.jwt.claims', true)::jsonb ->> 'role', '') = 'service_role'
+    or coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role', '') = 'service_role'
   ) then
     raise exception 'not allowed' using errcode = 'insufficient_privilege';
   end if;
@@ -114,7 +133,8 @@ grant execute on function public.subscription_quote(uuid) to authenticated, serv
 -- the plan from the barbers. p_plan is the plan the screen showed: if the
 -- barbers changed in between, the payment is refused (plan_changed) so the
 -- super admin sees the new price. For an agreed plan, p_amount_cop is the
--- agreed price, between $1.000 and $5.000.000.
+-- agreed price, between $40.000 (never less than 5 to 8 barbers) and
+-- $5.000.000.
 
 drop function public.register_subscription_payment(uuid, text, public.payment_method, text, date);
 
@@ -135,6 +155,7 @@ declare
   chosen public.plans;
   shop public.barbershops;
   amount integer;
+  barbers integer;
   today date := private.today_bogota();
   paid date := coalesce(p_paid_on, private.today_bogota());
   -- Without spaces, tabs, line breaks or non-breaking spaces at either end,
@@ -160,14 +181,15 @@ begin
   if not exists (select 1 from public.plans p where p.code = p_plan and p.active) then
     raise exception 'unknown plan' using errcode = 'invalid_parameter_value';
   end if;
-  chosen := private.plan_for_barbers(private.active_barbers(p_barbershop_id));
+  barbers := private.active_barbers(p_barbershop_id);
+  chosen := private.plan_for_barbers(barbers);
   if chosen.code is distinct from p_plan then
     raise exception 'the barbers changed: another plan applies'
       using errcode = 'invalid_parameter_value', hint = 'plan_changed';
   end if;
 
   if chosen.by_agreement then
-    if p_amount_cop is null or p_amount_cop not between 1000 and 5000000 then
+    if p_amount_cop is null or p_amount_cop not between 40000 and 5000000 then
       raise exception 'an agreed plan needs its amount'
         using errcode = 'invalid_parameter_value', hint = 'agreed_amount_required';
     end if;
@@ -184,7 +206,7 @@ begin
 
   begin
     insert into public.subscription_payments (
-      barbershop_id, plan, amount_cop, method, reference, paid_on, registered_by
+      barbershop_id, plan, amount_cop, method, reference, paid_on, registered_by, active_barbers
     ) values (
       p_barbershop_id,
       chosen.code,
@@ -192,7 +214,8 @@ begin
       p_method,
       clean_reference,
       paid,
-      auth.uid()
+      auth.uid(),
+      barbers
     )
     returning id into payment_id;
   exception when unique_violation then

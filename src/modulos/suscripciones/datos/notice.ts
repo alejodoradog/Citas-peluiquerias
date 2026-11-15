@@ -49,11 +49,15 @@ export async function loadSubscriptionNotice(
   if (!notice) return null;
 
   // What it pays by its active barbers (task 5.6); null when it is agreed.
+  // Without it, the notice still shows and promises the payment data.
   const { data: quote, error: quoteError } = await supabase.rpc(
     "subscription_quote",
     { p_barbershop_id: barbershopId },
   );
-  if (quoteError) throw new Error(quoteError.message);
+  if (quoteError)
+    console.error(
+      JSON.stringify({ event: "quote_failed", code: quoteError.code }),
+    );
 
   return {
     notice,
