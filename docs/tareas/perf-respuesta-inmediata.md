@@ -22,6 +22,15 @@ La prioridad del fundador: que todo toque muestre una respuesta al instante.
   - "Guardar" un barbero en el asistente.
 - Con movimiento reducido no hay pulso: lo que espera queda atenuado.
 
+### 1b. La pantalla cambia al instante cuando el enlace vuelve a ella misma (2026-11-15, `perf-filtros-inmediatos`)
+El fundador lo notó al probar el #84: "Día" y "Semana" marcaban la espera, pero la pantalla no cambiaba hasta que llegaba la respuesta, a diferencia de "Agenda" o "Clientes".
+- **La causa:** al ir a otra pantalla, Next muestra enseguida el estado de carga de esa pantalla, que ya trae precargado. Al quedarse en la misma con otra consulta (otro día, otra vista, un filtro, una búsqueda, un paso de la reserva), Next deja el contenido viejo hasta que llega el nuevo.
+- **El arreglo:** `ScreenSuspense` (`src/ui/tap-feedback.tsx`) reemplaza el `Suspense` de esas pantallas. Desde el toque muestra el mismo estado de carga y esconde el contenido; cuando cambia la dirección, el contenido vuelve.
+  - El contenido se esconde, no se quita: si la pantalla no llega, vuelve como estaba a los 8 s.
+  - El foco vuelve al enlace que se tocó.
+  - Guardar no dispara este estado: solo los enlaces y las búsquedas.
+- **Pantallas:** la agenda, el link del barbero, la reserva, "Gestionar mi cita", clientes, el cierre del día y el admin.
+
 ### 2. Una espera menos a Supabase en cada pantalla del panel
 - **La marca del asistente viene con el acceso.** `getCurrentAccess` trae `setup_completed_at` en la misma lectura de las sedes y lo expone como `barbershop.needsSetup`. Se borró `barbershopNeedsSetup`, que hacía una consulta propia.
 - **Consultas en paralelo** donde una no dependía de la otra: el detalle de la cita, reprogramar y el link del barbero.
@@ -51,8 +60,8 @@ La prioridad del fundador: que todo toque muestre una respuesta al instante.
 - **La dirección ya no cambia al tocar un día o una hora.** Si la persona recarga la página en ese paso, la selección vuelve a hoy. "Atrás" desde los datos sí conserva el día y la hora.
 
 ## Pruebas
-- **Unitarias:** 1.503, todas en verde. Nuevas:
-  - `tap-feedback` (11): qué enlaces y formularios se marcan, y cuándo se quita la marca;
+- **Unitarias:** 1.509, todas en verde. Nuevas:
+  - `tap-feedback` (17): qué enlaces y formularios se marcan, cuándo se quita la marca, y el estado de carga de una pantalla que vuelve a sí misma;
   - `pending-button`, `appointment-actions`, `sign-out-button`, `commission-form` y `barber-form`: cada control muestra la espera y no se envía dos veces;
   - `time-chooser`, `reschedule-chooser`, `slot-days` y `services-step` (17): el día y la hora sin navegar, el estado inicial desde la dirección, un día sin horas;
   - `access` (4 casos nuevos) y la acción de citas: la marca del asistente llega sin consulta propia y un dueño sin asistente no escribe nada.

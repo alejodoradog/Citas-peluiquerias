@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { addDays, now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { loadBarberAgenda } from "@/modulos/agenda/datos/barber-agenda";
@@ -18,6 +17,7 @@ import { buttonClasses } from "@/ui/button";
 import { LockIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { BarberHeader } from "./barber-header";
 import { DayList } from "./day-list";
@@ -45,9 +45,9 @@ export default function BarberAgendaPage({
   searchParams,
 }: PageProps<"/b/[token]">) {
   return (
-    <Suspense fallback={<LoadingState label={t.cargando} />}>
+    <ScreenSuspense fallback={<LoadingState label={t.cargando} />}>
       <BarberAgenda params={params} searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Form from "next/form";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { now } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import {
@@ -31,6 +30,7 @@ import { List, ListRow } from "@/ui/list";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
 import { TabShell } from "@/ui/tab-shell";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../ready-owner";
 import { shortDay, timeOf } from "./format";
@@ -46,7 +46,7 @@ export default function CustomersPage({
   searchParams,
 }: PageProps<"/panel/clientes">) {
   return (
-    <Suspense
+    <ScreenSuspense
       fallback={
         <TabShell title={t.titulo}>
           <LoadingState label={t.cargando} />
@@ -54,7 +54,7 @@ export default function CustomersPage({
       }
     >
       <Customers searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 

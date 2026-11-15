@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
-import { Suspense } from "react";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import {
@@ -15,6 +14,7 @@ import {
   readBookingParams,
 } from "@/modulos/agenda/dominio/booking-flow";
 import { LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { BarberStep } from "./barber-step";
 import { DetailsStep } from "./details-step";
@@ -39,9 +39,9 @@ export default function BookingFlowPage({
   searchParams,
 }: PageProps<"/[slug]/reservar">) {
   return (
-    <Suspense fallback={<LoadingState label={t.cargando} />}>
+    <ScreenSuspense fallback={<LoadingState label={t.cargando} />}>
       <BookingFlow params={params} searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 
