@@ -24,6 +24,7 @@ import { pollsLive } from "@/modulos/agenda/dominio/live-agenda";
 import { Fab } from "@/ui/fab";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import {
@@ -54,7 +55,7 @@ export default function PanelPage({ searchParams }: PageProps<"/panel">) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col pb-28">
-        <Suspense
+        <ScreenSuspense
           fallback={
             <div className="px-4 pt-5">
               <LoadingState label={t.cargando} />
@@ -62,7 +63,7 @@ export default function PanelPage({ searchParams }: PageProps<"/panel">) {
           }
         >
           <OwnerAgenda searchParams={searchParams} />
-        </Suspense>
+        </ScreenSuspense>
       </main>
       <BottomNav />
     </div>

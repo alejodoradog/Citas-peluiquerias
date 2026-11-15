@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
@@ -18,6 +17,7 @@ import { cx } from "@/ui/cx";
 import { BarChartIcon, SearchIcon } from "@/ui/icons";
 import { SignOutButton } from "@/ui/sign-out-button";
 import { EmptyState, LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import { shortDate, STATE_TONES } from "./labels";
 
@@ -30,9 +30,9 @@ export const metadata: Metadata = { title: textos.admin.titulo };
 // URL (?q= and ?estado=) so going back keeps them.
 export default function AdminPage({ searchParams }: PageProps<"/admin">) {
   return (
-    <Suspense fallback={<LoadingState label={t.cargando} />}>
+    <ScreenSuspense fallback={<LoadingState label={t.cargando} />}>
       <Barbershops searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 

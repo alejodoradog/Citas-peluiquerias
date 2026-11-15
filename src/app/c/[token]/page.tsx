@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { now, toBogotaDate, toBogotaTime } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
@@ -12,6 +11,7 @@ import {
   readManageParams,
 } from "@/modulos/agenda/dominio/manage-flow";
 import { LoadingState } from "@/ui/states";
+import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
 import {
   calendarUrl,
@@ -41,9 +41,11 @@ export default function ManageAppointmentPage({
   searchParams,
 }: PageProps<"/c/[token]">) {
   return (
-    <Suspense fallback={<LoadingState label={textos.reservas.cargando} />}>
+    <ScreenSuspense
+      fallback={<LoadingState label={textos.reservas.cargando} />}
+    >
       <ManageAppointment params={params} searchParams={searchParams} />
-    </Suspense>
+    </ScreenSuspense>
   );
 }
 

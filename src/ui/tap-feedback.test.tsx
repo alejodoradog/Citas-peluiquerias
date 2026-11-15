@@ -2,7 +2,7 @@
    purpose: the listener works on any link, and a Link needs a router here. */
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { PENDING_LIMIT_MS, TapFeedback } from "./tap-feedback";
+import { PENDING_LIMIT_MS, ScreenSuspense, TapFeedback } from "./tap-feedback";
 
 const address = vi.hoisted(() => ({ pathname: "/panel", search: "" }));
 vi.mock("next/navigation", () => ({
@@ -146,5 +146,81 @@ describe("TapFeedback", () => {
     expect(screen.getByRole("button", { name: "Guardar" })).not.toHaveAttribute(
       "data-pending",
     );
+  });
+});
+
+// A screen that leads back to itself: the agenda with its day links.
+function Agenda() {
+  return (
+    <>
+      <TapFeedback />
+      <ScreenSuspense fallback={<p role="status">Cargando</p>}>
+        <h1>Hoy</h1>
+        <a href="/panel?dia=2026-11-16">Día siguiente</a>
+        <a href="/panel/clientes">Clientes</a>
+      </ScreenSuspense>
+    </>
+  );
+}
+
+describe("ScreenSuspense", () => {
+  beforeEach(() => {
+    address.pathname = "/panel";
+    address.search = "";
+    window.history.replaceState(null, "", "/panel");
+    document.addEventListener("click", stay);
+  });
+  afterEach(() => {
+    document.removeEventListener("click", stay);
+    vi.useRealTimers();
+  });
+
+  it("shows the content while nothing is on its way", () => {
+    render(<Agenda />);
+    expect(screen.getByRole("heading", { name: "Hoy" })).toBeVisible();
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("shows the loading state from the tap when the link stays on the screen", () => {
+    render(<Agenda />);
+    tap("Día siguiente");
+    expect(screen.getByRole("status")).toHaveTextContent("Cargando");
+    expect(screen.getByText("Hoy")).not.toBeVisible();
+  });
+
+  it("brings the content back when the address changes", () => {
+    const { rerender } = render(<Agenda />);
+    tap("Día siguiente");
+    address.search = "dia=2026-11-16";
+    rerender(<Agenda />);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Hoy" })).toBeVisible();
+  });
+
+  it("leaves the content alone when the link goes to another screen", () => {
+    render(<Agenda />);
+    tap("Clientes");
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Hoy" })).toBeVisible();
+  });
+
+  it("gives the focus back to the link that was tapped", () => {
+    const { rerender } = render(<Agenda />);
+    link("Día siguiente").focus();
+    tap("Día siguiente");
+    address.search = "dia=2026-11-16";
+    rerender(<Agenda />);
+    expect(link("Día siguiente")).toHaveFocus();
+  });
+
+  it("brings the content back when the screen never arrives", () => {
+    vi.useFakeTimers();
+    render(<Agenda />);
+    tap("Día siguiente");
+    act(() => {
+      vi.advanceTimersByTime(PENDING_LIMIT_MS);
+    });
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Hoy" })).toBeVisible();
   });
 });
