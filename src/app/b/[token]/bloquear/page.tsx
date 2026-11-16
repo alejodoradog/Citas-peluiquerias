@@ -1,26 +1,10 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import {
-  formatWallClock,
-  now,
-  toBogotaDate,
-  toBogotaTime,
-} from "@/lib/fechas/fechas";
-import { barberAgendaHref } from "@/lib/routes";
-import { loadBarberAgendaSpan } from "@/modulos/agenda/datos/barber-agenda";
-import {
-  blockDayOptions,
-  closedBlockDays,
-  blockTimeOptions,
-} from "@/modulos/agenda/dominio/barber-agenda";
-import { Notice } from "@/ui/notice";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
-import { TopBar } from "@/ui/top-bar";
-import { dayLabel } from "../labels";
-import { BarberLinkGone } from "../link-gone";
-import { BlockForm } from "./block-form";
+import { BlockScreen } from "../../../_agenda-profesional/block-screen";
+import { BarberLinkGone } from "../../../_agenda-profesional/link-gone";
 
 const t = textos.barbero;
 
@@ -30,9 +14,7 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-// B-04 (task 4.4): the barber blocks hours of their own, from now to 30 days
-// ahead (decision B5), only where they have no appointment. A paused
-// barbershop or an inactive barber cannot block.
+// B-04 (task 4.4) by the private link.
 export default function BarberBlockPage({
   params,
 }: PageProps<"/b/[token]/bloquear">) {
@@ -48,61 +30,7 @@ async function BarberBlock({
 }: Pick<PageProps<"/b/[token]/bloquear">, "params">) {
   const { token } = await params;
   await connection();
-  const instant = now();
-  const today = toBogotaDate(instant);
-  // The whole window of the picker: its closed days are not offered.
-  const days = blockDayOptions(today);
-  const agenda = await loadBarberAgendaSpan(token, today, days.at(-1)!);
-  if (!agenda) return <BarberLinkGone />;
-
-  const close = { href: barberAgendaHref(token), label: t.bloquear.cerrar };
-  if (!agenda.barbershop.writable || !agenda.barber.active) {
-    return (
-      <div className="mx-auto flex w-full max-w-md flex-col">
-        <TopBar title={t.bloquear.titulo} titleAs="h1" close={close} />
-        <main className="px-5">
-          {agenda.barbershop.writable ? (
-            <Notice tone="warning" title={t.errores.barber_inactive} />
-          ) : (
-            <Notice tone="warning" title={t.pausada.titulo}>
-              {t.pausada.detalle}
-            </Notice>
-          )}
-        </main>
-      </div>
-    );
-  }
-
-  const closed = new Set(closedBlockDays(agenda, days));
-  // From the next quarter hour, for an hour, while the day lasts.
-  const quarter = 15 * 60_000;
-  const next = new Date(Math.ceil(instant.getTime() / quarter) * quarter);
-  const times = blockTimeOptions();
-  const nextTime = toBogotaDate(next) === today ? toBogotaTime(next) : null;
-  const fromIndex = nextTime ? times.indexOf(nextTime) : 36;
-  const start = fromIndex >= 0 && fromIndex < times.length - 1 ? fromIndex : 36;
-
   return (
-    <BlockForm
-      token={token}
-      close={close}
-      days={days.map((date) => ({
-        value: date,
-        label: closed.has(date)
-          ? t.bloquear.diaCerrado(dayLabel(date, today, "long"))
-          : dayLabel(date, today, "long"),
-        disabled: closed.has(date),
-      }))}
-      times={times.map((time) => ({
-        value: time,
-        label: formatWallClock(time),
-      }))}
-      defaults={{
-        // Today, or the first day with something to block.
-        dia: days.find((date) => !closed.has(date)) ?? today,
-        desde: times[start]!,
-        hasta: times[Math.min(start + 4, times.length - 1)]!,
-      }}
-    />
+    <BlockScreen entry={{ kind: "link", token }} gone={<BarberLinkGone />} />
   );
 }

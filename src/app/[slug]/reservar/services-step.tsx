@@ -59,7 +59,11 @@ export function ServicesStep({
     // In the order of the list, as the form itself would send them.
     const href =
       routes.bookingFlow(profile.slug) +
-      bookingQuery({ serviceIds: picked.map((service) => service.id) });
+      bookingQuery({
+        serviceIds: picked.map((service) => service.id),
+        // A professional the link chose (task 7.6b) goes on with them.
+        barber: selection.barber,
+      });
     // Pending until the barber step is on screen.
     startLeaving(() => router.push(href));
   }
@@ -71,6 +75,9 @@ export function ServicesStep({
       onSubmit={onSubmit}
       className="flex min-h-full flex-1 flex-col"
     >
+      {selection.barber ? (
+        <input type="hidden" name="profesional" value={selection.barber} />
+      ) : null}
       <StepHeader
         shopName={profile.name}
         backHref={routes.booking(profile.slug)}

@@ -35,11 +35,20 @@ export default function IngresarPage({ searchParams }: PageProps<"/ingresar">) {
   );
 }
 
-// Where the email confirmation link leaves the owner.
+// Where the email confirmation link leaves the owner, and an invitation
+// link that no longer works leaves a professional.
 async function EmailLinkNotice({
   searchParams,
 }: Pick<PageProps<"/ingresar">, "searchParams">) {
-  const { vencido, confirmado } = await searchParams;
+  const { vencido, confirmado, invitacion } = await searchParams;
+  // Task 7.6b: a professional's invitation that expired or was already used.
+  if (invitacion === "vencida") {
+    return (
+      <Notice tone="warning" title={textos.cuentas.invitacion.vencida.titulo}>
+        {textos.cuentas.invitacion.vencida.cuerpo}
+      </Notice>
+    );
+  }
   if (confirmado === "1") {
     return (
       <Notice tone="success" title={t.correoConfirmado.titulo}>

@@ -70,4 +70,23 @@ describe("ServicesStep", () => {
     expect(screen.getByRole("button", { name: t.continuar })).toBeDisabled();
     expect(router.push).not.toHaveBeenCalled();
   });
+  // Task 7.6b: the link a professional shares brings them already chosen.
+  it("carries the professional the link chose on to the next step", async () => {
+    const ANA = "33333333-3333-4333-8333-333333333333";
+    const { container } = render(
+      <ServicesStep
+        profile={profile}
+        selection={readBookingParams({ profesional: ANA })}
+      />,
+    );
+    // Without JavaScript the form sends it too.
+    expect(
+      container.querySelector('input[type="hidden"][name="profesional"]'),
+    ).toHaveAttribute("value", ANA);
+    await userEvent.click(screen.getByRole("checkbox", { name: /Corte/ }));
+    await userEvent.click(screen.getByRole("button", { name: t.continuar }));
+    expect(router.push).toHaveBeenCalledWith(
+      `/la-esquina/reservar?servicios=${CORTE}&profesional=${ANA}`,
+    );
+  });
 });

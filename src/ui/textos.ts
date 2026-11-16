@@ -37,6 +37,7 @@ import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
 import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
 import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
+import type { AccessRefusal } from "@/modulos/cuentas/dominio/professional-access";
 import { EMAIL_LINK_HOURS } from "@/modulos/cuentas/dominio/email-link";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
 
@@ -766,6 +767,28 @@ export const textos = {
       pedirOtro: "Pedir un link nuevo",
       cargando: "Revisando tu link…",
     },
+    // Task 7.6b: a professional opens their invitation and creates their
+    // password, accepting the terms.
+    invitacion: {
+      titulo: "Crea tu contraseña",
+      bajada: (nombre: string, establecimiento: string) =>
+        `Hola, ${nombre}. Con tu correo y esta contraseña entras a tu agenda de ${establecimiento}.`,
+      campos: { password: "Contraseña" },
+      enviar: "Crear contraseña y entrar",
+      vencida: {
+        titulo: "Esa invitación venció o ya se usó.",
+        cuerpo:
+          "Si nunca la abriste, pídele al dueño del establecimiento que te la reenvíe. Si ya la abriste, entra con tu correo o pide un link para crear tu contraseña en «¿Olvidaste tu contraseña?».",
+      },
+      // Opening the invitation confirms the email, so after the hour the
+      // owner can no longer resend it: the way in is a recovery link.
+      sinSesion: {
+        titulo: "El link para crear tu contraseña ya venció.",
+        cuerpo:
+          "Pide uno nuevo con tu correo: te llega un link para crear tu contraseña y entrar a tu agenda.",
+        pedir: "Pedir un link nuevo",
+      },
+    },
     salir: "Cerrar sesión",
     saliendo: "Cerrando sesión…",
     errores: {
@@ -774,6 +797,8 @@ export const textos = {
       password_too_short: "La contraseña debe tener mínimo 8 caracteres.",
       password_too_long: "La contraseña es muy larga.",
       password_mismatch: "Las contraseñas no coinciden.",
+      terms_required:
+        "Para entrar, acepta los términos de uso y la política de datos.",
       invalid_credentials: "El correo o la contraseña no coinciden.",
       email_not_confirmed:
         "Te falta confirmar tu correo. Pide un link nuevo aquí abajo.",
@@ -1106,6 +1131,73 @@ export const textos = {
     inactivoDetalle: "No aparece al reservar ni recibe citas nuevas.",
     reactivar: (nombre: string) => `Volver a activar a ${nombre}`,
     reactivando: "Activando…",
+    // "Acceso a su agenda" (task 7.6b, decision 0010): the professional's
+    // own account, by invitation.
+    acceso: {
+      titulo: "Acceso a su agenda",
+      chips: {
+        sinCorreo: "Sin correo",
+        inactivo: "Inactivo",
+        sinInvitar: "Sin invitar",
+        invitado: "Invitación enviada",
+        vencida: "Invitación vencida",
+        conAcceso: "Con acceso",
+        quitado: "Acceso quitado",
+      },
+      detalle: {
+        sinCorreo:
+          "Escribe su correo y guarda para invitarlo a ver su agenda con su propia cuenta.",
+        inactivo: "Actívalo para invitarlo a ver su agenda.",
+        sinInvitar:
+          "Invítalo: le llega un correo para crear su contraseña y ver su agenda desde su celular.",
+        invitado: (hasta: string) =>
+          `El link del correo sirve hasta el ${hasta}. Si no le llegó o venció, reenvíala.`,
+        vencida:
+          "El link del correo ya venció. Reenvíale la invitación para que pueda entrar.",
+        conAcceso:
+          "Entra a su agenda con su correo y contraseña. Solo ve sus citas, sin precios ni datos de los demás.",
+        quitado:
+          "Ya no puede entrar a su agenda. Puedes volver a invitarlo cuando quieras.",
+      },
+      fechaHora: (dia: string, hora: string) => `${dia} a las ${hora}`,
+      invitar: "Invitar",
+      reenviar: "Reenviar invitación",
+      enviando: "Enviando…",
+      enviada: "Listo, le enviamos la invitación a su correo.",
+      guardaPrimero:
+        "Guarda los cambios del correo antes de invitarlo: la invitación va al correo guardado.",
+      quitar: "Quitar acceso",
+      confirmar: {
+        titulo: (nombre: string) => `¿Quitarle el acceso a ${nombre}?`,
+        cuerpo:
+          "Ya no podrá entrar a su agenda y se borra su cuenta de ingreso. Sus citas se quedan como están y tú las sigues manejando desde tu agenda.",
+        si: "Sí, quitar acceso",
+        quitando: "Quitando…",
+        no: "Cancelar",
+      },
+      errores: {
+        email_taken:
+          "Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente. Usa otro correo.",
+        barber_not_found:
+          "No encontramos a esta persona en tu establecimiento.",
+        barbershop_read_only:
+          "Tu establecimiento está pausado: no puedes invitar hasta que se active.",
+        barber_is_owner: "Tú ya tienes tu cuenta: no hace falta invitarte.",
+        barber_inactive: "Actívalo primero para invitarlo.",
+        email_required: "Escribe su correo y guarda antes de invitarlo.",
+        already_linked: "Ya tiene su cuenta: entra con su correo y contraseña.",
+        invitation_pending_other_email:
+          "Hay una invitación pendiente a otro correo. Quita el acceso y vuelve a invitarlo.",
+        invitation_limit:
+          "Hoy ya enviaste muchas invitaciones. Intenta de nuevo mañana.",
+        barber_without_account: "No tiene cuenta ni invitación que quitar.",
+        auth_rate_limited:
+          "Enviamos muchos correos seguidos. Espera unos minutos y reenvíala.",
+        auth_failed:
+          "No pudimos enviar el correo. Intenta de nuevo con Reenviar invitación.",
+        unknown: "No pudimos completar la acción. Intenta de nuevo.",
+      } satisfies Record<AccessRefusal, string>,
+    },
     guardar: "Guardar",
     guardando: "Guardando…",
     errores: {
@@ -2128,6 +2220,7 @@ export const textos = {
     },
     errores: {
       link_invalid: "Este link ya no funciona.",
+      not_professional: "Ya no tienes acceso a esta agenda.",
       read_only:
         "El establecimiento está pausado: tu agenda es solo de lectura.",
       not_yours: "Eso ya no está en tu agenda.",
@@ -2145,6 +2238,23 @@ export const textos = {
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberRefusal | BlockFormCode | "invalid", string>,
+  },
+  // "Mi agenda" by the professional's own account (task 7.6b, decision
+  // 0010): what the private link did not have.
+  miAgenda: {
+    soloTuya: "Esta agenda es solo tuya.",
+    compartir: {
+      boton: "Compartir mi link de reservas",
+      mensaje: (establecimiento: string) =>
+        `Reserva tu cita conmigo en ${establecimiento}, sin escribirnos:`,
+    },
+    whatsapp: "Escribirle por WhatsApp",
+    whatsappDe: (cliente: string) => `Escribirle por WhatsApp a ${cliente}`,
+    sinAcceso: {
+      titulo: "Ya no tienes acceso a esta agenda",
+      detalle:
+        "El establecimiento quitó tu acceso. Si crees que es un error, habla con el dueño.",
+    },
   },
   plataforma: {
     // The platform panel of the super admin (task 5.4): P-01 to P-06. P-01

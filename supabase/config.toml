@@ -260,10 +260,8 @@ content_path = "./supabase/templates/recovery.html"
 subject = "Confirma tu correo"
 content_path = "./supabase/templates/confirmation.html"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# The invitation of a professional (task 7.6b): its section is at the end
+# of this file.
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
@@ -444,3 +442,11 @@ enabled = true
 # Task 5.2: Resend signs its webhook (Svix); the function checks it.
 [functions.resend-webhook]
 verify_jwt = false
+
+# Task 7.6b: the invitation of a professional, in Spanish. The app sends it
+# with the service key (auth.admin.inviteUserByEmail) after invite_barber.
+# The link lands on /auth/confirm (type=invite), which asks for a tap and
+# then sends the professional to create their password (/nueva-clave).
+[auth.email.template.invite]
+subject = "Te invitaron a ver tu agenda en Yapoin"
+content_path = "./supabase/templates/invite.html"

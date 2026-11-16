@@ -7,7 +7,7 @@ import {
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 
 export type CredentialsErrorCode =
-  CredentialCode | "password_required" | "password_mismatch";
+  CredentialCode | "password_required" | "password_mismatch" | "terms_required";
 
 const signInSchema = z.object({
   email: emailSchema,
@@ -35,6 +35,21 @@ const newPasswordSchema = z
   })
   .transform(({ password }) => ({ password }));
 
+// Task 7.6b: a professional who opened their invitation creates their
+// password and, in the same form, accepts the terms of use and the data
+// policy (the express authorization of Ley 1581, as at sign-up).
+const welcomePasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmation: z.string({ error: "password_mismatch" }),
+    acepto: z.literal("on", { error: "terms_required" }),
+  })
+  .refine((value) => value.password === value.confirmation, {
+    message: "password_mismatch",
+    path: ["confirmation"],
+  })
+  .transform(({ password }) => ({ password }));
+
 export function parseSignIn(
   input: unknown,
 ): ParseResult<z.output<typeof signInSchema>, CredentialsErrorCode> {
@@ -51,6 +66,12 @@ export function parseEmailLinkToken(
   input: unknown,
 ): ParseResult<z.output<typeof emailLinkTokenSchema>, CredentialsErrorCode> {
   return parseWith(emailLinkTokenSchema, input);
+}
+
+export function parseWelcomePassword(
+  input: unknown,
+): ParseResult<z.output<typeof welcomePasswordSchema>, CredentialsErrorCode> {
+  return parseWith(welcomePasswordSchema, input);
 }
 
 export function parseNewPassword(

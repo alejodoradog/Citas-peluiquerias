@@ -14,6 +14,7 @@ export const RESERVED_SLUGS = [
   "c",
   "ingresar",
   "login",
+  "mi-agenda",
   "nueva-clave",
   "panel",
   "privacidad",

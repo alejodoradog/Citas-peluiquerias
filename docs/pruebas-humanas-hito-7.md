@@ -96,3 +96,26 @@ Con dos correos nuevos y el celular, y la cuenta del super admin en un computado
 - [ ] **6. El límite.** En la cuenta del plan 1, con 4 profesionales activos (contándote si atiendes), crear un quinto en Más › Profesionales: no deja y explica el límite. Desactivar uno y crear el nuevo: sí deja. Volver a activar el desactivado: no deja.
 - [ ] **7. "Crear cuenta gratis".** Desde la landing, "Crear cuenta gratis" lleva al registro con el plan 1 elegido, y se puede cambiar al plan 2 antes de enviar.
 - [ ] **8. Términos.** Los términos dicen "Vigente desde el 16 de noviembre de 2026", los 30 días del plan 1 y que el plan 2 no tiene prueba.
+
+## Tarea 7.6b: cuentas de profesional, invitación y "Mi agenda"
+Con la plantilla `invite.html` pegada en Supabase (Emails › Invite user), una cuenta de dueño y un profesional con un correo tuyo. Desde dos celulares: el del dueño y el del profesional.
+
+- [ ] **1. Sin correo.** En la ficha de un profesional sin correo, "Acceso a su agenda" dice "Sin correo" y no hay botón de invitar.
+- [ ] **2. Invitar.** Escribir el correo, guardar y volver a la ficha: dice "Sin invitar". Tocar "Invitar": dice "Listo, le enviamos la invitación" y luego "Invitación enviada", con la fecha y hora hasta la que sirve el link.
+- [ ] **3. Correo sin guardar.** Cambiar el correo sin guardar: en vez del botón dice que guardes primero.
+- [ ] **4. El correo.** Al profesional le llega "Te invitaron a ver tu agenda en Yapoin", en español, con el nombre del establecimiento y el botón "Crear mi contraseña".
+- [ ] **5. Un toque.** El botón abre "Ya casi" con "Continuar". Sin tocarlo no pasa nada (los lectores de correo no gastan el link).
+- [ ] **6. Contraseña y términos.** Tras "Continuar" sale "Crea tu contraseña" con su nombre. Sin marcar la casilla de los términos no deja seguir. Con la casilla, entra a "Mi agenda".
+- [ ] **7. Queda guardado.** En Supabase, el perfil del profesional tiene `terms_version` y `terms_accepted_at`.
+- [ ] **8. Mi agenda.** Ve sus citas del día y de la semana, sin precios ni otros profesionales. Marca una cita que ya empezó y bloquea una hora. "Cerrar sesión" lo saca.
+- [ ] **9. WhatsApp.** En el detalle de una cita con celular sale "Escribirle por WhatsApp" y abre el chat. En una sin celular no sale.
+- [ ] **10. Compartir.** "Compartir mi link de reservas" abre el menú del celular (o copia el link). Abrir ese link: tras elegir los servicios va directo a la hora, con él elegido. Si eliges un servicio que él no hace, pide elegir profesional.
+- [ ] **11. Ingreso normal.** Cerrar sesión e ingresar por `/ingresar` con su correo y contraseña: llega a "Mi agenda".
+- [ ] **12. No entra al panel.** Con la sesión del profesional, abrir `/panel` y `/admin`: vuelve a "Mi agenda". Con la del dueño, abrir `/mi-agenda`: vuelve al panel.
+- [ ] **13. Link vencido.** Abrir otra vez el link del correo ya usado: dice "Esa invitación venció o ya se usó", y que si ya la abrió pida un link en "¿Olvidaste tu contraseña?".
+- [ ] **13b. Abrió y no puso contraseña.** Con otro profesional: abrir la invitación, no crear la contraseña y volver después de una hora a `/nueva-clave`: lo manda a pedir un link nuevo. Pedirlo en "¿Olvidaste tu contraseña?": el link lleva a crear la contraseña con la casilla de los términos, y entra a su agenda.
+- [ ] **14. Reenviar.** Con una invitación sin abrir, tocar "Reenviar invitación": llega otro correo, y el link nuevo funciona.
+- [ ] **15. Correo ocupado.** Invitar a un profesional con el correo del dueño: dice que ese correo ya tiene cuenta, sin decir de quién.
+- [ ] **16. Quitar acceso.** Tocar "Quitar acceso", confirmar: dice "Acceso quitado". En el celular del profesional, recargar: vuelve a ingresar y su contraseña ya no sirve.
+- [ ] **17. Volver a invitar.** Tocar "Invitar" con el mismo correo: llega una invitación nueva y funciona.
+- [ ] **18. El link privado sigue igual.** El link `/b/…` de otro profesional sigue mostrando su agenda, sin WhatsApp (se quita en la 7.6c).
