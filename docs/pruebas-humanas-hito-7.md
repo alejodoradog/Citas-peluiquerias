@@ -22,3 +22,29 @@ Con una cuenta nueva de dueño, de principio a fin.
 - [ ] **4. Volver de la política, en la reserva.** En el paso de los datos de una reserva, abrir la política de datos y tocar "Volver": los datos y la hora elegida siguen ahí.
 - [ ] **5. Abierto directo.** Abrir `www.yapoin.com/terminos` escribiendo la dirección: el botón dice "Volver al inicio".
 - [ ] **6. Queda guardado.** En Supabase, la sede nueva tiene el tipo elegido en `business_type` (y el texto en `business_type_other` si fue "Otro").
+
+## Tarea 7.3: asistente
+- [ ] **1. Servicios sin oficio.** Con una cuenta nueva, el paso 2 muestra "Servicio 1" y "Servicio 2" con "Toca para completarlo". "Continuar" está apagado y el aviso dice cuáles faltan.
+- [ ] **2. Completar uno.** Tocar "Servicio 1": trae el nombre y el precio vacío. Ponerle nombre, precio y duración y guardar: la fila muestra el precio y el aviso solo nombra a "Servicio 2".
+- [ ] **3. Desmarcar el otro.** Desmarcar "Servicio 2": "Continuar" se enciende.
+- [ ] **4. Formulario vacío.** En el paso 3, agregar un profesional con nombre y correo y guardarlo. Tocar "Agregar profesional" otra vez: el formulario sale vacío.
+- [ ] **5. Editar sí trae sus datos.** Tocar el profesional recién creado: el formulario trae su nombre, su correo y sus servicios.
+
+## Tarea 7.4: bloqueos del profesional
+Desde el link privado de un profesional.
+
+- [ ] **1. Todo el día.** En "Bloquear horas", marcar "Todo el día": desaparecen "Desde" y "Hasta". Elegir un día sin citas y bloquear: el día queda bloqueado entero, y la página pública no ofrece horas con ese profesional ese día.
+- [ ] **2. Día con cita.** Marcar "Todo el día" en un día donde tiene una cita: no deja, y dice que le pida al dueño que la mueva.
+- [ ] **3. Festivo cerrado.** En la lista de días, el próximo festivo que el establecimiento no abre sale apagado, con "· cerrado".
+- [ ] **4. Día que no trabaja.** Un día en que el profesional no tiene horario sale apagado igual.
+- [ ] **5. Cierre del establecimiento.** El dueño cierra el establecimiento un día entero en Festivos y cierres. Ese día sale apagado para el profesional.
+- [ ] **6. Quitar.** El bloqueo de todo el día se puede quitar desde la agenda del profesional.
+
+## Tarea 7.5: aviso al profesional, con WhatsApp
+Con la función de correos desplegada, y un profesional con correo y avisos activados.
+
+- [ ] **1. El correo.** Reservar una cita con ese profesional dejando un celular. En menos de dos minutos le llega "Nueva cita: …", con la duración, el total y el botón "Escribirle a … por WhatsApp".
+- [ ] **2. El botón.** Tocarlo abre WhatsApp en el chat con el celular que dejó el cliente.
+- [ ] **3. Sin celular.** Reservar otra cita sin celular: el correo llega sin botón.
+- [ ] **4. El dueño.** En el detalle de esa cita y en la ficha del cliente, "Escribirle por WhatsApp" abre el mismo chat. En la cita sin celular no aparece.
+- [ ] **5. El cliente no recibe el celular de nadie.** El recordatorio que le llega al cliente no trae ningún número.
