@@ -140,6 +140,7 @@ El estado de la suscripción no tiene pantalla propia: se muestra con avisos en 
 2. Ficha de barbería: datos del dueño, uso, historial de pagos, botón "Registrar pago".
 3. Métricas: establecimientos por estado, ingreso del mes, registros y citas agendadas por semana, ingresos por mes, y establecimientos y citas por tipo de establecimiento (tarea 7.12).
 4. En computador (desde 1024 px) el panel usa toda la pantalla: menú lateral, la lista como tabla que se ordena por columna y la ficha en dos columnas. En celular se ve como antes (tarea 7.12).
+5. Solicitudes de cambio de plan: cada una se acepta registrando el pago de la diferencia, o se rechaza con un motivo. Anular ese pago devuelve el establecimiento a su plan anterior (tarea 7.8b).
 
 ## Reglas de negocio
 

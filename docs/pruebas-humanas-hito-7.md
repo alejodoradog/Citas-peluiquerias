@@ -96,3 +96,17 @@ Con dos correos nuevos y el celular, y la cuenta del super admin en un computado
 - [ ] **6. El límite.** En la cuenta del plan 1, con 4 profesionales activos (contándote si atiendes), crear un quinto en Más › Profesionales: no deja y explica el límite. Desactivar uno y crear el nuevo: sí deja. Volver a activar el desactivado: no deja.
 - [ ] **7. "Crear cuenta gratis".** Desde la landing, "Crear cuenta gratis" lleva al registro con el plan 1 elegido, y se puede cambiar al plan 2 antes de enviar.
 - [ ] **8. Términos.** Los términos dicen "Vigente desde el 16 de noviembre de 2026", los 30 días del plan 1 y que el plan 2 no tiene prueba.
+
+## Tarea 7.8b: "Cambiar plan"
+Con una cuenta del plan 1 en el celular y la cuenta del super admin en un computador.
+
+- [ ] **1. El límite lleva al plan.** Con 4 profesionales activos, crear un quinto: el aviso dice que se cambia de plan en Más › Plan.
+- [ ] **2. Pedir el cambio.** En Más › Plan, ver el plan 1, sus 4 profesionales y el próximo pago. Tocar "Cambiar al plan 2": la hoja dice el valor ($15.000 si ya pagó un mes, $25.000 si sigue en prueba) y cómo pagarlo. Enviar: sale "Solicitud enviada", y no deja enviar otra.
+- [ ] **3. Cancelar.** Cancelar la solicitud y volver a pedirla.
+- [ ] **4. El admin la ve.** En `/admin` sale el enlace "Solicitudes de cambio de plan · 1 pendiente", y en el computador, "Solicitudes" en el menú.
+- [ ] **5. Aceptar con el pago.** Aceptar con Nequi, una referencia y la fecha de hoy: dice que el establecimiento cambió de plan. En su ficha sale el cambio pagado.
+- [ ] **6. Ya tiene más profesionales.** En el celular, crear el quinto profesional: ahora sí se guarda. Más › Plan dice plan 2.
+- [ ] **7. El mismo comprobante no entra dos veces.** Con otra solicitud de otra cuenta, aceptar con la misma referencia y el mismo medio de un pago mensual de esa cuenta: lo rechaza.
+- [ ] **8. Rechazar.** Rechazar una solicitud con un motivo: en la ficha sale "Rechazada" con el motivo, y el dueño puede pedir otra.
+- [ ] **9. Anular.** En la ficha, anular el pago del cambio: vuelve al plan 1. Sus profesionales siguen, pero no deja crear otro.
+- [ ] **10. Métricas.** El ingreso del mes suma los $15.000 del cambio, y deja de sumarlos al anularlo.
