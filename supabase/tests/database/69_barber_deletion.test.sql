@@ -13,12 +13,15 @@
 -- - Frozen: no edit, no reactivation, nothing new by any path; it no longer
 --   counts for the plan's limit, nor shows in the lists.
 -- - It works with the establishment suspended.
+-- - Independent review: an UPDATE that moves hours, services or blocks to
+--   them is refused too, and a session aiming at another establishment gets
+--   RLS's 42501, never whether that professional was deleted.
 begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(56);
+select plan(64);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -31,10 +34,14 @@ select ok(
      'public.barber_account_states(uuid)'::regprocedure,
      'public.barber_account_status(uuid)'::regprocedure,
      'public.barber_account_to_delete(uuid)'::regprocedure,
-     'private.keep_deleted_barber()'::regprocedure,
-     'private.refuse_deleted_barber()'::regprocedure
+     'private.keep_deleted_barber()'::regprocedure
    )),
   'the new and replaced functions are security definer with an empty search_path'
+);
+select ok(
+  (select not prosecdef and proconfig @> array['search_path=""']
+   from pg_proc where oid = 'private.refuse_deleted_barber()'::regprocedure),
+  'refuse_deleted_barber runs as the statement''s role, with an empty search_path'
 );
 select ok(
   (select bool_and(
@@ -149,7 +156,7 @@ $$;
 
 grant execute on function pg_temp.hint_of(text), pg_temp.detail_of(text), pg_temp.as_user(uuid),
   pg_temp.at(integer, text)
-  to anon, authenticated;
+  to anon, authenticated, service_role;
 
 -- Fixtures ---------------------------------------------------------------------------------------
 -- S (standard plan: 4 active) and T, each with its owner. In S: Jefa (the
@@ -196,6 +203,9 @@ from unnest(array['ba000000-0000-0000-0000-000000006911', 'ba000000-0000-0000-00
 insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
 select 'aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006911', d, '08:00', '18:00'
 from generate_series(0, 6) d;
+-- Dos has a shift of their own, to try moving it to Uno.
+insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
+values ('aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006912', 1, '09:00', '10:00');
 
 -- Uno joined their account by an invitation (task 7.6a) and accepted the
 -- terms; Dos has an account too.
@@ -233,7 +243,10 @@ insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at
   ('b0000000-0000-0000-0000-000000006901', 'aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006911',
    pg_temp.at(-3, '14:00'), pg_temp.at(-3, '15:00'), 'Almuerzo'),
   ('b0000000-0000-0000-0000-000000006902', 'aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006911',
-   pg_temp.at(2, '14:00'), pg_temp.at(2, '15:00'), 'Permiso');
+   pg_temp.at(2, '14:00'), pg_temp.at(2, '15:00'), 'Permiso'),
+  -- Dos's block to come (b3), to try moving it to Uno.
+  ('b0000000-0000-0000-0000-000000006903', 'aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006912',
+   pg_temp.at(3, '14:00'), pg_temp.at(3, '15:00'), 'Permiso');
 
 -- Tres: the owner invites them, and Auth holds an account for that email
 -- that did not join (made before the invitation): the orphan.
@@ -431,6 +444,62 @@ select is(
   'but the owner still marks a past appointment of theirs'
 );
 
+-- Independent review, point 1: moving a row of Dos to Uno with a direct
+-- UPDATE, as the owner may by RLS.
+select is(
+  pg_temp.hint_of($$update public.barber_services set barber_id = 'ba000000-0000-0000-0000-000000006911'
+    where barber_id = 'ba000000-0000-0000-0000-000000006912'$$),
+  'barber_deleted',
+  'the owner cannot move services to them by an UPDATE'
+);
+select is(
+  pg_temp.hint_of($$update public.barber_schedules set barber_id = 'ba000000-0000-0000-0000-000000006911'
+    where barber_id = 'ba000000-0000-0000-0000-000000006912'$$),
+  'barber_deleted',
+  'nor hours'
+);
+select throws_ok(
+  $$update public.time_blocks set barber_id = 'ba000000-0000-0000-0000-000000006911'
+    where id = 'b0000000-0000-0000-0000-000000006903'$$,
+  '42501', null,
+  'a session updates no block at all'
+);
+
+-- Independent review, point 2: another establishment's owner aiming at Uno
+-- gets RLS's answer, the same as for a professional who was not deleted.
+select pg_temp.as_user('00000000-0000-0000-0000-000000006902');
+select is(
+  pg_temp.hint_of($$insert into public.barber_services (barbershop_id, barber_id, service_id)
+    values ('aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006911', '5e000000-0000-0000-0000-000000006901')$$),
+  '42501',
+  'another establishment''s owner learns nothing of a deleted professional (42501)'
+);
+select is(
+  pg_temp.hint_of($$insert into public.barber_services (barbershop_id, barber_id, service_id)
+    values ('aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006912', '5e000000-0000-0000-0000-000000006901')$$),
+  '42501',
+  'the same answer as for one who was not'
+);
+
+-- The public booking (a security definer function, by the server key) still
+-- refuses them.
+reset role;
+select set_config('request.jwt.claims', '{"role": "service_role"}', true);
+set local role service_role;
+select is(
+  pg_temp.hint_of(format(
+    $$select * from public.book_appointment_from_app(p_barbershop_id => %L, p_starts_at => %L,
+      p_service_ids => %L, p_customer_name => 'Camila Ruiz', p_customer_email => 'camila-69b@example.com',
+      p_manage_token_hash => %L, p_barber_id => %L, p_customer_phone => '+573001112299')$$,
+    'aaaaaaaa-0000-0000-0000-000000006901', pg_temp.at(4, '10:00'),
+    array['5e000000-0000-0000-0000-000000006901']::uuid[], repeat('f', 64),
+    'ba000000-0000-0000-0000-000000006911')),
+  'barber_unavailable',
+  'the public booking never books a deleted professional'
+);
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-000000006901');
+
 -- Nothing new for them, by any path (as the table owner, past every grant).
 -- The older guards already refuse an inactive professional, reading the row
 -- without a lock; they are switched off here (inside this transaction) so
@@ -482,6 +551,12 @@ select is(
   pg_temp.hint_of($$update public.barbers set display_name = 'Otra' where id = 'ba000000-0000-0000-0000-000000006911'$$),
   'barber_deleted',
   'and not even the table owner edits the row'
+);
+select is(
+  pg_temp.hint_of($$update public.time_blocks set barber_id = 'ba000000-0000-0000-0000-000000006911'
+    where id = 'b0000000-0000-0000-0000-000000006903'$$),
+  'barber_deleted',
+  'nor moves a block to them'
 );
 set constraints all immediate;
 alter table public.appointments enable trigger check_appointment_rules;

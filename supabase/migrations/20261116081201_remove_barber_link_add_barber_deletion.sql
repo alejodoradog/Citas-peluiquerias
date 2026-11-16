@@ -348,18 +348,33 @@ create trigger keep_deleted_barber
 
 -- Nothing new for a deleted professional, by any path: no appointment (nor
 -- one moved to them, nor one brought back to come), no block, no service and
--- no hours. The key share lock waits for a deletion in progress (its FOR
--- UPDATE), and then reads the row as it was left.
+-- no hours, inserted or moved by an UPDATE of barber_id. The key share lock
+-- waits for a deletion in progress (its FOR UPDATE), and then reads the row
+-- as it was left.
+--
+-- Security invoker on purpose (independent review of 7.6c, point 2): it runs
+-- as the role of the statement. A session writing straight to a table of an
+-- establishment it is not a member of is left to RLS (42501): this never
+-- tells it whether that professional was deleted, nor locks a row of another
+-- establishment. Inside the security definer functions (the public booking,
+-- the my_* functions, the owner's) the role is their owner, so the check
+-- always runs there. A session reaches the barbers of its own
+-- establishments by RLS, with the column grants it already has (deleted_at,
+-- and update on some columns, which FOR KEY SHARE asks for).
 create function private.refuse_deleted_barber()
 returns trigger
 language plpgsql
-security definer
+security invoker
 set search_path = ''
 as $$
 declare
   deleted timestamptz;
 begin
   if new.barber_id is null then
+    return new;
+  end if;
+  if current_user in ('authenticated', 'anon')
+    and not (new.barbershop_id = any (private.member_barbershop_ids())) then
     return new;
   end if;
   -- Nested: a record of another table has no status to read.
@@ -388,14 +403,16 @@ revoke all on function private.refuse_deleted_barber() from public, anon, authen
 create trigger refuse_deleted_barber
   before insert or update of barber_id, status, starts_at, ends_at on public.appointments
   for each row execute function private.refuse_deleted_barber();
+-- Also an UPDATE that moves a row to another barber (review of 7.6c, point
+-- 1): sessions may update barber_services and barber_schedules by RLS.
 create trigger refuse_deleted_barber
-  before insert on public.time_blocks
+  before insert or update of barber_id on public.time_blocks
   for each row execute function private.refuse_deleted_barber();
 create trigger refuse_deleted_barber
-  before insert on public.barber_services
+  before insert or update of barber_id on public.barber_services
   for each row execute function private.refuse_deleted_barber();
 create trigger refuse_deleted_barber
-  before insert on public.barber_schedules
+  before insert or update of barber_id on public.barber_schedules
   for each row execute function private.refuse_deleted_barber();
 
 -- 5. Deleting works in every phase ---------------------------------------------------------------------
