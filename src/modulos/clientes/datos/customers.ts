@@ -55,14 +55,16 @@ export async function listCustomers(
   return { rows: rows.slice(0, LIST_LIMIT), more: rows.length > LIST_LIMIT };
 }
 
-// "128 clientes": every customer of the barbershop who was not deleted.
+// "128 clientes": every customer of the barbershop who was not deleted, as
+// the list shows them: without the walk-ins that have no name (task 7.7).
 export async function countCustomers(barbershopId: string): Promise<number> {
   const supabase = await createSupabaseServerClient();
   const { count, error } = await supabase
     .from("customers")
     .select("id", { count: "exact", head: true })
     .eq("barbershop_id", barbershopId)
-    .is("anonymized_at", null);
+    .is("anonymized_at", null)
+    .eq("walk_in", false);
   if (error) throw error;
   return count ?? 0;
 }

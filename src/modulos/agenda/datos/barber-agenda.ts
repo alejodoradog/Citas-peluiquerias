@@ -3,6 +3,7 @@ import { z } from "zod";
 import { addDays, type BogotaDate } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { BarberAgendaData } from "../dominio/barber-agenda";
+import type { AppointmentSource } from "../dominio/owner-agenda";
 import { toBarberRefusal, type BarberRefusal } from "./barber-errors";
 
 // "Mi agenda" of a professional (task 4.4), by their own session (task 7.6b;
@@ -40,7 +41,7 @@ const agendaSchema = z.object({
       startsAt: z.string(),
       endsAt: z.string(),
       status: z.enum(STATUSES),
-      source: z.enum(["web", "manual"]),
+      source: z.enum(["web", "manual", "walk_in"]),
       createdAt: z.string(),
       customerName: z.string(),
       services: z.array(z.string()),
@@ -100,7 +101,7 @@ export type BarberAppointmentDetail = {
   start: Date;
   end: Date;
   status: (typeof STATUSES)[number];
-  source: "web" | "manual";
+  source: AppointmentSource;
   createdAt: Date;
   customerName: string;
   services: { name: string; minutes: number }[];
@@ -117,7 +118,7 @@ type AppointmentRow = {
   starts_at: string;
   ends_at: string;
   status: (typeof STATUSES)[number];
-  source: "web" | "manual";
+  source: AppointmentSource;
   created_at: string;
   customer_name: string;
   customer_phone: string | null;

@@ -2,7 +2,11 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isId } from "@/modulos/barberias/dominio/service";
 import { bookingWindow } from "../dominio/availability";
-import type { AgendaData, AppointmentStatus } from "../dominio/owner-agenda";
+import type {
+  AgendaData,
+  AppointmentSource,
+  AppointmentStatus,
+} from "../dominio/owner-agenda";
 import { loadOwnerAgenda } from "./owner-agenda";
 import { toOwnerRefusal, type OwnerRefusal } from "./owner-appointment-errors";
 
@@ -21,7 +25,7 @@ export type OwnerService = {
 export type OwnerAppointmentDetail = {
   id: string;
   status: AppointmentStatus;
-  source: "web" | "manual";
+  source: AppointmentSource;
   createdAt: Date;
   start: Date;
   end: Date;
