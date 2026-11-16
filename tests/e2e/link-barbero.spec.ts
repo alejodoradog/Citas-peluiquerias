@@ -149,7 +149,9 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   await expect(page.getByText(l.nuevo.titulo)).toHaveCount(0);
   expect(await page.content()).not.toContain(first);
   // The HTML of the page itself, as the server sends it to this session.
-  const served = await page.request.get(`/panel/profesionales/${unsent.id}/link`);
+  const served = await page.request.get(
+    `/panel/profesionales/${unsent.id}/link`,
+  );
   const html = await served.text();
   expect(served.ok()).toBe(true);
   expect(html).toContain(l.titulo("Kevin"));
