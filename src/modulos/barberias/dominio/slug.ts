@@ -27,7 +27,7 @@ export const RESERVED_SLUGS = [
 
 const MAX_BASE_LENGTH = 50;
 const MIN_LENGTH = 3;
-const PADDING = "barberia";
+const PADDING = "citas";
 
 // The format the database checks (barbershops.slug): lowercase letters and
 // digits in words joined by single hyphens, 3 to 60 characters. Anything

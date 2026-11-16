@@ -13,7 +13,7 @@ const active = {
 describe("summarizeBarber", () => {
   it("sums up an active barber", () => {
     expect(summarizeBarber(active)).toBe(
-      "Horario de la barbería · 3 servicios · link activo",
+      "Horario del establecimiento · 3 servicios · link activo",
     );
   });
 
@@ -30,13 +30,13 @@ describe("summarizeBarber", () => {
 
   it("says when the link was never sent", () => {
     expect(summarizeBarber({ ...active, link_issued_at: null })).toBe(
-      "Horario de la barbería · 3 servicios · link sin enviar",
+      "Horario del establecimiento · 3 servicios · link sin enviar",
     );
   });
 
   it("tells the owner they have no link", () => {
     expect(summarizeBarber({ ...active, is_owner: true })).toBe(
-      "Horario de la barbería · 3 servicios · sin link (eres tú)",
+      "Horario del establecimiento · 3 servicios · sin link (eres tú)",
     );
   });
 
@@ -53,7 +53,7 @@ describe("summarizeBarber", () => {
 
 describe("summarizeBarberHours", () => {
   it("names the barbershop's hours", () => {
-    expect(summarizeBarberHours(true, [])).toBe("Horario de la barbería");
+    expect(summarizeBarberHours(true, [])).toBe("Horario del establecimiento");
   });
 
   it("sums up their own week", () => {
