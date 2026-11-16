@@ -42,9 +42,7 @@ function shopShiftsOf(shop: readonly WeeklyShift[], weekday: Weekday) {
 
 // Back on this screen after leaving it, the editor starts from what is
 // saved, not from a draft that was never saved (FreshOnReturn).
-export function ScheduleEditor(
-  props: ComponentProps<typeof ScheduleForm>,
-) {
+export function ScheduleEditor(props: ComponentProps<typeof ScheduleForm>) {
   return (
     <FreshOnReturn>
       <ScheduleForm {...props} />

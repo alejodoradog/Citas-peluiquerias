@@ -49,16 +49,16 @@ const hoursRow = (page: Page) =>
 
 // Kevin, with hours of his own: a copy of the barbershop's (Mon-Fri 9-20).
 async function addKevinWithOwnHours(page: Page) {
-  await page.goto("/panel/barberos/nuevo");
+  await page.goto("/panel/profesionales/nuevo");
   await expect(
     page.getByRole("heading", { level: 1, name: b.nuevo }),
   ).toBeVisible(FIRST_VISIT);
   await page.getByRole("textbox", { name: b.campos.nombre }).fill("Kevin");
   await page.getByRole("button", { name: b.guardar, exact: true }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await page.getByRole("link", { name: /^Kevin\b/ }).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   await page
@@ -73,7 +73,7 @@ async function addKevinWithOwnHours(page: Page) {
     .uncheck({ force: true });
   await page.getByRole("button", { name: h.guardar }).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
 }
@@ -144,7 +144,7 @@ test("an owner changes the barbershop's hours and sees who falls outside", async
   const kevinLink = page.getByRole("link", { name: h.titulo("Kevin") });
   await expect(kevinLink).toHaveAttribute(
     "href",
-    /\/panel\/barberos\/[0-9a-f-]{36}\/horario$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}\/horario$/,
   );
   await checkScreen(page);
 

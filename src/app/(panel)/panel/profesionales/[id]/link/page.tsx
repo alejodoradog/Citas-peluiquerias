@@ -26,7 +26,7 @@ export const metadata: Metadata = { title: t.tituloCargando };
 // keeps its hash, and a new one travels only in the answer to the tap.
 export default function BarberLinkPage({
   params,
-}: PageProps<"/panel/barberos/[id]/link">) {
+}: PageProps<"/panel/profesionales/[id]/link">) {
   return (
     <Suspense fallback={<LinkLoading />}>
       <BarberLink params={params} />

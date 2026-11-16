@@ -97,7 +97,7 @@ describe("BarberEditor", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: textos.ui.cerrar }),
-    ).toHaveAttribute("href", "/panel/barberos");
+    ).toHaveAttribute("href", "/panel/profesionales");
 
     // Email notices need an email first.
     const notices = screen.getByRole("switch", { name: t.avisos });
@@ -131,7 +131,7 @@ describe("BarberEditor", () => {
     expect(screen.getByText(t.linkActivoChip)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: new RegExp(`^${t.horario}`) }),
-    ).toHaveAttribute("href", `/panel/barberos/${kevin.id}/horario`);
+    ).toHaveAttribute("href", `/panel/profesionales/${kevin.id}/horario`);
     expect(
       screen.getByText("Lun a sáb 9:00 a. m. – 6:00 p. m."),
     ).toBeInTheDocument();
@@ -260,7 +260,10 @@ describe("BarberEditor", () => {
     const row = screen.getByRole("link", {
       name: new RegExp(`^${t.linkPrivado}`),
     });
-    expect(row).toHaveAttribute("href", `/panel/barberos/${kevin.id}/link`);
+    expect(row).toHaveAttribute(
+      "href",
+      `/panel/profesionales/${kevin.id}/link`,
+    );
     expect(row).toHaveTextContent(t.linkEnviado("3 de noviembre"));
     expect(row).toHaveTextContent(t.linkActivoChip);
   });

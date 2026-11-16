@@ -120,7 +120,7 @@ describe("bookAppointment", () => {
     expect(sent.manageTokenHash).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(sent)).not.toContain("token-en-claro");
     expect(result).toEqual({
-      redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&barbero=${BARBER}&dia=2026-11-24&hora=10%3A30`,
+      redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&profesional=${BARBER}&dia=2026-11-24&hora=10%3A30`,
     });
   });
 
@@ -200,7 +200,7 @@ describe("bookAppointment", () => {
       phone: null,
     });
     expect(result).toEqual({
-      redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&barbero=${BARBER}&dia=2026-11-24&hora=10%3A30&asignado=1`,
+      redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&profesional=${BARBER}&dia=2026-11-24&hora=10%3A30&asignado=1`,
     });
   });
 
@@ -225,7 +225,7 @@ describe("bookAppointment", () => {
       error: { code: "P0001", hint: "slot_taken" },
     });
     expect(await run(form(VALID))).toEqual({
-      redirectedTo: `/la-esquina/reservar?servicios=${SERVICE}&barbero=${BARBER}&dia=2026-11-24&paso=hora&tomada=10%3A30`,
+      redirectedTo: `/la-esquina/reservar?servicios=${SERVICE}&profesional=${BARBER}&dia=2026-11-24&paso=hora&tomada=10%3A30`,
     });
   });
 

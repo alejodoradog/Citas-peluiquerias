@@ -76,7 +76,7 @@ describe("saveShopHours", () => {
       expect.arrayContaining([
         "/panel/mas",
         "/panel/horario",
-        "/panel/barberos",
+        "/panel/profesionales",
       ]),
     );
     // Literal paths only: a route pattern without the (panel) group matches

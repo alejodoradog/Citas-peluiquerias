@@ -52,12 +52,12 @@ const day = (page: Page, name: string) => page.getByRole("group", { name });
 async function openSchedule(page: Page) {
   await barberRow(page, "Kevin").click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   await hoursRow(page).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}\/horario$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}\/horario$/,
     FIRST_VISIT,
   );
   await expect(
@@ -68,7 +68,7 @@ async function openSchedule(page: Page) {
 async function saveSchedule(page: Page) {
   await page.getByRole("button", { name: h.guardar }).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   await expect(
@@ -78,7 +78,7 @@ async function saveSchedule(page: Page) {
 
 async function backToTeam(page: Page) {
   await page.getByRole("link", { name: textos.ui.cerrar }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
 }
 
 test("an owner gives a barber their own hours and puts them back on the barbershop's", async ({
@@ -89,13 +89,13 @@ test("an owner gives a barber their own hours and puts them back on the barbersh
   await signInSetUpOwner(page);
 
   // A new barber "Kevin", on the barbershop's hours.
-  await page.goto("/panel/barberos/nuevo");
+  await page.goto("/panel/profesionales/nuevo");
   await expect(
     page.getByRole("heading", { level: 1, name: t.nuevo }),
   ).toBeVisible(FIRST_VISIT);
   await page.getByRole("textbox", { name: t.campos.nombre }).fill("Kevin");
   await page.getByRole("button", { name: t.guardar, exact: true }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await expect(barberRow(page, "Kevin")).toContainText(t.horarioBarberia);
 
   // D-54 → D-55: the barbershop's hours, summarized under the switch.
@@ -191,7 +191,7 @@ test("a schedule link that leads nowhere is not found", async ({ page }) => {
   test.setTimeout(90_000);
   await signInSetUpOwner(page);
   for (const id of ["no-existe", "00000000-0000-0000-0000-000000000000"]) {
-    await page.goto(`/panel/barberos/${id}/horario`);
+    await page.goto(`/panel/profesionales/${id}/horario`);
     await expect(
       page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
     ).toBeVisible(FIRST_VISIT);

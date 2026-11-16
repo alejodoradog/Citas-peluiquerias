@@ -23,7 +23,7 @@ export function refreshPublicProfile(barbershopId: string): void {
 // (server-action-reducer: invalidateBfCache and invalidateEntirePrefetchCache).
 // So each action names the literal paths whose screens show what changed,
 // and nothing broader. A route pattern inside the (panel) group must carry
-// the group ("/(panel)/panel/barberos/[id]"); without it, it matches no page.
+// the group ("/(panel)/panel/profesionales/[id]"); without it, it matches no page.
 
 // For data that must stop being served at once (a deleted barbershop: its
 // WhatsApp, deposit account and images, Ley 1581). Server Actions only.

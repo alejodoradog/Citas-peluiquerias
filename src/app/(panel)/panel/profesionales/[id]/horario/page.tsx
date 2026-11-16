@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: t.tituloCargando };
 // barber of another barbershop, is "not found", as in D-54.
 export default function BarberSchedulePage({
   params,
-}: PageProps<"/panel/barberos/[id]/horario">) {
+}: PageProps<"/panel/profesionales/[id]/horario">) {
   return (
     <Suspense fallback={<ScheduleLoading />}>
       <BarberSchedule params={params} />

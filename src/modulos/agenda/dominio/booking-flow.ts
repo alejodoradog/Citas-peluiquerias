@@ -11,7 +11,7 @@ import { MAX_SERVICES_PER_BOOKING } from "./booking";
 
 // The public booking flow (tasks 3.2 and 3.3, C-02 to C-07). Its state lives
 // in the URL, so "atrás" works and a link can be shared:
-// /<slug>/reservar?servicios=<id>&servicios=<id>&barbero=<id|primero>
+// /<slug>/reservar?servicios=<id>&servicios=<id>&profesional=<id|primero>
 //   &dia=2026-11-24&hora=10:30&paso=datos
 // The day and the time are chosen in the browser, with no request, and reach
 // the URL when the customer continues to the details.
@@ -20,7 +20,13 @@ import { MAX_SERVICES_PER_BOOKING } from "./booking";
 
 export const FIRST_AVAILABLE = "primero";
 
-export const BOOKING_STEPS = ["servicios", "barbero", "hora", "datos"] as const;
+// "profesional" was "barbero" until task 7.1b; the old word is still read.
+export const BOOKING_STEPS = [
+  "servicios",
+  "profesional",
+  "hora",
+  "datos",
+] as const;
 export type BookingStep = (typeof BOOKING_STEPS)[number];
 
 export type BookingSelection = {
@@ -62,7 +68,8 @@ export function readBookingParams(params: SearchParams): BookingSelection {
   const serviceIds = [
     ...new Set(all(params.servicios).map((id) => id.toLowerCase())),
   ].filter(isUuid);
-  const barberParam = one(params.barbero)?.toLowerCase() ?? null;
+  const barberParam =
+    (one(params.profesional) ?? one(params.barbero))?.toLowerCase() ?? null;
   const barber =
     barberParam === FIRST_AVAILABLE ||
     (barberParam !== null && isUuid(barberParam))
@@ -80,11 +87,12 @@ export function readBookingParams(params: SearchParams): BookingSelection {
     services.length === 0
       ? "servicios"
       : barber === null
-        ? "barbero"
+        ? "profesional"
         : chosenTime === null
           ? "hora"
           : "datos";
-  const asked = one(params.paso);
+  const askedStep = one(params.paso);
+  const asked = askedStep === "barbero" ? "profesional" : askedStep;
   const askedIndex = BOOKING_STEPS.indexOf(asked as BookingStep);
   const step =
     askedIndex >= 0 && askedIndex < BOOKING_STEPS.indexOf(reached)
@@ -113,7 +121,7 @@ export function bookingQuery(selection: {
 }): string {
   const query = new URLSearchParams();
   for (const id of selection.serviceIds ?? []) query.append("servicios", id);
-  if (selection.barber) query.set("barbero", selection.barber);
+  if (selection.barber) query.set("profesional", selection.barber);
   if (selection.date) query.set("dia", selection.date);
   if (selection.time) query.set("hora", selection.time);
   if (selection.step) query.set("paso", selection.step);

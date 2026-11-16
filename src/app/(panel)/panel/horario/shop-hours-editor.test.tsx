@@ -152,10 +152,10 @@ describe("ShopHoursEditor", () => {
     expect(t.fuera(["Kevin"])).toBe("Kevin tiene horas fuera de este horario");
     expect(
       screen.getByRole("link", { name: h.titulo("Kevin") }),
-    ).toHaveAttribute("href", "/panel/barberos/k/horario");
+    ).toHaveAttribute("href", "/panel/profesionales/k/horario");
     expect(screen.getByRole("link", { name: h.titulo("Ana") })).toHaveAttribute(
       "href",
-      "/panel/barberos/a/horario",
+      "/panel/profesionales/a/horario",
     );
   });
 

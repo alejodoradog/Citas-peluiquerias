@@ -59,7 +59,7 @@ describe("ScheduleEditor", () => {
     expect(sentShifts()).toEqual([]);
     expect(
       screen.getByRole("link", { name: textos.ui.volver }),
-    ).toHaveAttribute("href", `/panel/barberos/${kevin.id}`);
+    ).toHaveAttribute("href", `/panel/profesionales/${kevin.id}`);
     expect(screen.getByRole("button", { name: t.guardar })).toBeEnabled();
   });
 
