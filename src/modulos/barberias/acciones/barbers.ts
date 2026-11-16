@@ -8,9 +8,15 @@ import {
   type ImageUploadTicket as UploadTicket,
 } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
+import {
+  accountToDelete,
+  barberOfShop,
+  deleteAuthAccount,
+} from "@/modulos/cuentas/datos/professional-access";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import {
   clearBarberPhoto,
+  deleteBarberRow,
   getBarber,
   insertBarber,
   listActiveServiceOptions,
@@ -256,7 +262,7 @@ export async function updateBarber(
 }
 
 // D-54, "Desactivar a …" (after its confirmation) and "Volver a activar a …".
-// Deactivating keeps the barber's appointments and link (decision 6). The
+// Deactivating keeps the barber's appointments and account (decision 6). The
 // owner's own barber is not deactivated from here.
 export async function setBarberActive(
   barberId: string,
@@ -295,4 +301,66 @@ export async function removeBarberPhoto(
   }
   revalidateTeam(barber.id);
   return { ok: true };
+}
+
+// Why "Eliminar profesional" did not finish:
+// - has_upcoming_appointments: they still have appointments to come
+//   (`upcoming` says how many); the owner moves or cancels them first;
+// - barber_is_owner: the owner who attends is not deleted;
+// - barber_not_found: not a professional of the owner's active barbershop;
+// - account_not_deleted: the professional is deleted, but Auth did not
+//   delete their account; trying again finishes it.
+export type DeleteBarberRefusal =
+  | "has_upcoming_appointments"
+  | "barber_is_owner"
+  | "barber_not_found"
+  | "account_not_deleted"
+  | "unknown";
+
+export type DeleteBarberResult =
+  | { ok: true }
+  | { ok: false; error: DeleteBarberRefusal; upcoming?: number };
+
+// At most the accounts a professional can leave in Auth: the joined one, a
+// revoked one and the orphan of an invitation.
+const MOST_ACCOUNTS = 3;
+
+// D-54, "Eliminar a …" (task 7.6c, decision 0010 point 7), after its
+// confirmation. The id comes from the browser, so it is only a question: the
+// professional must be of the owner's active barbershop (RLS), and
+// delete_barber checks again that the owner reaches them, refuses while they
+// have appointments to come, and leaves the row as "Profesional eliminado"
+// in one transaction. Then, as "Quitar acceso" does, the service key deletes
+// in Auth only the accounts barber_account_to_delete hands over, one at a
+// time, and the photo the database cleared goes from Storage. A second tap or
+// a retry finds the professional already deleted and only finishes that.
+export async function deleteBarber(
+  barberId: string,
+): Promise<DeleteBarberResult> {
+  const { barbershop } = await requireOwner();
+  const barber = isId(barberId)
+    ? await barberOfShop(barbershop.id, barberId)
+    : null;
+  if (!barber) return { ok: false, error: "barber_not_found" };
+
+  const deleted = await deleteBarberRow(barber.id);
+  if (!deleted.ok && deleted.code !== "barber_deleted") {
+    return deleted.code === "has_upcoming_appointments"
+      ? { ok: false, error: deleted.code, upcoming: deleted.upcoming }
+      : { ok: false, error: deleted.code };
+  }
+  if (deleted.ok && deleted.photoPath) {
+    await removeImages([deleted.photoPath]);
+  }
+
+  for (let round = 0; round < MOST_ACCOUNTS; round += 1) {
+    const stale = await accountToDelete(barber.id);
+    if (stale === null) break;
+    if (!(await deleteAuthAccount(stale))) {
+      revalidateTeam(barber.id);
+      return { ok: false, error: "account_not_deleted" };
+    }
+  }
+  revalidateTeam(barber.id);
+  redirect(routes.panelBarbers);
 }

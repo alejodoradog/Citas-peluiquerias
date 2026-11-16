@@ -8,6 +8,7 @@ import {
 } from "@/lib/fechas/fechas";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import {
+  deleteBarber,
   removeBarberPhoto,
   setBarberActive,
   updateBarber,
@@ -17,10 +18,10 @@ import {
   requestImageUpload,
 } from "@/modulos/barberias/acciones/images";
 import {
+  countUpcomingAppointments,
   getBarber,
   listActiveServiceOptions,
 } from "@/modulos/barberias/datos/barbers";
-import { barberLinkState } from "@/modulos/barberias/dominio/barber-link";
 import {
   inviteProfessional,
   revokeProfessionalAccess,
@@ -39,7 +40,8 @@ const t = textos.barberos;
 export const metadata: Metadata = { title: t.editar };
 
 // D-54 for an existing barber. The id comes from the URL: one that is not an
-// id, or a barber of another barbershop, is "not found".
+// id, a barber of another barbershop or a deleted one (task 7.6c) is "not
+// found".
 export default function EditBarberPage({
   params,
 }: PageProps<"/panel/profesionales/[id]">) {
@@ -55,11 +57,13 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
     params,
     requireReadyOwner(),
   ]);
-  const [barber, services, account] = await Promise.all([
+  const [barber, services, account, upcoming] = await Promise.all([
     getBarber(barbershop.id, id),
     listActiveServiceOptions(barbershop.id),
     // Task 7.6b. The database answers only for the owner's own professional.
     readAccountStatus(id),
+    // Task 7.6c: "Eliminar" explains them before the owner taps.
+    countUpcomingAppointments(barbershop.id, id),
   ]);
   if (!barber) notFound();
   const view = account
@@ -93,14 +97,6 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
         serviceIds: barber.service_ids,
         active: barber.active,
         isOwner: barber.is_owner,
-        linkState: barberLinkState({
-          isOwner: barber.is_owner,
-          linkActive: barber.link_active,
-          linkIssuedAt: barber.link_issued_at,
-        }),
-        linkSentOn: barber.link_issued_at
-          ? formatBogotaDayMonth(new Date(barber.link_issued_at))
-          : null,
         inactiveSince: barber.deactivated_at
           ? formatBogotaDayMonth(new Date(barber.deactivated_at))
           : null,
@@ -122,6 +118,9 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
               revoke: revokeProfessionalAccess,
             }
           : undefined
+      }
+      remove={
+        barber.is_owner ? undefined : { upcoming, action: deleteBarber }
       }
     />
   );

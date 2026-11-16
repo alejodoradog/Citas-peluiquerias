@@ -119,3 +119,22 @@ Con la plantilla `invite.html` pegada en Supabase (Emails › Invite user), una 
 - [ ] **16. Quitar acceso.** Tocar "Quitar acceso", confirmar: dice "Acceso quitado". En el celular del profesional, recargar: vuelve a ingresar y su contraseña ya no sirve.
 - [ ] **17. Volver a invitar.** Tocar "Invitar" con el mismo correo: llega una invitación nueva y funciona.
 - [ ] **18. El link privado sigue igual.** El link `/b/…` de otro profesional sigue mostrando su agenda, sin WhatsApp (se quita en la 7.6c).
+
+## Tarea 7.6c: eliminar un profesional y quitar el link privado
+Con la cuenta de dueño y dos profesionales con cuenta (de la 7.6b). Desde dos celulares: el del dueño y el de un profesional.
+
+- [ ] **1. La lista dice el acceso.** En Más › Profesionales, cada profesional dice al final "sin correo", "sin invitar", "invitado", "invitación vencida", "con acceso" o "sin acceso". El dueño que atiende no dice nada de eso. Ya no aparece "link" en la lista.
+- [ ] **2. La ficha sin link.** En la ficha ya no está la fila "Link privado". El texto del correo dice que sirve para invitarlo.
+- [ ] **3. Dirección vieja de la ficha.** Abrir `/panel/profesionales/<id>/link` (cambia `<id>` por el de un profesional): abre su ficha.
+- [ ] **4. Link viejo del profesional.** Abrir `www.yapoin.com/b/cualquier-cosa`: dice "Este link ya no funciona", que ahora entra con su cuenta, y el botón "Ingresar" lleva a `/ingresar`.
+- [ ] **5. Textos.** La agenda vacía dice "Invita a tus profesionales a ver su agenda". El paso "Tu equipo" del asistente dice que después los invitas desde Más › Profesionales. Nada habla de un link privado.
+- [ ] **6. No se elimina con citas por venir.** A un profesional con una cita mañana, tocar "Eliminar a …": la hoja dice cuántas citas tiene y que las pases o canceles; no hay botón para eliminar.
+- [ ] **7. Qué se borra y qué queda.** Cancelar o mover esa cita y volver a "Eliminar a …": la hoja dice qué se borra (nombre, correo, foto, cuenta, servicios, horario, bloqueos por venir) y qué queda (citas pasadas, cierre, historial). "Cancelar" no hace nada.
+- [ ] **8. Eliminar.** Tocar "Sí, eliminar": vuelve a Profesionales y ya no está. Más cuenta un profesional activo menos.
+- [ ] **9. Su sesión termina.** En el celular del profesional eliminado, recargar "Mi agenda": lo manda a ingresar, y su contraseña ya no sirve.
+- [ ] **10. Su foto.** Si tenía foto, en Supabase › Storage ya no está el archivo.
+- [ ] **11. El historial cuadra.** En la agenda de un día pasado donde tenía citas, salen a nombre de "Profesional eliminado". El cierre de ese día da los mismos totales que antes. En Clientes, las visitas del cliente siguen contando.
+- [ ] **12. No aparece donde no debe.** La página de reservas, "Nueva cita" del dueño y la agenda de mañana no lo muestran.
+- [ ] **13. El plan.** Con el plan 1 lleno (4 activos), eliminar a uno y agregar otro: deja. El eliminado no cuenta.
+- [ ] **14. El dueño no se elimina.** En la ficha del dueño que atiende no está "Eliminar".
+- [ ] **15. Pausado.** Con el establecimiento pausado, eliminar a un profesional sin citas por venir también funciona.

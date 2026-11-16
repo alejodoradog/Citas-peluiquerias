@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { formatWallClock } from "@/lib/fechas/fechas";
+import { myAgendaHref } from "@/lib/routes";
 import type { BarberWeekDay } from "@/modulos/agenda/dominio/barber-agenda";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
-import { agendaHref, type AgendaEntry } from "./entry";
 import { weekDayLabel, weekTitle } from "./labels";
 
 const t = textos.barbero;
@@ -19,13 +19,11 @@ function wall(time: string): string {
 // The arrows go a week back or ahead within the days the barber can open
 // (decision B5); the design has one week and no arrows.
 export function WeekList({
-  entry,
   days,
   canOpen,
   previous,
   next,
 }: {
-  entry: AgendaEntry;
   days: readonly BarberWeekDay[];
   canOpen: (date: string) => boolean;
   previous: string | null;
@@ -41,7 +39,7 @@ export function WeekList({
         </h2>
         {previous ? (
           <Link
-            href={agendaHref(entry, { vista: "semana", dia: previous })}
+            href={myAgendaHref({ vista: "semana", dia: previous })}
             aria-label={a.anterior.semana}
             className={arrow}
           >
@@ -50,7 +48,7 @@ export function WeekList({
         ) : null}
         {next ? (
           <Link
-            href={agendaHref(entry, { vista: "semana", dia: next })}
+            href={myAgendaHref({ vista: "semana", dia: next })}
             aria-label={a.siguiente.semana}
             className={arrow}
           >
@@ -88,7 +86,7 @@ export function WeekList({
                   B-02 draws it: no chevron. */}
               {canOpen(day.date) && (day.hours || day.count > 0) ? (
                 <Link
-                  href={agendaHref(entry, { dia: day.date })}
+                  href={myAgendaHref({ dia: day.date })}
                   className={`${row} no-underline`}
                 >
                   {content}

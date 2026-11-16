@@ -12,9 +12,9 @@ import {
 // The accounts of professionals, from the owner's side (task 7.6b, decision
 // 0010). Every question goes first to the database with the owner's own
 // session, which checks that the professional is theirs (owner_reaches):
-// invite_barber, revoke_barber_account, barber_account_status and
-// barber_account_to_delete (migrations add_professional_accounts and
-// add_professional_account_app).
+// invite_barber, revoke_barber_account, barber_account_status(es) and
+// barber_account_to_delete (migrations add_professional_accounts,
+// add_professional_account_app and remove_barber_link_add_barber_deletion).
 //
 // The service key is used in exactly two places, and only with what the
 // database answered to the owner's session, never with anything the browser
@@ -49,6 +49,31 @@ export async function readAccountStatus(
     sentAt: row.sent_at ? new Date(row.sent_at) : null,
     expiresAt: row.expires_at ? new Date(row.expires_at) : null,
   };
+}
+
+// The state of the access of every professional of the barbershop who can
+// have an account (not the owner who attends, not a deleted one), in one
+// call (barber_account_states, task 7.6c), for the owner's list. Empty when
+// the barbershop is not the owner's, or the database could not answer: the
+// list then shows no state rather than failing.
+export async function readAccountStates(
+  barbershopId: string,
+): Promise<Map<string, AccountStatus>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("barber_account_states", {
+    p_barbershop_id: barbershopId,
+  });
+  const states = new Map<string, AccountStatus>();
+  if (error || !data) return states;
+  for (const row of data) {
+    if (!STATES.has(row.state)) continue;
+    states.set(row.barber_id, {
+      state: row.state as AccountState,
+      sentAt: row.sent_at ? new Date(row.sent_at) : null,
+      expiresAt: row.expires_at ? new Date(row.expires_at) : null,
+    });
+  }
+  return states;
 }
 
 export type InviteStatus =

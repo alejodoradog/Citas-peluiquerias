@@ -34,7 +34,7 @@ import type { ClosureActionErrorCode } from "@/modulos/barberias/acciones/holida
 import type { HolidayKey } from "@/lib/fechas/festivos";
 import type { SetupErrorCode as SetupActionErrorCode } from "@/modulos/barberias/acciones/setup";
 import type { BarberErrorCode } from "@/modulos/barberias/dominio/barber";
-import type { BarberLinkErrorCode } from "@/modulos/barberias/dominio/barber-link";
+import type { DeleteBarberRefusal } from "@/modulos/barberias/acciones/barbers";
 import type { ServiceErrorCode } from "@/modulos/barberias/dominio/service";
 import type { AccountErrorCode } from "@/modulos/cuentas/acciones/account";
 import type { AccessRefusal } from "@/modulos/cuentas/dominio/professional-access";
@@ -429,8 +429,9 @@ export const textos = {
         boton: "Compartir mi link",
       },
       barberos: {
-        titulo: "Envía a tus profesionales su link privado",
-        cuerpo: "Así ven su agenda y marcan las citas desde su celular.",
+        titulo: "Invita a tus profesionales a ver su agenda",
+        cuerpo:
+          "Cada uno entra con su propia cuenta y marca sus citas desde el celular.",
         boton: "Ir a profesionales",
       },
       manual: {
@@ -884,7 +885,7 @@ export const textos = {
       paso: "Paso 4 de 4",
       titulo: "¿Quiénes atienden en tu establecimiento?",
       bajada:
-        "Cada profesional recibe un link privado para ver su agenda. No necesita cuenta ni contraseña.",
+        "Después, desde Más › Profesionales, invitas a cada uno a ver su agenda con su propia cuenta.",
       yoCorto: "Yo también atiendo",
       yoCortoAyuda: "Tu agenda aparece junto a la de los demás.",
       tu: "Tú",
@@ -909,7 +910,7 @@ export const textos = {
       ayudas: {
         nombre: "Así lo ven tus clientes al reservar.",
         correo:
-          "Para enviarle su link y, si quieres, avisarle de cada reserva.",
+          "Para invitarlo a ver su agenda desde su cuenta y, si quieres, avisarle de cada reserva.",
       },
       servicios: "Servicios que hace",
       horario: "Horario",
@@ -1058,11 +1059,17 @@ export const textos = {
     horarioPropio: "Horario propio",
     conteoServicios: (total: number) =>
       `${total} ${total === 1 ? "servicio" : "servicios"}`,
-    // After the separator of D-53, in lowercase as in the design.
-    linkActivo: "link activo",
-    linkSinEnviar: "link sin enviar",
-    linkDesactivado: "link desactivado",
-    sinLink: "sin link (eres tú)",
+    // After the separator of D-53, in lowercase as in the design: the state
+    // of the access to their agenda (task 7.6c, decision 0010).
+    accesoLista: {
+      no_email: "sin correo",
+      inactive: "sin acceso",
+      not_invited: "sin invitar",
+      invited: "invitado",
+      expired: "invitación vencida",
+      active: "con acceso",
+      revoked: "sin acceso",
+    },
     seFue: (fecha: string) => `Se fue el ${fecha}`,
     // Between the parts of a barber's line in D-53.
     separador: " · ",
@@ -1096,33 +1103,26 @@ export const textos = {
     campos: { nombre: "Nombre visible", correo: "Correo" },
     ayudas: {
       nombre: "Así lo ven tus clientes al reservar.",
-      correo: "Para enviarle su link y, si quieres, avisarle de cada reserva.",
+      correo:
+        "Para invitarlo a ver su agenda desde su cuenta y, si quieres, avisarle de cada reserva.",
     },
     avisos: "Avisos por correo",
     avisosAyuda:
       "Le llega un correo con cada nueva reserva o cancelación. El de la reserva trae el celular del cliente, para escribirle.",
     avisosSinCorreo: "Escribe su correo arriba para poder activarlos.",
     horario: "Horario",
-    linkPrivado: "Link privado",
-    linkNuevo: "Lo creamos al guardar.",
-    linkDueno: "No lo necesitas: ves toda la agenda desde tu cuenta.",
-    linkActivoChip: "Activo",
-    linkSinEnviarChip: "Sin enviar",
-    linkDesactivadoChip: "Desactivado",
-    linkEnviado: (fecha: string) => `Enviado el ${fecha}`,
-    linkSinEnviarAyuda: "Aún no se lo has enviado",
     servicios: "Servicios que hace",
     sinServicios:
       "Aún no tienes servicios activos. Los agregas en Más › Servicios.",
-    // Decision 6 of task 2.2: deactivating a barber does not turn off their
-    // link (spec), unlike the copy of the design.
+    // Decision 6 of task 2.2: deactivating keeps the access to their agenda
+    // (decision 10 of task 7.6a); "Quitar acceso" takes it away.
     desactivar: (nombre: string) => `Desactivar a ${nombre}`,
     desactivarAyuda:
-      "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y su link sigue funcionando.",
+      "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y, si tiene acceso, las sigue viendo en su agenda.",
     confirmar: {
       titulo: (nombre: string) => `¿Desactivar a ${nombre}?`,
       cuerpo:
-        "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y con su link las sigue atendiendo. Puedes volver a activarlo cuando quieras.",
+        "Deja de aparecer al reservar y no recibe citas nuevas. Sus citas ya tomadas se conservan y, si tiene acceso, las sigue atendiendo desde su agenda. Puedes volver a activarlo cuando quieras.",
       si: (nombre: string) => `Sí, desactivar a ${nombre}`,
       desactivando: "Desactivando…",
       no: "Cancelar",
@@ -1131,6 +1131,37 @@ export const textos = {
     inactivoDetalle: "No aparece al reservar ni recibe citas nuevas.",
     reactivar: (nombre: string) => `Volver a activar a ${nombre}`,
     reactivando: "Activando…",
+    // "Eliminar profesional" (task 7.6c, decision 0010 point 7).
+    eliminar: {
+      boton: (nombre: string) => `Eliminar a ${nombre}`,
+      ayuda:
+        "Borra sus datos y su cuenta para siempre. Sus citas pasadas se quedan como «Profesional eliminado».",
+      titulo: (nombre: string) => `¿Eliminar a ${nombre}?`,
+      borra:
+        "Se borran su nombre, su correo, su foto, su cuenta de ingreso, sus servicios, su horario y sus bloqueos por venir.",
+      queda:
+        "Sus citas pasadas, el cierre de esos días y el historial de tus clientes se quedan, a nombre de «Profesional eliminado».",
+      sinVuelta: "No se puede deshacer. Si solo se va por un tiempo, desactívalo.",
+      conCitas: (citas: number) =>
+        citas === 1
+          ? "Tiene 1 cita por venir. Pásala a otro profesional o cancélala desde la agenda, y vuelve a intentarlo."
+          : `Tiene ${citas} citas por venir. Pásalas a otro profesional o cancélalas desde la agenda, y vuelve a intentarlo.`,
+      si: "Sí, eliminar",
+      eliminando: "Eliminando…",
+      reintentar: "Reintentar",
+      no: "Cancelar",
+      entendido: "Entendido",
+      errores: {
+        has_upcoming_appointments:
+          "Tiene citas por venir. Pásalas a otro profesional o cancélalas, y vuelve a intentarlo.",
+        barber_is_owner: "Tu propia agenda no se elimina desde aquí.",
+        barber_not_found:
+          "No encontramos a este profesional. Vuelve a Profesionales e intenta de nuevo.",
+        account_not_deleted:
+          "Lo eliminamos, pero no pudimos borrar su cuenta de ingreso. Toca Reintentar.",
+        unknown: "No pudimos eliminarlo. Intenta de nuevo.",
+      } satisfies Record<DeleteBarberRefusal, string>,
+    },
     // "Acceso a su agenda" (task 7.6b, decision 0010): the professional's
     // own account, by invitation.
     acceso: {
@@ -1215,75 +1246,6 @@ export const textos = {
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberActionErrorCode | "invalid", string>,
-    // D-56, a barber's private link (task 2.3). There is no "Enviar a …"
-    // button until emails arrive (task 5.2): "Compartir" opens WhatsApp or
-    // the email app of the phone.
-    link: {
-      titulo: (nombre: string) => `Link privado de ${nombre}`,
-      tituloCargando: "Link privado",
-      estadoDesactivado: "Link desactivado",
-      cargando: "Cargando el link…",
-      alcance: (nombre: string) =>
-        `Con este link ${nombre} ve su agenda del día y la semana, marca citas y bloquea sus horas. No ve totales, reportes ni a los demás profesionales.`,
-      // An inactive barber takes no new blocks (spec).
-      alcanceInactivo: (nombre: string) =>
-        `Con este link ${nombre} ve su agenda del día y la semana y marca las citas que ya tenía. No ve totales, reportes ni a los demás profesionales.`,
-      reemplaza: {
-        titulo: "Cada link nuevo reemplaza al anterior",
-        cuerpo:
-          "El anterior deja de funcionar. Guardamos el link de forma segura y no lo podemos volver a mostrar.",
-      },
-      inactivo: {
-        titulo: "Con su link solo atiende las citas que ya tenía",
-        cuerpo: "Está inactivo: no aparece al reservar ni recibe citas nuevas.",
-      },
-      desactivado: {
-        titulo: (nombre: string) => `${nombre} no puede entrar`,
-        cuerpo:
-          "Su link está desactivado. Crea uno nuevo y envíaselo cuando vuelva a necesitarlo.",
-      },
-      copiarNuevo: "Copiar link nuevo",
-      crearNuevo: "Crear link nuevo",
-      creando: "Creando el link…",
-      desactivar: "Desactivar link",
-      desactivarAyuda: (nombre: string) =>
-        `Úsalo si ${nombre} perdió el celular o se fue. Deja de funcionar al instante.`,
-      // Right after a new link: the only time it is shown.
-      nuevo: {
-        etiqueta: "Link nuevo",
-        titulo: "Este link solo se muestra ahora",
-        cuerpo: (nombre: string) =>
-          `Envíaselo a ${nombre} ya. Si sales de esta pantalla, tendrás que crear otro.`,
-        copiado: "Copiamos el link. Pégalo en el chat o en el correo.",
-        copiarOtraVez: "Copiar otra vez",
-        compartir: "Compartir",
-        compartirTitulo: "Tu agenda en Yapoin",
-        compartirTexto: (nombre: string) =>
-          `Hola, ${nombre}. Con este link ves tu agenda en Yapoin. No se lo pases a nadie.`,
-      },
-      confirmarNuevo: {
-        titulo: "¿Crear un link nuevo?",
-        cuerpo: (nombre: string) =>
-          `${nombre} deja de entrar con el que tiene. Tendrás que enviarle el nuevo.`,
-        si: "Sí, crear link nuevo",
-        no: "Cancelar",
-      },
-      confirmarDesactivar: {
-        titulo: (nombre: string) => `¿Desactivar el link de ${nombre}?`,
-        cuerpo: (nombre: string) =>
-          `${nombre} deja de entrar a su agenda al instante. Para que vuelva a entrar tendrás que crearle un link nuevo.`,
-        si: "Sí, desactivar link",
-        desactivando: "Desactivando…",
-        no: "Cancelar",
-      },
-      errores: {
-        owner_has_no_link:
-          "Tú no necesitas link: ves toda la agenda desde tu cuenta.",
-        not_found:
-          "No encontramos a este profesional. Vuelve a Profesionales e intenta de nuevo.",
-        unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
-      } satisfies Record<BarberLinkErrorCode, string>,
-    },
   },
   // D-55, a barber's own hours (decision 8 of task 2.2).
   horario: {
@@ -2157,7 +2119,6 @@ export const textos = {
     quitando: "Quitando…",
     quitarDe: (bloqueo: string) => `Quitar, ${bloqueo}`,
     bloquearHoras: "Bloquear horas",
-    soloTuyo: "Este link es solo tuyo. No lo compartas.",
     // B-02.
     descansas: "Descansas",
     horario: (desde: string, hasta: string) => `${desde} – ${hasta}`,
@@ -2212,14 +2173,16 @@ export const textos = {
       enviar: "Bloquear",
       enviando: "Bloqueando…",
     },
-    // B-05.
-    vencido: {
+    // An old address of the private link (/b/…), gone with task 7.6c.
+    linkViejo: {
       titulo: "Este link ya no funciona",
       detalle:
-        "El establecimiento lo cambió o lo desactivó. Pídele al dueño que te envíe el nuevo.",
+        "Ahora entras a tu agenda con tu cuenta: con tu correo y la contraseña que creaste al aceptar la invitación.",
+      ingresar: "Ingresar",
+      sinCuenta:
+        "¿Aún no tienes cuenta? Pídele al establecimiento que te invite desde Yapoin.",
     },
     errores: {
-      link_invalid: "Este link ya no funciona.",
       not_professional: "Ya no tienes acceso a esta agenda.",
       read_only:
         "El establecimiento está pausado: tu agenda es solo de lectura.",
@@ -2721,11 +2684,6 @@ export const textos = {
       titulo: (barberia: string) => `Muy pronto podrás reservar en ${barberia}`,
       bajada:
         "Estamos terminando la página de reservas. Vuelve en unos días o escríbele al establecimiento.",
-    },
-    barbero: {
-      titulo: "Muy pronto verás tus citas aquí",
-      bajada:
-        "Guarda este link: con él vas a ver tus citas del día sin crear una cuenta.",
     },
     conoceYapoin: "¿Tienes un negocio? Conoce Yapoin",
   },

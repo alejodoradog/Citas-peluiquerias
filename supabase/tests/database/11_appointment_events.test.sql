@@ -116,7 +116,8 @@ select throws_ok(
   'anon cannot read events'
 );
 
--- Without a session: link functions set the actor, anything else is system ---------------
+-- Without a session: the customer's link sets the actor, anything else is system. The
+-- barber's link is gone (task 7.6c): without a session, 'barber' means nothing.
 
 reset role;
 
@@ -139,8 +140,8 @@ select is(
 );
 select is(
   (select actor::text from public.appointment_events where appointment_id = 'aaaaaaaa-0000-0000-0000-0000000000e3'),
-  'barber',
-  'a change made through the barber link is logged as barber'
+  'system',
+  'without a session, the old actor of the barber link is system (task 7.6c)'
 );
 select is(
   (select actor::text from public.appointment_events

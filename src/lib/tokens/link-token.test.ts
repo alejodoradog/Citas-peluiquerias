@@ -3,8 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 // The module guards itself against client bundles; tests run in Node.
 vi.mock("server-only", () => ({}));
 
-const { hashLinkToken, newLinkToken, newLinkTokenHash } =
-  await import("./link-token");
+const { hashLinkToken, newLinkToken } = await import("./link-token");
 
 describe("link tokens", () => {
   it("are 32 random bytes, written for a URL", () => {
@@ -18,7 +17,6 @@ describe("link tokens", () => {
     expect(hashLinkToken("abc")).toBe(
       "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
     );
-    expect(newLinkTokenHash()).toMatch(/^[0-9a-f]{64}$/);
-    expect(newLinkTokenHash()).not.toBe(newLinkTokenHash());
+    expect(hashLinkToken(newLinkToken())).toMatch(/^[0-9a-f]{64}$/);
   });
 });

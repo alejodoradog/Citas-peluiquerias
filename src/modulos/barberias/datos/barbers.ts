@@ -1,5 +1,4 @@
 import "server-only";
-import { newLinkTokenHash } from "@/lib/tokens/link-token";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { nextSortOrder, type TeamBarberErrorCode } from "../dominio/barber";
 import type { WeeklyShift } from "../dominio/hours";
@@ -9,10 +8,12 @@ import { toBarberFieldError, type BarberFormField } from "./barber-errors";
 // The team of the owner's barbershop (Más › Barberos, D-53 and D-54). Every
 // query also filters by barbershop: RLS already limits rows to the owner's
 // barbershops, and the filter keeps a second barbershop of the same owner
-// out. link_token_hash is never read: sessions cannot select it anyway.
+// out. A deleted professional ("Profesional eliminado", task 7.6c) is no
+// longer part of the team: it stays in the database only for the past
+// appointments, so the team's lists and the card leave it out.
 
 const BARBER_COLUMNS =
-  "id, display_name, photo_path, email, email_notifications, active, deactivated_at, is_owner, uses_barbershop_hours, link_active, link_issued_at, sort_order";
+  "id, display_name, photo_path, email, email_notifications, active, deactivated_at, is_owner, uses_barbershop_hours, sort_order";
 
 export type BarberRow = {
   id: string;
@@ -24,9 +25,6 @@ export type BarberRow = {
   deactivated_at: string | null;
   is_owner: boolean;
   uses_barbershop_hours: boolean;
-  link_active: boolean;
-  // When the owner last issued a new link; null if never (task 2.3).
-  link_issued_at: string | null;
   sort_order: number;
   // The active services they do. An inactive service keeps its pairs for
   // when it comes back (set_barber_services), but does not count here.
@@ -84,6 +82,7 @@ export async function listBarbers(barbershopId: string): Promise<BarberRow[]> {
       .from("barbers")
       .select(BARBER_COLUMNS)
       .eq("barbershop_id", barbershopId)
+      .is("deleted_at", null)
       .order("sort_order")
       .order("display_name"),
     supabase
@@ -104,8 +103,8 @@ export async function listBarbers(barbershopId: string): Promise<BarberRow[]> {
   }));
 }
 
-// Null when the id is not an id, there is no such barber, or RLS hides it
-// (another barbershop's).
+// Null when the id is not an id, there is no such barber, RLS hides it
+// (another barbershop's), or it was deleted (task 7.6c).
 export async function getBarber(
   barbershopId: string,
   id: string,
@@ -118,6 +117,7 @@ export async function getBarber(
       .select(BARBER_COLUMNS)
       .eq("barbershop_id", barbershopId)
       .eq("id", id)
+      .is("deleted_at", null)
       .maybeSingle(),
     supabase
       .from("barber_services")
@@ -228,9 +228,8 @@ function failure(error: {
     : ({ ok: false, code: "unknown" } as const);
 }
 
-// A new barber, last in the team, with a private link whose token nobody
-// knows yet: the hash is stored and the token thrown away (task 2.3 issues
-// the link). Never the owner: the owner's barber comes from the wizard.
+// A new barber, last in the team. Never the owner: the owner's barber comes
+// from the wizard. The old link columns take their defaults (task 7.6c).
 export async function insertBarber(
   barbershopId: string,
   values: BarberValues & { photoPath: string | null },
@@ -251,7 +250,6 @@ export async function insertBarber(
       email_notifications: values.emailNotifications,
       photo_path: values.photoPath,
       sort_order: nextSortOrder(orders.data.map((row) => row.sort_order)),
-      link_token_hash: newLinkTokenHash(),
     })
     .select("id")
     .single();
@@ -300,7 +298,7 @@ export async function clearBarberPhoto(
 }
 
 // Deactivates or brings back a barber. The trigger stamps deactivated_at.
-// Their link and their appointments stay as they are (decision 6).
+// Their account and their appointments stay as they are (decision 6).
 export async function setBarberActiveRow(
   barbershopId: string,
   id: string,
@@ -359,40 +357,57 @@ export async function setBarberSchedule(
   return error.code === "23P01" ? "overlap" : "failed";
 }
 
-// D-56, a new link: the hash of a token just made replaces the old one and
-// turns the link on, in one statement, so the old token stops working the
-// moment the new one exists. Never the owner's barber (the check
-// barbers_owner_has_no_link refuses it too). The trigger guard_barber_link
-// stamps link_issued_at. Zero rows: not one of this barbershop's barbers.
-export async function writeBarberLinkHash(
+// How many appointments the professional still has to come (confirmed and
+// not over), as delete_barber counts them: "Eliminar" explains them before
+// the owner taps. The database checks it again when deleting.
+export async function countUpcomingAppointments(
   barbershopId: string,
-  id: string,
-  hash: string,
-): Promise<boolean> {
+  barberId: string,
+): Promise<number> {
+  // An id from the URL that is not one is "not found" before this matters.
+  if (!isId(barberId)) return 0;
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("barbers")
-    .update({ link_token_hash: hash, link_active: true })
+  const { count, error } = await supabase
+    .from("appointments")
+    .select("id", { count: "exact", head: true })
     .eq("barbershop_id", barbershopId)
-    .eq("id", id)
-    .eq("is_owner", false)
-    .select("id");
-  return !error && data.length === 1;
+    .eq("barber_id", barberId)
+    .eq("status", "confirmed")
+    .gt("ends_at", new Date().toISOString());
+  if (error) throw error;
+  return count ?? 0;
 }
 
-// D-56, "Desactivar link". The hash stays, and the trigger refuses to turn
-// the same one on again: only a new token brings the link back.
-export async function turnOffBarberLinkRow(
-  barbershopId: string,
-  id: string,
-): Promise<boolean> {
+export type DeleteBarberResult =
+  | { ok: true; photoPath: string | null }
+  // Already deleted (a second tap, or a retry): what is left is the account.
+  | { ok: false; code: "barber_deleted" }
+  | { ok: false; code: "has_upcoming_appointments"; upcoming: number }
+  | { ok: false; code: "barber_is_owner" | "barber_not_found" | "unknown" };
+
+// delete_barber (task 7.6c): with the owner's own session, which the
+// database checks reaches the professional. Returns the photo it cleared,
+// for the action to delete in Storage.
+export async function deleteBarberRow(
+  barberId: string,
+): Promise<DeleteBarberResult> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("barbers")
-    .update({ link_active: false })
-    .eq("barbershop_id", barbershopId)
-    .eq("id", id)
-    .eq("is_owner", false)
-    .select("id");
-  return !error && data.length === 1;
+  const { data, error } = await supabase.rpc("delete_barber", {
+    p_barber_id: barberId,
+  });
+  if (!error) return { ok: true, photoPath: data ?? null };
+  switch (error.hint) {
+    case "has_upcoming_appointments":
+      return {
+        ok: false,
+        code: "has_upcoming_appointments",
+        upcoming: Number.parseInt(error.details ?? "", 10) || 1,
+      };
+    case "barber_deleted":
+    case "barber_is_owner":
+    case "barber_not_found":
+      return { ok: false, code: error.hint };
+    default:
+      return { ok: false, code: "unknown" };
+  }
 }
