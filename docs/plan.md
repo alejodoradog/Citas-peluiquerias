@@ -313,6 +313,25 @@ Entra en modo plan: propón la estructura y los comandos, y espera mi aprobació
 
 **Lista cuando:** se cumple la compuerta de la spec: los 3 flujos funcionan sin errores en celular.
 
+### Fase 7 · Mejoras de la revisión del 15 de noviembre de 2026
+
+Salen de la revisión manual del fundador y el socio. El detalle, el orden y las decisiones que faltan están en `docs/mejoras-revision-2026-11-15.md`; quién hace cada una, en `docs/reparto-mejoras.md`.
+
+- [ ] 7.1 Lenguaje neutral: "establecimiento" y "profesional" en toda la plataforma.
+- [ ] 7.2 Registro: tipo de establecimiento, y volver de los textos legales sin perder lo escrito.
+- [ ] 7.3 Asistente: servicios precargados genéricos, formulario de profesional vacío y ubicación obligatoria.
+- [ ] 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo que ya está cerrado.
+- [ ] 7.5 Aviso de reserva al profesional con botón de WhatsApp, y WhatsApp en cada cita de la agenda.
+- [ ] 7.6 Cuentas de profesional por invitación del dueño, que reemplazan el link privado (decisión 0010, por escribir).
+- [ ] 7.7 Cita inmediata para quien llega sin reserva.
+- [ ] 7.8 Prueba gratis de 30 días y planes: precios con el primer mes, elegir el plan al registrarse y plan por acuerdo a WhatsApp.
+- [ ] 7.9 Afiche en la pantalla final del asistente y en Compartir, y logo oficial en toda la plataforma.
+- [ ] 7.10 Servicios tocables en la página pública.
+- [ ] 7.11 Intervalo de reserva configurable: 15, 30 o 60 minutos.
+- [ ] 7.12 Panel de plataforma para computador, con métricas.
+
+**Lista cuando:** cada punto de las dos listas de la revisión se comprobó en la URL desplegada.
+
 ## Calidad, seguridad y despliegue
 
 La prueba de fuego del producto es que una barbería nunca vea datos de otra y que nunca se agenden dos clientes a la misma hora; ambas cosas se prueban de forma automática en cada cambio.

@@ -35,8 +35,21 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | Diagnóstico de rendimiento: por qué un toque tarda cerca de 1 s (`docs/tareas/rendimiento-diagnostico.md`) | Fundador | Diagnóstico terminado (#81); el informe trae las causas y el plan correctivo. El fundador decidió hacer las correcciones 1 a 4 en un solo PR (la fila siguiente); la 5, la 6 y la 7 siguen en espera |
 | Correcciones de rendimiento 1 a 4 del diagnóstico: respuesta inmediata en todos los toques, una espera menos por pantalla, guardar y la reserva sin viajes (`docs/tareas/perf-respuesta-inmediata.md`) | Fundador | Fusionada (#84 y el ajuste #85). Tocó el link del barbero (4.4), el cierre (4.6), el admin y `access.ts` (#79). Los números de después están en la ficha |
 | 6.2 Prueba en celulares reales | Los dos | Al final, con las pruebas humanas |
+| **Fase 7: mejoras de la revisión del 2026-11-15** (`docs/mejoras-revision-2026-11-15.md`; el reparto y sus reglas, en `docs/reparto-mejoras.md`) | — | — |
+| 7.1 Lenguaje neutral: "establecimiento" y "profesional" en toda la plataforma | Fundador | Pendiente. Va primero: hasta que se fusione, nadie edita textos fuera de su bloque |
+| 7.2 Registro: tipo de establecimiento y volver de los textos legales sin perder lo escrito | Fundador | Pendiente |
+| 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria | Fundador | Pendiente |
+| 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado | Fundador | Pendiente |
+| 7.5 Aviso de reserva al profesional, con WhatsApp | Fundador | Pendiente |
+| 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | Pendiente. Espera la decisión 0010 |
+| 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
+| 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |
+| 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |
+| 7.10 Servicios tocables en la página pública | Socio | Pendiente |
+| 7.11 Intervalo de reserva configurable (15, 30 o 60 minutos) | Socio | Pendiente |
+| 7.12 Panel de plataforma para computador, con métricas | Socio | Pendiente |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`).
 
 > [!important] Respuestas del fundador (2026-11-14)
 > Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
