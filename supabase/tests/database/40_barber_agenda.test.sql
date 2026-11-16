@@ -17,7 +17,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(65);
+select plan(72);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -391,6 +391,18 @@ select is(
 
 -- Blocks --------------------------------------------------------------------------------------------------
 
+-- Task 7.4: only open time is blocked. The next days are made working days
+-- whatever the calendar says: Uno goes back to the barbershop's hours (every
+-- day, 6:00 to 22:00), and the barbershop opens the ones that are holidays.
+reset role;
+update public.barbers set uses_barbershop_hours = true
+where id = 'ba000000-0000-0000-0000-000000000001';
+insert into public.holiday_openings (barbershop_id, holiday_date)
+select 'aaaaaaaa-0000-0000-0000-000000000001', pg_temp.d(n)
+from generate_series(0, 8) n
+where private.is_colombian_holiday(pg_temp.d(n));
+set local role anon;
+
 select is(
   pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '16:00'), pg_temp.at(1, '17:00'), 'Diligencia')$$),
   'no error',
@@ -449,6 +461,70 @@ select is(
   'barber_inactive',
   'an inactive barber does not block'
 );
+-- Task 7.4: what is already closed is not blocked again.
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '22:00'), pg_temp.at(1, '23:00'), null)$$),
+  'already_closed',
+  'not outside the hours they work'
+);
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(5, '00:00'), pg_temp.at(6, '00:00'), 'Permiso')$$),
+  'no error',
+  'a whole day, 0:00 to 24:00, is one block'
+);
+reset role;
+-- Dos works one day of the week only; the barbershop closes for everyone
+-- the whole day 7 and two hours of the day 8.
+update public.barbers set uses_barbershop_hours = false
+where id = 'ba000000-0000-0000-0000-000000000002';
+insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
+values ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000002',
+        extract(dow from pg_temp.d(3))::int, '09:00', '19:00');
+insert into public.time_blocks (barbershop_id, barber_id, starts_at, ends_at, reason) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', null, pg_temp.at(7, '06:00'), pg_temp.at(7, '22:00'), 'Inventario'),
+  ('aaaaaaaa-0000-0000-0000-000000000001', null, pg_temp.at(8, '12:00'), pg_temp.at(8, '14:00'), 'Reunión');
+-- The next holiday the other barbershop does not open, if there is one in
+-- the 30 days a block can reach.
+create temp table next_holiday as
+select min(pg_temp.d(n)) as day
+from generate_series(1, 30) n
+where private.is_colombian_holiday(pg_temp.d(n));
+grant select on next_holiday to anon;
+set local role anon;
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('dos'), pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'), null)$$),
+  'already_closed',
+  'not on a day they do not work'
+);
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(7, '10:00'), pg_temp.at(7, '11:00'), null)$$),
+  'already_closed',
+  'not over hours the barbershop closed for everyone'
+);
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(7, '00:00'), pg_temp.at(8, '00:00'), null)$$),
+  'already_closed',
+  'nor the whole of a day the barbershop closed'
+);
+select is(
+  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(8, '13:00'), pg_temp.at(8, '15:00'), null)$$),
+  'no error',
+  'but a block that reaches into open hours is taken'
+);
+select case
+  when (select day from next_holiday) is null
+    then skip('no holiday in the next 30 days', 1)
+  else is(
+    pg_temp.hint_of(format(
+      $f$select public.create_time_block_by_barber(pg_temp.h('tres'), %L::timestamptz, %L::timestamptz, null)$f$,
+      ((select day from next_holiday) + time '10:00') at time zone 'America/Bogota',
+      ((select day from next_holiday) + time '11:00') at time zone 'America/Bogota'
+    )),
+    'already_closed',
+    'not on a holiday the barbershop does not open'
+  )
+end;
+
 select is(
   pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000003')$$),
   'not_yours',

@@ -238,7 +238,42 @@ export function blockTimeOptions(): string[] {
   });
 }
 
-export type BlockField = "dia" | "desde" | "hasta" | "motivo";
+// The days of the picker on which there is nothing to block (task 7.4): the
+// barber does not work (a holiday that is not opened, a day off), or the
+// barbershop closed every hour they would.
+export function closedBlockDays(
+  data: Pick<
+    BarberAgendaData,
+    "schedule" | "shopHours" | "holidayOpenings" | "blocks"
+  >,
+  days: readonly BogotaDate[],
+): BogotaDate[] {
+  const closures = data.blocks.filter((block) => !block.own);
+  return days.filter((date) =>
+    barberWorkingIntervals(
+      date,
+      data.schedule,
+      data.shopHours,
+      data.holidayOpenings,
+    ).every((shift) => covered(shift, closures)),
+  );
+}
+
+// Whether the intervals, together, leave no instant of the span free.
+function covered(span: Interval, intervals: readonly Interval[]): boolean {
+  let reached = span.start.getTime();
+  const sorted = [...intervals].sort(
+    (a, b) => a.start.getTime() - b.start.getTime(),
+  );
+  for (const interval of sorted) {
+    if (interval.start.getTime() > reached) break;
+    reached = Math.max(reached, interval.end.getTime());
+  }
+  return reached >= span.end.getTime();
+}
+
+// todoElDia: the box "Todo el día"; with it, desde and hasta do not count.
+export type BlockField = "dia" | "desde" | "hasta" | "motivo" | "todoElDia";
 export type BlockFormCode = "end_before_start" | "in_the_past";
 export type BlockRequest = { start: Date; end: Date; reason: BlockReason };
 
@@ -246,22 +281,40 @@ const QUARTER_TIME = /^([01]\d|2[0-3]):(00|15|30|45)$/;
 
 // The form of B-04, checked again by the database.
 export function parseBlockForm(
-  input: Record<BlockField, string>,
+  input: Record<Exclude<BlockField, "todoElDia">, string> & {
+    todoElDia?: string;
+  },
   today: BogotaDate,
   now: Date,
 ): ParseResult<BlockRequest, BlockFormCode> {
+  const wholeDay = input.todoElDia === "on";
   const errors: Partial<Record<BlockField, BlockFormCode | "invalid">> = {};
   const dayOk =
     isBogotaDate(input.dia) &&
     input.dia >= today &&
     input.dia <= addDays(today, DAYS_AHEAD);
   if (!dayOk) errors.dia = "invalid";
-  if (!QUARTER_TIME.test(input.desde)) errors.desde = "invalid";
-  if (!QUARTER_TIME.test(input.hasta)) errors.hasta = "invalid";
+  if (!wholeDay && !QUARTER_TIME.test(input.desde)) errors.desde = "invalid";
+  if (!wholeDay && !QUARTER_TIME.test(input.hasta)) errors.hasta = "invalid";
   if (!(BLOCK_REASONS as readonly string[]).includes(input.motivo)) {
     errors.motivo = "invalid";
   }
   if (Object.keys(errors).length > 0) return { success: false, errors };
+
+  // The whole day: 0:00 to 24:00, or what is left of today from the current
+  // quarter hour, which is where a block may start.
+  if (wholeDay) {
+    const quarter = Math.floor(now.getTime() / QUARTER_MS) * QUARTER_MS;
+    const dayStart = startOfBogotaDay(input.dia as BogotaDate).getTime();
+    return {
+      success: true,
+      data: {
+        start: new Date(Math.max(dayStart, quarter)),
+        end: startOfBogotaDay(addDays(input.dia as BogotaDate, 1)),
+        reason: input.motivo as BlockReason,
+      },
+    };
+  }
 
   const start = fromBogota(input.dia, input.desde);
   const end = fromBogota(input.dia, input.hasta);

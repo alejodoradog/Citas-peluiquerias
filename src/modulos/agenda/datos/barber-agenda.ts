@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import type { BogotaDate } from "@/lib/fechas/fechas";
+import { addDays, type BogotaDate } from "@/lib/fechas/fechas";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { hashLinkToken, isLinkToken } from "@/lib/tokens/link-token";
 import type { BarberAgendaData } from "../dominio/barber-agenda";
@@ -193,4 +193,35 @@ export async function deleteTimeBlockByBarber(
     { p_token_hash: hashLinkToken(token), p_block_id: blockId },
   );
   return error ? { ok: false, error: toBarberRefusal(error) } : { ok: true };
+}
+
+// The days [from, until] when they are more than the 7 the function gives at
+// once: the 31 of the "Bloquear horas" picker (task 7.4), asked for a week at
+// a time and put together. Null as loadBarberAgenda.
+export async function loadBarberAgendaSpan(
+  token: string,
+  from: BogotaDate,
+  until: BogotaDate,
+): Promise<BarberAgendaData | null> {
+  const starts: BogotaDate[] = [];
+  for (let day = from; day <= until; day = addDays(day, 7)) starts.push(day);
+  const weeks = await Promise.all(
+    starts.map((start) => {
+      const end = addDays(start, 6);
+      return loadBarberAgenda(token, start, end < until ? end : until);
+    }),
+  );
+  const first = weeks[0];
+  if (!first || weeks.some((week) => week === null)) return null;
+  const all = weeks as BarberAgendaData[];
+  // A block or an appointment that crosses midnight comes in two weeks.
+  const byId = <Item extends { id: string }>(items: Item[]) => [
+    ...new Map(items.map((item) => [item.id, item])).values(),
+  ];
+  return {
+    ...first,
+    holidayOpenings: [...new Set(all.flatMap((week) => week.holidayOpenings))],
+    appointments: byId(all.flatMap((week) => [...week.appointments])),
+    blocks: byId(all.flatMap((week) => [...week.blocks])),
+  };
 }

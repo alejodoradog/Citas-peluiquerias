@@ -224,6 +224,21 @@ describe("createBlock", () => {
     });
   });
 
+  // Task 7.4.
+  it("blocks the whole day when the box is checked, whatever the hours say", async () => {
+    await run(() =>
+      createBlock(
+        { status: "idle" },
+        form({ ...valid, desde: "", hasta: "", todoElDia: "on" }),
+      ),
+    );
+    expect(createTimeBlockByBarber).toHaveBeenCalledWith(TOKEN, {
+      start: new Date("2026-11-08T05:00:00Z"),
+      end: new Date("2026-11-09T05:00:00Z"),
+      reason: "Almuerzo",
+    });
+  });
+
   it("saves 'Otro' without a reason", async () => {
     await run(() =>
       createBlock({ status: "idle" }, form({ ...valid, motivo: "other" })),
@@ -254,6 +269,7 @@ describe("createBlock", () => {
         desde: "13:00",
         hasta: "14:00",
         motivo: "lunch",
+        todoElDia: "",
       },
     });
     createTimeBlockByBarber.mockResolvedValueOnce({

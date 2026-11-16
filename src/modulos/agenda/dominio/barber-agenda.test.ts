@@ -4,6 +4,7 @@ import {
   blockDayOptions,
   blockTimeOptions,
   canMark,
+  closedBlockDays,
   dayItems,
   parseBarberQuery,
   parseBlockForm,
@@ -345,5 +346,89 @@ describe("parseBlockForm", () => {
         fromBogota(TODAY, "10:10"),
       ).success,
     ).toBe(true);
+  });
+
+  // Task 7.4.
+  it("blocks the whole day, or what is left of today", () => {
+    const whole = { ...valid, desde: "", hasta: "", todoElDia: "on" };
+    expect(parseBlockForm({ ...whole, dia: "2026-11-10" }, TODAY, NOW)).toEqual(
+      {
+        success: true,
+        data: {
+          start: fromBogota("2026-11-10", "00:00"),
+          end: fromBogota("2026-11-11", "00:00"),
+          reason: "errand",
+        },
+      },
+    );
+    // Today, from the current quarter hour: a block never starts before it.
+    expect(
+      parseBlockForm(whole, TODAY, fromBogota(TODAY, "10:10")),
+    ).toMatchObject({
+      success: true,
+      data: {
+        start: fromBogota(TODAY, "10:00"),
+        end: fromBogota("2026-11-08", "00:00"),
+      },
+    });
+    // Without the box, the hours are asked for as before.
+    expect(
+      parseBlockForm({ ...valid, desde: "", todoElDia: "" }, TODAY, NOW),
+    ).toMatchObject({ success: false, errors: { desde: "invalid" } });
+  });
+});
+
+describe("closedBlockDays", () => {
+  // Saturday 7 to Tuesday 10 November 2026.
+  const days = ["2026-11-07", "2026-11-08", "2026-11-09", "2026-11-10"];
+  const closure = (date: string, from: string, to: string): BarberBlock => ({
+    id: `cierre-${date}-${from}`,
+    own: false,
+    reason: null,
+    start: fromBogota(date, from),
+    end: fromBogota(date, to),
+  });
+
+  it("names the days the barber does not work", () => {
+    // The shop of the sample opens Monday to Saturday: Sunday 8 is closed.
+    expect(closedBlockDays(data(), days)).toEqual(["2026-11-08"]);
+  });
+
+  it("counts a holiday as closed unless the barbershop opens it", () => {
+    // Monday 16 November 2026 is a holiday in Colombia.
+    expect(closedBlockDays(data(), ["2026-11-16"])).toEqual(["2026-11-16"]);
+    expect(
+      closedBlockDays(data({ holidayOpenings: ["2026-11-16"] }), [
+        "2026-11-16",
+      ]),
+    ).toEqual([]);
+  });
+
+  it("counts a day the barbershop closed whole, not one closed in part", () => {
+    expect(
+      closedBlockDays(
+        data({
+          blocks: [
+            // Two closures that cover Monday between them.
+            closure("2026-11-09", "09:00", "13:00"),
+            closure("2026-11-09", "13:00", "19:00"),
+            // Tuesday, only the afternoon.
+            closure("2026-11-10", "14:00", "19:00"),
+          ],
+        }),
+        days,
+      ),
+    ).toEqual(["2026-11-08", "2026-11-09"]);
+  });
+
+  it("does not count the barber's own blocks: those can be removed", () => {
+    expect(
+      closedBlockDays(
+        data({
+          blocks: [{ ...closure("2026-11-09", "09:00", "19:00"), own: true }],
+        }),
+        days,
+      ),
+    ).toEqual(["2026-11-08"]);
   });
 });

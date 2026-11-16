@@ -106,7 +106,7 @@ export async function createBlock(
   }
   const instant = now();
   const form = readForm(formData, {
-    fields: ["dia", "desde", "hasta", "motivo"],
+    fields: ["dia", "desde", "hasta", "motivo", "todoElDia"],
     parse: (input) => parseBlockForm(input, toBogotaDate(instant), instant),
   });
   if (!form.valid) return form.state;
