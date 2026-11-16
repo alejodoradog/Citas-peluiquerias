@@ -804,7 +804,7 @@ export const textos = {
   asistente: {
     servicios: {
       barra: "Tus servicios",
-      paso: "Paso 2 de 3",
+      paso: "Paso 2 de 4",
       titulo: "¿Qué servicios ofreces?",
       bajada:
         "Empieza con estos dos: toca cada uno para ponerle nombre, precio y duración. Desmarca el que no uses.",
@@ -829,9 +829,27 @@ export const textos = {
       guardar: "Guardar",
       quitar: "Quitar este servicio",
     },
+    // The location step (task 7.3): required, and only from the phone's GPS
+    // (founder, 2026-11-15).
+    ubicacion: {
+      barra: "Tu ubicación",
+      paso: "Paso 3 de 4",
+      titulo: "¿Dónde queda tu establecimiento?",
+      bajada:
+        "Tus clientes ven el mapa al reservar. Párate en la entrada, toca el botón y dale permiso a tu celular.",
+      continuar: "Continuar",
+      guardando: "Guardando…",
+      falta: "Marca tu ubicación para continuar.",
+      errores: {
+        location_required: "Marca tu ubicación para continuar.",
+        location_invalid: "No pudimos leer la ubicación. Tócala de nuevo.",
+        unknown: "No pudimos guardar la ubicación. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      },
+    },
     equipo: {
       barra: "Tu equipo",
-      paso: "Paso 3 de 3",
+      paso: "Paso 4 de 4",
       titulo: "¿Quiénes atienden en tu establecimiento?",
       bajada:
         "Cada profesional recibe un link privado para ver su agenda. No necesita cuenta ni contraseña.",
@@ -1450,6 +1468,8 @@ export const textos = {
       locality_too_long: "Es muy largo. Usa máximo 100 caracteres.",
       phone_invalid:
         "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+      location_required:
+        "La ubicación es obligatoria: puedes marcarla de nuevo, pero no quitarla.",
       location_invalid:
         "No pudimos leer la ubicación. Tócala de nuevo o quítala.",
       image_invalid:

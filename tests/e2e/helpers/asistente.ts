@@ -52,6 +52,32 @@ export async function fillSetupServices(page: Page) {
   ).toBeChecked({ timeout: 20_000 });
 }
 
+// The location step (task 7.3) takes the point from the phone's GPS. A
+// fixed one in Bogotá, away from the ones the tests of D-57 mark in Cali.
+const WIZARD_POINT = { latitude: 4.711, longitude: -74.0721 };
+
+// Marks the location with the browser's (made up) position and goes on to
+// the team step.
+export async function passLocationStep(page: Page) {
+  await expect(page).toHaveURL(/\/panel\/configurar\/ubicacion$/, {
+    timeout: 20_000,
+  });
+  const context = page.context();
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation(WIZARD_POINT);
+  await page
+    .getByRole("button", { name: textos.datos.ubicacion.usar })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    page.getByText(textos.datos.ubicacion.marcada).filter({ visible: true }),
+  ).toBeVisible({ timeout: 20_000 });
+  await page
+    .getByRole("button", { name: t.ubicacion.continuar })
+    .filter({ visible: true })
+    .click();
+}
+
 // A new owner lands on the setup wizard. This fills in the known services
 // and finishes it, so a test can go on to the panel. The dev server compiles
 // each page the first time it is opened, hence the longer waits.
@@ -59,6 +85,7 @@ export async function finishSetup(page: Page) {
   await expect(page).toHaveURL(/\/panel\/configurar$/, { timeout: 20_000 });
   await fillSetupServices(page);
   await page.getByRole("link", { name: t.servicios.continuar }).click();
+  await passLocationStep(page);
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, {
     timeout: 20_000,
   });

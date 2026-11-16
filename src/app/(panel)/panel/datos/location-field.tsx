@@ -35,6 +35,7 @@ export function LocationField({
   error,
   shopName,
   logoUrl,
+  required = false,
 }: {
   // What the database holds, to tell "saved" from "marked".
   saved: ShopLocation | null;
@@ -46,6 +47,9 @@ export function LocationField({
   // The barbershop's name and saved logo, for the map and the maps app.
   shopName: string;
   logoUrl: string | null;
+  // Task 7.3: the location is required, so it can be marked again but not
+  // removed.
+  required?: boolean;
 }) {
   const [location, setLocation] = useState(initial);
   const [locating, setLocating] = useState(false);
@@ -126,7 +130,7 @@ export function LocationField({
           <MapPinIcon size={18} />
           {locating ? t.buscando : t.usar}
         </Button>
-        {location ? (
+        {location && !required ? (
           <Button variant="text" size="sm" block={false} onClick={clear}>
             {t.quitar}
           </Button>

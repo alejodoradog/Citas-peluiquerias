@@ -78,7 +78,7 @@ function Team({ ownerName }: { ownerName: string }) {
           <TopBar
             title={t.barra}
             subtitle={t.paso}
-            back={{ href: routes.setup, label: textos.ui.volver }}
+            back={{ href: routes.setupLocation, label: textos.ui.volver }}
           />
         }
         actions={
@@ -94,7 +94,7 @@ function Team({ ownerName }: { ownerName: string }) {
           </>
         }
       >
-        <Steps current={3} total={3} announce={false} />
+        <Steps current={4} total={4} announce={false} />
         <div className="flex flex-col gap-1.5">
           <h1 className="text-title">{t.titulo}</h1>
           <p className="text-body text-muted">{t.bajada}</p>

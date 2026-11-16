@@ -77,6 +77,6 @@ describe("ServicesStep", () => {
     );
     expect(
       screen.getByRole("link", { name: t.servicios.continuar }),
-    ).toHaveAttribute("href", "/panel/configurar/equipo");
+    ).toHaveAttribute("href", "/panel/configurar/ubicacion");
   });
 });

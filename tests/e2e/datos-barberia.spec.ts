@@ -211,12 +211,14 @@ test("an owner changes the data, the logo, the cover and the location", async ({
     coverPath: null,
   });
 
-  // The location can be removed too.
-  await page.getByRole("button", { name: t.ubicacion.quitar }).click();
+  // The location is required (task 7.3): it is marked again, never removed.
+  await expect(
+    page.getByRole("button", { name: t.ubicacion.quitar }),
+  ).toHaveCount(0);
   await save(page);
   expect(await shopProfileSnapshot(slug)).toMatchObject({
-    latitude: null,
-    longitude: null,
+    latitude: CALI.latitude,
+    longitude: CALI.longitude,
     // The rest stays as it was.
     name: "Barbería El Parche Norte",
     locality: "San Fernando, Cali",

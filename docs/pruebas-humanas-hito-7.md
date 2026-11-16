@@ -63,6 +63,16 @@ Desde el celular de un cliente, sin sesión, con un establecimiento de prueba qu
 - [ ] **2. Con celular.** Reservar con un celular: la cita queda, y en su detalle el dueño tiene "Escribirle por WhatsApp".
 - [ ] **3. La cita manual no lo exige.** Desde el panel, el dueño crea una cita sin celular.
 
+## Tarea 7.3b: ubicación obligatoria
+Con una cuenta nueva, desde un celular, parado en el local.
+
+- [ ] **1. El paso nuevo.** Después de los servicios aparece "Tu ubicación" (paso 3 de 4). Sin marcarla, "Continuar" dice "Marca tu ubicación para continuar."
+- [ ] **2. Marcar.** Tocar "Usar mi ubicación actual" y dar permiso: aparece el mapa con el punto en el local. "Continuar" lleva al equipo.
+- [ ] **3. Sin permiso.** Negar el permiso de ubicación: el mensaje dice cómo activarlo, y no deja continuar.
+- [ ] **4. El cliente ve el mapa.** Terminar el asistente y abrir el link de reservas: la página muestra el mapa y "Cómo llegar".
+- [ ] **5. No se quita.** En Más › Datos ya no aparece "Quitar ubicación". Tocar "Usar mi ubicación actual" desde otro lugar y guardar: el punto cambia.
+- [ ] **6. iPhone y Android.** Repetir los pasos 2 y 3 en los dos.
+
 ## Tarea 7.12: panel de plataforma en computador
 En un computador (pantalla de 1024 px de ancho o más), con la cuenta del super admin.
 
