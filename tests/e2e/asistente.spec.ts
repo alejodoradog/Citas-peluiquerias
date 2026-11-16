@@ -5,6 +5,7 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
+import { fillSetupServices } from "./helpers/asistente";
 import {
   createConfirmedOwner,
   setupSnapshot,
@@ -230,6 +231,7 @@ test("an owner can finish later without barbers", async ({ page }) => {
   test.setTimeout(90_000);
   const { slug } = await signInNewOwner(page, "asistente-despues");
 
+  await fillSetupServices(page);
   await page.getByRole("link", { name: t.servicios.continuar }).click();
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, {
     timeout: 20_000,
