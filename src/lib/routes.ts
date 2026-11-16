@@ -18,6 +18,8 @@ export const routes = {
   privacyFromApp: "/privacidad?volver=1",
   panel: "/panel",
   setup: "/panel/configurar",
+  // The location of the establishment, required (task 7.3).
+  setupLocation: "/panel/configurar/ubicacion",
   setupTeam: "/panel/configurar/equipo",
   setupBarber: "/panel/configurar/equipo/barbero",
   setupDone: "/panel/configurar/listo",

@@ -5,7 +5,7 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
-import { fillSetupServices } from "./helpers/asistente";
+import { fillSetupServices, passLocationStep } from "./helpers/asistente";
 import {
   createConfirmedOwner,
   setupSnapshot,
@@ -120,6 +120,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
 
   // D-12: the owner cuts by default.
   await page.getByRole("link", { name: t.servicios.continuar }).click();
+  await passLocationStep(page);
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, {
     timeout: 20_000,
   });
@@ -233,6 +234,7 @@ test("an owner can finish later without barbers", async ({ page }) => {
 
   await fillSetupServices(page);
   await page.getByRole("link", { name: t.servicios.continuar }).click();
+  await passLocationStep(page);
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, {
     timeout: 20_000,
   });
