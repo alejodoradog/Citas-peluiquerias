@@ -373,9 +373,17 @@ begin
   if new.barber_id is null then
     return new;
   end if;
-  if current_user in ('authenticated', 'anon')
-    and not (new.barbershop_id = any (private.member_barbershop_ids())) then
+  -- One IF inside the other, never an AND: SQL may evaluate both sides of an
+  -- AND, and only authenticated can call the membership helper. The server
+  -- key (service_role) and the functions that run as their owner go on to
+  -- the check below.
+  if current_user = 'anon' then
     return new;
+  end if;
+  if current_user = 'authenticated' then
+    if not (new.barbershop_id = any (private.member_barbershop_ids())) then
+      return new;
+    end if;
   end if;
   -- Nested: a record of another table has no status to read.
   if tg_table_name = 'appointments' and tg_op = 'UPDATE' then

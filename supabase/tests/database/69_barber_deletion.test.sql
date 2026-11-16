@@ -21,7 +21,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(64);
+select plan(65);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -642,6 +642,31 @@ select is(
   'barbershop_read_only',
   'while any other change of a professional still waits for a payment'
 );
+
+-- The server key (the app's own server, and the fixtures of the end-to-end
+-- tests) reaches the check of refuse_deleted_barber. It cannot call the
+-- membership helper, which is only for sessions: the check must not ask it.
+reset role;
+create function pg_temp.state_of(statement text)
+returns text
+language plpgsql
+as $$
+begin
+  execute statement;
+  return 'ok';
+exception when others then
+  return sqlstate;
+end;
+$$;
+grant execute on function pg_temp.state_of(text) to service_role;
+set local role service_role;
+select isnt(
+  pg_temp.state_of($$insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
+    values ('aaaaaaaa-0000-0000-0000-000000006901', 'ba000000-0000-0000-0000-000000006912', 0, '09:00', '10:00')$$),
+  '42501',
+  'the server key writes a professional''s hours without needing a session''s helper'
+);
+reset role;
 
 select * from finish();
 rollback;
