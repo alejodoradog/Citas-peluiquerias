@@ -507,8 +507,19 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "anonymize_customer":
+            "accept_professional_terms":
+{ Args: { "p_version": string }; Returns: undefined
+                           },
+"anonymize_customer":
 { Args: { "p_barbershop_id": string,"p_customer_id": string }; Returns: undefined
+                           },
+"barber_account_status":
+{ Args: { "p_barber_id": string }; Returns: {
+              "expires_at": string,"sent_at": string,"state": string
+            }[]
+                           },
+"barber_account_to_delete":
+{ Args: { "p_barber_id": string }; Returns: string
                            },
 "barber_agenda":
 { Args: { "p_from": string,"p_to": string,"p_token_hash": string }; Returns: Json
