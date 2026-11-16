@@ -13,7 +13,7 @@ import {
 } from "@/modulos/agenda/dominio/barber-agenda";
 import { weekOf } from "@/modulos/agenda/dominio/owner-agenda";
 import { buttonClasses } from "@/ui/button";
-import { LockIcon } from "@/ui/icons";
+import { ClockIcon, LockIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
 import { SignOutButton } from "@/ui/sign-out-button";
 import { textos } from "@/ui/textos";
@@ -103,6 +103,17 @@ export async function AgendaScreen({
               date={query.date}
               items={dayItems(data, query.date, instant)}
             />
+            {/* Task 7.7: a customer who arrives without a booking. Only
+                on today: the walk-in starts now. */}
+            {writable && data.barber.active && query.date === today ? (
+              <Link
+                href={routes.myWalkIn}
+                className={buttonClasses({ variant: "primary", size: "md" })}
+              >
+                <ClockIcon size={18} />
+                {textos.citaAlMomento.boton}
+              </Link>
+            ) : null}
             {writable && data.barber.active ? (
               <Link
                 href={routes.myBlock}

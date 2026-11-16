@@ -7,6 +7,8 @@ import type { ManageRefusal } from "@/modulos/agenda/datos/manage-errors";
 import type { BarberRefusal } from "@/modulos/agenda/datos/barber-errors";
 import type { OwnerRefusal } from "@/modulos/agenda/datos/owner-appointment-errors";
 import type { BlockFormCode } from "@/modulos/agenda/dominio/barber-agenda";
+import type { WalkInRefusal } from "@/modulos/agenda/datos/walk-in-errors";
+import type { WalkInFormCode } from "@/modulos/agenda/dominio/walk-in";
 import type { PlatformRefusal } from "@/modulos/suscripciones/datos/platform-errors";
 import type {
   PaymentFormCode,
@@ -403,6 +405,7 @@ export const textos = {
       new: "Nueva",
       confirmed: "Confirmada",
       manual: "Manual",
+      walk_in: "Al momento",
       attended: "Atendida",
       no_show: "No asistió",
     },
@@ -410,6 +413,7 @@ export const textos = {
     clienteConfirmo: "Confirmó",
     clienteConfirmoLargo: "El cliente confirmó que va",
     manual: "manual",
+    alMomento: "al momento",
     minutos: (minutos: number) => `${minutos} min`,
     // What a card of the grid of D-30 has no room for, read after the
     // customer and the services: "10:00 a. m., Nueva".
@@ -450,7 +454,13 @@ export const textos = {
       origen: {
         web: "Reservada por la web",
         manual: "Creada por el establecimiento",
+        walk_in: "Cita al momento, sin reserva",
       },
+      // Task 7.7: who made a walk-in, from its history.
+      creadaAlMomentoPor: (profesional: string) =>
+        `Creada al momento por ${profesional}`,
+      creadaAlMomentoPorEstablecimiento:
+        "Creada al momento por el establecimiento",
       // "Reservada por la web · hace 20 min".
       origenCuando: (origen: string, cuando: string) => `${origen} · ${cuando}`,
       haceMinutos: (minutos: number) =>
@@ -1141,7 +1151,8 @@ export const textos = {
         "Se borran su nombre, su correo, su foto, su cuenta de ingreso, sus servicios, su horario y sus bloqueos por venir.",
       queda:
         "Sus citas pasadas, el cierre de esos días y el historial de tus clientes se quedan, a nombre de «Profesional eliminado».",
-      sinVuelta: "No se puede deshacer. Si solo se va por un tiempo, desactívalo.",
+      sinVuelta:
+        "No se puede deshacer. Si solo se va por un tiempo, desactívalo.",
       conCitas: (citas: number) =>
         citas === 1
           ? "Tiene 1 cita por venir. Pásala a otro profesional o cancélala desde la agenda, y vuelve a intentarlo."
@@ -2218,6 +2229,100 @@ export const textos = {
       detalle:
         "El establecimiento quitó tu acceso. Si crees que es un error, habla con el dueño.",
     },
+  },
+  // Task 7.7: "Cita al momento", for a customer who arrives without a
+  // booking. The professional makes it from "Mi agenda" and the owner from
+  // the agenda; it starts now and sends no email.
+  citaAlMomento: {
+    boton: "Cita al momento",
+    titulo: "Cita al momento",
+    cargando: "Cargando…",
+    cerrar: "Volver a la agenda",
+    // "Empieza ahora, 3:10 p. m."
+    empieza: "Empieza",
+    ahora: (hora: string) => `Ahora, ${hora}`,
+    termina: "Termina",
+    sinServiciosElegidos: "Elige los servicios",
+    profesional: "Profesional",
+    servicios: "Servicios",
+    nombre: "Nombre del cliente",
+    nombreAyuda: "Si no lo escribes, queda como “Cliente al momento”.",
+    total: (servicios: number, minutos: number) =>
+      `${servicios === 1 ? "1 servicio" : `${servicios} servicios`} · ${minutos} min`,
+    aviso: "La cita empieza ahora y no le llega ningún correo al cliente.",
+    enviar: "Crear cita",
+    enviando: "Creando…",
+    sinServicios: {
+      titulo: "No tienes servicios para atender",
+      detalle:
+        "Pídele al dueño del establecimiento que te asigne servicios en tu ficha.",
+    },
+    sinServiciosProfesional: "Este profesional no tiene servicios activos.",
+    sinProfesionales: "No hay profesionales activos en el establecimiento.",
+    // Why it does not fit now (decision D5). quien is the professional's
+    // name in the owner's screen; null in the professional's own ("tú").
+    choque: {
+      titulo: "No cabe ahora: no se creó la cita",
+      appointment: (quien: string | null, hora: string) =>
+        quien
+          ? `${quien} tiene una cita a las ${hora}`
+          : `Tienes una cita a las ${hora}`,
+      block: (quien: string | null, hora: string) =>
+        quien
+          ? `${quien} tiene un bloqueo desde las ${hora}`
+          : `Tienes un bloqueo desde las ${hora}`,
+      closure: (_quien: string | null, hora: string) =>
+        `El establecimiento cierra desde las ${hora}`,
+      closing: (quien: string | null, hora: string) =>
+        quien
+          ? `El horario de ${quien} termina a las ${hora}`
+          : `Tu horario termina a las ${hora}`,
+      closed: (quien: string | null) =>
+        quien ? `${quien} no atiende a esta hora.` : "No atiendes a esta hora.",
+      // "Tienes 20 minutos libres; este servicio dura 40."
+      libres: (
+        quien: string | null,
+        libres: number,
+        servicios: number,
+        minutos: number,
+      ) => {
+        const dura =
+          servicios === 1
+            ? `este servicio dura ${minutos}`
+            : `estos servicios duran ${minutos}`;
+        if (libres === 0) {
+          return quien
+            ? `${quien} no tiene tiempo libre ahora; ${dura}.`
+            : `No tienes tiempo libre ahora; ${dura}.`;
+        }
+        const tiempo =
+          libres === 1 ? "1 minuto libre" : `${libres} minutos libres`;
+        return quien
+          ? `${quien} tiene ${tiempo}; ${dura}.`
+          : `Tienes ${tiempo}; ${dura}.`;
+      },
+      sinDetalle: "Esa hora ya está ocupada.",
+    },
+    errores: {
+      walk_in_clash: "No cabe ahora: no se creó la cita.",
+      slot_taken:
+        "Alguien tomó ese tiempo en el mismo instante. Revisa la agenda.",
+      not_professional: "Ya no tienes acceso a esta agenda.",
+      not_found: "No encontramos el establecimiento. Recarga la página.",
+      read_only: "El establecimiento está pausado: no se pueden crear citas.",
+      barber_not_found: "Elige un profesional del establecimiento.",
+      barber_inactive: "Ese profesional está desactivado.",
+      barber_does_not_offer_service:
+        "Ese profesional no hace alguno de los servicios elegidos.",
+      services_required: "Elige al menos un servicio (máximo 5).",
+      services_repeated: "Elige cada servicio una sola vez.",
+      service_inactive:
+        "Alguno de los servicios ya no está activo. Recarga la página.",
+      too_long: "La cita no puede pasar de 8 horas.",
+      customer_name_invalid: "Escribe un nombre de hasta 100 caracteres.",
+      unknown: "No pudimos crear la cita. Intenta de nuevo.",
+      invalid: "Revisa este dato.",
+    } satisfies Record<WalkInRefusal | WalkInFormCode | "invalid", string>,
   },
   plataforma: {
     // The platform panel of the super admin (task 5.4): P-01 to P-06. P-01

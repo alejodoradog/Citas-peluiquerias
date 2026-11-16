@@ -25,6 +25,7 @@ const LOOK_TONES = {
   new: "warning",
   confirmed: "brand",
   manual: "neutral",
+  walk_in: "neutral",
   attended: "success",
   no_show: "danger",
 } as const satisfies Record<string, ChipTone>;

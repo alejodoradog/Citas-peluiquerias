@@ -14,6 +14,7 @@ import {
   appointmentLook,
   takesTime,
   type AppointmentLook,
+  type AppointmentSource,
   type AppointmentStatus,
 } from "./owner-agenda";
 
@@ -31,7 +32,7 @@ const QUARTER_MS = 15 * 60_000;
 export type BarberAppointment = Interval & {
   id: string;
   status: AppointmentStatus;
-  source: "web" | "manual";
+  source: AppointmentSource;
   createdAt: Date;
   // Already short ("Camila R."): the database never sends the full name.
   customerName: string;

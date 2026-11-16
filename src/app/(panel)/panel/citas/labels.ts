@@ -5,6 +5,8 @@ import {
   toBogotaTime,
   type BogotaDate,
 } from "@/lib/fechas/fechas";
+import type { WalkInCreator } from "@/modulos/agenda/datos/owner-appointment";
+import type { AppointmentSource } from "@/modulos/agenda/dominio/owner-agenda";
 import { textos } from "@/ui/textos";
 import { dayTitle, timeLabel } from "../agenda-labels";
 
@@ -48,4 +50,17 @@ export function agoLabel(
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return t.haceHoras(hours);
   return dayTitle(toBogotaDate(createdAt), today);
+}
+
+// Where an appointment came from, on top of D-34. A walk-in (task 7.7) says
+// who made it, from its history: "Creada al momento por Ana" or "por el
+// establecimiento".
+export function originLabel(
+  source: AppointmentSource,
+  createdBy: WalkInCreator | null,
+): string {
+  if (source !== "walk_in" || !createdBy) return t.origen[source];
+  return createdBy.by === "professional"
+    ? t.creadaAlMomentoPor(createdBy.name)
+    : t.creadaAlMomentoPorEstablecimiento;
 }
