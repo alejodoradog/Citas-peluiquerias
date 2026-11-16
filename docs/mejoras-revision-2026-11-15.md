@@ -1,5 +1,5 @@
 # Mejoras de la revisión del 15 de noviembre de 2026 (fase 7)
-Estado: plan propuesto el 2026-11-15 por el fundador con Claude Code. Nada está construido. El fundador ya respondió D1, D2 y parte de D3 y D4 (sección 3); las demás decisiones siguen abiertas.
+Estado: plan propuesto el 2026-11-15 por el fundador con Claude Code. Nada está construido. El fundador ya respondió D1, D2, casi todo D3 y parte de D4 (sección 3); las demás decisiones siguen abiertas.
 
 El fundador y el socio probaron la plataforma a mano y dejaron dos listas de apuntes: una de mejoras de interfaz y errores (más de 20 puntos y 2 preguntas) y otra de hallazgos (10 puntos). Este documento los condensa en 12 tareas, dice cómo está hoy cada cosa en el código y en qué orden se hacen.
 
@@ -16,7 +16,7 @@ Quién hace cada tarea y las reglas para no pisarse están en `docs/reparto-mejo
 | 7.5 Aviso de reserva al profesional | Correo con los datos de la cita y botón de WhatsApp; WhatsApp en cada cita de la agenda | Fundador | Mediano | D6 |
 | 7.6 Cuentas de profesional | Cuenta propia por invitación del dueño; reemplaza el link privado | Fundador | Grande | D4, 7.4, 7.5 |
 | 7.7 Cita inmediata | El profesional atiende a quien llega sin reserva | Fundador | Mediano | 7.6, D5 |
-| 7.8 Prueba de 30 días y planes | Precios con el primer mes, elegir el plan al registrarse, límite de profesionales por plan, "Cambiar plan" con aprobación del admin, plan por acuerdo a WhatsApp | Socio | Grande | Lo que falta de D3, 7.2 |
+| 7.8 Prueba de 30 días y planes | Precios con el primer mes, elegir el plan al registrarse, límite de profesionales por plan, "Cambiar plan" con aprobación del admin, plan por acuerdo a WhatsApp | Socio | Grande | 7.2 |
 | 7.9 Afiche y logo | El afiche en la pantalla final y en Compartir; el logo oficial en todas partes | Socio | Mediano | El archivo del logo (D1), 7.1 |
 | 7.10 Servicios tocables | Tocar un servicio en la página pública lleva a reservar con ese servicio | Socio | Pequeño | — |
 | 7.11 Intervalo de reserva | El dueño elige cada cuánto se ofrecen las horas: 15, 30 o 60 minutos | Socio | Mediano | D8 |
@@ -50,6 +50,12 @@ Son reglas de negocio que la spec no responde o que la cambian. Las toma el fund
   - para pasar de ahí, la configuración del establecimiento tiene una opción pequeña, "Cambiar plan" o "Mejorar plan";
   - el cambio es una **solicitud**: el equipo de Yapoin la acepta desde el admin. Mientras no la acepte, no se pueden crear más profesionales;
   - esto reemplaza la decisión provisional 1 de la 5.6 ("agregar un barbero nunca se bloquea").
+- **D3 (b), el plan 2 recibe citas solo cuando paga:**
+  - quien se registra en el plan 2 crea su cuenta y configura todo, pero sus clientes no pueden agendar hasta que Yapoin registre su primer pago;
+  - el equipo de Yapoin puede darle días gratis desde el admin, solo en casos especiales que decida.
+- **D3 (d), el cambio de plan se acepta con el pago de la diferencia:**
+  - el dueño pide el cambio y paga la diferencia entre los dos planes: del plan 1 al 2 son $15.000 ($40.000 menos $25.000);
+  - cuando el equipo de Yapoin registra ese pago en el admin, la plataforma habilita lo del plan nuevo. Antes de eso, nada cambia.
 - **D4 (a), eliminar un profesional:** se borran su cuenta y sus datos personales, y sus citas quedan a nombre de "Profesional eliminado".
 
 ### Abiertas
@@ -58,7 +64,7 @@ Son reglas de negocio que la spec no responde o que la cambian. Las toma el fund
 | --- | --- | --- | --- |
 | D1 | **El logo.** ¿Cuál es el archivo del logo oficial? | El logo de hoy es un peine de barbero: confirmar si ese es el oficial ahora que la plataforma no es solo para barberías, y entregar el archivo. | 7.9 |
 | D2 | **Las direcciones.** ¿Cambian las que ve el dueño (`/panel/barberos`)? | Sí: a `/panel/profesionales`, con redirección desde las viejas. El código, las tablas y las rutas internas siguen en inglés como están. | No frena: la 7.1 lo toma como provisional |
-| D3 | **Lo que falta del modelo de planes.** (b) El plan 2 no tiene prueba: ¿puede recibir citas antes de pagar? (c) ¿El plan 2 paga $25.000 el primer mes y $40.000 desde el segundo? (d) Aceptado el cambio de plan, ¿desde cuándo se cobra el valor nuevo? (e) ¿El plan 2 llega a 8 y de ahí en adelante es por acuerdo? (f) ¿Se puede pedir bajar de plan? (g) Un establecimiento en prueba gratis del plan 1 que pasa al plan 2, ¿conserva lo que le queda de prueba? | (b) No: se configura todo, pero recibe citas cuando se registra su primer pago. Ese estado ya existe para las sedes creadas con la prueba vencida. (c) Sí. (d) Desde el pago siguiente a la aceptación. (e) Sí, y el paso a "por acuerdo" se pide por WhatsApp. (f) Sí, por la misma solicitud, y solo si los profesionales activos caben en el plan menor. (g) Sí: la prueba ya empezada se respeta. | 7.8 |
+| D3 | **Lo que falta del modelo de planes.** (e) ¿El plan 2 llega a 8 profesionales y de ahí en adelante es por acuerdo? (f) ¿Se puede pedir bajar de plan? (g) Un establecimiento en su mes gratis del plan 1 que pide el plan 2, ¿cuánto paga? (h) La diferencia de $15.000, ¿es fija o depende de los días que le quedan del mes ya pagado? | (e) Sí, y el paso a "por acuerdo" se pide por WhatsApp. (f) Sí, por la misma solicitud, sin devolución, y solo si los profesionales activos caben en el plan menor. (g) $25.000, el primer mes del plan 2, y su fecha de vencimiento no cambia. (h) Fija: es más fácil de explicar y de cobrar por transferencia. | No frena: son casos de borde de la 7.8 |
 | D4 | **Lo que falta de las cuentas de profesional.** (a2) ¿Se puede eliminar a un profesional con citas futuras? (b) ¿Qué pasa si la misma persona trabaja en dos establecimientos? (c) ¿Entra con contraseña? (d) ¿El correo del profesional pasa a ser obligatorio? (e) ¿Su link para compartir lo trae ya elegido a él? | (a2) No: primero se pasan a otro profesional o se cancelan. (b) La cuenta se borra del todo solo si no tiene otro establecimiento. (c) Sí, la crea al aceptar la invitación. (d) Sí. (e) Sí: lleva al establecimiento con él ya elegido. | 7.6 |
 | D5 | **Cita inmediata que choca.** Si la hora actual se cruza con una cita ya agendada, ¿avisar o bloquear? | Bloquear y decir por qué. La base de datos no permite dos citas cruzadas del mismo profesional, y esa regla no se rompe. El aviso dice con qué cita choca y cuánto tiempo libre hay. | 7.7 |
 | D6 | **El correo al profesional.** (a) ¿Qué datos lleva? (b) Hoy el aviso es opcional: ¿pasa a enviarse siempre? (c) El celular del cliente es opcional al reservar: ¿pasa a ser obligatorio? | (a) Cliente, servicios, fecha y hora, duración y precio. (b) Activado por defecto cuando el profesional tiene correo; el dueño lo puede apagar. (c) Sí, si el WhatsApp es la forma de contacto. Cambia la reserva y el texto de la política de datos. Sin celular no hay botón. | 7.5 |
@@ -218,13 +224,14 @@ Respuesta a la segunda pregunta de los apuntes: la fecha de fin de la prueba se 
   - los precios con el valor tachado y el del primer mes;
   - cada plan se puede elegir y lleva al registro con ese plan. El plan por acuerdo abre WhatsApp;
   - el registro muestra el plan elegido y deja cambiarlo;
-  - el plan 2 empieza sin prueba y su primer pago vale $25.000 (D3);
+  - **el plan 2 empieza sin prueba** (decidido): se configura todo, pero la página pública no deja reservar hasta que se registre su primer pago, de $25.000. Es el mismo estado que ya tienen las sedes creadas con la prueba vencida;
+  - **días gratis por decisión del admin** (decidido): "Extender prueba" (P-04) hoy solo aparece mientras el establecimiento está en prueba. Tiene que servir también para uno que espera su primer pago;
   - **el límite de profesionales del plan** (decidido): la base rechaza crear o reactivar un profesional que pase del máximo del plan, contando al dueño si atiende. Aplica en el asistente, en Más y en "Nueva sede", con un mensaje que lleva a "Cambiar plan";
   - **"Cambiar plan"** en la configuración del establecimiento: el dueño elige el plan y envía la solicitud. Ve que está pendiente y no puede enviar otra;
-  - **las solicitudes en el admin:** la lista de pendientes, y aceptar o rechazar cada una, con rastro de quién y cuándo. Al aceptar, el establecimiento pasa al plan nuevo y ya puede crear más profesionales;
+  - **las solicitudes en el admin** (decidido): la lista de pendientes, con la diferencia que debe pagar cada una. Una solicitud se acepta registrando ese pago; no hay forma de aceptarla sin pago. Al registrarlo, el establecimiento pasa al plan nuevo y ya puede crear más profesionales. Queda el rastro de quién y cuándo, y una solicitud se puede rechazar;
   - la pantalla final del asistente y Más muestran la fecha de la prueba solo al plan 1;
   - el panel de plataforma muestra el plan con que empezó cada establecimiento.
-- **Riesgos:** es dinero. Pasa `revisor-seguridad`, como la 5.4 y la 5.6. El límite tiene que estar en la base y no solo en la pantalla, o se salta con una petición armada a mano. Los 30 días, los precios tachados, el límite y "Cambiar plan" ya se pueden empezar; el plan 2 sin prueba espera lo que falta de D3.
+- **Riesgos:** es dinero. Pasa `revisor-seguridad`, como la 5.4 y la 5.6. El límite tiene que estar en la base y no solo en la pantalla, o se salta con una petición armada a mano. El pago de la diferencia es un pago más: no se edita ni se borra, y anularlo devuelve el establecimiento al plan anterior. Ya no espera ninguna decisión para empezar.
 
 ### 7.9 Afiche y logo
 - **Lo que se pidió:**
