@@ -15,11 +15,10 @@ Con una cuenta nueva de dueño, de principio a fin.
 - [ ] **7. Link corto.** Registrar un negocio con un nombre de dos letras: su link termina en "-citas".
 - [ ] **8. Lo que sí debe decir "barbería".** La landing sigue rotando "barbería", "spa", "consultorio", "veterinaria" y "salón", y su demostración sigue siendo "Barbería La Esquina".
 
-## Tarea 7.5: aviso al profesional, con WhatsApp
-Con la función de correos desplegada, y un profesional con correo y avisos activados.
-
-- [ ] **1. El correo.** Reservar una cita con ese profesional dejando un celular. En menos de dos minutos le llega "Nueva cita: …", con la duración, el total y el botón "Escribirle a … por WhatsApp".
-- [ ] **2. El botón.** Tocarlo abre WhatsApp en el chat con el celular que dejó el cliente.
-- [ ] **3. Sin celular.** Reservar otra cita sin celular: el correo llega sin botón.
-- [ ] **4. El dueño.** En el detalle de esa cita y en la ficha del cliente, "Escribirle por WhatsApp" abre el mismo chat. En la cita sin celular no aparece.
-- [ ] **5. El cliente no recibe el celular de nadie.** El recordatorio que le llega al cliente no trae ningún número.
+## Tarea 7.2: tipo de establecimiento y textos legales
+- [ ] **1. El tipo es obligatorio.** En el registro, llenar todo menos "Tipo de establecimiento" y tocar "Crear cuenta": dice "Elige el tipo de establecimiento." y no se pierde lo escrito.
+- [ ] **2. "Otro" pide cuál.** Elegir "Otro": aparece "¿Cuál?". Dejarlo vacío no deja crear la cuenta.
+- [ ] **3. Volver de los términos.** Con el formulario a medio llenar, abrir "términos de uso" y tocar "Volver": el formulario está igual, con el tipo elegido.
+- [ ] **4. Volver de la política, en la reserva.** En el paso de los datos de una reserva, abrir la política de datos y tocar "Volver": los datos y la hora elegida siguen ahí.
+- [ ] **5. Abierto directo.** Abrir `www.yapoin.com/terminos` escribiendo la dirección: el botón dice "Volver al inicio".
+- [ ] **6. Queda guardado.** En Supabase, la sede nueva tiene el tipo elegido en `business_type` (y el texto en `business_type_other` si fue "Otro").
