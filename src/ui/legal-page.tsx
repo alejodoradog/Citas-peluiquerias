@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { routes } from "@/lib/routes";
 import { AuthHeading, AuthShell } from "./auth-shell";
+import { LegalBack } from "./legal-back";
 import { TextLink } from "./text-link";
 import { textos } from "./textos";
 
@@ -25,9 +27,17 @@ export function LegalPage({ document }: { document: LegalDocument }) {
           ))}
         </section>
       ))}
-      <TextLink href={routes.home} standalone>
-        {legal.volver}
-      </TextLink>
+      {/* It reads the address, which this page does not have until it is
+          asked for: meanwhile, the link home. */}
+      <Suspense
+        fallback={
+          <TextLink href={routes.home} standalone>
+            {legal.volver}
+          </TextLink>
+        }
+      >
+        <LegalBack />
+      </Suspense>
     </AuthShell>
   );
 }

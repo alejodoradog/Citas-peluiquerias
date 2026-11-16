@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 import { cx } from "./cx";
 
 // A link in the brand's strong color. Inside a sentence it flows with the
@@ -8,14 +8,17 @@ export function TextLink({
   href,
   children,
   standalone = false,
+  onClick,
 }: {
   href: string;
   children: ReactNode;
   standalone?: boolean;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={cx(
         "text-brand-strong hover:text-ink font-bold underline underline-offset-2",
         standalone &&

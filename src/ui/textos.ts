@@ -132,6 +132,8 @@ export const textos = {
     vigencia: (fecha: string) => `Vigente desde el ${fecha}.`,
     correo: "manuelalejo429@gmail.com",
     volver: "Volver al inicio",
+    // When the text was opened from a form: back to it (task 7.2).
+    volverAtras: "Volver",
     terminos: {
       titulo: "Términos de uso",
       intro:
@@ -640,6 +642,10 @@ export const textos = {
         "El nombre es muy largo. Usa máximo 100 caracteres.",
       phone_invalid:
         "Escribe un celular colombiano de 10 dígitos, como 300 123 4567.",
+      business_type_required: "Elige el tipo de establecimiento.",
+      business_type_other_required: "Escribe qué tipo de establecimiento es.",
+      business_type_other_too_long:
+        "El tipo es muy largo. Usa máximo 60 caracteres.",
       terms_required:
         "Para crear la cuenta, acepta los términos de uso y la política de datos.",
     } satisfies Record<BarbershopErrorCode, string>,
@@ -651,9 +657,21 @@ export const textos = {
       campos: {
         ownerName: "Tu nombre",
         barbershopName: "Nombre del establecimiento",
+        businessType: "Tipo de establecimiento",
+        businessTypeOther: "¿Cuál?",
         phone: "Tu celular",
         email: "Correo",
         password: "Contraseña",
+      },
+      // The kinds of business (task 7.2), in the order of BUSINESS_TYPES.
+      tipos: {
+        elegir: "Elige una opción",
+        barbershop: "Barbería",
+        beauty_salon: "Salón de belleza",
+        veterinary: "Veterinaria",
+        psychology: "Psicología",
+        dentistry: "Odontología",
+        other: "Otro",
       },
       ayudas: {
         phone:

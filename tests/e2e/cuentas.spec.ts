@@ -30,6 +30,9 @@ async function register(
   await page.goto("/registro");
   await page.getByLabel(t.registro.campos.ownerName).fill("Carlos Pérez");
   await page.getByLabel(t.registro.campos.barbershopName).fill(barbershop);
+  await page
+    .getByRole("combobox", { name: t.registro.campos.businessType })
+    .selectOption("barbershop");
   await page.getByLabel(t.registro.campos.phone).fill(phone);
   await page.getByLabel(t.registro.campos.email).fill(email);
   await page.getByLabel(t.registro.campos.password).fill(PASSWORD);
@@ -188,6 +191,53 @@ test("the signup form explains what to fix", async ({ page }) => {
   await expect(page.getByLabel(t.registro.campos.ownerName)).toHaveValue(
     "Carlos Pérez",
   );
+});
+
+// Task 7.2: the kind of business is asked for, "other" asks which one, and
+// reading the terms does not lose what was written.
+test("the signup form asks the kind of business and survives reading the terms", async ({
+  page,
+}) => {
+  await page.goto("/registro");
+  await page.getByLabel(t.registro.campos.ownerName).fill("Carlos Pérez");
+  await page
+    .getByLabel(t.registro.campos.barbershopName)
+    .fill("Tinta El Parche");
+  const kind = page.getByRole("combobox", {
+    name: t.registro.campos.businessType,
+  });
+  const which = page.getByRole("textbox", {
+    name: t.registro.campos.businessTypeOther,
+  });
+  await expect(which).toHaveCount(0);
+  await kind.selectOption("other");
+  await which.fill("Estudio de tatuajes");
+
+  await page.getByRole("link", { name: t.registro.legal.terminos }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: textos.legal.terminos.titulo }),
+  ).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("link", { name: textos.legal.volverAtras }).click();
+
+  await expect(page).toHaveURL(/\/registro$/);
+  await expect(
+    page.getByRole("textbox", { name: t.registro.campos.ownerName }),
+  ).toHaveValue("Carlos Pérez");
+  await expect(kind).toHaveValue("other");
+  await expect(which).toHaveValue("Estudio de tatuajes");
+
+  // Without a kind, the form says so.
+  await kind.selectOption("");
+  await page.getByLabel(t.registro.campos.phone).fill("300 123 4567");
+  await page.getByLabel(t.registro.campos.email).fill(uniqueEmail("sin-tipo"));
+  await page.getByLabel(t.registro.campos.password).fill(PASSWORD);
+  await page
+    .getByRole("checkbox", { name: textos.legal.casilla.registro })
+    .check({ force: true });
+  await page.getByRole("button", { name: t.registro.enviar }).click();
+  await expect(
+    page.getByText(textos.barberias.errores.business_type_required),
+  ).toBeVisible();
 });
 
 test("signing up with a taken email changes nothing and reveals nothing", async ({
