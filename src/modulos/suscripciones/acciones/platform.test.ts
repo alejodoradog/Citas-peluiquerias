@@ -43,7 +43,7 @@ type Quote = {
 };
 const loadQuote = vi.fn(async (): Promise<Quote | null> => ({
   planCode: "standard",
-  planName: "Hasta 4 barberos",
+  planName: "Hasta 4 profesionales",
   priceCop: 25000,
   byAgreement: false,
   activeBarbers: 2,
@@ -118,7 +118,7 @@ describe("registerPayment (P-03)", () => {
   it("asks for the agreed value of 9 barbers or more (task 5.6)", async () => {
     const agreed = {
       planCode: "por_acuerdo",
-      planName: "9 barberos o más",
+      planName: "9 profesionales o más",
       priceCop: null,
       byAgreement: true,
       activeBarbers: 9,

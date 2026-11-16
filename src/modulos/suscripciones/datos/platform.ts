@@ -6,7 +6,9 @@ import {
   type BogotaDate,
 } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { BusinessType } from "@/modulos/barberias/dominio/business-type";
 import type { PaymentMethod } from "../dominio/platform-forms";
+import type { ChartPoint } from "../dominio/platform-metrics";
 import type { Phase, SubscriptionStatus } from "../dominio/subscription";
 import { toPlatformRefusal, type PlatformRefusal } from "./platform-errors";
 
@@ -29,6 +31,8 @@ export type PlatformRow = {
   createdAt: Date;
   phase: Phase;
   owner: { name: string | null; phone: string | null; email: string | null };
+  // Task 7.2; null for accounts from before it.
+  businessType: { kind: BusinessType; other: string | null } | null;
 };
 
 const PHASES = [
@@ -52,6 +56,8 @@ type RpcRow = {
   owner_name: string | null;
   owner_phone: string | null;
   owner_email: string | null;
+  business_type: BusinessType | null;
+  business_type_other: string | null;
 };
 
 function toRow(row: RpcRow): PlatformRow {
@@ -71,6 +77,9 @@ function toRow(row: RpcRow): PlatformRow {
       phone: row.owner_phone,
       email: row.owner_email,
     },
+    businessType: row.business_type
+      ? { kind: row.business_type, other: row.business_type_other }
+      : null,
   };
 }
 
@@ -209,6 +218,62 @@ export async function loadRecentPayments(today: BogotaDate) {
     amountCop: row.amount_cop,
     paidOn: row.paid_on,
     voided: row.voided_at !== null,
+  }));
+}
+
+// P-06 on a computer (task 7.12): the totals the database counts, by week
+// and by month, with zeros where nothing happened.
+export const METRIC_WEEKS = 12;
+export const METRIC_MONTHS = 12;
+
+export async function loadWeeklyActivity(): Promise<{
+  signups: ChartPoint[];
+  appointments: ChartPoint[];
+}> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("platform_weekly_activity", {
+    p_weeks: METRIC_WEEKS,
+  });
+  if (error) throw new Error(error.message);
+  return {
+    signups: data.map((w) => ({ start: w.week_start, value: w.signups })),
+    appointments: data.map((w) => ({
+      start: w.week_start,
+      value: w.appointments,
+    })),
+  };
+}
+
+export async function loadMonthlyRevenue(): Promise<ChartPoint[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("platform_monthly_revenue", {
+    p_months: METRIC_MONTHS,
+  });
+  if (error) throw new Error(error.message);
+  return data.map((m) => ({ start: m.month_start, value: m.total_cop }));
+}
+
+export type BusinessTypeCount = {
+  // null: accounts from before task 7.2.
+  kind: BusinessType | null;
+  establishments: number;
+  recentAppointments: number;
+};
+
+export async function loadBusinessTypes(): Promise<BusinessTypeCount[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("platform_business_types");
+  if (error) throw new Error(error.message);
+  return (
+    data as {
+      business_type: BusinessType | null;
+      establishments: number;
+      recent_appointments: number;
+    }[]
+  ).map((row) => ({
+    kind: row.business_type,
+    establishments: row.establishments,
+    recentAppointments: row.recent_appointments,
   }));
 }
 

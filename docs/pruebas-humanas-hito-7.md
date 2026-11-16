@@ -72,3 +72,15 @@ Con una cuenta nueva, desde un celular, parado en el local.
 - [ ] **4. El cliente ve el mapa.** Terminar el asistente y abrir el link de reservas: la página muestra el mapa y "Cómo llegar".
 - [ ] **5. No se quita.** En Más › Datos ya no aparece "Quitar ubicación". Tocar "Usar mi ubicación actual" desde otro lugar y guardar: el punto cambia.
 - [ ] **6. iPhone y Android.** Repetir los pasos 2 y 3 en los dos.
+
+## Tarea 7.12: panel de plataforma en computador
+En un computador (pantalla de 1024 px de ancho o más), con la cuenta del super admin.
+
+- [ ] **1. El menú.** Al entrar a `www.yapoin.com/admin` hay un menú a la izquierda con "Establecimientos" y "Métricas", y "Cerrar sesión" al final. El que está abierto se ve resaltado.
+- [ ] **2. La tabla.** La lista sale como tabla: establecimiento (con su tipo y su link), dueño y correo, ciudad, estado, vence y registro.
+- [ ] **3. Ordenar.** Tocar "Vence": los que vencen primero quedan arriba. Tocar otra vez: al revés. Recargar la página: el orden se mantiene. Lo mismo con "Estado": los vencidos y suspendidos quedan arriba.
+- [ ] **4. Buscar y filtrar con orden.** Con un orden puesto, buscar por el correo de un dueño y tocar un filtro: el orden se conserva.
+- [ ] **5. La ficha.** Tocar un establecimiento: la ficha sale en dos columnas, con los pagos a la izquierda y "Registrar pago" a la derecha. Registrar un pago y anularlo funciona como antes.
+- [ ] **6. Métricas.** Tocar "Métricas": salen las tarjetas, los tres gráficos y la tabla por tipo. Pasar el mouse por una barra muestra su valor arriba. "Ver tabla" muestra los números de cada semana o mes.
+- [ ] **7. Los números cuadran.** El ingreso de este mes en el gráfico es igual al de la tarjeta "Ingreso del mes". Un establecimiento nuevo creado hoy suma 1 a la última barra de "Registros por semana" y a su tipo en la tabla.
+- [ ] **8. En el celular no cambió.** Abrir `/admin` desde el celular: se ve la lista de siempre, sin menú lateral, con el ícono de métricas arriba.

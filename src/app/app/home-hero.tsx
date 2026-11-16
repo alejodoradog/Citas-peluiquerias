@@ -21,7 +21,7 @@ export function HomeHero({
 }: {
   // What screen readers hear.
   title: string;
-  // "Tu" … "recibe citas sola", around the word that turns.
+  // "A tu" … "le llegan las citas solas", around the word that turns.
   start: string;
   end: string;
   // One word per scene: the characters, in order, then the booking story.

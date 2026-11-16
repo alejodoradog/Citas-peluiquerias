@@ -135,7 +135,8 @@ test("P-01 to P-06 match the design", async ({ page }) => {
   );
   await compare(
     "barbería",
-    page.getByText(name, { exact: true }),
+    // The computer's table (task 7.12) repeats the name, hidden on a phone.
+    page.getByText(name, { exact: true }).filter({ visible: true }),
     design.getByText("Barbería La Esquina", { exact: true }),
     TEXT,
   );
@@ -156,13 +157,14 @@ test("P-01 to P-06 match the design", async ({ page }) => {
   design = await openDesign(page, "P02-Ficha.dc.html");
   await compare(
     "dato",
-    page.getByText(t.ficha.dueno, { exact: true }),
+    // P-01's table, still mounted and hidden, has a "Dueño" column too.
+    page.getByText(t.ficha.dueno, { exact: true }).filter({ visible: true }),
     design.getByText("Dueño", { exact: true }),
     ["font-size", "color"],
   );
   await compare(
     "valor",
-    page.getByText(shop.owner.email, { exact: true }),
+    page.getByText(shop.owner.email, { exact: true }).filter({ visible: true }),
     design.getByText("[CORREO DEL DUEÑO]"),
     TEXT,
   );

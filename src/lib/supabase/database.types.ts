@@ -571,12 +571,27 @@ isOneToOne: false
                            },
 "platform_barbershops":
 { Args: { "p_search"?: string }; Returns: {
-              "created_at": string,"expires_on": string,"id": string,"locality": string,"name": string,"owner_email": string,"owner_name": string,"owner_phone": string,"phase": string,"plan": string,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string
+              "business_type": Database["public"]['Enums']["business_type"],"business_type_other": string,"created_at": string,"expires_on": string,"id": string,"locality": string,"name": string,"owner_email": string,"owner_name": string,"owner_phone": string,"phase": string,"plan": string,"slug": string,"subscription_status": Database["public"]['Enums']["subscription_status"],"trial_ends_on": string
+            }[]
+                           },
+"platform_business_types":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "business_type": Database["public"]['Enums']["business_type"],"establishments": number,"recent_appointments": number
+            }[]
+                           },
+"platform_monthly_revenue":
+{ Args: { "p_months"?: number }; Returns: {
+              "month_start": string,"payments": number,"total_cop": number
             }[]
                            },
 "platform_payments":
 { Args: { "p_barbershop_id": string }; Returns: {
               "amount_cop": number,"covers_from": string,"covers_until": string,"created_at": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_on": string,"reference": string,"void_reason": string,"voided_at": string
+            }[]
+                           },
+"platform_weekly_activity":
+{ Args: { "p_weeks"?: number }; Returns: {
+              "appointments": number,"signups": number,"week_start": string
             }[]
                            },
 "reactivate_barbershop":

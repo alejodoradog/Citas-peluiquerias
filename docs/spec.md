@@ -138,6 +138,8 @@ El estado de la suscripción no tiene pantalla propia: se muestra con avisos en 
 
 1. Lista de barberías con filtros: en prueba, activa, por vencer, vencida, suspendida.
 2. Ficha de barbería: datos del dueño, uso, historial de pagos, botón "Registrar pago".
+3. Métricas: establecimientos por estado, ingreso del mes, registros y citas agendadas por semana, ingresos por mes, y establecimientos y citas por tipo de establecimiento (tarea 7.12).
+4. En computador (desde 1024 px) el panel usa toda la pantalla: menú lateral, la lista como tabla que se ordena por columna y la ficha en dos columnas. En celular se ve como antes (tarea 7.12).
 
 ## Reglas de negocio
 
