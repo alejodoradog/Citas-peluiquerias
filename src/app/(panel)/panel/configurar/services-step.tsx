@@ -3,7 +3,10 @@
 import { useRef, useState, type ReactNode } from "react";
 import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
-import { offeredServices } from "@/modulos/barberias/dominio/setup";
+import {
+  offeredServices,
+  pendingServices,
+} from "@/modulos/barberias/dominio/setup";
 import { Button, ButtonLink } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { FlowShell } from "@/ui/flow-shell";
@@ -32,6 +35,7 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
   const opener = useRef<HTMLElement | null>(null);
   const addButton = useRef<HTMLButtonElement>(null);
   const noneOffered = offeredServices(draft).length === 0;
+  const pending = pendingServices(draft);
   const service = draft.services.find((s) => s.key === editing);
 
   function open(key: string, from: HTMLElement) {
@@ -44,7 +48,7 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
       header={<TopBar title={t.barra} subtitle={t.paso} action={topAction} />}
       actions={
         <>
-          {noneOffered ? (
+          {noneOffered || pending.length > 0 ? (
             <Button disabled>{t.continuar}</Button>
           ) : (
             <ButtonLink href={routes.setupTeam}>{t.continuar}</ButtonLink>
@@ -87,10 +91,14 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
                 <span className="sr-only">{t.editar} </span>
                 <span className="flex flex-col">
                   <span className="text-body font-bold">{item.name}</span>
-                  <span className="text-help text-muted">{duration}</span>
+                  <span className="text-help text-muted">
+                    {item.pending ? t.porCompletar : duration}
+                  </span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <strong className="text-body">{price}</strong>
+                  {item.pending ? null : (
+                    <strong className="text-body">{price}</strong>
+                  )}
                   <span className="text-muted flex">
                     <EditIcon size={16} />
                   </span>
@@ -109,7 +117,14 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
         <PlusIcon size={18} />
         {t.agregar}
       </Button>
-      {noneOffered ? <Notice tone="warning" title={t.ninguno} /> : null}
+      {noneOffered ? (
+        <Notice tone="warning" title={t.ninguno} />
+      ) : pending.length > 0 ? (
+        <Notice
+          tone="info"
+          title={t.pendientes(pending.map((s) => s.name).join(" y "))}
+        />
+      ) : null}
       <ServiceSheet
         open={editing !== null}
         service={editing === "new" ? null : (service ?? null)}

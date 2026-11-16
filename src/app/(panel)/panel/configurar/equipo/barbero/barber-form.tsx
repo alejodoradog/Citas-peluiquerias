@@ -29,17 +29,34 @@ type Errors = Partial<
 export function BarberForm({ hoursSummary }: { hoursSummary: string }) {
   const { ready } = useSetupDraft();
   // The form starts from the draft: wait until a reload restored it.
-  return ready ? (
-    <BarberFormFields hoursSummary={hoursSummary} />
-  ) : (
-    <LoadingState />
+  return ready ? <FreshForm hoursSummary={hoursSummary} /> : <LoadingState />;
+}
+
+// One form for each professional: the one being edited (?barbero), or each
+// new one (?nuevo, which the team screen changes every time). Without it the
+// form of a new professional came back filled with the one just saved,
+// because Next.js keeps this page mounted (task 7.3).
+function FreshForm({ hoursSummary }: { hoursSummary: string }) {
+  const params = useSearchParams();
+  const key = params.get("barbero");
+  return (
+    <BarberFormFields
+      key={key ?? `nuevo:${params.get("nuevo") ?? ""}`}
+      barberKey={key}
+      hoursSummary={hoursSummary}
+    />
   );
 }
 
-function BarberFormFields({ hoursSummary }: { hoursSummary: string }) {
+function BarberFormFields({
+  barberKey: key,
+  hoursSummary,
+}: {
+  barberKey: string | null;
+  hoursSummary: string;
+}) {
   const { draft, dispatch } = useSetupDraft();
   const router = useRouter();
-  const key = useSearchParams().get("barbero");
   const barber = draft.barbers.find((b) => b.key === key) ?? null;
   const services = offeredServices(draft);
   const [name, setName] = useState(barber?.displayName ?? "");

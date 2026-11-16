@@ -14,6 +14,7 @@ import {
   initialDraft,
   offeredServices,
   parseSetupPayload,
+  pendingServices,
   setupReducer,
   toSetupPayload,
   type SetupDraft,
@@ -156,17 +157,39 @@ describe("the setup draft", () => {
     key: "b1",
     displayName: "Kevin",
     email: null,
-    serviceKeys: ["sugerido-1", "sugerido-3"],
+    serviceKeys: ["sugerido-1", "sugerido-2"],
   };
 
-  it("starts with the suggested services and the owner cutting", () => {
+  it("starts with two services to fill in and the owner attending", () => {
     const draft = initialDraft();
     expect(draft.ownerCuts).toBe(true);
     expect(offeredServices(draft).map((s) => s.name)).toEqual([
-      "Corte",
-      "Barba",
-      "Cejas",
+      "Servicio 1",
+      "Servicio 2",
     ]);
+    // Task 7.3: no trade is named, and nothing has a price yet.
+    expect(pendingServices(draft).map((s) => s.key)).toEqual([
+      "sugerido-1",
+      "sugerido-2",
+    ]);
+  });
+
+  it("does not go on with a placeholder nobody filled in", () => {
+    let draft = setupReducer(initialDraft(), {
+      type: "save_service",
+      service: {
+        key: "sugerido-1",
+        name: "Consulta",
+        priceCop: 80000,
+        durationMinutes: 45,
+        offered: true,
+      },
+    });
+    expect(pendingServices(draft).map((s) => s.name)).toEqual(["Servicio 2"]);
+    // Unchecked, the other one is not offered: nothing is left to fill in.
+    draft = setupReducer(draft, { type: "toggle_service", key: "sugerido-2" });
+    expect(pendingServices(draft)).toEqual([]);
+    expect(offeredServices(draft).map((s) => s.name)).toEqual(["Consulta"]);
   });
 
   it("removes a service that stops being offered from every barber", () => {
@@ -174,7 +197,7 @@ describe("the setup draft", () => {
       type: "save_barber",
       barber,
     });
-    draft = setupReducer(draft, { type: "toggle_service", key: "sugerido-3" });
+    draft = setupReducer(draft, { type: "toggle_service", key: "sugerido-2" });
     expect(draft.barbers[0]!.serviceKeys).toEqual(["sugerido-1"]);
     draft = setupReducer(draft, { type: "remove_service", key: "sugerido-1" });
     expect(draft.barbers[0]!.serviceKeys).toEqual([]);
@@ -200,7 +223,7 @@ describe("the setup draft", () => {
       type: "save_barber",
       barber: { ...barber, displayName: "Kevin M" },
     });
-    expect(draft.services).toHaveLength(5);
+    expect(draft.services).toHaveLength(3);
     expect(draft.services[0]!.priceCop).toBe(28000);
     expect(draft.barbers.map((b) => b.displayName)).toEqual(["Kevin M"]);
     draft = setupReducer(draft, { type: "remove_barber", key: "b1" });
@@ -216,22 +239,21 @@ describe("the setup draft", () => {
     const draft = setupReducer(initialDraft(), { type: "save_barber", barber });
     const payload = toSetupPayload(draft, " Carlos Pérez ");
     expect(payload.services.map((s) => s.name)).toEqual([
-      "Corte",
-      "Barba",
-      "Cejas",
+      "Servicio 1",
+      "Servicio 2",
     ]);
     expect(payload.barbers).toEqual([
       {
         display_name: "Carlos Pérez",
         email: null,
         is_owner: true,
-        service_keys: ["sugerido-1", "sugerido-2", "sugerido-3"],
+        service_keys: ["sugerido-1", "sugerido-2"],
       },
       {
         display_name: "Kevin",
         email: null,
         is_owner: false,
-        service_keys: ["sugerido-1", "sugerido-3"],
+        service_keys: ["sugerido-1", "sugerido-2"],
       },
     ]);
     expect(parseSetupPayload(payload).success).toBe(true);
