@@ -100,7 +100,8 @@ Con la plantilla `invite.html` pegada en Supabase (Emails › Invite user), una 
 - [ ] **10. Compartir.** "Compartir mi link de reservas" abre el menú del celular (o copia el link). Abrir ese link: tras elegir los servicios va directo a la hora, con él elegido. Si eliges un servicio que él no hace, pide elegir profesional.
 - [ ] **11. Ingreso normal.** Cerrar sesión e ingresar por `/ingresar` con su correo y contraseña: llega a "Mi agenda".
 - [ ] **12. No entra al panel.** Con la sesión del profesional, abrir `/panel` y `/admin`: vuelve a "Mi agenda". Con la del dueño, abrir `/mi-agenda`: vuelve al panel.
-- [ ] **13. Link vencido.** Abrir otra vez el link del correo ya usado: dice "Esa invitación venció o ya se usó" y que le pida al dueño reenviarla.
+- [ ] **13. Link vencido.** Abrir otra vez el link del correo ya usado: dice "Esa invitación venció o ya se usó", y que si ya la abrió pida un link en "¿Olvidaste tu contraseña?".
+- [ ] **13b. Abrió y no puso contraseña.** Con otro profesional: abrir la invitación, no crear la contraseña y volver después de una hora a `/nueva-clave`: lo manda a pedir un link nuevo. Pedirlo en "¿Olvidaste tu contraseña?": el link lleva a crear la contraseña con la casilla de los términos, y entra a su agenda.
 - [ ] **14. Reenviar.** Con una invitación sin abrir, tocar "Reenviar invitación": llega otro correo, y el link nuevo funciona.
 - [ ] **15. Correo ocupado.** Invitar a un profesional con el correo del dueño: dice que ese correo ya tiene cuenta, sin decir de quién.
 - [ ] **16. Quitar acceso.** Tocar "Quitar acceso", confirmar: dice "Acceso quitado". En el celular del profesional, recargar: vuelve a ingresar y su contraseña ya no sirve.

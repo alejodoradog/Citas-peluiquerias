@@ -14,6 +14,8 @@ import {
   authAccountExists,
   createBookableShop,
   insertCustomer,
+  inviteAnswer,
+  inviteProfessional,
   latestEmailLink,
   setBarberEmail,
   uniqueEmail,
@@ -239,4 +241,73 @@ test("an invitation link that does not work says to ask the owner again", async 
   await expect(
     page.getByText(textos.cuentas.invitacion.vencida.titulo),
   ).toBeVisible();
+});
+
+// Review of task 7.6b, point 4: opening the invitation confirms the email,
+// so once its session is old the owner can no longer resend it. The way in
+// is "¿Olvidaste tu contraseña?", which works for an account that never set
+// a password and still goes through the terms.
+test("a professional who opened the invitation but never set a password gets in by recovering it", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  const shop = await createBookableShop("profesional-recupera");
+  const email = uniqueEmail("beto-profesional");
+  await setBarberEmail(shop.barbers.beto, email);
+  await inviteProfessional(shop.owner, shop.barbers.beto);
+
+  // Opens the invitation and leaves without creating the password.
+  await page.goto(await latestEmailLink(email, "invite"));
+  await page
+    .getByRole("button", { name: textos.cuentas.confirmar.continuar })
+    .click(FIRST_VISIT);
+  await expect(page).toHaveURL(/\/nueva-clave$/, FIRST_VISIT);
+  // The email is confirmed now: the owner cannot resend it.
+  expect(await inviteAnswer(shop.owner, shop.barbers.beto)).toBe(
+    "already_linked",
+  );
+  // Without the terms, "Mi agenda" sends them back to accept them.
+  await page.goto("/mi-agenda");
+  await expect(page).toHaveURL(/\/nueva-clave$/, FIRST_VISIT);
+
+  // "¿Olvidaste tu contraseña?"
+  const r = textos.cuentas.recuperar;
+  await page.goto("/recuperar-clave");
+  await page.getByRole("textbox", { name: r.campos.email }).fill(email);
+  await page.getByRole("button", { name: r.enviar }).click();
+  await expect(page.getByText(r.enviado)).toBeVisible(FIRST_VISIT);
+  await page.goto(await latestEmailLink(email, "recovery"));
+  await page
+    .getByRole("button", { name: textos.cuentas.confirmar.continuar })
+    .click(FIRST_VISIT);
+  await expect(page).toHaveURL(/\/nueva-clave$/, FIRST_VISIT);
+
+  // The same welcome: password and terms, then their agenda.
+  await expect(
+    page.getByRole("heading", { name: textos.cuentas.invitacion.titulo }),
+  ).toBeVisible();
+  await page
+    .getByRole("textbox", {
+      name: textos.cuentas.invitacion.campos.password,
+      exact: true,
+    })
+    .fill("clave-de-beto-1");
+  await page
+    .getByRole("textbox", {
+      name: textos.cuentas.nuevaClave.campos.confirmation,
+    })
+    .fill("clave-de-beto-1");
+  await page
+    .getByRole("checkbox", { name: textos.legal.casilla.registro })
+    .check({ force: true });
+  await page
+    .getByRole("button", { name: textos.cuentas.invitacion.enviar })
+    .click();
+  await expect(page).toHaveURL(/\/mi-agenda$/, FIRST_VISIT);
+  await expect(
+    page.getByRole("heading", { level: 1, name: b.hola("Beto") }),
+  ).toBeVisible(FIRST_VISIT);
+  expect((await acceptedTermsOf(email))?.terms_version).toBe(
+    textos.legal.version,
+  );
 });

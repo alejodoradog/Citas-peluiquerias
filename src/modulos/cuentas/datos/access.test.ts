@@ -50,11 +50,7 @@ let cookie: string | undefined;
 let tables: string[] = [];
 let selects: string[] = [];
 let rpcs: string[] = [];
-let profile: {
-  full_name: string;
-  is_super_admin: boolean;
-  terms_version: string | null;
-} | null = null;
+let profile: { full_name: string; is_super_admin: boolean } | null = null;
 // What my_professional_access answers (task 7.6b).
 let professional: unknown = null;
 let professionalError: { message: string } | null = null;
@@ -104,11 +100,7 @@ beforeEach(() => {
   tables = [];
   selects = [];
   rpcs = [];
-  profile = {
-    full_name: "Carlos Pérez",
-    is_super_admin: false,
-    terms_version: "2026-11-15.3",
-  };
+  profile = { full_name: "Carlos Pérez", is_super_admin: false };
   professional = null;
   professionalError = null;
 });
@@ -220,16 +212,13 @@ describe("getCurrentAccess for a professional", () => {
     barberId: "eeeeeeee-0000-4000-8000-000000000000",
     name: "Ana Gómez",
     active: true,
+    acceptedTerms: false,
     barbershop: { name: "El Parche", slug: "el-parche", writable: true },
   };
 
   beforeEach(() => {
     memberships = [];
-    profile = {
-      full_name: "Ana Gómez",
-      is_super_admin: false,
-      terms_version: null,
-    };
+    profile = { full_name: "Ana Gómez", is_super_admin: false };
   });
 
   it("is a professional when the database says so", async () => {
@@ -238,13 +227,11 @@ describe("getCurrentAccess for a professional", () => {
       kind: "professional",
       email: "carlos@example.com",
       ...ana,
-      acceptedTerms: false,
     });
   });
 
-  it("knows whether they accepted the terms", async () => {
-    professional = ana;
-    profile = { ...profile!, terms_version: "2026-11-15.3" };
+  it("knows whether they accepted the terms, as the database says", async () => {
+    professional = { ...ana, acceptedTerms: true };
     const access = await getCurrentAccess();
     expect(access.kind === "professional" && access.acceptedTerms).toBe(true);
   });
@@ -252,6 +239,9 @@ describe("getCurrentAccess for a professional", () => {
   it("has no access when the database says nothing, or something else", async () => {
     expect((await getCurrentAccess()).kind).toBe("no_access");
     professional = { barberId: 1 };
+    expect((await getCurrentAccess()).kind).toBe("no_access");
+    // Without the flag, never taken as accepted.
+    professional = { ...ana, acceptedTerms: undefined };
     expect((await getCurrentAccess()).kind).toBe("no_access");
   });
 
@@ -264,7 +254,7 @@ describe("getCurrentAccess for a professional", () => {
 
   it("never asks for a super admin, nor for an account without profile", async () => {
     professional = ana;
-    profile = { full_name: "Admin", is_super_admin: true, terms_version: null };
+    profile = { full_name: "Admin", is_super_admin: true };
     expect((await getCurrentAccess()).kind).toBe("super_admin");
     profile = null;
     expect((await getCurrentAccess()).kind).toBe("no_access");

@@ -771,7 +771,15 @@ export const textos = {
       vencida: {
         titulo: "Esa invitación venció o ya se usó.",
         cuerpo:
-          "Pídele al dueño del establecimiento que te reenvíe la invitación. Si ya creaste tu contraseña, ingresa con tu correo.",
+          "Si nunca la abriste, pídele al dueño del establecimiento que te la reenvíe. Si ya la abriste, entra con tu correo o pide un link para crear tu contraseña en «¿Olvidaste tu contraseña?».",
+      },
+      // Opening the invitation confirms the email, so after the hour the
+      // owner can no longer resend it: the way in is a recovery link.
+      sinSesion: {
+        titulo: "El link para crear tu contraseña ya venció.",
+        cuerpo:
+          "Pide uno nuevo con tu correo: te llega un link para crear tu contraseña y entrar a tu agenda.",
+        pedir: "Pedir un link nuevo",
       },
     },
     salir: "Cerrar sesión",

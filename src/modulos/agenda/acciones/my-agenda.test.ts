@@ -41,6 +41,15 @@ vi.mock("../datos/barber-agenda", () => ({
   createTimeBlockByBarber,
 }));
 
+// The guard of the pages (review of task 7.6b): a professional who accepted
+// the terms, or a redirect home.
+let guard = "pass";
+const requireProfessional = vi.fn(async () => {
+  if (guard !== "pass") throw new Redirect(guard);
+  return { kind: "professional", acceptedTerms: true };
+});
+vi.mock("@/modulos/cuentas/guards", () => ({ requireProfessional }));
+
 const { markMyAppointment, removeMyBlock, createMyBlock } =
   await import("./my-agenda");
 
@@ -66,6 +75,56 @@ async function run<T>(call: () => Promise<T>) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  guard = "pass";
+});
+
+describe("the guard", () => {
+  it("a professional who has not accepted the terms does nothing: to accept them first", async () => {
+    guard = "/nueva-clave";
+    expect(
+      await run(() =>
+        markMyAppointment(form({ cita: APPOINTMENT, estado: "attended" })),
+      ),
+    ).toEqual({ redirectedTo: "/nueva-clave" });
+    expect(await run(() => removeMyBlock(form({ bloqueo: BLOCK })))).toEqual({
+      redirectedTo: "/nueva-clave",
+    });
+    expect(
+      await run(() =>
+        createMyBlock(
+          { status: "idle" },
+          form({
+            dia: "2026-11-08",
+            desde: "13:00",
+            hasta: "14:00",
+            motivo: "lunch",
+          }),
+        ),
+      ),
+    ).toEqual({ redirectedTo: "/nueva-clave" });
+    expect(markAppointmentByBarber).not.toHaveBeenCalled();
+    expect(deleteTimeBlockByBarber).not.toHaveBeenCalled();
+    expect(createTimeBlockByBarber).not.toHaveBeenCalled();
+  });
+
+  it("an owner (or anyone else) goes home, without touching the database", async () => {
+    guard = "/panel";
+    expect(
+      await run(() =>
+        markMyAppointment(form({ cita: APPOINTMENT, estado: "attended" })),
+      ),
+    ).toEqual({ redirectedTo: "/panel" });
+    expect(markAppointmentByBarber).not.toHaveBeenCalled();
+  });
+
+  it("every action asks the guard", async () => {
+    await run(() =>
+      markMyAppointment(form({ cita: APPOINTMENT, estado: "attended" })),
+    );
+    await run(() => removeMyBlock(form({ bloqueo: BLOCK })));
+    await run(() => createMyBlock({ status: "idle" }, form({})));
+    expect(requireProfessional).toHaveBeenCalledTimes(3);
+  });
 });
 
 describe("markMyAppointment", () => {

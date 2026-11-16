@@ -44,9 +44,15 @@ async function NewPasswordOrExpired() {
     return welcome ? (
       <>
         <AuthHeading title={w.titulo} />
-        <Notice tone="warning" title={w.vencida.titulo}>
-          {w.vencida.cuerpo}
+        {/* Opening the invitation confirmed the email (checked against the
+            local Auth): the owner can no longer resend it, and a recovery
+            link brings the professional back here, terms included. */}
+        <Notice tone="warning" title={w.sinSesion.titulo}>
+          {w.sinSesion.cuerpo}
         </Notice>
+        <TextLink href={routes.recoverPassword} standalone>
+          {w.sinSesion.pedir}
+        </TextLink>
         <SignOutButton />
       </>
     ) : (

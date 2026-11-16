@@ -75,6 +75,9 @@ const professionalSchema = z.object({
   barberId: z.string(),
   name: z.string(),
   active: z.boolean(),
+  // The same rule the my_* functions apply (migration
+  // add_professional_account_app): profiles.terms_accepted_at.
+  acceptedTerms: z.boolean(),
   barbershop: z.object({
     name: z.string(),
     slug: z.string(),
@@ -109,7 +112,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, is_super_admin, terms_version")
+      .select("full_name, is_super_admin")
       .eq("id", user.id)
       .maybeSingle(),
     supabase
@@ -169,7 +172,6 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
       kind: "professional",
       email: user.email ?? "",
       ...professional.data,
-      acceptedTerms: profile.terms_version !== null,
     };
   }
   const summary = (barbershop: (typeof owned)[number]): OwnerBarbershop => ({
