@@ -194,13 +194,21 @@ describe("bookAppointment", () => {
   });
 
   it("sends no barber for el primero disponible and says who was assigned", async () => {
-    const result = await run(form({ ...VALID, barbero: "primero", phone: "" }));
+    const result = await run(form({ ...VALID, barbero: "primero" }));
     expect(createPublicBooking.mock.calls[0]![0]).toMatchObject({
       barberId: null,
-      phone: null,
     });
     expect(result).toEqual({
       redirectedTo: `/la-esquina/reservar/confirmada?servicios=${SERVICE}&profesional=${BARBER}&dia=2026-11-24&hora=10%3A30&asignado=1`,
+    });
+  });
+
+  it("does not book without the customer's mobile", async () => {
+    const result = await run(form({ ...VALID, phone: "" }));
+    expect(createPublicBooking).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: "invalid",
+      fieldErrors: { phone: "phone_required" },
     });
   });
 

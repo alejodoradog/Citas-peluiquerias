@@ -99,6 +99,11 @@ export async function fillAndConfirm(page: Page, name: string, email: string) {
     .getByRole("textbox", { name: t.datos.correo })
     .filter({ visible: true })
     .fill(email);
+  // Required to book since task 7.5.
+  await page
+    .getByRole("textbox", { name: t.datos.celular })
+    .filter({ visible: true })
+    .fill("300 123 4567");
   await acceptDataPolicy(page);
   await page
     .getByRole("button", { name: t.datos.confirmar })

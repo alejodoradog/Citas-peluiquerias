@@ -18,12 +18,15 @@ export type CustomerDetailsErrorCode =
   | "name_has_link"
   | "privacy_required"
   | "email_invalid"
+  | "phone_required"
   | "phone_invalid";
 
 export type CustomerDetails = {
   name: string;
   email: string;
-  phone: string | null;
+  // Required to book since task 7.5 (founder, 2026-11-15): the professional
+  // and the establishment write to the customer by WhatsApp.
+  phone: string;
 };
 
 const schema = z
@@ -43,10 +46,13 @@ const schema = z
     // The express authorization of Ley 1581 (task 6.5): the box, marked.
     acepto: z.literal("on", { error: "privacy_required" }),
     phone: z
-      .string({ error: "phone_invalid" })
+      .string({ error: "phone_required" })
       .trim()
       .transform((value, context) => {
-        if (value === "") return null;
+        if (value === "") {
+          context.addIssue({ code: "custom", message: "phone_required" });
+          return z.NEVER;
+        }
         const mobile = normalizeColombianMobile(value);
         if (!mobile) {
           context.addIssue({ code: "custom", message: "phone_invalid" });
