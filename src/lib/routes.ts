@@ -72,6 +72,9 @@ export const routes = {
   adminBarbershop: (id: string) => `/admin/barberias/${id}`,
   adminPayment: (id: string) => `/admin/barberias/${id}/pago`,
   adminMetrics: "/admin/metricas",
+  // Task 7.8b, "Cambiar plan": the owner's plan and the platform's requests.
+  panelPlan: "/panel/plan",
+  adminPlanChanges: "/admin/solicitudes",
   // Task 4.6, "Cierre del día" (D-64) and its CSV ("Descargar resumen").
   panelClose: "/panel/cierre",
   panelCloseCsv: "/panel/cierre/resumen",

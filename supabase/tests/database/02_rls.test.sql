@@ -167,6 +167,7 @@ select is(
     -- Task 5.5: the barbershops whose configuration may change (policies of
     -- migration 10).
     'private.writable_barbershop_ids:authenticated',
+    'public.accept_plan_change:authenticated',
     -- Task 4.3: "Borrar cliente" and the list of customers.
     'public.anonymize_customer:authenticated',
     -- Task 4.4: "Mi agenda" of a barber, for anyone who has the link.
@@ -182,6 +183,7 @@ select is(
     -- Task 3.4: the link to manage an appointment, for anyone who has it.
     'public.cancel_appointment_by_token:anon',
     'public.cancel_appointment_by_token:authenticated',
+    'public.cancel_plan_change:authenticated',
     -- Task 4.2: what the owner does with an appointment and a block.
     'public.change_appointment_services_checked:authenticated',
     'public.complete_barbershop_setup:authenticated',
@@ -220,9 +222,12 @@ select is(
     'public.platform_business_types:authenticated',
     'public.platform_monthly_revenue:authenticated',
     'public.platform_payments:authenticated',
+    'public.platform_plan_changes:authenticated',
     'public.platform_weekly_activity:authenticated',
     'public.reactivate_barbershop:authenticated',
     'public.register_subscription_payment:authenticated',
+    'public.reject_plan_change:authenticated',
+    'public.request_plan_change:authenticated',
     'public.reschedule_appointment:authenticated',
     'public.reschedule_appointment_by_token:anon',
     'public.reschedule_appointment_by_token:authenticated',
@@ -237,6 +242,7 @@ select is(
     'public.set_service_barbers:authenticated',
     'public.subscription_quote:authenticated',
     'public.suspend_barbershop:authenticated',
+    'public.void_plan_change:authenticated',
     'public.void_subscription_payment:authenticated'
   ],
   'anon and authenticated execute only the functions granted on purpose'
