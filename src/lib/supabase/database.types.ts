@@ -193,14 +193,14 @@ isOneToOne: false
                   ]
                 },"barbers": {
                   Row: {
-                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_issued_at": string | null,"link_token_hash": string,"photo_path": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
+                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"deleted_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_issued_at": string | null,"link_token_hash": string,"photo_path": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash": string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"deleted_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Update: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"deleted_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Relationships: [
                     {
@@ -519,6 +519,11 @@ isOneToOne: false
 "anonymize_customer":
 { Args: { "p_barbershop_id": string,"p_customer_id": string }; Returns: undefined
                            },
+"barber_account_states":
+{ Args: { "p_barbershop_id": string }; Returns: {
+              "barber_id": string,"expires_at": string,"sent_at": string,"state": string
+            }[]
+                           },
 "barber_account_status":
 { Args: { "p_barber_id": string }; Returns: {
               "expires_at": string,"sent_at": string,"state": string
@@ -526,14 +531,6 @@ isOneToOne: false
                            },
 "barber_account_to_delete":
 { Args: { "p_barber_id": string }; Returns: string
-                           },
-"barber_agenda":
-{ Args: { "p_from": string,"p_to": string,"p_token_hash": string }; Returns: Json
-                           },
-"barber_appointment":
-{ Args: { "p_appointment_id": string,"p_token_hash": string }; Returns: {
-              "created_at": string,"customer_name": string,"ends_at": string,"id": string,"no_shows": number,"service_minutes": (number)[],"service_names": (string)[],"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"visits": number,"writable": boolean
-            }[]
                            },
 "barbershop_accepts_bookings":
 { Args: { "p_barbershop_id": string }; Returns: boolean
@@ -588,8 +585,8 @@ isOneToOne: false
 "create_time_block":
 { Args: { "p_barber_id": string,"p_barbershop_id": string,"p_ends_at": string,"p_reason"?: string,"p_starts_at": string }; Returns: string
                            },
-"create_time_block_by_barber":
-{ Args: { "p_ends_at": string,"p_reason"?: string,"p_starts_at": string,"p_token_hash": string }; Returns: string
+"delete_barber":
+{ Args: { "p_barber_id": string }; Returns: string
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
@@ -599,9 +596,6 @@ isOneToOne: false
                            },
 "delete_time_block":
 { Args: { "p_block_id": string }; Returns: undefined
-                           },
-"delete_time_block_by_barber":
-{ Args: { "p_block_id": string,"p_token_hash": string }; Returns: undefined
                            },
 "extend_trial":
 { Args: { "p_barbershop_id": string,"p_until": string }; Returns: undefined
@@ -632,9 +626,6 @@ isOneToOne: false
 { Args: { "p_token_hash": string }; Returns: {
               "barber_id": string,"barber_name": string,"barbershop_id": string,"cancellation_notice_hours": number,"changeable": boolean,"customer_confirmed": boolean,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"slug": string,"starts_at": string
             }[]
-                           },
-"mark_appointment_by_barber":
-{ Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"],"p_token_hash": string }; Returns: undefined
                            },
 "mark_my_appointment":
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"] }; Returns: undefined

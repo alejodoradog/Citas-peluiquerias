@@ -60,9 +60,9 @@ select throws_ok(
   '42501', null, 'nor set the deactivation stamp'
 );
 select lives_ok(
-  $$insert into public.barbers (barbershop_id, display_name, link_token_hash)
-    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Nuevo', repeat('e', 64))$$,
-  'a session inserts a barber with the panel columns'
+  $$insert into public.barbers (barbershop_id, display_name)
+    values ('aaaaaaaa-0000-0000-0000-000000000000', 'Nuevo')$$,
+  'a session inserts a barber with the panel columns (the link columns take their defaults, task 7.6c)'
 );
 
 select * from finish();

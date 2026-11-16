@@ -1,8 +1,12 @@
--- Task 4.4, migration add_barber_agenda: "Mi agenda" of a barber, through
--- the private link /b/<token>.
+-- Task 4.4, migration add_barber_agenda: "Mi agenda" of a barber. Since task
+-- 7.6c (decision 0010) the private link is gone and "Mi agenda" is the my_*
+-- functions, by the professional's own session (migrations
+-- add_professional_accounts and remove_barber_link_add_barber_deletion).
+-- These are the rules of the agenda, unchanged, now asked by the session:
 --
--- - The functions take the hash of the link. A deactivated or made-up link
---   gives nothing (B-05); the link of an inactive barber still works.
+-- - A session that is not of a professional (no account, or an account that
+--   is no professional) gets nothing; the session of an inactive barber
+--   still works.
 -- - The barber sees only their own appointments and blocks (and the closures
 --   of the whole barbershop), with the customer's short name: never a price,
 --   a total, an email, a phone, notes or another barber.
@@ -21,59 +25,59 @@ select plan(72);
 
 -- Structure and privileges -------------------------------------------------------------------
 
-select has_function('public', 'barber_agenda', array['text', 'date', 'date'], 'barber_agenda exists');
-select has_function('public', 'barber_appointment', array['text', 'uuid'], 'barber_appointment exists');
+select has_function('public', 'my_agenda', array['date', 'date'], 'my_agenda exists');
+select has_function('public', 'my_appointment', array['uuid'], 'my_appointment exists');
 select has_function(
-  'public', 'mark_appointment_by_barber', array['text', 'uuid', 'appointment_status'],
-  'mark_appointment_by_barber exists'
+  'public', 'mark_my_appointment', array['uuid', 'appointment_status'],
+  'mark_my_appointment exists'
 );
 select has_function(
-  'public', 'create_time_block_by_barber',
-  array['text', 'timestamp with time zone', 'timestamp with time zone', 'text'],
-  'create_time_block_by_barber exists'
+  'public', 'create_my_time_block',
+  array['timestamp with time zone', 'timestamp with time zone', 'text'],
+  'create_my_time_block exists'
 );
-select has_function('public', 'delete_time_block_by_barber', array['text', 'uuid'], 'delete_time_block_by_barber exists');
+select has_function('public', 'delete_my_time_block', array['uuid'], 'delete_my_time_block exists');
 select ok(
   (select bool_and(prosecdef and proconfig @> array['search_path=""'])
    from pg_proc
    where oid in (
-     'public.barber_agenda(text, date, date)'::regprocedure,
-     'public.barber_appointment(text, uuid)'::regprocedure,
-     'public.mark_appointment_by_barber(text, uuid, public.appointment_status)'::regprocedure,
-     'public.create_time_block_by_barber(text, timestamptz, timestamptz, text)'::regprocedure,
-     'public.delete_time_block_by_barber(text, uuid)'::regprocedure
+     'public.my_agenda(date, date)'::regprocedure,
+     'public.my_appointment(uuid)'::regprocedure,
+     'public.mark_my_appointment(uuid, public.appointment_status)'::regprocedure,
+     'public.create_my_time_block(timestamptz, timestamptz, text)'::regprocedure,
+     'public.delete_my_time_block(uuid)'::regprocedure
    )),
   'the five functions are security definer with an empty search_path'
 );
 select ok(
   (select bool_and(
-     has_function_privilege('anon', f, 'EXECUTE') and has_function_privilege('authenticated', f, 'EXECUTE'))
+     has_function_privilege('authenticated', f, 'EXECUTE') and not has_function_privilege('anon', f, 'EXECUTE'))
    from unnest(array[
-     'public.barber_agenda(text, date, date)',
-     'public.barber_appointment(text, uuid)',
-     'public.mark_appointment_by_barber(text, uuid, public.appointment_status)',
-     'public.create_time_block_by_barber(text, timestamptz, timestamptz, text)',
-     'public.delete_time_block_by_barber(text, uuid)'
+     'public.my_agenda(date, date)',
+     'public.my_appointment(uuid)',
+     'public.mark_my_appointment(uuid, public.appointment_status)',
+     'public.create_my_time_block(timestamptz, timestamptz, text)',
+     'public.delete_my_time_block(uuid)'
    ]) f),
-  'anon and authenticated call the five functions'
+  'only a session calls the five functions; anon cannot'
 );
 select ok(
-  not has_function_privilege('anon', 'private.barber_by_link(text)', 'EXECUTE')
-    and not has_function_privilege('authenticated', 'private.barber_by_link(text)', 'EXECUTE'),
-  'nobody calls the link helper directly'
+  not has_function_privilege('anon', 'private.barber_by_session()', 'EXECUTE')
+    and not has_function_privilege('authenticated', 'private.barber_by_session()', 'EXECUTE'),
+  'nobody calls the session helper directly'
 );
 select is(
-  (select pg_get_function_result('public.barber_appointment(text, uuid)'::regprocedure)),
+  (select pg_get_function_result('public.my_appointment(uuid)'::regprocedure)),
   'TABLE(id uuid, starts_at timestamp with time zone, ends_at timestamp with time zone, '
     'status appointment_status, source appointment_source, created_at timestamp with time zone, '
-    'customer_name text, service_names text[], service_minutes integer[], visits integer, '
-    'no_shows integer, writable boolean)',
-  'barber_appointment returns what B-03 shows: no price, email, phone or notes'
+    'customer_name text, customer_phone text, service_names text[], service_minutes integer[], '
+    'visits integer, no_shows integer, writable boolean)',
+  'my_appointment returns what B-03 shows, plus the phone: no price, email or notes'
 );
 
 -- Fixtures, inserted as the table owner -----------------------------------------------------------
 -- Shop S is active; shop T is another barbershop. In S: Uno and Dos (active),
--- Cuatro (inactive, link still active) and Cinco (link deactivated). In T: Tres.
+-- Cuatro (inactive, account still joined) and Cinco (no account). In T: Tres.
 
 insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, expires_on, created_at) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'Barbería S', 'barberia-s', '+573001112233',
@@ -132,8 +136,91 @@ as $$
   select (now() at time zone 'America/Bogota')::date + days
 $$;
 
-grant execute on function pg_temp.h(text), pg_temp.at(integer, text), pg_temp.hint_of(text), pg_temp.d(integer)
-  to anon, authenticated;
+-- The account of each barber of the fixtures (Cinco has none), and of a
+-- session that is no professional at all ('inventado').
+create function pg_temp.uid(who text)
+returns uuid
+language sql
+immutable
+as $$
+  select case who
+    when 'uno' then '00000000-0000-0000-0000-000000000401'
+    when 'dos' then '00000000-0000-0000-0000-000000000402'
+    when 'tres' then '00000000-0000-0000-0000-000000000403'
+    when 'cuatro' then '00000000-0000-0000-0000-000000000404'
+    else '00000000-0000-0000-0000-0000000004ff'
+  end::uuid
+$$;
+
+-- "Mi agenda" as the session of `who`: what the app calls (task 7.6b).
+create function pg_temp.as_barber(who text)
+returns void
+language sql
+as $$
+  select set_config('request.jwt.claims',
+    json_build_object('sub', pg_temp.uid(who), 'role', 'authenticated')::text, true);
+$$;
+
+create function pg_temp.agenda(who text, p_from date, p_to date)
+returns jsonb
+language plpgsql
+as $$
+begin
+  perform pg_temp.as_barber(who);
+  return public.my_agenda(p_from, p_to);
+end;
+$$;
+
+create function pg_temp.appointment(who text, p_appointment_id uuid)
+returns table (
+  id uuid, starts_at timestamptz, ends_at timestamptz, status public.appointment_status,
+  source public.appointment_source, created_at timestamptz, customer_name text, customer_phone text,
+  service_names text[], service_minutes integer[], visits integer, no_shows integer, writable boolean
+)
+language plpgsql
+as $$
+#variable_conflict use_column
+begin
+  perform pg_temp.as_barber(who);
+  return query select * from public.my_appointment(p_appointment_id);
+end;
+$$;
+
+create function pg_temp.mark(who text, p_appointment_id uuid, p_status public.appointment_status)
+returns void
+language plpgsql
+as $$
+begin
+  perform pg_temp.as_barber(who);
+  perform public.mark_my_appointment(p_appointment_id, p_status);
+end;
+$$;
+
+create function pg_temp.block(who text, p_starts_at timestamptz, p_ends_at timestamptz, p_reason text)
+returns uuid
+language plpgsql
+as $$
+begin
+  perform pg_temp.as_barber(who);
+  return public.create_my_time_block(p_starts_at, p_ends_at, p_reason);
+end;
+$$;
+
+create function pg_temp.unblock(who text, p_block_id uuid)
+returns void
+language plpgsql
+as $$
+begin
+  perform pg_temp.as_barber(who);
+  perform public.delete_my_time_block(p_block_id);
+end;
+$$;
+
+grant execute on function pg_temp.h(text), pg_temp.at(integer, text), pg_temp.hint_of(text), pg_temp.d(integer),
+  pg_temp.uid(text), pg_temp.as_barber(text), pg_temp.agenda(text, date, date), pg_temp.appointment(text, uuid),
+  pg_temp.mark(text, uuid, public.appointment_status), pg_temp.block(text, timestamptz, timestamptz, text),
+  pg_temp.unblock(text, uuid)
+  to authenticated;
 
 insert into public.barbers (id, barbershop_id, display_name, link_token_hash, sort_order, active, link_active) values
   ('ba000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Kevin Mora', pg_temp.h('uno'), 1, true, true),
@@ -141,6 +228,19 @@ insert into public.barbers (id, barbershop_id, display_name, link_token_hash, so
   ('ba000000-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000001', 'Cuatro', pg_temp.h('cuatro'), 4, true, true),
   ('ba000000-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000001', 'Cinco', pg_temp.h('cinco'), 5, true, false),
   ('ba000000-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000002', 'Tres', pg_temp.h('tres'), 1, true, true);
+-- Their accounts, joined and with the terms accepted (task 7.6). Cinco has
+-- none; 'inventado' is an account that is no professional.
+insert into auth.users (id, email)
+select pg_temp.uid(w), w || '-40@example.com'
+from unnest(array['uno', 'dos', 'tres', 'cuatro', 'inventado']) w;
+insert into public.profiles (id, full_name, terms_accepted_at, terms_version)
+select pg_temp.uid(w), w, now(), 'prueba-40'
+from unnest(array['uno', 'dos', 'tres', 'cuatro', 'inventado']) w;
+update public.barbers b set profile_id = pg_temp.uid(v.w)
+from (values ('ba000000-0000-0000-0000-000000000001', 'uno'), ('ba000000-0000-0000-0000-000000000002', 'dos'),
+             ('ba000000-0000-0000-0000-000000000003', 'tres'), ('ba000000-0000-0000-0000-000000000004', 'cuatro'))
+  as v (id, w)
+where b.id = v.id::uuid;
 insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', 1, '09:00', '19:00');
 update public.barbers set uses_barbershop_hours = false where id = 'ba000000-0000-0000-0000-000000000001';
@@ -198,27 +298,26 @@ insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at
   ('b0000000-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000003',
    pg_temp.at(1, '14:00'), pg_temp.at(1, '15:00'), null);
 
--- Cuatro leaves the team, with their link still active.
+-- Cuatro leaves the team, with their account still joined.
 update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000004';
 
--- Reading, as anon -----------------------------------------------------------------------------------
+-- Reading, by the session -----------------------------------------------------------------------------------
 
 -- From yesterday, so the appointments of the last hour are inside even just
 -- after midnight in Bogotá.
 create temporary table agenda (week_before jsonb, week jsonb) on commit drop;
-grant all on agenda to anon;
+grant all on agenda to authenticated;
 
-set local role anon;
-set local request.jwt.claims to '{"role": "anon"}';
+set local role authenticated;
 
 insert into agenda
-select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(-8), pg_temp.d(-2)),
-       public.barber_agenda(pg_temp.h('uno'), pg_temp.d(-1), pg_temp.d(5));
+select pg_temp.agenda('uno', pg_temp.d(-8), pg_temp.d(-2)),
+       pg_temp.agenda('uno', pg_temp.d(-1), pg_temp.d(5));
 
 select is(
   (select week #>> '{barber,name}' from agenda),
   'Kevin Mora',
-  'the link of Uno opens the agenda of Uno'
+  'the session of Uno opens the agenda of Uno'
 );
 select is(
   (select array_agg(e ->> 'id' order by e ->> 'id') from agenda, jsonb_array_elements(week -> 'appointments') e),
@@ -267,34 +366,35 @@ select is(
   1,
   'past days too: the attended one of last week'
 );
-select is(public.barber_agenda(pg_temp.h('cinco'), pg_temp.d(0), pg_temp.d(0)), null,
-  'a deactivated link gives nothing (B-05)');
-select is(public.barber_agenda(pg_temp.h('inventado'), pg_temp.d(0), pg_temp.d(0)), null,
-  'a made-up link gives the same nothing');
-select is(public.barber_agenda('no es un hash', pg_temp.d(0), pg_temp.d(0)), null,
-  'nor does something that is not a hash');
+select is(pg_temp.agenda('cinco', pg_temp.d(0), pg_temp.d(0)), null,
+  'a professional without an account gets nothing');
+select is(pg_temp.agenda('inventado', pg_temp.d(0), pg_temp.d(0)), null,
+  'an account that is no professional gets the same nothing');
+select ok(
+  not has_function_privilege('anon', 'public.my_agenda(date, date)', 'EXECUTE'),
+  'and without a session there is nothing to call');
 select is(
-  (public.barber_agenda(pg_temp.h('cuatro'), pg_temp.d(0), pg_temp.d(1))) #> '{barber,active}',
+  (pg_temp.agenda('cuatro', pg_temp.d(0), pg_temp.d(1))) #> '{barber,active}',
   'false'::jsonb,
-  'the link of an inactive barber still works'
+  'the session of an inactive barber still works'
 );
 select is(
-  pg_temp.hint_of($$select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(0), pg_temp.d(7))$$),
+  pg_temp.hint_of($$select pg_temp.agenda('uno', pg_temp.d(0), pg_temp.d(7))$$),
   'range_invalid',
   'at most 7 days at a time'
 );
 select is(
-  pg_temp.hint_of($q$select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(-20), pg_temp.d(-14))$q$),
+  pg_temp.hint_of($q$select pg_temp.agenda('uno', pg_temp.d(-20), pg_temp.d(-14))$q$),
   'range_invalid',
   'never weeks long gone (decision B5)'
 );
 select is(
-  pg_temp.hint_of($q$select public.barber_agenda(pg_temp.h('uno'), pg_temp.d(31), pg_temp.d(37))$q$),
+  pg_temp.hint_of($q$select pg_temp.agenda('uno', pg_temp.d(31), pg_temp.d(37))$q$),
   'range_invalid',
   'nor beyond the weeks of the next 30 days'
 );
 select is(
-  (select jsonb_array_length(public.barber_agenda(pg_temp.h('tres'), pg_temp.d(0), pg_temp.d(5)) -> 'appointments')),
+  (select jsonb_array_length(pg_temp.agenda('tres', pg_temp.d(0), pg_temp.d(5)) -> 'appointments')),
   1,
   'Tres sees only the appointment of barbershop T'
 );
@@ -303,27 +403,27 @@ select is(
 
 select is(
   (select row(customer_name, service_names, service_minutes, visits, no_shows, writable)::text
-   from public.barber_appointment(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000001')),
+   from pg_temp.appointment('uno', 'a0000000-0000-0000-0000-000000000001')),
   '("Camila R.","{Corte,Barba}","{30,15}",1,0,t)',
   'B-03 shows the short name, the services with their minutes, the visits and the no-shows'
 );
 select is(
-  (select count(*)::integer from public.barber_appointment(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000004')),
+  (select count(*)::integer from pg_temp.appointment('uno', 'a0000000-0000-0000-0000-000000000004')),
   0,
   'an appointment of Dos is not shown to Uno'
 );
 select is(
-  (select count(*)::integer from public.barber_appointment(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000005')),
+  (select count(*)::integer from pg_temp.appointment('uno', 'a0000000-0000-0000-0000-000000000005')),
   0,
   'nor one of another barbershop'
 );
 select is(
-  (select count(*)::integer from public.barber_appointment(pg_temp.h('cinco'), 'a0000000-0000-0000-0000-000000000001')),
+  (select count(*)::integer from pg_temp.appointment('cinco', 'a0000000-0000-0000-0000-000000000001')),
   0,
-  'nor anything through a deactivated link'
+  'nor anything for a professional without an account'
 );
 select is(
-  (select count(*)::integer from public.barber_appointment(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000003')),
+  (select count(*)::integer from pg_temp.appointment('uno', 'a0000000-0000-0000-0000-000000000003')),
   0,
   'nor a cancelled appointment, as the agenda'
 );
@@ -331,7 +431,7 @@ select is(
 -- Marking ----------------------------------------------------------------------------------------------
 
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000001', 'attended')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000001', 'attended')$$),
   'no error',
   'Uno marks as attended the appointment that already started'
 );
@@ -347,44 +447,44 @@ select is(
   'barber',
   'the history records the barber'
 );
-set local role anon;
+set local role authenticated;
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000001', 'no_show')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000001', 'no_show')$$),
   'not_confirmed',
-  'a mark is not corrected from the link (decision B3)'
+  'a mark is not corrected from Mi agenda (decision B3)'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000002', 'no_show')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000002', 'no_show')$$),
   'too_early',
   'an appointment that has not started cannot be marked (decision B2)'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000003', 'attended')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000003', 'attended')$$),
   'not_confirmed',
   'nor a cancelled one'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000004', 'attended')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000004', 'attended')$$),
   'not_yours',
   'nor one of Dos'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000007', 'cancelled_by_barbershop')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000007', 'cancelled_by_barbershop')$$),
   'status_invalid',
-  'the link only marks attended or no-show (decision B1)'
+  'Mi agenda only marks attended or no-show (decision B1)'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('cinco'), 'a0000000-0000-0000-0000-000000000007', 'attended')$$),
-  'link_invalid',
-  'a deactivated link marks nothing'
+  pg_temp.hint_of($$select pg_temp.mark('cinco', 'a0000000-0000-0000-0000-000000000007', 'attended')$$),
+  'not_professional',
+  'a professional without an account marks nothing'
 );
 select is(
-  pg_temp.hint_of($q$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000005', 'attended')$q$),
+  pg_temp.hint_of($q$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000005', 'attended')$q$),
   'not_yours',
   'nor one of another barbershop'
 );
 select is(
-  pg_temp.hint_of($q$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000009', 'no_show')$q$),
+  pg_temp.hint_of($q$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000009', 'no_show')$q$),
   'not_yours',
   'nor one older than a week (decision B5)'
 );
@@ -401,10 +501,10 @@ insert into public.holiday_openings (barbershop_id, holiday_date)
 select 'aaaaaaaa-0000-0000-0000-000000000001', pg_temp.d(n)
 from generate_series(0, 8) n
 where private.is_colombian_holiday(pg_temp.d(n));
-set local role anon;
+set local role authenticated;
 
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '16:00'), pg_temp.at(1, '17:00'), 'Diligencia')$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '16:00'), pg_temp.at(1, '17:00'), 'Diligencia')$$),
   'no error',
   'Uno blocks tomorrow 16:00-17:00'
 );
@@ -415,60 +515,60 @@ select is(
   'Diligencia',
   'with its reason'
 );
-set local role anon;
+set local role authenticated;
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '10:15'), pg_temp.at(1, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '10:15'), pg_temp.at(1, '11:00'), null)$$),
   'overlaps_appointment',
   'not over an appointment of their own'
 );
 select is(
-  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '14:30'), pg_temp.at(1, '15:30'), null)$q$),
+  pg_temp.hint_of($q$select pg_temp.block('uno', pg_temp.at(1, '14:30'), pg_temp.at(1, '15:30'), null)$q$),
   'overlaps_block',
   'nor over a block of their own'
 );
 select is(
-  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '18:00'), pg_temp.at(1, '19:00'), 'Llama al 3001234567')$q$),
+  pg_temp.hint_of($q$select pg_temp.block('uno', pg_temp.at(1, '18:00'), pg_temp.at(1, '19:00'), 'Llama al 3001234567')$q$),
   'range_invalid',
   'only the reasons of B-04'
 );
 select is(
-  pg_temp.hint_of($q$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '18:00') + interval '400 milliseconds', pg_temp.at(1, '19:00'), null)$q$),
+  pg_temp.hint_of($q$select pg_temp.block('uno', pg_temp.at(1, '18:00') + interval '400 milliseconds', pg_temp.at(1, '19:00'), null)$q$),
   'range_invalid',
   'exactly on the quarter hour, not a fraction of a second off'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '10:05'), pg_temp.at(1, '10:20'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '10:05'), pg_temp.at(1, '10:20'), null)$$),
   'range_invalid',
   'only in steps of 15 minutes'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '23:00'), pg_temp.at(2, '01:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '23:00'), pg_temp.at(2, '01:00'), null)$$),
   'range_invalid',
   'within one Bogotá day'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(31, '10:00'), pg_temp.at(31, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(31, '10:00'), pg_temp.at(31, '11:00'), null)$$),
   'range_invalid',
   'up to 30 days ahead (decision B5)'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(-1, '10:00'), pg_temp.at(-1, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(-1, '10:00'), pg_temp.at(-1, '11:00'), null)$$),
   'too_early',
   'never in the past'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('cuatro'), pg_temp.at(1, '10:00'), pg_temp.at(1, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('cuatro', pg_temp.at(1, '10:00'), pg_temp.at(1, '11:00'), null)$$),
   'barber_inactive',
   'an inactive barber does not block'
 );
 -- Task 7.4: what is already closed is not blocked again.
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '22:00'), pg_temp.at(1, '23:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '22:00'), pg_temp.at(1, '23:00'), null)$$),
   'already_closed',
   'not outside the hours they work'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(5, '00:00'), pg_temp.at(6, '00:00'), 'Permiso')$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(5, '00:00'), pg_temp.at(6, '00:00'), 'Permiso')$$),
   'no error',
   'a whole day, 0:00 to 24:00, is one block'
 );
@@ -489,25 +589,25 @@ create temp table next_holiday as
 select min(pg_temp.d(n)) as day
 from generate_series(1, 30) n
 where private.is_colombian_holiday(pg_temp.d(n));
-grant select on next_holiday to anon;
-set local role anon;
+grant select on next_holiday to authenticated;
+set local role authenticated;
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('dos'), pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('dos', pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'), null)$$),
   'already_closed',
   'not on a day they do not work'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(7, '10:00'), pg_temp.at(7, '11:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(7, '10:00'), pg_temp.at(7, '11:00'), null)$$),
   'already_closed',
   'not over hours the barbershop closed for everyone'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(7, '00:00'), pg_temp.at(8, '00:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(7, '00:00'), pg_temp.at(8, '00:00'), null)$$),
   'already_closed',
   'nor the whole of a day the barbershop closed'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(8, '13:00'), pg_temp.at(8, '15:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(8, '13:00'), pg_temp.at(8, '15:00'), null)$$),
   'no error',
   'but a block that reaches into open hours is taken'
 );
@@ -516,7 +616,7 @@ select case
     then skip('no holiday in the next 30 days', 1)
   else is(
     pg_temp.hint_of(format(
-      $f$select public.create_time_block_by_barber(pg_temp.h('tres'), %L::timestamptz, %L::timestamptz, null)$f$,
+      $f$select pg_temp.block('tres', %L::timestamptz, %L::timestamptz, null)$f$,
       ((select day from next_holiday) + time '10:00') at time zone 'America/Bogota',
       ((select day from next_holiday) + time '11:00') at time zone 'America/Bogota'
     )),
@@ -526,27 +626,27 @@ select case
 end;
 
 select is(
-  pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000003')$$),
+  pg_temp.hint_of($$select pg_temp.unblock('uno', 'b0000000-0000-0000-0000-000000000003')$$),
   'not_yours',
   'the barber does not remove a closure of the whole barbershop'
 );
 select is(
-  pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000002')$$),
+  pg_temp.hint_of($$select pg_temp.unblock('uno', 'b0000000-0000-0000-0000-000000000002')$$),
   'not_yours',
   'nor a block of Dos'
 );
 select is(
-  pg_temp.hint_of($q$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000005')$q$),
+  pg_temp.hint_of($q$select pg_temp.unblock('uno', 'b0000000-0000-0000-0000-000000000005')$q$),
   'not_yours',
   'nor one of another barbershop'
 );
 select is(
-  pg_temp.hint_of($q$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000004')$q$),
+  pg_temp.hint_of($q$select pg_temp.unblock('uno', 'b0000000-0000-0000-0000-000000000004')$q$),
   'not_yours',
   'nor one that already ended'
 );
 select is(
-  pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), 'b0000000-0000-0000-0000-000000000001')$$),
+  pg_temp.hint_of($$select pg_temp.unblock('uno', 'b0000000-0000-0000-0000-000000000001')$$),
   'no error',
   'Uno removes their own block'
 );
@@ -560,35 +660,35 @@ select is(
 -- A suspended barbershop: read only, but marking still works (spec, Suscripciones, point 6) --------------
 
 update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000000001';
-set local role anon;
+set local role authenticated;
 
 select is(
-  (public.barber_agenda(pg_temp.h('uno'), pg_temp.d(0), pg_temp.d(0))) #> '{barbershop,writable}',
+  (pg_temp.agenda('uno', pg_temp.d(0), pg_temp.d(0))) #> '{barbershop,writable}',
   'false'::jsonb,
   'the agenda says it is read only (B-06)'
 );
 select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('uno'), 'a0000000-0000-0000-0000-000000000007', 'no_show')$$),
+  pg_temp.hint_of($$select pg_temp.mark('uno', 'a0000000-0000-0000-0000-000000000007', 'no_show')$$),
   'no error',
   'a suspended barbershop still lets the barber mark a no-show'
 );
 select is(
-  pg_temp.hint_of($$select public.create_time_block_by_barber(pg_temp.h('uno'), pg_temp.at(1, '18:00'), pg_temp.at(1, '19:00'), null)$$),
+  pg_temp.hint_of($$select pg_temp.block('uno', pg_temp.at(1, '18:00'), pg_temp.at(1, '19:00'), null)$$),
   'read_only',
   'but not block'
 );
 select is(
-  pg_temp.hint_of($$select public.delete_time_block_by_barber(pg_temp.h('uno'), (select id from public.time_blocks where false))$$),
+  pg_temp.hint_of($$select pg_temp.unblock('uno', (select id from public.time_blocks where false))$$),
   'read_only',
   'nor remove a block'
 );
 
--- A deleted barbershop: its links stop working.
+-- A deleted barbershop: its professionals' sessions reach nothing.
 reset role;
 update public.barbershops set deleted_at = now() where id = 'aaaaaaaa-0000-0000-0000-000000000002';
-set local role anon;
-select is(public.barber_agenda(pg_temp.h('tres'), pg_temp.d(0), pg_temp.d(0)), null,
-  'the link of a deleted barbershop gives nothing');
+set local role authenticated;
+select is(pg_temp.agenda('tres', pg_temp.d(0), pg_temp.d(0)), null,
+  'the session of a professional of a deleted barbershop gives nothing');
 
 select * from finish();
 rollback;

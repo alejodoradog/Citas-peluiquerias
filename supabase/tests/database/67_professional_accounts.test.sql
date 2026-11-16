@@ -110,12 +110,9 @@ select is(
   'my_appointment is B-03 plus the customer''s phone: no price, email or notes'
 );
 select is(
-  (select pg_get_function_result('public.barber_appointment(text, uuid)'::regprocedure)),
-  'TABLE(id uuid, starts_at timestamp with time zone, ends_at timestamp with time zone, '
-    'status appointment_status, source appointment_source, created_at timestamp with time zone, '
-    'customer_name text, service_names text[], service_minutes integer[], visits integer, '
-    'no_shows integer, writable boolean)',
-  'barber_appointment, by the link, still has no phone'
+  to_regprocedure('public.barber_appointment(text, uuid)'),
+  null,
+  'barber_appointment, by the link, is gone (task 7.6c)'
 );
 select ok(
   exists (select 1 from pg_trigger where tgrelid = 'auth.users'::regclass and tgname = 'on_auth_user_invited'),
@@ -1003,9 +1000,9 @@ select ok(
   'no price, email, phone, notes, full name, other professional or other barbershop'
 );
 select is(
-  (select week from agenda),
-  public.barber_agenda(pg_temp.h('uno67'), pg_temp.d(-1), pg_temp.d(5)),
-  'exactly what the link shows'
+  (select week #>> '{barber,id}' from agenda),
+  'ba000000-0000-0000-0000-000000006711',
+  'the professional of the session, and no other (the link is gone, task 7.6c)'
 );
 select is(
   pg_temp.hint_of($$select public.my_agenda(pg_temp.d(0), pg_temp.d(7))$$),
@@ -1030,9 +1027,9 @@ select is(
   'nor of another barbershop'
 );
 select is(
-  (select count(*)::integer from public.barber_appointment(pg_temp.h('uno67'), 'a0000000-0000-0000-0000-000000006701')),
+  (select count(*)::integer from public.my_appointment('a0000000-0000-0000-0000-000000006701')),
   1,
-  'the link still shows the appointment (without the phone, by its type)'
+  'one row for their own appointment'
 );
 select is(
   (select row(customer_name, customer_phone is null)::text

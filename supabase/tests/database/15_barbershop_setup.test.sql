@@ -180,8 +180,8 @@ select is(
 select is(
   (select array_agg(display_name || ':' || coalesce(email, '-') || ':' || is_owner || ':' || sort_order || ':' || uses_barbershop_hours || ':' || link_active order by sort_order)
    from public.barbers where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000000000'),
-  array['Dueño A:-:true:0:true:false', 'Kevin:kevin@correo.com:false:1:true:true'],
-  'the barbers keep their order, the owner has no link and everyone uses the barbershop hours'
+  array['Dueño A:-:true:0:true:false', 'Kevin:kevin@correo.com:false:1:true:false'],
+  'the barbers keep their order, nobody has a working link (task 7.6c) and everyone uses the barbershop hours'
 );
 select is(
   (select count(*)::int from public.barber_services bs
