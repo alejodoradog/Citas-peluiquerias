@@ -5,6 +5,7 @@ import { routes } from "@/lib/routes";
 import { completeSetup } from "@/modulos/barberias/acciones/setup";
 import {
   offeredServices,
+  pendingServices,
   toSetupPayload,
 } from "@/modulos/barberias/dominio/setup";
 import { Avatar } from "@/ui/avatar";
@@ -56,7 +57,17 @@ function Team({ ownerName }: { ownerName: string }) {
   const withoutServices = draft.barbers.filter(
     (b) => !b.serviceKeys.some((key) => offeredKeys.has(key)),
   );
-  const blocked = offered.length === 0 || withoutServices.length > 0;
+  // A placeholder of step 2 nobody filled in ("Servicio 1"): reached by the
+  // address, since step 2 does not go on with one.
+  const pending = pendingServices(draft);
+  const blocked =
+    offered.length === 0 || pending.length > 0 || withoutServices.length > 0;
+  // A new address for each new professional: Next.js keeps the form's page
+  // mounted, and the same address would bring it back as it was left, filled
+  // with the one just saved (task 7.3).
+  const addHref = `${routes.setupBarber}?nuevo=${draft.barbers.length + 1}${draft.barbers
+    .map((b) => b.key.slice(-4))
+    .join("")}`;
   const payload = JSON.stringify(toSetupPayload(draft, ownerName));
 
   return (
@@ -95,6 +106,14 @@ function Team({ ownerName }: { ownerName: string }) {
           <Notice
             tone="warning"
             title={t.sinServiciosTodos}
+            action={<a href={routes.setup}>{t.volverServicios}</a>}
+          />
+        ) : pending.length > 0 ? (
+          <Notice
+            tone="warning"
+            title={textos.asistente.servicios.pendientes(
+              pending.map((s) => s.name).join(" y "),
+            )}
             action={<a href={routes.setup}>{t.volverServicios}</a>}
           />
         ) : withoutServices.length > 0 ? (
@@ -139,7 +158,7 @@ function Team({ ownerName }: { ownerName: string }) {
             ))}
           </List>
         ) : null}
-        <ButtonLink href={routes.setupBarber} variant="secondary" size="md">
+        <ButtonLink href={addHref} variant="secondary" size="md">
           <PlusIcon size={18} />
           {t.agregar}
         </ButtonLink>

@@ -20,6 +20,9 @@ export type DraftService = {
   priceCop: number;
   durationMinutes: number;
   offered: boolean;
+  // A placeholder of the wizard ("Servicio 1") the owner has not filled in
+  // yet (task 7.3). Saving it from its sheet makes it a service like any.
+  pending?: boolean;
 };
 
 export type DraftBarber = {
@@ -49,6 +52,14 @@ export function initialDraft(): SetupDraft {
 
 export function offeredServices(draft: SetupDraft): DraftService[] {
   return draft.services.filter((service) => service.offered);
+}
+
+// The placeholders still offered as they came: the wizard does not go on
+// with them, so nobody publishes "Servicio 1" at $0 by accident.
+export function pendingServices(draft: SetupDraft): DraftService[] {
+  return draft.services.filter(
+    (service) => service.offered && service.pending === true,
+  );
 }
 
 export type SetupAction =

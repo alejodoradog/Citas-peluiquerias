@@ -124,7 +124,10 @@ function ServiceForm({
           name="price"
           prefix="$"
           inputMode="numeric"
-          defaultValue={service ? pesos.format(service.priceCop) : ""}
+          // A placeholder has no price yet: the owner types it.
+          defaultValue={
+            service && !service.pending ? pesos.format(service.priceCop) : ""
+          }
           error={message(errors.price)}
           autoComplete="off"
         />

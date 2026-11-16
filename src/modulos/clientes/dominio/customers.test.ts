@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  customerWhatsappUrl,
   customerListHref,
   databaseFilter,
   dayParts,
@@ -248,5 +249,23 @@ describe("parseCustomerNotes", () => {
     expect(
       parseCustomerNotes({ notes: "a".repeat(MAX_NOTES_LENGTH + 1) }),
     ).toEqual({ success: false, errors: { notes: "notes_too_long" } });
+  });
+});
+
+// Task 7.5.
+describe("customerWhatsappUrl", () => {
+  it("opens the chat with a Colombian mobile", () => {
+    expect(customerWhatsappUrl("+573012223344")).toBe(
+      "https://wa.me/573012223344",
+    );
+  });
+
+  it("gives nothing for anything else, and never more than the digits", () => {
+    for (const phone of [null, "", "3012223344", "+12025550100", "hola"]) {
+      expect(customerWhatsappUrl(phone)).toBeNull();
+    }
+    expect(customerWhatsappUrl("+57 301 222 3344?text=x")).toBe(
+      "https://wa.me/573012223344",
+    );
   });
 });

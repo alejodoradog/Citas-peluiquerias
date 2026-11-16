@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { textos } from "../../src/ui/textos";
-import { finishSetup } from "./helpers/asistente";
+import { fillSetupServices, finishSetup } from "./helpers/asistente";
 import {
   expectAccessible,
   expectNoZoomOnFocus,
@@ -173,6 +173,7 @@ test("D-62 warns when no barber can take bookings yet", async ({ page }) => {
 
   // The wizard, finished later without barbers.
   await expect(page).toHaveURL(/\/panel\/configurar$/, FIRST_VISIT);
+  await fillSetupServices(page);
   await page
     .getByRole("link", { name: textos.asistente.servicios.continuar })
     .click();

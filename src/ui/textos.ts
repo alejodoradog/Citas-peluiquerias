@@ -245,7 +245,7 @@ export const textos = {
         {
           titulo: "3. Para qué los usamos",
           parrafos: [
-            'Para prestar el servicio: mostrar la página del establecimiento, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas".',
+            'Para prestar el servicio: mostrar la página del establecimiento, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas"; y avisarle de la reserva al profesional que te atiende, con tu nombre y tu celular si lo diste.',
             "Para la suscripción: avisar los vencimientos y registrar los pagos.",
             "Para la seguridad: verificar que quien reserva o se registra no es un robot y limitar los abusos.",
             "No vendemos tus datos, no los usamos para publicidad y no los compartimos con nadie fuera de los proveedores de la sección 5.",
@@ -466,6 +466,8 @@ export const textos = {
       celular: "Celular",
       sinCorreo: "Sin correo",
       sinCelular: "Sin celular",
+      // Task 7.5: opens the chat with the customer's mobile.
+      whatsapp: "Escribirle por WhatsApp",
       historial: (visitas: number, inasistencias: number) =>
         `${visitas === 1 ? "1 visita" : `${visitas} visitas`} · ${
           inasistencias === 1
@@ -803,7 +805,11 @@ export const textos = {
       paso: "Paso 2 de 3",
       titulo: "¿Qué servicios ofreces?",
       bajada:
-        "Te sugerimos los típicos. Toca uno para cambiar precio o duración, o desmárcalo.",
+        "Empieza con estos dos: toca cada uno para ponerle nombre, precio y duración. Desmarca el que no uses.",
+      // A placeholder nobody filled in yet, in place of its duration.
+      porCompletar: "Toca para completarlo",
+      pendientes: (nombres: string) =>
+        `Completa ${nombres} o desmárcalo para continuar.`,
       ofrecer: (nombre: string) => `Ofrecer ${nombre}`,
       // Read before the row's visible text: "Editar Corte 40 min $25.000".
       editar: "Editar",
@@ -1040,7 +1046,8 @@ export const textos = {
       correo: "Para enviarle su link y, si quieres, avisarle de cada reserva.",
     },
     avisos: "Avisos por correo",
-    avisosAyuda: "Le llega un correo con cada nueva reserva o cancelación.",
+    avisosAyuda:
+      "Le llega un correo con cada nueva reserva o cancelación. El de la reserva trae el celular del cliente, para escribirle.",
     avisosSinCorreo: "Escribe su correo arriba para poder activarlos.",
     horario: "Horario",
     linkPrivado: "Link privado",
@@ -1659,6 +1666,8 @@ export const textos = {
       celular: "Celular",
       sinCorreo: "Sin correo",
       sinCelular: "Sin celular",
+      // Task 7.5: opens the chat with the customer's mobile.
+      whatsapp: "Escribirle por WhatsApp",
       notas: {
         etiqueta: "Notas",
         guardar: "Guardar notas",
@@ -1812,7 +1821,8 @@ export const textos = {
       correo: "Correo",
       correoAyuda: "Con tu correo el establecimiento reconoce tus citas.",
       celular: "Celular",
-      celularAyuda: "Solo para que el establecimiento te pueda llamar.",
+      celularAyuda:
+        "Para que el establecimiento y quien te atiende te puedan llamar o escribir por WhatsApp.",
       celularEjemplo: "300 123 4567",
       aceptas: "Lee la",
       politica: "política de datos",
@@ -2060,6 +2070,11 @@ export const textos = {
       dia: "Día",
       desde: "Desde",
       hasta: "Hasta",
+      // Task 7.4: the whole day in one tap, and the days with nothing to
+      // block.
+      todoElDia: "Todo el día",
+      todoElDiaAyuda: "No atiendes ese día.",
+      diaCerrado: (dia: string) => `${dia} · cerrado`,
       motivo: "Motivo",
       // What the owner's agenda shows too; "other" is saved without one.
       motivos: {
@@ -2091,6 +2106,7 @@ export const textos = {
       overlaps_appointment:
         "Tienes una cita en ese rango. Pídele al dueño que la mueva.",
       overlaps_block: "Ya tienes un bloqueo en ese rango.",
+      already_closed: "Ese horario ya está cerrado: no hace falta bloquearlo.",
       range_invalid: "Revisa el día y las horas.",
       end_before_start: "La hora final debe ser después de la inicial.",
       in_the_past: "Esa hora ya pasó. Elige una más tarde.",

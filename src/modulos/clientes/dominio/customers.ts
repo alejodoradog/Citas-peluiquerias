@@ -196,6 +196,13 @@ export function displayPhone(phone: string): string {
   return match ? `${match[1]} ${match[2]} ${match[3]}` : phone;
 }
 
+// The WhatsApp chat with a customer (task 7.5), or null when what is stored
+// is not a Colombian mobile: only its digits ever reach the link.
+export function customerWhatsappUrl(phone: string | null): string | null {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  return /^573\d{9}$/.test(digits) ? `https://wa.me/${digits}` : null;
+}
+
 export type NotesErrorCode = "notes_too_long";
 
 const notesSchema = z.object({

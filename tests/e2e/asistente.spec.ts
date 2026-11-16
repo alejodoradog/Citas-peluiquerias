@@ -5,6 +5,7 @@ import {
   expectNoZoomOnFocus,
   expectTouchTargets,
 } from "./helpers/pantalla";
+import { fillSetupServices } from "./helpers/asistente";
 import {
   createConfirmedOwner,
   setupSnapshot,
@@ -50,20 +51,29 @@ test("an owner sets up services and team, and gets the link to share", async ({
   test.setTimeout(180_000);
   const { slug } = await signInNewOwner(page, "asistente");
 
-  // D-10: the suggested services, Niños unchecked.
+  // D-10 (task 7.3): two services to fill in, that name no trade. The
+  // wizard does not go on with them as they come.
   await expect(
     page.getByRole("heading", { level: 1, name: t.servicios.titulo }),
   ).toBeVisible();
   await expect(
-    page.getByRole("checkbox", { name: t.servicios.ofrecer("Niños") }),
-  ).not.toBeChecked();
+    page.getByRole("button", { name: editar("Servicio 1") }),
+  ).toContainText(t.servicios.porCompletar);
+  await expect(
+    page.getByText(t.servicios.pendientes("Servicio 1 y Servicio 2")),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: t.servicios.continuar }),
+  ).toBeDisabled();
   await checkScreen(page);
 
-  // D-11: edit Corte.
-  await page.getByRole("button", { name: editar("Corte") }).click();
+  // D-11: the first one becomes Corte. It brings its name and no price.
+  await page.getByRole("button", { name: editar("Servicio 1") }).click();
   const sheet = page.getByRole("dialog", { name: t.servicio.editar });
   await expect(sheet).toBeVisible();
   await checkScreen(page);
+  await expect(sheet.getByLabel(t.servicio.campos.precio)).toHaveValue("");
+  await sheet.getByLabel(t.servicio.campos.nombre).fill("Corte");
   await sheet.getByLabel(t.servicio.campos.precio).fill("28.000");
   await sheet.getByLabel(t.servicio.campos.duracion).selectOption("45");
   await sheet.getByRole("button", { name: t.servicio.guardar }).click();
@@ -71,26 +81,38 @@ test("an owner sets up services and team, and gets the link to share", async ({
   const corte = page.getByRole("button", { name: editar("Corte") });
   await expect(corte).toContainText("$28.000");
   await expect(corte).toContainText("45 min");
+  await expect(
+    page.getByText(t.servicios.pendientes("Servicio 2")),
+  ).toBeVisible();
 
-  // A price with decimals is explained and focused.
-  await page.getByRole("button", { name: editar("Barba") }).click();
+  // The second becomes Barba. A price with decimals is explained and
+  // focused.
+  await page.getByRole("button", { name: editar("Servicio 2") }).click();
+  await sheet.getByLabel(t.servicio.campos.nombre).fill("Barba");
   await sheet.getByLabel(t.servicio.campos.precio).fill("25,5");
   await sheet.getByRole("button", { name: t.servicio.guardar }).click();
   await expect(sheet.getByText(t.errores.service_price_invalid)).toBeVisible();
   await expect(sheet.getByLabel(t.servicio.campos.precio)).toBeFocused();
-  await page.keyboard.press("Escape");
+  await sheet.getByLabel(t.servicio.campos.precio).fill("15.000");
+  await sheet.getByLabel(t.servicio.campos.duracion).selectOption("20");
+  await sheet.getByRole("button", { name: t.servicio.guardar }).click();
   await expect(sheet).not.toBeVisible();
 
-  // A new service, and Cejas left out.
-  await page.getByRole("button", { name: t.servicios.agregar }).click();
+  // Two new services, and one of them left out.
   const nuevo = page.getByRole("dialog", { name: t.servicio.nuevo });
-  await nuevo.getByLabel(t.servicio.campos.nombre).fill("Diseño");
-  await nuevo.getByLabel(t.servicio.campos.precio).fill("10000");
-  await nuevo.getByLabel(t.servicio.campos.duracion).selectOption("15");
-  await nuevo.getByRole("button", { name: t.servicio.guardar }).click();
-  await expect(
-    page.getByRole("button", { name: editar("Diseño") }),
-  ).toBeVisible();
+  for (const [name, price, minutes] of [
+    ["Diseño", "10000", "15"],
+    ["Cejas", "8000", "10"],
+  ] as const) {
+    await page.getByRole("button", { name: t.servicios.agregar }).click();
+    await nuevo.getByLabel(t.servicio.campos.nombre).fill(name);
+    await nuevo.getByLabel(t.servicio.campos.precio).fill(price);
+    await nuevo.getByLabel(t.servicio.campos.duracion).selectOption(minutes);
+    await nuevo.getByRole("button", { name: t.servicio.guardar }).click();
+    await expect(
+      page.getByRole("button", { name: editar(name) }),
+    ).toBeVisible();
+  }
   await page
     .getByRole("checkbox", { name: t.servicios.ofrecer("Cejas") })
     // Visually hidden native input: its drawn box takes the tap.
@@ -109,7 +131,9 @@ test("an owner sets up services and team, and gets the link to share", async ({
 
   // D-13: add a barber; a bad email is explained.
   await page.getByRole("link", { name: t.equipo.agregar }).click();
-  await expect(page).toHaveURL(/\/equipo\/barbero$/, { timeout: 20_000 });
+  await expect(page).toHaveURL(/\/equipo\/barbero\?nuevo=/, {
+    timeout: 20_000,
+  });
   await page
     .getByRole("textbox", { name: t.barbero.campos.nombre })
     .fill("Kevin");
@@ -129,6 +153,26 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await expect(page.getByRole("link", { name: /Kevin/ })).toContainText(
     t.equipo.resumen(2),
   );
+
+  // Task 7.3: the form of the next professional starts empty, not filled
+  // with Kevin.
+  await page.getByRole("link", { name: t.equipo.agregar }).click();
+  await expect(page).toHaveURL(/\/equipo\/barbero\?nuevo=/);
+  await expect(
+    page
+      .getByRole("textbox", { name: t.barbero.campos.nombre })
+      .filter({ visible: true }),
+  ).toHaveValue("");
+  await expect(
+    page
+      .getByRole("textbox", { name: new RegExp(t.barbero.campos.correo) })
+      .filter({ visible: true }),
+  ).toHaveValue("");
+  await page
+    .getByRole("link", { name: textos.ui.cerrar })
+    .filter({ visible: true })
+    .click();
+  await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/);
 
   // The draft survives a reload.
   await page.reload();
@@ -187,6 +231,7 @@ test("an owner can finish later without barbers", async ({ page }) => {
   test.setTimeout(90_000);
   const { slug } = await signInNewOwner(page, "asistente-despues");
 
+  await fillSetupServices(page);
   await page.getByRole("link", { name: t.servicios.continuar }).click();
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, {
     timeout: 20_000,
