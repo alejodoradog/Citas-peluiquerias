@@ -79,7 +79,7 @@ export const textos = {
       `Tu cita en ${barberia}: ${cuando}`,
     cuerpo: (barberia: string, cuando: string) =>
       `Te esperamos el ${cuando} en ${barberia}.`,
-    pregunta: "¿Vas a llegar? Cuéntale a la barbería con un toque.",
+    pregunta: "¿Vas a llegar? Cuéntale al establecimiento con un toque.",
     confirmo: "Sí, ahí estaré",
     cancelar: "No puedo ir: cancelar",
     calendario: "Agregar a mi calendario",

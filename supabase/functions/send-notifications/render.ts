@@ -40,19 +40,19 @@ export const textos = {
         `El mes de ${barberia} vence el ${fecha}. Para que siga recibiendo reservas, renueva tu plan.`,
     },
     vencida: {
-      asunto: (fecha: string) => `Tu barbería venció el ${fecha}`,
+      asunto: (fecha: string) => `Tu suscripción venció el ${fecha}`,
       cuerpo: (barberia: string, gracia: string) =>
         `${barberia} sigue recibiendo reservas hasta el ${gracia}. Después, la página deja de recibir reservas nuevas y el panel queda en solo lectura.`,
     },
     pausada: {
-      asunto: "Tu barbería está pausada",
+      asunto: "Tu establecimiento está pausado",
       cuerpo: (barberia: string) =>
         `La página de ${barberia} no recibe reservas nuevas y tu agenda es solo de lectura. Las citas tomadas siguen en pie. Al registrar tu pago, todo vuelve a funcionar al instante.`,
     },
     pago: {
       asunto: "Recibimos tu pago",
       cuerpo: (valor: string, barberia: string, fecha: string) =>
-        `Registramos tu pago de ${valor}. ${barberia} queda activa hasta el ${fecha}.`,
+        `Registramos tu pago de ${valor}. La suscripción de ${barberia} queda activa hasta el ${fecha}.`,
     },
   },
 } as const;

@@ -30,6 +30,26 @@ describe("textos", () => {
     }
   });
 
+  // Task 7.1: Yapoin serves any business that works by appointment. The
+  // only places that name a barbershop are the examples of kinds of business
+  // (the word that turns on the home and the landing pages, and their demo).
+  it("speaks of establishments and professionals, not of barbershops", () => {
+    const { inicio, landing, ...product } = textos;
+    for (const text of allStrings(product)) {
+      expect(text).not.toMatch(/barber|peluquer/iu);
+      expect(text).not.toMatch(/(^|[^\p{L}])(cortan|corto)($|[^\p{L}])/iu);
+    }
+    const {
+      negocios: _homeKinds,
+      descripcion: _homeDescription,
+      ...home
+    } = inicio;
+    const { negocios: _kinds, demo: _demo, ...page } = landing;
+    for (const text of [...allStrings(home), ...allStrings(page)]) {
+      expect(text).not.toMatch(/barber|peluquer/iu);
+    }
+  });
+
   it("has no empty copy", () => {
     for (const text of allStrings(textos)) {
       expect(text.trim()).not.toBe("");
@@ -43,7 +63,7 @@ describe("textos", () => {
         "yapoin.com/barberia-la-esquina",
       ),
     ).toBe(
-      "¡Ya puedes reservar tu cita en Barbería La Esquina sin escribirnos! Elige servicio, barbero y hora aquí: yapoin.com/barberia-la-esquina",
+      "¡Ya puedes reservar tu cita en Barbería La Esquina sin escribirnos! Elige servicio, profesional y hora aquí: yapoin.com/barberia-la-esquina",
     );
   });
 

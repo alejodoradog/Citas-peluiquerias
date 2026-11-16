@@ -4,6 +4,9 @@ Nov 2, 2026 · @Alejandro · Actualizada el 2026-11-07 con las decisiones del fu
 
 **Producto:** Yapoin. **Dominio:** `yapoin.com`.
 
+> [!important] Lenguaje neutral (tarea 7.1, 2026-11-15)
+> Yapoin sirve a cualquier negocio que atienda con cita, no solo a barberías. En este documento, "barbería" se lee **establecimiento** y "barbero", **profesional**: así lo dice la interfaz desde la tarea 7.1. Las reglas no cambian. Lo que sí cambia en la fase 7 está en `docs/mejoras-revision-2026-11-15.md`.
+
 ## Visión y alcance
 
 El MVP es una web app que permite a los clientes de una barbería reservar su cita desde un link, y a la barbería manejar su agenda y sus barberos desde el celular. Se construye en 6 semanas, sin pasarela de pagos, y se activa manualmente cuando el dueño paga por transferencia.

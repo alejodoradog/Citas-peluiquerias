@@ -143,15 +143,15 @@ describe("slugFromName", () => {
   });
 
   it("pads names that are too short", () => {
-    expect(slugFromName("JL")).toBe("jl-barberia");
-    expect(slugFromName("!!")).toBe("barberia");
+    expect(slugFromName("JL")).toBe("jl-citas");
+    expect(slugFromName("!!")).toBe("citas");
   });
 
   it("never returns a reserved route", () => {
     for (const reserved of RESERVED_SLUGS) {
       expect(slugFromName(reserved)).not.toBe(reserved);
     }
-    expect(slugFromName("Panel")).toBe("panel-barberia");
+    expect(slugFromName("Panel")).toBe("panel-citas");
   });
 });
 
