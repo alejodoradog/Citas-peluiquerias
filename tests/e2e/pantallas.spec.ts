@@ -96,7 +96,8 @@ test("D-02 links the terms and the data policy @ui", async ({ page }) => {
   await page.goto("/registro");
   await expect(page.getByText(textos.ui.paso(1, 3))).toBeAttached();
   await page.getByRole("link", { name: t.registro.legal.terminos }).click();
-  await expect(page).toHaveURL(/\/terminos$/);
+  // Opened from the form: its "Volver" comes back to it (task 7.2).
+  await expect(page).toHaveURL(/\/terminos\?volver=1$/);
 });
 
 test("D-02 shows its errors in red and moves to the first one @ui", async ({

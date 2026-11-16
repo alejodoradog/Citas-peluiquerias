@@ -45,7 +45,8 @@ describe("routes", () => {
         typeof route === "function"
           ? (route as (...values: string[]) => string)("muestra", "muestra")
           : route;
-      const first = path.split("/")[1];
+      // Without the query some routes carry (routes.termsFromApp).
+      const first = path.split("?")[0]!.split("/")[1];
       // The booking routes start with the barbershop's own link.
       if (first === "muestra") continue;
       if (first) expect(reserved, path).toContain(first);

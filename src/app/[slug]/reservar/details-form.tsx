@@ -169,7 +169,7 @@ export function DetailsForm({
           ) : null}
         </div>
         <p className="text-help text-muted">
-          {t.aceptas} <Link href={routes.privacy}>{t.politica}</Link>{" "}
+          {t.aceptas} <Link href={routes.privacyFromApp}>{t.politica}</Link>{" "}
           {t.deLaBarberia}
         </p>
       </main>

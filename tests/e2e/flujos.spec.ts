@@ -97,6 +97,9 @@ test("flow 2: a barbershop signs up, confirms, sets up and takes bookings", asyn
   await page.goto("/registro");
   await page.getByLabel(c.registro.campos.ownerName).fill("Daniela Ríos");
   await page.getByLabel(c.registro.campos.barbershopName).fill(barbershop);
+  await page
+    .getByRole("combobox", { name: c.registro.campos.businessType })
+    .selectOption("barbershop");
   await page.getByLabel(c.registro.campos.phone).fill("300 765 4321");
   await page.getByLabel(c.registro.campos.email).fill(email);
   await page.getByLabel(c.registro.campos.password).fill(PASSWORD);
