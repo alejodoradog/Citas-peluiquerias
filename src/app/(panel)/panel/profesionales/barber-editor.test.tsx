@@ -260,7 +260,10 @@ describe("BarberEditor", () => {
     const row = screen.getByRole("link", {
       name: new RegExp(`^${t.linkPrivado}`),
     });
-    expect(row).toHaveAttribute("href", `/panel/profesionales/${kevin.id}/link`);
+    expect(row).toHaveAttribute(
+      "href",
+      `/panel/profesionales/${kevin.id}/link`,
+    );
     expect(row).toHaveTextContent(t.linkEnviado("3 de noviembre"));
     expect(row).toHaveTextContent(t.linkActivoChip);
   });
