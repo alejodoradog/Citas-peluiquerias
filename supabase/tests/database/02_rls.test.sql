@@ -224,6 +224,8 @@ select is(
     'public.reschedule_appointment_by_token:anon',
     'public.reschedule_appointment_by_token:authenticated',
     'public.reserve_image_upload:authenticated',
+    -- Task 7.6a: the owner takes a professional's account away.
+    'public.revoke_barber_account:authenticated',
     'public.set_appointment_status:authenticated',
     'public.set_barber_schedule:authenticated',
     'public.set_barber_services:authenticated',

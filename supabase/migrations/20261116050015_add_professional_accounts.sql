@@ -10,15 +10,18 @@
 -- 1. barbers.profile_id: the account of the professional; never the owner
 --    who attends (is_owner), who already has their own account.
 -- 2. barber_invitations: one per professional, 7 days, read by the owner;
---    nobody writes it directly. private.barber_invitation_sends counts the
---    invitations of a barbershop per Bogotá day (at most 20).
+--    nobody writes it directly. private.barber_invitation_attempts(_by_account)
+--    count the attempts per Bogotá day: 20 per barbershop, 40 per account.
 -- 3. invite_barber: the owner asks; the app sends the email with the service
---    key (task 7.6b). Auth creates the account there.
+--    key (task 7.6b). Auth creates the account there. It answers a status
+--    row, so an attempt on a taken email stays counted.
+--    revoke_barber_account: the owner takes the account away, in any phase.
 -- 4. on_auth_user_invited joins the account. Auth inserts the user and sets
 --    invited_at with an UPDATE after the insert (checked against the local
 --    Auth), so the trigger looks at both. It joins only an account Auth
---    invited, with no password and no confirmation yet, created after the
---    invitation, and with exactly one pending invitation for its email.
+--    invited, by email only, with no password and no confirmation yet,
+--    created and invited after the invitation, and with exactly one pending
+--    invitation for its email.
 --    "Invited" alone is not enough: an account made by the normal sign-up
 --    with the invited email (and a password someone else chose) becomes
 --    invited too when Auth invites that email afterwards.
@@ -26,7 +29,8 @@
 -- 6. The five functions of the link (add_barber_agenda, block_only_open_time)
 --    move their bodies to private.*_of, which take the professional already
 --    resolved. The link functions and the new my_* call them: one rule set.
---    my_appointment also brings the customer's phone (decision 0010, point 6).
+--    my_appointment also brings the customer's phone (decision 0010, point 6),
+--    only for appointments inside the days the agenda opens.
 -- 7. my_professional_access: whether the session is of a professional.
 --
 -- private.current_actor: a session function sets yapoin.actor to
@@ -36,8 +40,10 @@
 -- Errors carry a hint the app maps: those of the link (link_invalid,
 -- read_only, not_yours, ...), not_professional for a session that is not of a
 -- professional, and for invite_barber: barber_not_found, barbershop_read_only,
--- barber_is_owner, barber_inactive, email_required, email_taken,
--- already_linked, invitation_pending_other_email, invitation_limit.
+-- barber_is_owner, barber_inactive, email_required, already_linked,
+-- invitation_pending_other_email, invitation_limit (email_taken and
+-- revoked_account_pending are statuses, not errors). revoke_barber_account:
+-- barber_not_found, barber_without_account.
 
 -- 0. Who acts -----------------------------------------------------------------------------------
 
@@ -82,6 +88,11 @@ create table public.barber_invitations (
   expires_at timestamptz not null,
   -- When the account was joined to the professional.
   accepted_at timestamptz,
+  -- revoke_barber_account: when the owner took the account away, and which
+  -- account it was until the app deletes it in Auth (then it goes null).
+  -- A revoked invitation joins nothing.
+  revoked_at timestamptz,
+  revoked_profile_id uuid references public.profiles (id) on delete set null,
   -- One invitation per professional; it is also the index of the foreign
   -- key and of the policy (barbershop_id first).
   unique (barbershop_id, barber_id),
@@ -96,6 +107,8 @@ create index barber_invitations_pending_email_idx
   where accepted_at is null;
 create index barber_invitations_invited_by_idx
   on public.barber_invitations (invited_by);
+create index barber_invitations_revoked_profile_id_idx
+  on public.barber_invitations (revoked_profile_id);
 
 alter table public.barber_invitations enable row level security;
 revoke all on public.barber_invitations from public, anon, authenticated;
@@ -108,35 +121,58 @@ create policy super_admin_read on public.barber_invitations
   for select to authenticated
   using ((select private.is_super_admin()));
 
--- Invitations sent per barbershop and Bogotá day (decision 0010, question 7).
--- Only invite_barber reads or writes it; no session role has any privilege,
--- and RLS is on without policies as a second wall.
-create table private.barber_invitation_sends (
+-- Invitation attempts per Bogotá day: 20 per barbershop (decision 0010,
+-- question 7) and 40 per account across its barbershops (provisional). An
+-- attempt counts before the email is looked at, and stays counted when the
+-- email is taken, so the limit also bounds how many emails an owner can
+-- test for an account. Only invite_barber reads or writes them; no session
+-- role has any privilege, and RLS is on without policies as a second wall.
+create table private.barber_invitation_attempts (
   barbershop_id uuid not null references public.barbershops (id) on delete cascade,
   day date not null,
-  sent integer not null check (sent >= 0),
+  attempts integer not null check (attempts >= 0),
   primary key (barbershop_id, day)
 );
 
-alter table private.barber_invitation_sends enable row level security;
-revoke all on private.barber_invitation_sends from public, anon, authenticated;
+create table private.barber_invitation_attempts_by_account (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  day date not null,
+  attempts integer not null check (attempts >= 0),
+  primary key (user_id, day)
+);
+
+alter table private.barber_invitation_attempts enable row level security;
+alter table private.barber_invitation_attempts_by_account enable row level security;
+revoke all on private.barber_invitation_attempts from public, anon, authenticated;
+revoke all on private.barber_invitation_attempts_by_account from public, anon, authenticated;
 
 -- 3. invite_barber ------------------------------------------------------------------------------
+-- Returns one row (status, email), for the app (task 7.6b):
+-- - ('invited', <email>): send the invitation of Auth to that email now;
+-- - ('email_taken', null): an account (or a pending invitation elsewhere)
+--   has that email; the form says so without saying whose;
+-- - ('revoked_account_pending', null): the account this professional had,
+--   revoked, still exists in Auth with that email; delete it, then invite.
+-- These are answers, not errors, so the attempt stays counted. Everything
+-- else is an error with its hint.
 
 create function public.invite_barber(p_barber_id uuid)
-returns text
+returns table (status text, email text)
 language plpgsql
 volatile
 security definer
 set search_path = ''
 as $$
+#variable_conflict use_column
 declare
+  caller uuid := auth.uid();
   target record;
   linked record;
-  sent_today integer;
+  shop_attempts integer;
+  account_attempts integer;
 begin
-  -- The row lock makes two invitations of the same professional run one
-  -- after the other.
+  -- The row lock makes two invitations (or an invitation and a revocation)
+  -- of the same professional run one after the other.
   select br.id, br.barbershop_id, br.active, br.is_owner, br.profile_id,
          lower(btrim(br.email)) as email
   into target
@@ -169,7 +205,8 @@ begin
   if target.profile_id is not null then
     -- Joined already. While the account is not confirmed and has no
     -- password, the invitation can be sent again to the same email; Auth
-    -- resends it to the account it already made.
+    -- resends it to the account it already made. These look only at this
+    -- professional's own account, never at another email.
     select u.email, u.email_confirmed_at, u.encrypted_password
     into linked
     from auth.users u
@@ -182,41 +219,62 @@ begin
       raise exception 'an invitation to another email is pending'
         using errcode = 'P0001', hint = 'invitation_pending_other_email';
     end if;
-  else
+  end if;
+
+  -- The attempt counts before the email is looked at: with the limit spent
+  -- the answer is invitation_limit, whether the email has an account or not.
+  -- 20 a day per barbershop (decision 0010), 40 per account (provisional).
+  insert into private.barber_invitation_attempts as s (barbershop_id, day, attempts)
+  values (target.barbershop_id, private.today_bogota(), 1)
+  on conflict (barbershop_id, day) do update set attempts = s.attempts + 1
+  returning s.attempts into shop_attempts;
+  insert into private.barber_invitation_attempts_by_account as s (user_id, day, attempts)
+  values (caller, private.today_bogota(), 1)
+  on conflict (user_id, day) do update set attempts = s.attempts + 1
+  returning s.attempts into account_attempts;
+  if shop_attempts > 20 or account_attempts > 40 then
+    raise exception 'too many invitations today'
+      using errcode = 'P0001', hint = 'invitation_limit';
+  end if;
+
+  if target.profile_id is null then
     -- Two invitations of the same email (from two barbershops) run one
     -- after the other, so only one of them is pending.
     perform pg_advisory_xact_lock(hashtextextended('invite_barber:' || target.email, 0));
 
+    if exists (
+      select 1
+      from public.barber_invitations i
+      join auth.users u on u.id = i.revoked_profile_id
+      where i.barbershop_id = target.barbershop_id
+        and i.barber_id = target.id
+        and lower(u.email) = target.email
+    ) then
+      return query select 'revoked_account_pending'::text, null::text;
+      return;
+    end if;
+
     -- Decision 0010, point 3: one email, one account. Also an email another
-    -- professional has a pending invitation for. The same hint for both, so
-    -- the owner does not learn whose it is.
+    -- professional has a pending invitation for. The same answer for both,
+    -- so the owner does not learn whose it is.
     if exists (select 1 from auth.users u where lower(u.email) = target.email)
       or exists (
         select 1 from public.barber_invitations i
         where i.email = target.email
           and i.accepted_at is null
+          and i.revoked_at is null
           and i.expires_at > now()
           and i.barber_id <> target.id
       ) then
-      raise exception 'the email is taken'
-        using errcode = 'P0001', hint = 'email_taken';
+      return query select 'email_taken'::text, null::text;
+      return;
     end if;
   end if;
 
-  -- At most 20 a day per barbershop, renewals included: each one is an email.
-  insert into private.barber_invitation_sends as s (barbershop_id, day, sent)
-  values (target.barbershop_id, private.today_bogota(), 1)
-  on conflict (barbershop_id, day) do update set sent = s.sent + 1
-  returning s.sent into sent_today;
-  if sent_today > 20 then
-    raise exception 'at most 20 invitations a day'
-      using errcode = 'P0001', hint = 'invitation_limit';
-  end if;
-
   insert into public.barber_invitations as i (
-    barbershop_id, barber_id, email, invited_by, created_at, expires_at, accepted_at
+    barbershop_id, barber_id, email, invited_by, created_at, expires_at, accepted_at, revoked_at
   ) values (
-    target.barbershop_id, target.id, target.email, auth.uid(), now(), now() + interval '7 days', null
+    target.barbershop_id, target.id, target.email, caller, now(), now() + interval '7 days', null, null
   )
   on conflict (barbershop_id, barber_id) do update set
     email = excluded.email,
@@ -224,14 +282,114 @@ begin
     created_at = excluded.created_at,
     expires_at = excluded.expires_at,
     -- A professional already joined stays joined: the renewal only resends.
-    accepted_at = case when target.profile_id is null then null else i.accepted_at end;
+    accepted_at = case when target.profile_id is null then null else i.accepted_at end,
+    revoked_at = null;
+  -- revoked_profile_id stays: it goes null when the app deletes that account.
 
-  return target.email;
+  return query select 'invited'::text, target.email;
 end;
 $$;
 
 revoke all on function public.invite_barber(uuid) from public, anon, authenticated;
 grant execute on function public.invite_barber(uuid) to authenticated;
+
+-- 3b. revoke_barber_account ---------------------------------------------------------------------
+-- The owner takes the account away from a professional (they left, or the
+-- email was wrong). In every phase of the subscription, as turning off the
+-- link (read_only_when_suspended, section 7): access must not wait for a
+-- payment. Not the same as deactivating: an inactive professional still sees
+-- their agenda.
+-- - barbers.profile_id goes null: from the next call, every my_* answers as
+--   for a session that is not of a professional;
+-- - the invitation is revoked, so it joins nothing, and keeps which account
+--   it was (revoked_profile_id) until the app deletes it in Auth;
+-- - the profile is deactivated (when it belongs to no barbershop), so the
+--   account reaches nothing even before it is deleted, and never joins again
+--   by itself (on_auth_user_invited skips any account with a profile).
+-- Returns the account it had (null if it was only invited), for the app to
+-- delete it in Auth with the service key (task 7.6b).
+
+create function public.revoke_barber_account(p_barber_id uuid)
+returns uuid
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  target record;
+  had_invitation boolean;
+begin
+  select br.id, br.barbershop_id, br.profile_id
+  into target
+  from public.barbers br
+  where br.id = p_barber_id
+    and private.owner_reaches(br.barbershop_id)
+  for update of br;
+  if not found then
+    raise exception 'barber not found'
+      using errcode = 'P0002', hint = 'barber_not_found';
+  end if;
+
+  update public.barber_invitations i
+  set revoked_at = now(),
+      revoked_profile_id = coalesce(target.profile_id, i.revoked_profile_id)
+  where i.barbershop_id = target.barbershop_id
+    and i.barber_id = target.id
+    and i.revoked_at is null;
+  had_invitation := found;
+
+  if target.profile_id is null then
+    if not had_invitation then
+      raise exception 'the professional has no account nor invitation'
+        using errcode = 'P0001', hint = 'barber_without_account';
+    end if;
+    return null;
+  end if;
+
+  update public.barbers
+  set profile_id = null
+  where barbershop_id = target.barbershop_id
+    and id = target.id;
+
+  update public.profiles p
+  set active = false
+  where p.id = target.profile_id
+    and not exists (select 1 from public.memberships m where m.user_id = p.id);
+
+  return target.profile_id;
+end;
+$$;
+
+revoke all on function public.revoke_barber_account(uuid) from public, anon, authenticated;
+grant execute on function public.revoke_barber_account(uuid) to authenticated;
+
+-- A read only barbershop still lets the owner take an account away
+-- (read_only_when_suspended, section 7, plus profile_id going null).
+create or replace function private.limit_barber_updates_when_read_only()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if private.current_actor() <> 'staff'
+    or private.phase_of(new.barbershop_id) in ('active', 'awaiting_first_payment') then
+    return new;
+  end if;
+
+  if (to_jsonb(new) - 'link_active' - 'active' - 'updated_at' - 'profile_id')
+      = (to_jsonb(old) - 'link_active' - 'active' - 'updated_at' - 'profile_id')
+    and new.link_active <= old.link_active
+    and new.active <= old.active
+    and (new.profile_id is null or new.profile_id = old.profile_id) then
+    return new;
+  end if;
+
+  raise exception 'barbershop is read only'
+    using errcode = 'insufficient_privilege', hint = 'barbershop_read_only';
+end;
+$$;
 
 -- 4. Joining the invited account ----------------------------------------------------------------
 
@@ -245,27 +403,39 @@ declare
   invited_email text := lower(btrim(coalesce(new.email, '')));
   invitation record;
 begin
-  -- Only an account Auth invited, that nobody has taken yet: no password,
-  -- not confirmed. A resent invitation (invited_at changes again) of an
-  -- account already joined finds its profile and stops below.
+  -- Only an email account Auth invited, that nobody has taken yet: no
+  -- password, not confirmed, not single sign-on nor anonymous, no identity
+  -- of another provider, and the email it had when it was invited. A resent
+  -- invitation (invited_at changes again) of an account already joined
+  -- finds its profile and stops below. The email identity may not exist yet
+  -- when this runs; only another provider's is refused.
   if new.invited_at is null
     or invited_email = ''
     or new.email_confirmed_at is not null
     or coalesce(new.encrypted_password, '') <> ''
-    or (tg_op = 'UPDATE' and old.invited_at is not distinct from new.invited_at) then
+    or coalesce(new.is_sso_user, false)
+    or coalesce(new.is_anonymous, false)
+    or coalesce(new.raw_app_meta_data ->> 'provider', 'email') <> 'email'
+    or (tg_op = 'UPDATE' and old.invited_at is not distinct from new.invited_at)
+    or (tg_op = 'UPDATE' and old.email is distinct from new.email)
+    or exists (
+      select 1 from auth.identities ai
+      where ai.user_id = new.id and ai.provider <> 'email'
+    ) then
     return null;
   end if;
 
-  -- An account with a profile is an owner (register_owner_on_signup) or
-  -- already a professional: never joined.
+  -- An account with a profile is an owner (register_owner_on_signup), a
+  -- professional, or one whose access was revoked: never joined.
   if exists (select 1 from public.profiles p where p.id = new.id) then
     return null;
   end if;
 
-  -- Exactly one pending invitation for the email, made before the account,
-  -- of an active professional (not the owner) still without an account and
-  -- with that same email, in a barbershop that is not deleted. Locked, so
-  -- two accounts never take the same one.
+  -- Exactly one pending invitation for the email, made before the account
+  -- and before Auth invited it, not revoked, of an active professional (not
+  -- the owner) still without an account and with that same email, in a
+  -- barbershop that is not deleted. Locked, so two accounts never take the
+  -- same one, and a revocation waits.
   begin
     select i.id, i.barbershop_id, i.barber_id, br.display_name
     into strict invitation
@@ -274,8 +444,10 @@ begin
     join public.barbershops b on b.id = i.barbershop_id
     where i.email = invited_email
       and i.accepted_at is null
+      and i.revoked_at is null
       and i.expires_at > now()
       and i.created_at <= new.created_at
+      and i.created_at <= new.invited_at
       and br.profile_id is null
       and br.active
       and not br.is_owner
@@ -500,7 +672,14 @@ as $$
     a.source,
     a.created_at,
     private.short_customer_name(c.full_name),
-    c.phone,
+    -- The phone only inside the days the agenda opens (a week back to 30
+    -- days ahead, widened to whole weeks), as barber_agenda: never the
+    -- customers of the barber's whole history.
+    case
+      when a.starts_at < (private.today_bogota() + 37)::timestamp at time zone 'America/Bogota'
+        and a.ends_at > (private.today_bogota() - 13)::timestamp at time zone 'America/Bogota'
+        then c.phone
+    end,
     array(
       select sv.name
       from public.appointment_services l
@@ -924,13 +1103,12 @@ as $$
 declare
   barber private.barber_access;
 begin
-  perform set_config('yapoin.actor', 'barber_session', true);
-
   select * into barber from private.barber_by_session();
   if not found then
     raise exception 'the session is not of a professional'
       using errcode = 'P0001', hint = 'not_professional';
   end if;
+  perform set_config('yapoin.actor', 'barber_session', true);
 
   perform private.mark_appointment_of(barber, p_appointment_id, p_status);
 end;
@@ -950,13 +1128,12 @@ as $$
 declare
   barber private.barber_access;
 begin
-  perform set_config('yapoin.actor', 'barber_session', true);
-
   select * into barber from private.barber_by_session();
   if not found then
     raise exception 'the session is not of a professional'
       using errcode = 'P0001', hint = 'not_professional';
   end if;
+  perform set_config('yapoin.actor', 'barber_session', true);
 
   return private.create_time_block_of(barber, p_starts_at, p_ends_at, p_reason);
 end;
@@ -972,13 +1149,12 @@ as $$
 declare
   barber private.barber_access;
 begin
-  perform set_config('yapoin.actor', 'barber_session', true);
-
   select * into barber from private.barber_by_session();
   if not found then
     raise exception 'the session is not of a professional'
       using errcode = 'P0001', hint = 'not_professional';
   end if;
+  perform set_config('yapoin.actor', 'barber_session', true);
 
   perform private.delete_time_block_of(barber, p_block_id);
 end;

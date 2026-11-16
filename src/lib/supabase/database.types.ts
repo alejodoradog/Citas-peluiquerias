@@ -109,14 +109,14 @@ isOneToOne: false
                   ]
                 },"barber_invitations": {
                   Row: {
-                    "accepted_at": string | null,"barber_id": string,"barbershop_id": string,"created_at": string,"email": string,"expires_at": string,"id": string,"invited_by": string | null
+                    "accepted_at": string | null,"barber_id": string,"barbershop_id": string,"created_at": string,"email": string,"expires_at": string,"id": string,"invited_by": string | null,"revoked_at": string | null,"revoked_profile_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepted_at"?: string | null,"barber_id": string,"barbershop_id": string,"created_at"?: string,"email": string,"expires_at": string,"id"?: string,"invited_by"?: string | null
+                    "accepted_at"?: string | null,"barber_id": string,"barbershop_id": string,"created_at"?: string,"email": string,"expires_at": string,"id"?: string,"invited_by"?: string | null,"revoked_at"?: string | null,"revoked_profile_id"?: string | null
                   }
                   Update: {
-                    "accepted_at"?: string | null,"barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"email"?: string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null
+                    "accepted_at"?: string | null,"barber_id"?: string,"barbershop_id"?: string,"created_at"?: string,"email"?: string,"expires_at"?: string,"id"?: string,"invited_by"?: string | null,"revoked_at"?: string | null,"revoked_profile_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -134,6 +134,12 @@ isOneToOne: false
     },{
       foreignKeyName: "barber_invitations_invited_by_fkey"
       columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "barber_invitations_revoked_profile_id_fkey"
+      columns: ["revoked_profile_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -587,7 +593,9 @@ isOneToOne: false
 { Args: { "p_error"?: string,"p_lease_id": string,"p_notification_id": string,"p_outcome": string }; Returns: Database["public"]['Enums']["notification_status"]
                            },
 "invite_barber":
-{ Args: { "p_barber_id": string }; Returns: string
+{ Args: { "p_barber_id": string }; Returns: {
+              "email": string,"status": string
+            }[]
                            },
 "issue_appointment_link":
 { Args: { "p_appointment_id": string,"p_barbershop_id": string,"p_token_hash": string }; Returns: undefined
@@ -684,6 +692,9 @@ isOneToOne: false
                            },
 "reserve_image_upload":
 { Args: { "p_path": string }; Returns: undefined
+                           },
+"revoke_barber_account":
+{ Args: { "p_barber_id": string }; Returns: string
                            },
 "set_appointment_status":
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"] }; Returns: undefined
