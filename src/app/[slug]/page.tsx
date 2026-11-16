@@ -269,7 +269,7 @@ function Footer({ slug }: { slug: string }) {
       <span>
         {t.perfil.reservasCon} <strong>{textos.marca}</strong>
       </span>
-      <Link href={routes.privacy} className="text-muted">
+      <Link href={routes.privacyFromApp} className="text-muted">
         {t.perfil.politicaDatos}
       </Link>
     </footer>

@@ -1,12 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { FormState } from "@/lib/formularios/form-state";
 import { AuthHeading, AuthShell } from "./auth-shell";
 import { Field } from "./field";
 import { ActionForm, SubmitButton, useFormAction } from "./form";
 import { LegalPage } from "./legal-page";
 import { Notice } from "./notice";
+
+// The legal page reads the address for its way out (legal-back.tsx).
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ back: () => {} }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 type State = FormState<"email" | "name", "email_invalid" | "taken", "sent">;
 
@@ -105,7 +111,7 @@ describe("account screen frame", () => {
     expect(screen.getByText("Una línea.")).toBeInTheDocument();
   });
 
-  it("shows a legal document with its date and sections, and links home", () => {
+  it("shows a legal document with its date and sections, and links home", async () => {
     render(<LegalPage document="privacidad" />);
     expect(
       screen.getByRole("heading", { level: 1, name: "Política de datos" }),
@@ -117,7 +123,7 @@ describe("account screen frame", () => {
       screen.getByRole("heading", { level: 2, name: "7. Tus derechos" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Volver al inicio" }),
+      await screen.findByRole("link", { name: "Volver al inicio" }),
     ).toHaveAttribute("href", "/");
   });
 });

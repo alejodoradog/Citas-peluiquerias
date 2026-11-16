@@ -28,7 +28,14 @@ import {
 import { slugFromName } from "../dominio/slug";
 
 export type RegistrationField =
-  "ownerName" | "barbershopName" | "phone" | "email" | "password" | "acepto";
+  | "ownerName"
+  | "barbershopName"
+  | "businessType"
+  | "businessTypeOther"
+  | "phone"
+  | "email"
+  | "password"
+  | "acepto";
 
 export type RegistrationState = FormState<
   RegistrationField,
@@ -46,6 +53,8 @@ export async function registerBarbershop(
     fields: [
       "ownerName",
       "barbershopName",
+      "businessType",
+      "businessTypeOther",
       "phone",
       "email",
       "password",
@@ -74,6 +83,11 @@ export async function registerBarbershop(
           slugFromName(registration.barbershopName),
         ),
         phone: registration.phone,
+        // The kind of business, kept in the barbershop (task 7.2).
+        business_type: registration.businessType,
+        ...(registration.businessTypeOther
+          ? { business_type_other: registration.businessTypeOther }
+          : {}),
         // Kept in the profile as proof of the authorization (task 6.5).
         terms_version: LEGAL_VERSION,
       },

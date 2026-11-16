@@ -4,6 +4,7 @@ import { parseRegistration } from "./registration";
 const valid = {
   ownerName: "  Carlos Pérez ",
   barbershopName: " Barbería El Parche ",
+  businessType: "barbershop",
   phone: "300 123 4567",
   email: " Carlos@Example.COM ",
   password: "una-clave-segura",
@@ -26,10 +27,74 @@ describe("parseRegistration", () => {
       data: {
         ownerName: "Carlos Pérez",
         barbershopName: "Barbería El Parche",
+        businessType: "barbershop",
+        businessTypeOther: null,
         phone: "+573001234567",
         email: "carlos@example.com",
         password: "una-clave-segura",
       },
+    });
+  });
+
+  it("needs the kind of business (task 7.2)", () => {
+    const { businessType: _kind, ...withoutKind } = valid;
+    for (const input of [
+      withoutKind,
+      { ...valid, businessType: "" },
+      { ...valid, businessType: "casino" },
+    ]) {
+      expect(parseRegistration(input)).toMatchObject({
+        success: false,
+        errors: { businessType: "business_type_required" },
+      });
+    }
+  });
+
+  it('asks which one when the kind is "other", and keeps it trimmed', () => {
+    const other = { ...valid, businessType: "other" };
+    expect(parseRegistration(other)).toMatchObject({
+      success: false,
+      errors: { businessTypeOther: "business_type_other_required" },
+    });
+    expect(
+      parseRegistration({ ...other, businessTypeOther: "   " }),
+    ).toMatchObject({
+      success: false,
+      errors: { businessTypeOther: "business_type_other_required" },
+    });
+    expect(
+      parseRegistration({ ...other, businessTypeOther: "x".repeat(61) }),
+    ).toMatchObject({
+      success: false,
+      errors: { businessTypeOther: "business_type_other_too_long" },
+    });
+    expect(
+      parseRegistration({ ...other, businessTypeOther: "  Tatuajes " }),
+    ).toMatchObject({
+      success: true,
+      data: { businessType: "other", businessTypeOther: "Tatuajes" },
+    });
+  });
+
+  it('keeps the text of "other" as plain text on one line', () => {
+    expect(
+      parseRegistration({
+        ...valid,
+        businessType: "other",
+        businessTypeOther: "Estudio\n\tde\u202E  tatuajes\u200B",
+      }),
+    ).toMatchObject({
+      success: true,
+      data: { businessTypeOther: "Estudio de tatuajes" },
+    });
+  });
+
+  it('drops what was written for "other" when the kind is another', () => {
+    expect(
+      parseRegistration({ ...valid, businessTypeOther: "Tatuajes" }),
+    ).toMatchObject({
+      success: true,
+      data: { businessType: "barbershop", businessTypeOther: null },
     });
   });
 
