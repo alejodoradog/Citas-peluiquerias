@@ -179,7 +179,7 @@ test("flow 3: the owner is warned, the super admin registers the payment and it 
     admin.getByRole("heading", { level: 1, name: p.pago.titulo }),
   ).toBeVisible(FIRST_VISIT);
   await expect(
-    admin.getByText(/Hasta 4 barberos/).filter({ visible: true }),
+    admin.getByText(/Hasta 4 profesionales/).filter({ visible: true }),
   ).toBeVisible();
   await admin
     .getByRole("combobox", { name: p.pago.medio })

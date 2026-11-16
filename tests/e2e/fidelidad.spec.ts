@@ -1159,6 +1159,9 @@ test("D-30, D-31, D-32 and D-33 match the design", async ({ page }) => {
     .getByRole("button", { name: textos.cuentas.ingreso.enviar })
     .click();
   await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
+  // The pointer stays where "Ingresar" was, which can be over "Compartir mi
+  // link" and paint its hover color.
+  await page.mouse.move(0, 0);
 
   // D-33
   await expect(

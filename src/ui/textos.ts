@@ -60,9 +60,11 @@ export const textos = {
   inicio: {
     // The title as screen readers hear it; on screen one word turns with
     // each kind of business (src/app/home-hero.tsx).
-    titulo: "Tu negocio recibe citas sola",
-    tituloInicio: "Tu",
-    tituloFin: "recibe citas sola",
+    // "A tu barbería / spa / consultorio…": the same words for every kind of
+    // business, whatever its gender (2026-11-16).
+    titulo: "A tu negocio le llegan las citas solas",
+    tituloInicio: "A tu",
+    tituloFin: "le llegan las citas solas",
     // One per scene, in the order of src/app/home-scenes.ts: the characters,
     // then the booking story.
     negocios: [
@@ -2121,6 +2123,32 @@ export const textos = {
     titulo: "Lista de establecimientos",
     cargando: "Cargando…",
     verMetricas: "Métricas",
+    // On a computer (task 7.12): the side menu and the table of P-01.
+    menu: {
+      etiqueta: "Plataforma",
+      subtitulo: "Plataforma",
+      establecimientos: "Establecimientos",
+      metricas: "Métricas",
+    },
+    tabla: {
+      total: (cantidad: number) =>
+        cantidad === 1 ? "1 establecimiento" : `${cantidad} establecimientos`,
+      columnas: {
+        nombre: "Establecimiento",
+        dueno: "Dueño",
+        ciudad: "Ciudad",
+        estado: "Estado",
+        vence: "Vence",
+        registro: "Registro",
+      },
+      ordenadoAsc: "orden ascendente",
+      ordenadoDesc: "orden descendente",
+      sinTipo: "Sin tipo",
+      // "Otro: uñas".
+      otro: (cual: string) => `Otro: ${cual}`,
+      ayuda:
+        "Toca una columna para ordenar; otra vez, para invertir. Toca un establecimiento para abrir su ficha.",
+    },
     buscar: {
       etiqueta: "Buscar establecimiento",
       placeholder: "Buscar establecimiento, dueño o correo",
@@ -2271,6 +2299,42 @@ export const textos = {
         `${valor} · ${pagos === 1 ? "1 pago registrado" : `${pagos} pagos registrados`}`,
       anterior: (valor: string, pagos: number) =>
         `${valor} · ${pagos === 1 ? "1 pago" : `${pagos} pagos`}`,
+      // The charts (task 7.12).
+      hoy: "Establecimientos hoy",
+      cuando: "Las semanas empiezan el lunes, en hora de Colombia.",
+      verTabla: "Ver tabla",
+      verGrafico: "Ver gráfico",
+      semana: "Semana del",
+      mes: "Mes",
+      // "semana del 9 nov".
+      semanaDel: (fecha: string) => `semana del ${fecha}`,
+      registros: {
+        titulo: "Registros por semana",
+        bajada: "Establecimientos nuevos, últimas 12 semanas",
+        columna: "Registros",
+        unidad: (n: number) => (n === 1 ? "1 registro" : `${n} registros`),
+      },
+      citas: {
+        titulo: "Citas agendadas por semana",
+        bajada: "Citas creadas en la semana, de cualquier origen",
+        columna: "Citas",
+        unidad: (n: number) =>
+          n === 1 ? "1 cita" : `${n.toLocaleString("es-CO")} citas`,
+      },
+      ingresos: {
+        titulo: "Ingresos por mes",
+        bajada: "Pagos registrados, sin los anulados, últimos 12 meses",
+        columna: "Ingreso",
+      },
+      porTipo: {
+        titulo: "Por tipo de establecimiento",
+        bajada:
+          "Cuántos hay de cada tipo, y sus citas de las últimas 4 semanas",
+        tipo: "Tipo",
+        establecimientos: "Establecimientos",
+        citas: "Citas en 4 semanas",
+        sinTipo: "Sin tipo (cuentas anteriores)",
+      },
     },
     errores: {
       not_allowed: "Solo el equipo de la plataforma puede hacer esto.",
@@ -2375,9 +2439,10 @@ export const textos = {
   // The landing page at yapoin.com (approved by the partner, 2026-11-15):
   // the owners' entry moved to /app (textos.inicio).
   landing: {
-    titulo: "Tu negocio recibe citas sola",
-    tituloInicio: "Tu",
-    tituloFin: "recibe citas sola.",
+    // Agrees with every word that turns (2026-11-16).
+    titulo: "A tu negocio le llegan las citas solas",
+    tituloInicio: "A tu",
+    tituloFin: "le llegan las citas solas.",
     negocios: ["barbería", "spa", "consultorio", "veterinaria", "salón"],
     bajada:
       "Tus clientes reservan desde un link en menos de un minuto. A ti te llega a la agenda al instante, sin una sola llamada.",

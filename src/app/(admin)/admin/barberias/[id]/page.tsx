@@ -104,105 +104,123 @@ async function Barbershop({
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col">
+    <div className="mx-auto flex w-full max-w-md flex-col lg:max-w-6xl lg:px-6 lg:pt-4">
       <TopBar
         title={shop.name}
         titleAs="h1"
         subtitle={shop.locality ?? undefined}
         back={{ href: routes.admin, label: t.ficha.volver }}
       />
-      <main className="flex flex-col gap-3.5 px-5 pt-1 pb-6">
+      {/* On a computer (task 7.12) two columns: the state, the numbers and
+          the payments; beside them the details and the actions. On a phone
+          the columns dissolve (contents) and the order is the design's. */}
+      <main className="flex flex-col gap-3.5 px-5 pt-1 pb-6 lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start lg:gap-6">
         {notice ? (
-          <Notice tone="success" title={t.ficha.hecho[notice]} />
+          <div className="lg:col-span-2">
+            <Notice tone="success" title={t.ficha.hecho[notice]} />
+          </div>
         ) : null}
-        <div className="flex items-center gap-2">
-          <Chip tone={STATE_TONES[state]}>{t.estados[state]}</Chip>
-          <span className="text-muted text-[13px]">
-            {t.ficha.venceEl(
-              shortDate(shop.expiresOn),
-              t.ficha.cuando(daysBetween(today, shop.expiresOn)),
-            )}
-          </span>
-        </div>
-        <dl className="border-line flex flex-col gap-2.5 rounded-2xl border bg-white p-4">
-          {rows.map((row) => (
-            <div key={row.term} className="flex flex-col gap-0.5">
-              <dt className="text-muted text-[13px]">{row.term}</dt>
-              <dd className="text-[15px] leading-[1.4] font-semibold break-words">
-                {row.value ?? t.ficha.sinDato}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <dl className="grid grid-cols-3 gap-2.5">
-          {numbers.map((number) => (
-            <div
-              key={number.label}
-              className="border-line flex flex-col-reverse gap-0.5 rounded-[14px] border bg-white p-3"
-            >
-              <dt className="text-muted text-xs">{number.label}</dt>
-              <dd className="text-xl font-bold">{number.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <h2 className="text-muted text-sm font-semibold">{t.ficha.pagos}</h2>
-        {shop.payments.length === 0 ? (
-          <p className="text-muted text-sm">{t.ficha.sinPagos}</p>
-        ) : (
-          <ul className="border-line flex flex-col overflow-hidden rounded-2xl border bg-white">
-            {shop.payments.map((payment) => (
-              <li
-                key={payment.id}
-                className="border-neutral-soft text-ink flex min-h-13 items-center gap-3 border-b px-4 py-3 last:border-b-0"
+        <div className="contents lg:flex lg:flex-col lg:gap-3.5">
+          <div className="order-1 flex items-center gap-2 lg:order-none">
+            <Chip tone={STATE_TONES[state]}>{t.estados[state]}</Chip>
+            <span className="text-muted text-[13px]">
+              {t.ficha.venceEl(
+                shortDate(shop.expiresOn),
+                t.ficha.cuando(daysBetween(today, shop.expiresOn)),
+              )}
+            </span>
+          </div>
+          <dl className="order-3 grid grid-cols-3 gap-2.5 lg:order-none">
+            {numbers.map((number) => (
+              <div
+                key={number.label}
+                className="border-line flex flex-col-reverse gap-0.5 rounded-[14px] border bg-white p-3"
               >
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span
-                    className={cx(
-                      "text-[15px] font-semibold",
-                      payment.voided && "text-muted line-through",
-                    )}
-                  >
-                    {t.ficha.pagoLinea(
-                      shortDate(payment.paidOn),
-                      formatPesos(payment.amountCop),
-                    )}
-                  </span>
-                  <span className="text-muted text-[13px] leading-[1.35]">
-                    {payment.voided
-                      ? t.ficha.anulado(payment.voided.reason)
-                      : t.ficha.pagoDetalle(payment.reference)}
-                  </span>
-                </span>
-                {payment.voided ? null : (
-                  <VoidPaymentButton
-                    barbershopId={shop.id}
-                    paymentId={payment.id}
-                    label={t.ficha.anularDe(longDate(payment.paidOn))}
-                    detail={t.anular.detalle(
-                      longDate(payment.paidOn),
-                      formatPesos(payment.amountCop),
-                    )}
-                  />
-                )}
-              </li>
+                <dt className="text-muted text-xs">{number.label}</dt>
+                <dd className="text-xl font-bold">{number.value}</dd>
+              </div>
             ))}
-          </ul>
-        )}
-        <Link href={routes.adminPayment(shop.id)} className={buttonClasses()}>
-          <DollarIcon size={20} />
-          {t.ficha.registrarPago}
-        </Link>
-        <FichaActions
-          barbershopId={shop.id}
-          name={shop.name}
-          inTrial={shop.subscriptionStatus === "trial"}
-          suspended={shop.subscriptionStatus === "suspended"}
-          trialEndsLabel={shortDate(shop.trialEndsOn)}
-          extendOptions={EXTEND_DAYS.map((days) => ({
-            days,
-            until: longDate(addDays(extendFrom, days)),
-          }))}
-        />
+          </dl>
+          <h2 className="text-muted order-4 text-sm font-semibold lg:order-none">
+            {t.ficha.pagos}
+          </h2>
+          {shop.payments.length === 0 ? (
+            <p className="text-muted order-5 text-sm lg:order-none">
+              {t.ficha.sinPagos}
+            </p>
+          ) : (
+            <ul className="border-line order-5 flex flex-col overflow-hidden rounded-2xl border bg-white lg:order-none">
+              {shop.payments.map((payment) => (
+                <li
+                  key={payment.id}
+                  className="border-neutral-soft text-ink flex min-h-13 items-center gap-3 border-b px-4 py-3 last:border-b-0"
+                >
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span
+                      className={cx(
+                        "text-[15px] font-semibold",
+                        payment.voided && "text-muted line-through",
+                      )}
+                    >
+                      {t.ficha.pagoLinea(
+                        shortDate(payment.paidOn),
+                        formatPesos(payment.amountCop),
+                      )}
+                    </span>
+                    <span className="text-muted text-[13px] leading-[1.35]">
+                      {payment.voided
+                        ? t.ficha.anulado(payment.voided.reason)
+                        : t.ficha.pagoDetalle(payment.reference)}
+                    </span>
+                  </span>
+                  {payment.voided ? null : (
+                    <VoidPaymentButton
+                      barbershopId={shop.id}
+                      paymentId={payment.id}
+                      label={t.ficha.anularDe(longDate(payment.paidOn))}
+                      detail={t.anular.detalle(
+                        longDate(payment.paidOn),
+                        formatPesos(payment.amountCop),
+                      )}
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="contents lg:flex lg:flex-col lg:gap-3.5">
+          <dl className="border-line order-2 flex flex-col gap-2.5 rounded-2xl border bg-white p-4 lg:order-none">
+            {rows.map((row) => (
+              <div key={row.term} className="flex flex-col gap-0.5">
+                <dt className="text-muted text-[13px]">{row.term}</dt>
+                <dd className="text-[15px] leading-[1.4] font-semibold break-words">
+                  {row.value ?? t.ficha.sinDato}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <Link
+            href={routes.adminPayment(shop.id)}
+            className={cx(buttonClasses(), "order-6 lg:order-none")}
+          >
+            <DollarIcon size={20} />
+            {t.ficha.registrarPago}
+          </Link>
+          <div className="order-7 lg:order-none">
+            <FichaActions
+              barbershopId={shop.id}
+              name={shop.name}
+              inTrial={shop.subscriptionStatus === "trial"}
+              suspended={shop.subscriptionStatus === "suspended"}
+              trialEndsLabel={shortDate(shop.trialEndsOn)}
+              extendOptions={EXTEND_DAYS.map((days) => ({
+                days,
+                until: longDate(addDays(extendFrom, days)),
+              }))}
+            />
+          </div>
+        </div>
       </main>
     </div>
   );
