@@ -194,7 +194,7 @@ No hay pasarela: la barbería paga solo por transferencia (bancaria, Nequi o lla
 - El dueño elige el plan al registrarse (la landing lo trae elegido). El precio sale del plan elegido.
 - El plan limita cuántos profesionales activos tiene la sede, contando al dueño si también atiende. La base de datos rechaza crear o reactivar uno más, en cualquier pantalla.
 - El plan 2 configura todo desde el primer día, pero su página no recibe citas hasta que se registre su primer pago. Yapoin puede darle días gratis desde el panel de plataforma ("Extender prueba").
-- Cambiar de plan se pide desde la configuración del establecimiento y se acepta al registrar el pago de la diferencia (tarea 7.8b). Bajar de plan se pide por WhatsApp.
+- Cambiar de plan se pide desde la configuración del establecimiento (Más › Plan) y se acepta al registrar el pago de la diferencia (tarea 7.8b): $15.000 si ya tiene un pago vigente, o $25.000, el primer mes del plan 2, si sigue en prueba. Su fecha de vencimiento no cambia. Mientras la solicitud está pendiente, el dueño la ve, no puede enviar otra y la puede cancelar. Bajar de plan se pide por WhatsApp.
 - Incluye todas las funciones del MVP. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6).
 
 **Ciclo de la suscripción**

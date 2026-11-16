@@ -101,7 +101,11 @@ export function readBookingParams(params: SearchParams): BookingSelection {
 
   return {
     serviceIds: services,
-    barber: services.length > 0 ? barber : null,
+    // Kept without services too (task 7.6b): the link a professional shares
+    // brings them already chosen, and the services step carries them on.
+    // Whether they do the services chosen is checked on the next step,
+    // which sends the customer to choose one otherwise.
+    barber,
     date: services.length > 0 && barber !== null ? date : null,
     time: services.length > 0 && barber !== null ? chosenTime : null,
     step,

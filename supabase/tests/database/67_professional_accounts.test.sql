@@ -23,7 +23,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(174);
+select plan(175);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -181,6 +181,8 @@ end;
 $$;
 
 -- What Auth does when it invites: insert the user, then set invited_at.
+-- Then, if it joined, the professional accepts the terms (task 7.6b: the
+-- my_* functions need them; 68_professional_account_app tests without).
 create function pg_temp.invited_by_auth(user_id uuid, user_email text)
 returns void
 language sql
@@ -188,6 +190,7 @@ as $$
   select set_config('request.jwt.claims', '', true);
   insert into auth.users (id, email, encrypted_password, created_at) values (user_id, user_email, '', now());
   update auth.users set invited_at = now(), confirmation_sent_at = now() where id = user_id;
+  update public.profiles set terms_accepted_at = now(), terms_version = 'prueba-67' where id = user_id;
 $$;
 
 -- invite_barber in one word: the email when invited, the status otherwise,
@@ -805,11 +808,15 @@ values ('00000000-0000-0000-0000-0000000067c7', 'confirmada@example.com', '', no
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-000000006747'), null,
   'nor an account inserted already confirmed, without a password');
 
--- Invited with another email, then moved to the invited one.
-select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000067c8', 'otro-cambio@example.com');
-update auth.users set email = 'cambio@example.com' where id = '00000000-0000-0000-0000-0000000067c8';
+-- Moved to the invited email in the same update that invites it: the
+-- trigger runs (invited_at changes) and refuses because the email changed.
+-- (Review of 7.6a, point 3: moving the email alone never fires it.)
+insert into auth.users (id, email, encrypted_password, created_at)
+values ('00000000-0000-0000-0000-0000000067c8', 'otro-cambio@example.com', '', now());
+update auth.users set email = 'cambio@example.com', invited_at = now()
+where id = '00000000-0000-0000-0000-0000000067c8';
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-000000006748'), null,
-  'nor an account whose email moves to the invited one');
+  'nor an account whose email moves to the invited one in the update that invites it');
 update auth.users set invited_at = invited_at where id = '00000000-0000-0000-0000-0000000067c8';
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-000000006748'), null,
   'nor when an update repeats the same invited_at');
@@ -961,6 +968,8 @@ select is(
     'barberId', 'ba000000-0000-0000-0000-000000006711',
     'name', 'Kevin Mora',
     'active', true,
+    -- Task 7.6b: whether they accepted the terms (the helper accepts them).
+    'acceptedTerms', true,
     'barbershop', jsonb_build_object('name', 'Barbería S', 'slug', 'barberia-s-67', 'writable', true)
   ),
   'the session is of Uno, of Barbería S'
@@ -1295,12 +1304,19 @@ select is(
 );
 select is((select count(*)::integer from public.barbers), 0, 'and reads no table');
 
--- Auth invites that account again: it does not join by itself.
+-- Auth invites that account again: it does not join by itself. Each reason
+-- alone stops it (review of 7.6a, point 4): here its profile, with the
+-- invitation pending again by hand; the revoked invitation alone, below
+-- ("an invitation without account is revoked too").
 reset role;
 set local request.jwt.claims to '';
+update public.barber_invitations set revoked_at = null
+where barber_id = 'ba000000-0000-0000-0000-00000000674e';
 update auth.users set invited_at = now() + interval '1 second' where id = '00000000-0000-0000-0000-0000000067e1';
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-00000000674e'), null,
-  'a revoked account never joins again by itself');
+  'a revoked account never joins again by itself: its profile alone stops it');
+update public.barber_invitations set revoked_at = now()
+where barber_id = 'ba000000-0000-0000-0000-00000000674e';
 
 -- Inviting the same email again waits for the app to delete the old account.
 select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
@@ -1317,13 +1333,21 @@ select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000067e2', 'revocar@
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-00000000674e'),
   '00000000-0000-0000-0000-0000000067e2'::uuid, 'and a new account joins');
 
--- Another email can be invited right away.
+-- Another email waits for the old account too (task 7.6b, review point 3:
+-- otherwise the next revocation would keep only the new account, and the
+-- old one would stay in Auth). The app deletes it and asks again.
 select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
 select is(public.revoke_barber_account('ba000000-0000-0000-0000-00000000674e'),
   '00000000-0000-0000-0000-0000000067e2'::uuid, 'taken away again');
 update public.barbers set email = 'revocar-nuevo@example.com' where id = 'ba000000-0000-0000-0000-00000000674e';
+select is(pg_temp.inv('ba000000-0000-0000-0000-00000000674e'), 'revoked_account_pending',
+  'with another email it also waits until the old account is deleted');
+reset role;
+set local request.jwt.claims to '';
+delete from auth.users where id = '00000000-0000-0000-0000-0000000067e2';
+select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
 select is(pg_temp.inv('ba000000-0000-0000-0000-00000000674e'), 'revocar-nuevo@example.com',
-  'and with another email it is invited at once');
+  'and once it is deleted, the other email is invited');
 
 -- Only an invitation, without account: revoking it stops the join.
 select is(public.revoke_barber_account('ba000000-0000-0000-0000-00000000674f'), null,
@@ -1331,7 +1355,7 @@ select is(public.revoke_barber_account('ba000000-0000-0000-0000-00000000674f'), 
 reset role;
 select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000067e3', 'pendiente@example.com');
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-00000000674f'), null,
-  'and the account Auth makes for it joins nothing');
+  'and the account Auth makes for it joins nothing: the revoked invitation alone stops it (no profile)');
 select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
 select is(
   pg_temp.hint_of($$select public.revoke_barber_account('ba000000-0000-0000-0000-00000000673f')$$),

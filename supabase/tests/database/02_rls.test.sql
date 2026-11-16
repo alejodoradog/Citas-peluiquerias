@@ -168,8 +168,14 @@ select is(
     -- migration 10).
     'private.writable_barbershop_ids:authenticated',
     'public.accept_plan_change:authenticated',
+    -- Task 7.6b: the professional accepts the terms with their password.
+    'public.accept_professional_terms:authenticated',
     -- Task 4.3: "Borrar cliente" and the list of customers.
     'public.anonymize_customer:authenticated',
+    -- Task 7.6b: the owner reads the access of a professional, and the
+    -- account the app may delete in Auth.
+    'public.barber_account_status:authenticated',
+    'public.barber_account_to_delete:authenticated',
     -- Task 4.4: "Mi agenda" of a barber, for anyone who has the link.
     'public.barber_agenda:anon',
     'public.barber_agenda:authenticated',

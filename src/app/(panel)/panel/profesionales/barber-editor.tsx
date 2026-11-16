@@ -22,6 +22,8 @@ import { Sheet } from "@/ui/sheet";
 import { Switch } from "@/ui/switch";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
+import type { AccessResult } from "@/modulos/cuentas/acciones/professional-access";
+import { AccessSection, type AccessCard } from "./access-section";
 import { PhotoField, type PendingPhoto } from "./photo-field";
 
 const t = textos.barberos;
@@ -56,6 +58,7 @@ export function BarberEditor({
   discardUpload,
   setActive,
   removePhoto,
+  access,
 }: {
   action: (previous: BarberState, formData: FormData) => Promise<BarberState>;
   barber: EditableBarber | null;
@@ -68,6 +71,13 @@ export function BarberEditor({
     active: boolean,
   ) => Promise<BarberCommandResult>;
   removePhoto?: (barberId: string) => Promise<BarberCommandResult>;
+  // "Acceso a su agenda" (task 7.6b), for a saved professional who is not
+  // the owner.
+  access?: {
+    card: AccessCard;
+    invite: (barberId: string) => Promise<AccessResult>;
+    revoke: (barberId: string) => Promise<AccessResult>;
+  };
 }) {
   const form = useFormAction(action, t.errores);
 
@@ -84,9 +94,10 @@ export function BarberEditor({
     }
   }
 
-  const [hasEmail, setHasEmail] = useState(
-    () => (form.value("email") ?? barber?.email ?? "").trim() !== "",
+  const [typedEmail, setTypedEmail] = useState(
+    () => form.value("email") ?? barber?.email ?? "",
   );
+  const hasEmail = typedEmail.trim() !== "";
   const [notify, setNotify] = useState(barber?.emailNotifications ?? false);
 
   // After an error the form shows again what the owner chose; before that, a
@@ -178,9 +189,7 @@ export function BarberEditor({
             type="email"
             optional
             defaultValue={form.value("email") ?? barber?.email ?? ""}
-            onChange={(event) =>
-              setHasEmail(event.currentTarget.value.trim() !== "")
-            }
+            onChange={(event) => setTypedEmail(event.currentTarget.value)}
             help={t.ayudas.correo}
             error={form.fieldError("email")}
             autoComplete="off"
@@ -227,6 +236,19 @@ export function BarberEditor({
               }
             />
           </List>
+          {barber && access && !barber.isOwner ? (
+            <AccessSection
+              barberId={barber.id}
+              barberName={barber.displayName}
+              card={access.card}
+              emailChanged={
+                typedEmail.trim().toLowerCase() !==
+                (barber.email ?? "").trim().toLowerCase()
+              }
+              invite={access.invite}
+              revoke={access.revoke}
+            />
+          ) : null}
           <fieldset
             className="min-w-0 pt-1"
             aria-describedby={servicesError ? SERVICES_ERROR_ID : undefined}

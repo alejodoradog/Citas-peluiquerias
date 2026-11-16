@@ -82,9 +82,10 @@ export async function emailCount(email: string): Promise<number> {
 
 // The newest /auth/confirm link of that kind. An owner gets a confirmation
 // email first, so it waits until the newest email is the one asked for.
+// "invite": the invitation of a professional (task 7.6b).
 export async function latestEmailLink(
   email: string,
-  type: "recovery" | "signup",
+  type: "recovery" | "signup" | "invite",
 ): Promise<string> {
   for (let attempt = 0; attempt < 20; attempt++) {
     const search = await fetch(
@@ -759,4 +760,79 @@ export async function acceptedTermsOf(email: string) {
     .single();
   if (profileError) throw profileError;
   return data;
+}
+
+// Task 7.6b: a professional's email, written past the app as the owner's
+// card saves it.
+export async function setBarberEmail(barberId: string, email: string) {
+  const { error } = await adminClient()
+    .from("barbers")
+    .update({ email })
+    .eq("id", barberId);
+  if (error) throw error;
+}
+
+// A customer with a mobile, past RLS, for the WhatsApp of "Mi agenda".
+export async function insertCustomer(
+  barbershopId: string,
+  customer: { name: string; phone: string },
+): Promise<string> {
+  const { data, error } = await adminClient()
+    .from("customers")
+    .insert({
+      barbershop_id: barbershopId,
+      full_name: customer.name,
+      phone: customer.phone,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+// Whether Auth still has an account with that email (task 7.6b: taking the
+// access away deletes it).
+export async function authAccountExists(email: string): Promise<boolean> {
+  const { data, error } = await adminClient().auth.admin.listUsers({
+    perPage: 1000,
+  });
+  if (error) throw error;
+  return data.users.some((user) => user.email === email);
+}
+
+// Task 7.6b: the owner's "Invitar" past the screen, as the app does it:
+// invite_barber with the owner's session, then Auth's invitation to the
+// email the database returned.
+export async function inviteProfessional(
+  owner: { email: string; password: string },
+  barberId: string,
+) {
+  const session = await signedInClient(owner.email, owner.password);
+  const { data, error } = await session.rpc("invite_barber", {
+    p_barber_id: barberId,
+  });
+  if (error) throw error;
+  const row = (data as { status: string; email: string | null }[])[0];
+  if (row?.status !== "invited" || !row.email) {
+    throw new Error(`invite_barber answered ${row?.status}`);
+  }
+  const { error: authError } = await adminClient().auth.admin.inviteUserByEmail(
+    row.email,
+    { data: { invited_to: "Barbería La Esquina" } },
+  );
+  if (authError) throw authError;
+}
+
+// What invite_barber answers now for that professional, with the owner's
+// session: its status, or the hint of its error.
+export async function inviteAnswer(
+  owner: { email: string; password: string },
+  barberId: string,
+): Promise<string> {
+  const session = await signedInClient(owner.email, owner.password);
+  const { data, error } = await session.rpc("invite_barber", {
+    p_barber_id: barberId,
+  });
+  if (error) return error.hint ?? error.message;
+  return (data as { status: string }[])[0]?.status ?? "none";
 }

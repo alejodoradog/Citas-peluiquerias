@@ -55,6 +55,11 @@ export const routes = {
   // Task 4.4: one appointment (B-03) and "Bloquear horas" (B-04).
   barberAppointment: (token: string, id: string) => `/b/${token}/citas/${id}`,
   barberBlock: (token: string) => `/b/${token}/bloquear`,
+  // "Mi agenda" of a professional with their own account (task 7.6b): the
+  // same B-01 to B-04, by the session. Nothing in these paths names who.
+  myAgenda: "/mi-agenda",
+  myAppointment: (id: string) => `/mi-agenda/citas/${id}`,
+  myBlock: "/mi-agenda/bloquear",
   // A customer's appointment (task 3.4). The token is the whole credential;
   // only its hash is stored (appointments.manage_token_hash).
   manageAppointment: (token: string) => `/c/${token}`,
@@ -144,4 +149,9 @@ export function barberAgendaHref(
   query: BarberAgendaParams = {},
 ): string {
   return withQuery(routes.barberAgenda(token), query);
+}
+
+// The same for "Mi agenda" by the session (task 7.6b).
+export function myAgendaHref(query: BarberAgendaParams = {}): string {
+  return withQuery(routes.myAgenda, query);
 }

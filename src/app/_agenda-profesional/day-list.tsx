@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { routes } from "@/lib/routes";
 import { removeBlock } from "@/modulos/agenda/acciones/barber";
+import { removeMyBlock } from "@/modulos/agenda/acciones/my-agenda";
 import { type BarberDayItem } from "@/modulos/agenda/dominio/barber-agenda";
 import { minutesBetween } from "@/modulos/agenda/dominio/owner-agenda";
 import { Chip, type ChipTone } from "@/ui/chip";
@@ -8,6 +8,7 @@ import { cx } from "@/ui/cx";
 import { LockIcon } from "@/ui/icons";
 import { PendingButton } from "@/ui/pending-button";
 import { textos } from "@/ui/textos";
+import { appointmentHref, type AgendaEntry } from "./entry";
 import { blockLabel, servicesLabel, timeLabel } from "./labels";
 import { MarkButtons } from "./mark-buttons";
 
@@ -31,11 +32,11 @@ const STRIPES =
 // that already started can be marked right here (decision B2); their own
 // blocks can be removed (decision B4).
 export function DayList({
-  token,
+  entry,
   date,
   items,
 }: {
-  token: string;
+  entry: AgendaEntry;
   date: string;
   items: readonly BarberDayItem[];
 }) {
@@ -53,7 +54,7 @@ export function DayList({
               className="border-line flex flex-col rounded-[14px] border bg-white px-3.5 py-3"
             >
               <Link
-                href={routes.barberAppointment(token, appointment.id)}
+                href={appointmentHref(entry, appointment.id)}
                 className="text-ink flex items-start gap-3 no-underline"
               >
                 <span className={time}>{timeLabel(item.start)}</span>
@@ -74,7 +75,7 @@ export function DayList({
               </Link>
               {item.markable ? (
                 <MarkButtons
-                  token={token}
+                  entry={entry}
                   appointmentId={appointment.id}
                   customerName={appointment.customerName}
                   back={date}
@@ -100,8 +101,12 @@ export function DayList({
               {label}
             </span>
             {item.removable ? (
-              <form action={removeBlock}>
-                <input type="hidden" name="token" value={token} />
+              <form
+                action={entry.kind === "link" ? removeBlock : removeMyBlock}
+              >
+                {entry.kind === "link" ? (
+                  <input type="hidden" name="token" value={entry.token} />
+                ) : null}
                 <input type="hidden" name="bloqueo" value={item.block.id} />
                 <input type="hidden" name="volver" value={date} />
                 {/* 44 px tall, the design's 32 grown for F-01's touch targets. */}

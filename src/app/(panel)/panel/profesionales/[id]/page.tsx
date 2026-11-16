@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { formatBogotaDayMonth } from "@/lib/fechas/fechas";
+import {
+  formatBogotaDayMonth,
+  formatBogotaTime,
+  now,
+} from "@/lib/fechas/fechas";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import {
   removeBarberPhoto,
@@ -17,8 +21,15 @@ import {
   listActiveServiceOptions,
 } from "@/modulos/barberias/datos/barbers";
 import { barberLinkState } from "@/modulos/barberias/dominio/barber-link";
+import {
+  inviteProfessional,
+  revokeProfessionalAccess,
+} from "@/modulos/cuentas/acciones/professional-access";
+import { readAccountStatus } from "@/modulos/cuentas/datos/professional-access";
+import { accessView } from "@/modulos/cuentas/dominio/professional-access";
 import { textos } from "@/ui/textos";
 import { requireReadyOwner } from "../../ready-owner";
+import type { AccessCard } from "../access-section";
 import { BarberEditor } from "../barber-editor";
 import { summarizeBarberHours } from "../barber-summary";
 import { EditorLoading } from "../editor-loading";
@@ -44,11 +55,31 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
     params,
     requireReadyOwner(),
   ]);
-  const [barber, services] = await Promise.all([
+  const [barber, services, account] = await Promise.all([
     getBarber(barbershop.id, id),
     listActiveServiceOptions(barbershop.id),
+    // Task 7.6b. The database answers only for the owner's own professional.
+    readAccountStatus(id),
   ]);
   if (!barber) notFound();
+  const view = account
+    ? accessView({
+        status: account,
+        hasEmail: (barber.email ?? "").trim() !== "",
+        active: barber.active,
+        now: now(),
+      })
+    : null;
+  const card: AccessCard | null =
+    view?.kind === "invited"
+      ? {
+          kind: "invited",
+          until: t.acceso.fechaHora(
+            formatBogotaDayMonth(view.until),
+            formatBogotaTime(view.until),
+          ),
+        }
+      : view;
 
   return (
     <BarberEditor
@@ -83,6 +114,15 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
       discardUpload={discardImageUpload}
       setActive={setBarberActive}
       removePhoto={removeBarberPhoto}
+      access={
+        card && !barber.is_owner
+          ? {
+              card,
+              invite: inviteProfessional,
+              revoke: revokeProfessionalAccess,
+            }
+          : undefined
+      }
     />
   );
 }

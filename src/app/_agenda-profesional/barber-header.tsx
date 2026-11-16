@@ -1,18 +1,21 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { barberAgendaHref } from "@/lib/routes";
 import type { BarberView } from "@/modulos/agenda/dominio/barber-agenda";
 import { initialsOf } from "@/ui/avatar";
 import { cx } from "@/ui/cx";
 import { LockIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
+import { agendaHref, type AgendaEntry } from "./entry";
 
 const t = textos.barbero;
 
 // The top of B-01, B-02 and B-06: the barbershop, the barber's initials
 // (decision B7), the greeting with today's summary, the paused notice when
-// the barbershop is read only, and Hoy | Semana.
+// the barbershop is read only, and Hoy | Semana. `end` sits at the right of
+// the barbershop's line: "Cerrar sesión" by the session (task 7.6b).
 export function BarberHeader({
-  token,
+  entry,
+  end,
   barbershopName,
   barberName,
   summary,
@@ -20,7 +23,8 @@ export function BarberHeader({
   view,
   onToday,
 }: {
-  token: string;
+  entry: AgendaEntry;
+  end?: ReactNode;
   barbershopName: string;
   barberName: string;
   summary: string;
@@ -32,7 +36,10 @@ export function BarberHeader({
   const firstName = barberName.trim().split(/\s+/)[0] ?? barberName;
   return (
     <header className="flex flex-col gap-2.5 px-5 pt-4.5 pb-3">
-      <p className="text-muted text-[13px]">{t.encabezado(barbershopName)}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted text-[13px]">{t.encabezado(barbershopName)}</p>
+        {end}
+      </div>
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
@@ -63,14 +70,11 @@ export function BarberHeader({
       )}
       <nav aria-label={t.vistas.etiqueta}>
         <div className="bg-neutral-soft flex gap-1 rounded-xl p-1">
-          <Tab
-            href={barberAgendaHref(token)}
-            current={view === "dia" && onToday}
-          >
+          <Tab href={agendaHref(entry)} current={view === "dia" && onToday}>
             {t.vistas.hoy}
           </Tab>
           <Tab
-            href={barberAgendaHref(token, { vista: "semana" })}
+            href={agendaHref(entry, { vista: "semana" })}
             current={view === "semana"}
           >
             {t.vistas.semana}
