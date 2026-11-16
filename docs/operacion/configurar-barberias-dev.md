@@ -75,6 +75,7 @@ En Supabase → **Authentication**:
 - **Plantillas de correo: van con la tarea 5.2.** Supabase solo permite editarlas con un SMTP propio ("Set up custom SMTP to edit templates"), que ahora es Resend (decisión 0008; los pasos están en `docs/operacion/configurar-resend.md`). Con el SMTP puesto:
   - **Emails → Reset password:** pega la plantilla de `supabase/templates/recovery.html` y pon de asunto "Recupera tu acceso".
   - **Emails → Confirm signup:** pega la plantilla de `supabase/templates/confirmation.html` y pon de asunto "Confirma tu correo".
+  - **Emails → Invite user (tarea 7.6b):** pega la plantilla de `supabase/templates/invite.html` y pon de asunto "Te invitaron a ver tu agenda en Yapoin". Sin ella, el correo de invitación del profesional sale en inglés y su link no pasa por `/auth/confirm`, así que no lleva a crear la contraseña. Hay que pegarla también en `barberias-prod`.
   - Se copia el archivo completo, en la pestaña **Source**, sin cambiar lo que va entre llaves dobles.
 
 **Mientras tanto, en las vistas previas** Supabase usa sus plantillas por defecto, en inglés, con un link (`{{ .ConfirmationURL }}`) que no pasa por `/auth/confirm`:
