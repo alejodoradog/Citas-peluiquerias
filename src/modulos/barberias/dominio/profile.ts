@@ -32,6 +32,7 @@ export type ShopProfileErrorCode =
     >
   | "address_too_long"
   | "locality_too_long"
+  | "location_required"
   | "location_invalid";
 
 // An optional text: blank is null, otherwise trimmed and capped.
@@ -116,7 +117,9 @@ export function displayWhatsapp(phone: string | null): string {
 // support team) is kept when it comes back unchanged.
 export function parseShopProfile(
   input: unknown,
-  saved: { whatsappPhone: string | null },
+  // location: the saved point. Once there is one it can be marked again but
+  // not removed (task 7.3; the database refuses it too).
+  saved: { whatsappPhone: string | null; location?: ShopLocation | null },
 ): ParseResult<ShopProfile, ShopProfileErrorCode> {
   const schema = z.object({
     name: barbershopNameSchema,
@@ -141,6 +144,10 @@ export function parseShopProfile(
         const location = readLocation(value);
         if (location === undefined) {
           ctx.addIssue({ code: "custom", message: "location_invalid" });
+          return z.NEVER;
+        }
+        if (location === null && saved.location) {
+          ctx.addIssue({ code: "custom", message: "location_required" });
           return z.NEVER;
         }
         return location;

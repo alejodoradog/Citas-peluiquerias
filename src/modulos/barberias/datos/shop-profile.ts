@@ -51,6 +51,22 @@ export async function getShopProfile(
   };
 }
 
+// The point of the wizard's location step (task 7.3). False when nothing
+// was written.
+export async function saveShopLocation(
+  barbershopId: string,
+  location: ShopLocation,
+): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("barbershops")
+    .update({ latitude: location.latitude, longitude: location.longitude })
+    .eq("id", barbershopId)
+    .select("id");
+  if (error) return false;
+  return data.length === 1;
+}
+
 // False when nothing was written: RLS hid the row, or the database refused
 // a value. A new logo or cover is only written when given.
 export async function updateShopProfile(

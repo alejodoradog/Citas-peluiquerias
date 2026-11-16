@@ -51,7 +51,7 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
           {noneOffered || pending.length > 0 ? (
             <Button disabled>{t.continuar}</Button>
           ) : (
-            <ButtonLink href={routes.setupTeam}>{t.continuar}</ButtonLink>
+            <ButtonLink href={routes.setupLocation}>{t.continuar}</ButtonLink>
           )}
           <p className="text-help text-muted text-center leading-[1.45]">
             {t.pie}
@@ -59,7 +59,7 @@ function ServicesList({ topAction }: { topAction?: ReactNode }) {
         </>
       }
     >
-      <Steps current={2} total={3} announce={false} />
+      <Steps current={2} total={4} announce={false} />
       <div className="flex flex-col gap-1.5">
         <h1 className="text-title">{t.titulo}</h1>
         <p className="text-body text-muted">{t.bajada}</p>

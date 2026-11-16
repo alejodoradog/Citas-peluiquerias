@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { textos } from "../../src/ui/textos";
-import { fillSetupServices, finishSetup } from "./helpers/asistente";
+import {
+  fillSetupServices,
+  finishSetup,
+  passLocationStep,
+} from "./helpers/asistente";
 import {
   expectAccessible,
   expectNoZoomOnFocus,
@@ -177,6 +181,7 @@ test("D-62 warns when no barber can take bookings yet", async ({ page }) => {
   await page
     .getByRole("link", { name: textos.asistente.servicios.continuar })
     .click();
+  await passLocationStep(page);
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/, FIRST_VISIT);
   await page
     .getByRole("checkbox", {

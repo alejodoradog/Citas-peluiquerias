@@ -44,7 +44,7 @@ export function RegistrationForm() {
 
   return (
     <>
-      <Steps current={1} total={3} />
+      <Steps current={1} total={4} />
       <AuthHeading title={t.titulo} intro={t.bajada} />
       <ActionForm form={form}>
         {form.formError ? (

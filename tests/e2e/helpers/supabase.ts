@@ -516,6 +516,9 @@ export async function createBookableShop(
       setup_completed_at: new Date().toISOString(),
       address: "Cra. 15 # 82-40",
       locality: "Chapinero, Bogotá",
+      // Required to finish the setup (task 7.3).
+      latitude: 4.6672,
+      longitude: -74.0549,
     })
     .eq("id", id);
   if (setupError) throw setupError;

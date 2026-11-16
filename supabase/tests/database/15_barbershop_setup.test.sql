@@ -26,6 +26,8 @@ insert into public.barbershops (id, name, slug, trial_ends_on, expires_on) value
   ('aaaaaaaa-0000-0000-0000-000000000000', 'Sede A', 'sede-a', current_date + 10, current_date + 10),
   ('bbbbbbbb-0000-0000-0000-000000000000', 'Sede B', 'sede-b', current_date + 10, current_date + 10),
   ('cccccccc-0000-0000-0000-000000000000', 'Sede C con horario', 'sede-c', current_date + 10, current_date + 10);
+-- The wizard needs the location to finish (task 7.3).
+update public.barbershops set latitude = 3.4516, longitude = -76.532;
 
 insert into public.profiles (id, full_name, phone, active, is_super_admin) values
   ('00000000-0000-0000-0000-00000000000a', 'Dueño A', '+573001112233', true, false),

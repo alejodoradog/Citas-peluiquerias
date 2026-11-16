@@ -157,6 +157,8 @@ export function ShopProfileForm({
           shopName={saved.name}
           logoUrl={saved.logoUrl}
           error={form.fieldError("location")}
+          // Required since task 7.3: marked again, never removed.
+          required={saved.location !== null}
         />
         <Field
           label={t.campos.whatsapp}
