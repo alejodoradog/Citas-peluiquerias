@@ -12,7 +12,7 @@ Para el socio (`alejodoradog`) y su Claude Code. Dice qué tareas de la revisió
 | --- | --- | --- | --- |
 | 1 | 7.10 Servicios tocables en la página pública | `hito-7-servicios-tocables` | Ya |
 | 2 | 7.12 Panel de plataforma para computador, con métricas | `hito-7-admin-escritorio` | Ya la distribución; las métricas, con D10 |
-| 3 | 7.8 Prueba de 30 días y planes | `hito-7-planes` | Los 30 días y los precios tachados, cuando se fusione la 7.1. El plan elegido, con D3 y con la 7.2 fusionada |
+| 3 | 7.8 Prueba de 30 días y planes | `hito-7-planes` | Los 30 días, los precios tachados, el límite de profesionales y "Cambiar plan", cuando se fusione la 7.1. El plan elegido en el registro, con la 7.2 fusionada. El plan 2 sin prueba, con lo que falta de D3 |
 | 4 | 7.9 Afiche y logo | `hito-7-afiche` | El afiche, cuando se fusione la 7.1. El logo, con D1 |
 | 5 | 7.11 Intervalo de reserva configurable | `hito-7-intervalo` | Con D8 |
 
@@ -63,8 +63,8 @@ Las decisiones están en la sección 3 del plan, con una recomendación en cada 
 
 | Tarea | Decisión |
 | --- | --- |
-| 7.8 | **D3:** si el plan elegido limita los profesionales, si el plan 2 recibe citas antes de pagar y cuánto paga desde el segundo mes. Es dinero: no la tomes como provisional. |
-| 7.9 | **D1:** el archivo del logo oficial. |
+| 7.8 | **D3:** ya está decidido que el plan limita los profesionales y que el cambio de plan lo acepta el admin. Falta si el plan 2 recibe citas antes de pagar, cuánto paga desde el segundo mes y desde cuándo se cobra un cambio de plan. Es dinero: no lo tomes como provisional. |
+| 7.9 | **D1:** el archivo del logo oficial. El nombre ya está decidido: Yapoin. |
 | 7.11 | **D8:** el intervalo por defecto, desde dónde se cuentan las horas y si aplica al dueño. |
 | 7.12 | **D10:** las métricas que van primero, y el permiso para diseñar el escritorio sin diseño previo. |
 
@@ -91,7 +91,9 @@ Las decisiones están en la sección 3 del plan, con una recomendación en cada 
 - Los términos de uso dicen "20 días" escrito a mano (`src/ui/textos.ts`, bloque legal, del fundador). Cámbialo en tu PR y avísalo: los términos cambian de fecha de actualización.
 - El WhatsApp de Yapoin ya está en `src/app/_landing/landing-nav.tsx`.
 - "Recibe citas cuando se registra su primer pago" ya existe para las sedes creadas con la prueba vencida (spec, "Ciclo de la suscripción", paso 1). Úsalo para el plan 2, no crees otro estado.
-- El precio por número de profesionales (5.6) no se rediseña: lee `docs/tareas/5.6-precio-por-barberos.md`.
+- El precio por número de profesionales (5.6) no se rediseña: lee `docs/tareas/5.6-precio-por-barberos.md`. Lo que sí cambia es su decisión provisional 1: ahora el plan limita cuántos profesionales se pueden crear.
+- **El límite** (decisión del fundador, 2026-11-15): el plan 1 permite hasta 4 profesionales activos, contando al dueño si también atiende. El catálogo `plans` ya trae `max_barbers`. La regla va en la base, en las funciones que crean o reactivan un profesional y en la que termina el asistente.
+- **"Cambiar plan"** es una solicitud que el super admin acepta o rechaza en `/admin`. Mientras esté pendiente, el límite sigue siendo el del plan actual. La pantalla del dueño va en Más, junto a los datos del establecimiento (Más es del fundador: una fila nueva, avísalo en el PR).
 - Pasa `revisor-seguridad`.
 
 ### 7.9 Afiche y logo
