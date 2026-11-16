@@ -803,7 +803,11 @@ export const textos = {
       paso: "Paso 2 de 3",
       titulo: "¿Qué servicios ofreces?",
       bajada:
-        "Te sugerimos los típicos. Toca uno para cambiar precio o duración, o desmárcalo.",
+        "Empieza con estos dos: toca cada uno para ponerle nombre, precio y duración. Desmarca el que no uses.",
+      // A placeholder nobody filled in yet, in place of its duration.
+      porCompletar: "Toca para completarlo",
+      pendientes: (nombres: string) =>
+        `Completa ${nombres} o desmárcalo para continuar.`,
       ofrecer: (nombre: string) => `Ofrecer ${nombre}`,
       // Read before the row's visible text: "Editar Corte 40 min $25.000".
       editar: "Editar",

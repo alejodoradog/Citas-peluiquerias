@@ -23,13 +23,24 @@ export type ServiceErrorCode =
   | "service_price_invalid"
   | "service_duration_invalid";
 
-// The typical services the wizard suggests (D-10). "Corte + barba" is no
-// longer one of them: a booking takes several services and adds them up.
+// The services the wizard starts with (D-10, task 7.3). Yapoin serves any
+// kind of business, so they name no trade: two placeholders the owner fills
+// in. "pending" says the owner has not done it yet (dominio/setup.ts).
 export const SUGGESTED_SERVICES = [
-  { name: "Corte", priceCop: 25_000, durationMinutes: 40, offered: true },
-  { name: "Barba", priceCop: 15_000, durationMinutes: 20, offered: true },
-  { name: "Cejas", priceCop: 8_000, durationMinutes: 10, offered: true },
-  { name: "Niños", priceCop: 20_000, durationMinutes: 30, offered: false },
+  {
+    name: "Servicio 1",
+    priceCop: 0,
+    durationMinutes: 30,
+    offered: true,
+    pending: true,
+  },
+  {
+    name: "Servicio 2",
+    priceCop: 0,
+    durationMinutes: 30,
+    offered: true,
+    pending: true,
+  },
 ] as const;
 
 export function isValidDuration(minutes: number): boolean {

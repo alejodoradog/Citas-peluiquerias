@@ -6,7 +6,10 @@ import { initialDraft } from "@/modulos/barberias/dominio/setup";
 import { textos } from "@/ui/textos";
 
 const gate = vi.hoisted(() => {
-  const state: { release: () => void } = { release: () => undefined };
+  const state: { release: () => void; search: string } = {
+    release: () => undefined,
+    search: "",
+  };
   return state;
 });
 
@@ -21,7 +24,7 @@ vi.mock("next/navigation", () => ({
         });
       }),
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(gate.search),
   usePathname: () => "/panel/configurar/equipo/barbero",
 }));
 vi.mock("../../setup-draft", () => ({
@@ -48,5 +51,25 @@ describe("BarberForm", () => {
     expect(busy).toBeDisabled();
 
     await act(async () => gate.release());
+  });
+
+  // Task 7.3: Next.js keeps this page mounted, so the form of the next
+  // professional came back filled with the one just saved.
+  it("starts empty for each new professional", async () => {
+    gate.search = "nuevo=1";
+    const { rerender } = render(<BarberForm hoursSummary="Lun a Sáb" />);
+    const name = () =>
+      screen.getByRole("textbox", { name: new RegExp(t.campos.nombre) });
+    const email = () =>
+      screen.getByRole("textbox", { name: new RegExp(t.campos.correo) });
+    await userEvent.type(name(), "Mateo");
+    await userEvent.type(email(), "mateo@correo.com");
+
+    // The same page, asked for again by the team screen for the next one.
+    gate.search = "nuevo=2abcd";
+    rerender(<BarberForm hoursSummary="Lun a Sáb" />);
+    expect(name()).toHaveValue("");
+    expect(email()).toHaveValue("");
+    gate.search = "";
   });
 });
