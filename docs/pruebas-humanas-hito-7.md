@@ -48,3 +48,12 @@ Con la función de correos desplegada, y un profesional con correo y avisos acti
 - [ ] **3. Sin celular.** Reservar otra cita sin celular: el correo llega sin botón.
 - [ ] **4. El dueño.** En el detalle de esa cita y en la ficha del cliente, "Escribirle por WhatsApp" abre el mismo chat. En la cita sin celular no aparece.
 - [ ] **5. El cliente no recibe el celular de nadie.** El recordatorio que le llega al cliente no trae ningún número.
+
+## Tarea 7.10: servicios tocables en la página pública
+Desde el celular de un cliente, sin sesión, con un establecimiento de prueba que tenga al menos dos servicios y dos profesionales.
+
+- [ ] **1. Tocar un servicio.** Abrir `www.yapoin.com/<link>` y tocar un servicio de la lista. Debe abrir el paso del profesional con ese servicio ya elegido: la línea de arriba nombra ese servicio.
+- [ ] **2. Sumar otro servicio.** Desde el paso del profesional, volver a "Servicios": el servicio tocado está marcado. Marcar otro y continuar. La reserva sigue con los dos.
+- [ ] **3. Terminar la reserva.** Elegir profesional, día y hora, llenar los datos y confirmar. La cita sale en la agenda del dueño con el servicio tocado.
+- [ ] **4. "Reservar cita" no cambió.** En la página, tocar "Reservar cita": abre "Servicios" sin nada elegido.
+- [ ] **5. Se ve que se toca.** Al tocar una fila, la fila responde enseguida. En iPhone y en Android, la flecha de la derecha se ve en cada servicio y el texto no se corta con nombres largos.

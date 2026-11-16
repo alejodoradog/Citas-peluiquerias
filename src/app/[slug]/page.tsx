@@ -11,10 +11,14 @@ import {
   loadPublicProfile,
   type PublicProfile,
 } from "@/modulos/agenda/datos/public-booking";
-import { openingOf, weekRows } from "@/modulos/agenda/dominio/booking-flow";
+import {
+  bookingQuery,
+  openingOf,
+  weekRows,
+} from "@/modulos/agenda/dominio/booking-flow";
 import { resolveRetiredSlug } from "@/modulos/barberias/datos/public-barbershop";
 import { buttonClasses } from "@/ui/button";
-import { ClockIcon, InfoIcon, MapPinIcon } from "@/ui/icons";
+import { ChevronRightIcon, ClockIcon, InfoIcon, MapPinIcon } from "@/ui/icons";
 import { ShopMap } from "@/ui/shop-map";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
@@ -155,21 +159,31 @@ function Profile({
             <h2 id="servicios" className="text-base font-semibold">
               {t.perfil.servicios}
             </h2>
-            <ul className="border-line rounded-card divide-line divide-y border bg-white">
+            {/* Task 7.10: tapping a service books it, already chosen (the
+                booking starts on its next step). */}
+            <ul className="border-line rounded-card divide-line divide-y overflow-hidden border bg-white">
               {profile.services.slice(0, SERVICES_ON_PROFILE).map((service) => (
-                <li
-                  key={service.id}
-                  className="flex min-h-13 items-center justify-between gap-3 px-4 py-3.5"
-                >
-                  <span className="flex flex-col gap-0.5">
-                    <span className="text-[0.9375rem] font-semibold">
-                      {service.name}
+                <li key={service.id}>
+                  <Link
+                    href={
+                      routes.bookingFlow(profile.slug) +
+                      bookingQuery({ serviceIds: [service.id] })
+                    }
+                    className="hover:bg-paper active:bg-paper flex min-h-13 items-center gap-3 px-4 py-3.5"
+                  >
+                    <span className="flex flex-1 flex-col gap-0.5">
+                      <span className="text-[0.9375rem] font-semibold">
+                        {service.name}
+                      </span>
+                      <span className="text-help text-muted">
+                        {t.minutos(service.durationMinutes)}
+                      </span>
                     </span>
-                    <span className="text-help text-muted">
-                      {t.minutos(service.durationMinutes)}
+                    <strong>{formatPesos(service.priceCop)}</strong>
+                    <span className="text-muted">
+                      <ChevronRightIcon size={20} />
                     </span>
-                  </span>
-                  <strong>{formatPesos(service.priceCop)}</strong>
+                  </Link>
                 </li>
               ))}
             </ul>

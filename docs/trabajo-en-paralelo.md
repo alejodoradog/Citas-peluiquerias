@@ -45,7 +45,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
 | 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |
 | 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |
-| 7.10 Servicios tocables en la página pública | Socio | Pendiente |
+| 7.10 Servicios tocables en la página pública | Socio | Fusionada (#91) |
 | 7.11 Intervalo de reserva configurable (15, 30 o 60 minutos) | Socio | Pendiente |
 | 7.12 Panel de plataforma para computador, con métricas | Socio | Pendiente |
 
