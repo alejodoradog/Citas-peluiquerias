@@ -10,6 +10,8 @@
 // - barber_inactive: the owner deactivated the barber, who no longer blocks;
 // - overlaps_appointment / overlaps_block: the block crosses an appointment
 //   or another block;
+// - already_closed: nothing in the block is open (a holiday, a day off, hours
+//   the barbershop closed), so there is nothing to block (task 7.4);
 // - range_invalid: the day or times do not make a block;
 // - unknown: anything else (the network).
 
@@ -22,6 +24,7 @@ export type BarberRefusal =
   | "barber_inactive"
   | "overlaps_appointment"
   | "overlaps_block"
+  | "already_closed"
   | "range_invalid"
   | "unknown";
 
@@ -34,6 +37,7 @@ const KNOWN: ReadonlySet<string> = new Set<BarberRefusal>([
   "barber_inactive",
   "overlaps_appointment",
   "overlaps_block",
+  "already_closed",
   "range_invalid",
 ]);
 

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { createBlock } from "@/modulos/agenda/acciones/barber";
 import { BLOCK_REASONS } from "@/modulos/agenda/dominio/barber-agenda";
+import { Checkbox } from "@/ui/checkbox";
 import { cx } from "@/ui/cx";
 import { FlowShell } from "@/ui/flow-shell";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
@@ -33,9 +35,12 @@ export function BlockForm({
   // React resets the form after each submit, to what its fields had when
   // they mounted. Remounting them with what was sent keeps the barber's
   // choice after a refusal.
-  const sent = ["dia", "desde", "hasta", "motivo"]
+  const sent = ["dia", "desde", "hasta", "motivo", "todoElDia"]
     .map((field) => form.value(field as "dia") ?? "")
     .join("|");
+  // "Todo el día" (task 7.4): the hours leave the form, and the block is the
+  // whole day.
+  const [wholeDay, setWholeDay] = useState(form.value("todoElDia") === "on");
 
   return (
     <ActionForm form={form} className="flex min-h-full flex-1 flex-col">
@@ -57,7 +62,14 @@ export function BlockForm({
           defaultValue={form.value("dia") ?? defaults.dia}
           error={form.fieldError("dia")}
         />
-        <div className="grid grid-cols-2 gap-3">
+        <Checkbox
+          name="todoElDia"
+          label={t.todoElDia}
+          description={t.todoElDiaAyuda}
+          checked={wholeDay}
+          onChange={(event) => setWholeDay(event.target.checked)}
+        />
+        <div className={cx("grid grid-cols-2 gap-3", wholeDay && "hidden")}>
           <SelectField
             label={t.desde}
             name="desde"

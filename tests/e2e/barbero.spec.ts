@@ -178,6 +178,35 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
   // "Quitar".
   await page.getByRole("button", { name: t.quitarDe(lunch) }).click();
   await expect(page.getByText(lunch)).toHaveCount(0);
+
+  // Task 7.4: "Todo el día" blocks the whole day in one tap. The hours leave
+  // the form; a day with an appointment is still refused.
+  await page
+    .getByRole("link", { name: t.bloquearHoras })
+    .filter({ visible: true })
+    .click();
+  await expect(heading(page, t.bloquear.titulo)).toBeVisible(FIRST_VISIT);
+  const wholeDay = page.getByRole("checkbox", { name: t.bloquear.todoElDia });
+  const from = page.getByRole("combobox", { name: t.bloquear.desde });
+  await page
+    .getByRole("combobox", { name: t.bloquear.dia })
+    .selectOption(tomorrow);
+  await wholeDay.check({ force: true });
+  await expect(from).toBeHidden();
+  await page
+    .getByRole("radio", { name: t.bloquear.motivos.leave })
+    .check({ force: true });
+  await page.getByRole("button", { name: t.bloquear.enviar }).click();
+  await expect(page.getByText(t.errores.overlaps_appointment)).toBeVisible();
+
+  const free = addDays(tomorrow, 2);
+  await page.getByRole("combobox", { name: t.bloquear.dia }).selectOption(free);
+  await expect(wholeDay).toBeChecked();
+  await page.getByRole("button", { name: t.bloquear.enviar }).click();
+  await expect(page).toHaveURL(new RegExp(`/b/${token}\\?dia=${free}$`));
+  await expect(
+    page.getByText(t.bloquear.motivos.leave).filter({ visible: true }),
+  ).toBeVisible();
 });
 
 test("a link that was deactivated or made up shows B-05", async ({ page }) => {

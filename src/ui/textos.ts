@@ -2042,6 +2042,11 @@ export const textos = {
       dia: "Día",
       desde: "Desde",
       hasta: "Hasta",
+      // Task 7.4: the whole day in one tap, and the days with nothing to
+      // block.
+      todoElDia: "Todo el día",
+      todoElDiaAyuda: "No atiendes ese día.",
+      diaCerrado: (dia: string) => `${dia} · cerrado`,
       motivo: "Motivo",
       // What the owner's agenda shows too; "other" is saved without one.
       motivos: {
@@ -2073,6 +2078,7 @@ export const textos = {
       overlaps_appointment:
         "Tienes una cita en ese rango. Pídele al dueño que la mueva.",
       overlaps_block: "Ya tienes un bloqueo en ese rango.",
+      already_closed: "Ese horario ya está cerrado: no hace falta bloquearlo.",
       range_invalid: "Revisa el día y las horas.",
       end_before_start: "La hora final debe ser después de la inicial.",
       in_the_past: "Esa hora ya pasó. Elige una más tarde.",

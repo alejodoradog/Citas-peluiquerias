@@ -3,7 +3,12 @@ import { cx } from "./cx";
 import { fieldControlClasses, FieldFrame, useFieldDescription } from "./field";
 import { ChevronRightIcon } from "./icons";
 
-export type SelectOption = { value: string; label: string };
+// disabled: shown, but it cannot be chosen (a closed day, task 7.4).
+export type SelectOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+};
 
 // A native select dressed as a text field of F-01 (the duration of a service,
 // D-11). Native, so phones open their own picker and it works without
@@ -53,7 +58,11 @@ export function SelectField({
           {...select}
         >
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
               {option.label}
             </option>
           ))}

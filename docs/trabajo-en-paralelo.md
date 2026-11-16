@@ -39,7 +39,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.1 Lenguaje neutral: "establecimiento" y "profesional" en toda la plataforma (`docs/tareas/7.1-lenguaje-neutral.md`) | Fundador | En curso (`hito-7-lenguaje`). Hasta que se fusione, nadie edita textos fuera de su bloque. Las direcciones visibles van después, en la 7.1b |
 | 7.2 Registro: tipo de establecimiento y volver de los textos legales sin perder lo escrito | Fundador | Pendiente |
 | 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria | Fundador | Pendiente |
-| 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado | Fundador | Pendiente |
+| 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado (`docs/tareas/7.4-bloqueos.md`) | Fundador | En curso (`hito-7-bloqueos`). Vuelve a definir `create_time_block_by_barber` |
 | 7.5 Aviso de reserva al profesional, con WhatsApp | Fundador | Pendiente |
 | 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | Pendiente. Espera la decisión 0010 |
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |

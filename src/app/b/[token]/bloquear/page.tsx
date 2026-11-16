@@ -11,6 +11,7 @@ import { barberAgendaHref } from "@/lib/routes";
 import { loadBarberAgenda } from "@/modulos/agenda/datos/barber-agenda";
 import {
   blockDayOptions,
+  closedBlockDays,
   blockTimeOptions,
 } from "@/modulos/agenda/dominio/barber-agenda";
 import { Notice } from "@/ui/notice";
@@ -49,7 +50,9 @@ async function BarberBlock({
   await connection();
   const instant = now();
   const today = toBogotaDate(instant);
-  const agenda = await loadBarberAgenda(token, today, today);
+  // The whole window of the picker: its closed days are not offered.
+  const days = blockDayOptions(today);
+  const agenda = await loadBarberAgenda(token, today, days.at(-1)!);
   if (!agenda) return <BarberLinkGone />;
 
   const close = { href: barberAgendaHref(token), label: t.bloquear.cerrar };
@@ -70,6 +73,7 @@ async function BarberBlock({
     );
   }
 
+  const closed = new Set(closedBlockDays(agenda, days));
   // From the next quarter hour, for an hour, while the day lasts.
   const quarter = 15 * 60_000;
   const next = new Date(Math.ceil(instant.getTime() / quarter) * quarter);
@@ -82,16 +86,20 @@ async function BarberBlock({
     <BlockForm
       token={token}
       close={close}
-      days={blockDayOptions(today).map((date) => ({
+      days={days.map((date) => ({
         value: date,
-        label: dayLabel(date, today, "long"),
+        label: closed.has(date)
+          ? t.bloquear.diaCerrado(dayLabel(date, today, "long"))
+          : dayLabel(date, today, "long"),
+        disabled: closed.has(date),
       }))}
       times={times.map((time) => ({
         value: time,
         label: formatWallClock(time),
       }))}
       defaults={{
-        dia: today,
+        // Today, or the first day with something to block.
+        dia: days.find((date) => !closed.has(date)) ?? today,
         desde: times[start]!,
         hasta: times[Math.min(start + 4, times.length - 1)]!,
       }}
