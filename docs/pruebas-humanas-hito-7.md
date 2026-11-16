@@ -15,9 +15,10 @@ Con una cuenta nueva de dueño, de principio a fin.
 - [ ] **7. Link corto.** Registrar un negocio con un nombre de dos letras: su link termina en "-citas".
 - [ ] **8. Lo que sí debe decir "barbería".** La landing sigue rotando "barbería", "spa", "consultorio", "veterinaria" y "salón", y su demostración sigue siendo "Barbería La Esquina".
 
-## Tarea 7.3: asistente
-- [ ] **1. Servicios sin oficio.** Con una cuenta nueva, el paso 2 muestra "Servicio 1" y "Servicio 2" con "Toca para completarlo". "Continuar" está apagado y el aviso dice cuáles faltan.
-- [ ] **2. Completar uno.** Tocar "Servicio 1": trae el nombre y el precio vacío. Ponerle nombre, precio y duración y guardar: la fila muestra el precio y el aviso solo nombra a "Servicio 2".
-- [ ] **3. Desmarcar el otro.** Desmarcar "Servicio 2": "Continuar" se enciende.
-- [ ] **4. Formulario vacío.** En el paso 3, agregar un profesional con nombre y correo y guardarlo. Tocar "Agregar profesional" otra vez: el formulario sale vacío.
-- [ ] **5. Editar sí trae sus datos.** Tocar el profesional recién creado: el formulario trae su nombre, su correo y sus servicios.
+## Tarea 7.2: tipo de establecimiento y textos legales
+- [ ] **1. El tipo es obligatorio.** En el registro, llenar todo menos "Tipo de establecimiento" y tocar "Crear cuenta": dice "Elige el tipo de establecimiento." y no se pierde lo escrito.
+- [ ] **2. "Otro" pide cuál.** Elegir "Otro": aparece "¿Cuál?". Dejarlo vacío no deja crear la cuenta.
+- [ ] **3. Volver de los términos.** Con el formulario a medio llenar, abrir "términos de uso" y tocar "Volver": el formulario está igual, con el tipo elegido.
+- [ ] **4. Volver de la política, en la reserva.** En el paso de los datos de una reserva, abrir la política de datos y tocar "Volver": los datos y la hora elegida siguen ahí.
+- [ ] **5. Abierto directo.** Abrir `www.yapoin.com/terminos` escribiendo la dirección: el botón dice "Volver al inicio".
+- [ ] **6. Queda guardado.** En Supabase, la sede nueva tiene el tipo elegido en `business_type` (y el texto en `business_type_other` si fue "Otro").
