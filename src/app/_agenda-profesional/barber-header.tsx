@@ -1,20 +1,19 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { myAgendaHref } from "@/lib/routes";
 import type { BarberView } from "@/modulos/agenda/dominio/barber-agenda";
 import { initialsOf } from "@/ui/avatar";
 import { cx } from "@/ui/cx";
 import { LockIcon } from "@/ui/icons";
 import { textos } from "@/ui/textos";
-import { agendaHref, type AgendaEntry } from "./entry";
 
 const t = textos.barbero;
 
 // The top of B-01, B-02 and B-06: the barbershop, the barber's initials
 // (decision B7), the greeting with today's summary, the paused notice when
 // the barbershop is read only, and Hoy | Semana. `end` sits at the right of
-// the barbershop's line: "Cerrar sesión" by the session (task 7.6b).
+// the barbershop's line: "Cerrar sesión" (task 7.6b).
 export function BarberHeader({
-  entry,
   end,
   barbershopName,
   barberName,
@@ -23,7 +22,6 @@ export function BarberHeader({
   view,
   onToday,
 }: {
-  entry: AgendaEntry;
   end?: ReactNode;
   barbershopName: string;
   barberName: string;
@@ -70,11 +68,11 @@ export function BarberHeader({
       )}
       <nav aria-label={t.vistas.etiqueta}>
         <div className="bg-neutral-soft flex gap-1 rounded-xl p-1">
-          <Tab href={agendaHref(entry)} current={view === "dia" && onToday}>
+          <Tab href={myAgendaHref()} current={view === "dia" && onToday}>
             {t.vistas.hoy}
           </Tab>
           <Tab
-            href={agendaHref(entry, { vista: "semana" })}
+            href={myAgendaHref({ vista: "semana" })}
             current={view === "semana"}
           >
             {t.vistas.semana}

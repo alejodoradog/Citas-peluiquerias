@@ -48,15 +48,9 @@ export const routes = {
   panelBarberNew: "/panel/profesionales/nuevo",
   panelBarberEdit: (id: string) => `/panel/profesionales/${id}`,
   panelBarberSchedule: (id: string) => `/panel/profesionales/${id}/horario`,
-  panelBarberLink: (id: string) => `/panel/profesionales/${id}/link`,
-  // A barber's private agenda (task 4.4). The token is the whole credential:
-  // only the owner's screen right after issuing it ever holds this path.
-  barberAgenda: (token: string) => `/b/${token}`,
-  // Task 4.4: one appointment (B-03) and "Bloquear horas" (B-04).
-  barberAppointment: (token: string, id: string) => `/b/${token}/citas/${id}`,
-  barberBlock: (token: string) => `/b/${token}/bloquear`,
-  // "Mi agenda" of a professional with their own account (task 7.6b): the
-  // same B-01 to B-04, by the session. Nothing in these paths names who.
+  // "Mi agenda" of a professional with their own account (task 7.6b): B-01
+  // to B-04, by the session (the private link /b/<token> of task 4.4 went
+  // with task 7.6c). Nothing in these paths names who.
   myAgenda: "/mi-agenda",
   myAppointment: (id: string) => `/mi-agenda/citas/${id}`,
   myBlock: "/mi-agenda/bloquear",
@@ -132,23 +126,16 @@ export function newAppointmentHref(query: NewAppointmentParams = {}): string {
   return withQuery(routes.panelAppointmentNew, query);
 }
 
-// Task 4.4: "Mi agenda" of a barber (B-01, B-02) says in its query the day
-// or the week it shows; without one it is today. ?aviso= carries the code
-// of a change that could not be saved, so the screen can say why.
+// "Mi agenda" of a professional (B-01, B-02, tasks 4.4 and 7.6b) says in its
+// query the day or the week it shows; without one it is today. ?aviso=
+// carries the code of a change that could not be saved, so the screen can
+// say why.
 export type BarberAgendaParams = {
   vista?: "semana";
   dia?: string;
   aviso?: string;
 };
 
-export function barberAgendaHref(
-  token: string,
-  query: BarberAgendaParams = {},
-): string {
-  return withQuery(routes.barberAgenda(token), query);
-}
-
-// The same for "Mi agenda" by the session (task 7.6b).
 export function myAgendaHref(query: BarberAgendaParams = {}): string {
   return withQuery(routes.myAgenda, query);
 }

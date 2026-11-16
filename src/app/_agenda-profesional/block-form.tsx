@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createBlock } from "@/modulos/agenda/acciones/barber";
 import { createMyBlock } from "@/modulos/agenda/acciones/my-agenda";
 import { BLOCK_REASONS } from "@/modulos/agenda/dominio/barber-agenda";
 import { Checkbox } from "@/ui/checkbox";
@@ -12,29 +11,23 @@ import { Notice } from "@/ui/notice";
 import { SelectField, type SelectOption } from "@/ui/select-field";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
-import type { AgendaEntry } from "./entry";
 
 const t = textos.barbero.bloquear;
 
 // B-04: the day, from and until (quarter hours) and the reason. The form
 // wraps the whole screen so "Bloquear" can sit in the bottom bar.
 export function BlockForm({
-  entry,
   close,
   days,
   times,
   defaults,
 }: {
-  entry: AgendaEntry;
   close: { href: string; label: string };
   days: SelectOption[];
   times: SelectOption[];
   defaults: { dia: string; desde: string; hasta: string };
 }) {
-  const form = useFormAction(
-    entry.kind === "link" ? createBlock : createMyBlock,
-    textos.barbero.errores,
-  );
+  const form = useFormAction(createMyBlock, textos.barbero.errores);
   const reasonError = form.fieldError("motivo");
   const chosenReason = form.value("motivo");
   // React resets the form after each submit, to what its fields had when
@@ -49,9 +42,6 @@ export function BlockForm({
 
   return (
     <ActionForm form={form} className="flex min-h-full flex-1 flex-col">
-      {entry.kind === "link" ? (
-        <input type="hidden" name="token" value={entry.token} />
-      ) : null}
       <FlowShell
         key={sent}
         header={<TopBar title={t.titulo} titleAs="h1" close={close} />}

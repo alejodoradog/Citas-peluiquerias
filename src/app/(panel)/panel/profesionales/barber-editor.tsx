@@ -6,16 +6,15 @@ import type {
   BarberActionErrorCode,
   BarberCommandResult,
   BarberState,
+  DeleteBarberResult,
   ImageUploadTicket,
 } from "@/modulos/barberias/acciones/barbers";
-import type { BarberLinkState } from "@/modulos/barberias/dominio/barber-link";
 import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
-import { Chip } from "@/ui/chip";
 import { Field } from "@/ui/field";
 import { FlowShell } from "@/ui/flow-shell";
 import { ActionForm, SubmitButton, useFormAction } from "@/ui/form";
-import { ClockIcon, LinkIcon, WarningIcon } from "@/ui/icons";
+import { ClockIcon, WarningIcon } from "@/ui/icons";
 import { List, ListRow } from "@/ui/list";
 import { Notice } from "@/ui/notice";
 import { Sheet } from "@/ui/sheet";
@@ -24,6 +23,7 @@ import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import type { AccessResult } from "@/modulos/cuentas/acciones/professional-access";
 import { AccessSection, type AccessCard } from "./access-section";
+import { DeleteSection } from "./delete-section";
 import { PhotoField, type PendingPhoto } from "./photo-field";
 
 const t = textos.barberos;
@@ -38,9 +38,6 @@ export type EditableBarber = {
   serviceIds: string[];
   active: boolean;
   isOwner: boolean;
-  linkState: BarberLinkState;
-  // "3 de noviembre", when the working link was sent (task 2.3).
-  linkSentOn: string | null;
   // "2 de noviembre" when inactive.
   inactiveSince: string | null;
 };
@@ -59,6 +56,7 @@ export function BarberEditor({
   setActive,
   removePhoto,
   access,
+  remove,
 }: {
   action: (previous: BarberState, formData: FormData) => Promise<BarberState>;
   barber: EditableBarber | null;
@@ -77,6 +75,12 @@ export function BarberEditor({
     card: AccessCard;
     invite: (barberId: string) => Promise<AccessResult>;
     revoke: (barberId: string) => Promise<AccessResult>;
+  };
+  // "Eliminar a …" (task 7.6c), for a saved professional who is not the
+  // owner, with their appointments to come.
+  remove?: {
+    upcoming: number;
+    action: (barberId: string) => Promise<DeleteBarberResult>;
   };
 }) {
   const form = useFormAction(action, t.errores);
@@ -214,27 +218,6 @@ export function BarberEditor({
               subtitle={hoursSummary}
               href={barber ? routes.panelBarberSchedule(barber.id) : undefined}
             />
-            {/* D-56 needs a saved barber who is not the owner. */}
-            <ListRow
-              icon={<LinkIcon />}
-              title={t.linkPrivado}
-              subtitle={linkSubtitle(barber)}
-              trailing={
-                barber
-                  ? {
-                      owner: undefined,
-                      unsent: <Chip tone="warning">{t.linkSinEnviarChip}</Chip>,
-                      active: <Chip tone="success">{t.linkActivoChip}</Chip>,
-                      off: <Chip tone="neutral">{t.linkDesactivadoChip}</Chip>,
-                    }[barber.linkState]
-                  : undefined
-              }
-              href={
-                barber && barber.linkState !== "owner"
-                  ? routes.panelBarberLink(barber.id)
-                  : undefined
-              }
-            />
           </List>
           {barber && access && !barber.isOwner ? (
             <AccessSection
@@ -317,6 +300,14 @@ export function BarberEditor({
               </Button>
             )
           ) : null}
+          {barber && remove && !barber.isOwner ? (
+            <DeleteSection
+              barberId={barber.id}
+              barberName={barber.displayName}
+              upcoming={remove.upcoming}
+              remove={remove.action}
+            />
+          ) : null}
         </FlowShell>
       </ActionForm>
       {barber && setActive && !barber.isOwner && barber.active ? (
@@ -351,17 +342,3 @@ export function BarberEditor({
   );
 }
 
-// The line under "Link privado" in D-54.
-function linkSubtitle(barber: EditableBarber | null): string | undefined {
-  if (!barber) return t.linkNuevo;
-  switch (barber.linkState) {
-    case "owner":
-      return t.linkDueno;
-    case "unsent":
-      return t.linkSinEnviarAyuda;
-    case "active":
-      return barber.linkSentOn ? t.linkEnviado(barber.linkSentOn) : undefined;
-    case "off":
-      return undefined;
-  }
-}

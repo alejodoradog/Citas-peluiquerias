@@ -2,19 +2,12 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { textos } from "@/ui/textos";
 
-// The screens of "Mi agenda" serve two entries (task 7.6b): the private link
-// (/b/<token>, until task 7.6c) and the professional's session
-// (/mi-agenda). By the link the forms carry the token; by the session they
-// carry nothing that says who asks, and their links stay under /mi-agenda.
-const markAppointment = vi.fn();
+// The lists of "Mi agenda" (B-01, B-02), by the professional's session: the
+// only entry since the private link went with task 7.6c. Their forms carry
+// nothing that says who asks (no token, no barber, no barbershop), and their
+// links stay under /mi-agenda.
 const markMyAppointment = vi.fn();
-const removeBlock = vi.fn();
 const removeMyBlock = vi.fn();
-vi.mock("@/modulos/agenda/acciones/barber", () => ({
-  markAppointment,
-  removeBlock,
-  createBlock: vi.fn(),
-}));
 vi.mock("@/modulos/agenda/acciones/my-agenda", () => ({
   markMyAppointment,
   removeMyBlock,
@@ -28,11 +21,7 @@ vi.mock("next/link", () => ({
 
 const { DayList } = await import("./day-list");
 const { WeekList } = await import("./week-list");
-const { agendaHref, appointmentHref, blockHref } = await import("./entry");
 
-const TOKEN = "a".repeat(43);
-const LINK = { kind: "link", token: TOKEN } as const;
-const SESSION = { kind: "session" } as const;
 const APPOINTMENT = "a0000000-0000-4000-8000-000000000001";
 const BLOCK = "b0000000-0000-4000-8000-000000000001";
 
@@ -70,41 +59,10 @@ function hiddenFields(form: HTMLFormElement) {
   );
 }
 
-describe("the links of each entry", () => {
-  it("stay under /b/<token> by the link and under /mi-agenda by the session", () => {
-    expect(agendaHref(LINK, { vista: "semana" })).toBe(
-      `/b/${TOKEN}?vista=semana`,
-    );
-    expect(agendaHref(SESSION, { dia: "2026-11-08" })).toBe(
-      "/mi-agenda?dia=2026-11-08",
-    );
-    expect(appointmentHref(LINK, APPOINTMENT)).toBe(
-      `/b/${TOKEN}/citas/${APPOINTMENT}`,
-    );
-    expect(appointmentHref(SESSION, APPOINTMENT)).toBe(
-      `/mi-agenda/citas/${APPOINTMENT}`,
-    );
-    expect(blockHref(LINK)).toBe(`/b/${TOKEN}/bloquear`);
-    expect(blockHref(SESSION)).toBe("/mi-agenda/bloquear");
-  });
-});
-
 describe("DayList", () => {
-  it("by the link, its forms carry the token and its links the link", () => {
-    const { container } = render(
-      <DayList entry={LINK} date="2026-11-07" items={items} />,
-    );
-    expect(
-      screen.getByRole("link", { name: /Felipe R\./ }).getAttribute("href"),
-    ).toBe(`/b/${TOKEN}/citas/${APPOINTMENT}`);
-    const forms = [...container.querySelectorAll("form")];
-    expect(forms).toHaveLength(2);
-    for (const form of forms) expect(hiddenFields(form).token).toBe(TOKEN);
-  });
-
   it("by the session, nothing in its forms says who asks", () => {
     const { container } = render(
-      <DayList entry={SESSION} date="2026-11-07" items={items} />,
+      <DayList date="2026-11-07" items={items} />,
     );
     expect(
       screen.getByRole("link", { name: /Felipe R\./ }).getAttribute("href"),
@@ -123,10 +81,9 @@ describe("DayList", () => {
 });
 
 describe("WeekList", () => {
-  it("opens the days under its own entry", () => {
+  it("opens the days under /mi-agenda", () => {
     render(
       <WeekList
-        entry={SESSION}
         days={
           [
             {

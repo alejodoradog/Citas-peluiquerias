@@ -3,9 +3,7 @@ import { Suspense } from "react";
 import { requireProfessional } from "@/modulos/cuentas/guards";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
-import { AccessGone } from "../../../_agenda-profesional/access-gone";
 import { AppointmentScreen } from "../../../_agenda-profesional/appointment-screen";
-import { SESSION_ENTRY } from "../../../_agenda-profesional/entry";
 
 const t = textos.barbero;
 
@@ -37,11 +35,6 @@ async function MyAppointment({
   await requireProfessional();
   const { id } = await params;
   return (
-    <AppointmentScreen
-      entry={SESSION_ENTRY}
-      appointmentId={id}
-      aviso={(await searchParams).aviso}
-      gone={<AccessGone />}
-    />
+    <AppointmentScreen appointmentId={id} aviso={(await searchParams).aviso} />
   );
 }
