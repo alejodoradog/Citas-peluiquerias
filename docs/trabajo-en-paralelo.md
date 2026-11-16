@@ -41,7 +41,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria (`docs/tareas/7.3-asistente.md`) | Fundador | Los servicios y el formulario, fusionados (#93). La ubicación obligatoria va en un PR aparte y espera D9 |
 | 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado (`docs/tareas/7.4-bloqueos.md`) | Fundador | Fusionada (#94). Volvió a definir `create_time_block_by_barber` |
 | 7.5 Aviso de reserva al profesional, con WhatsApp (`docs/tareas/7.5-aviso-profesional.md`) | Fundador | Fusionada (#95). Falta desplegar la función en `barberias-dev`. Toca `send-notifications` (`appointment-emails.ts` e `index.ts`): hay que desplegar la función. Cambia la política de datos: `LEGAL_VERSION` pasa a `2026-11-15.2` |
-| 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | La decisión 0010 está propuesta (#96) y espera la aceptación del fundador |
+| 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | La decisión 0010 fue aceptada por el fundador el 2026-11-15. En curso |
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
 | 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |
 | 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |

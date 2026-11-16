@@ -146,7 +146,7 @@ export function DetailsForm({
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            optional
+            required
             placeholder={t.celularEjemplo}
             maxLength={20}
             defaultValue={initial("phone")}
