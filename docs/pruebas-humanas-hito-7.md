@@ -57,3 +57,8 @@ Desde el celular de un cliente, sin sesión, con un establecimiento de prueba qu
 - [ ] **3. Terminar la reserva.** Elegir profesional, día y hora, llenar los datos y confirmar. La cita sale en la agenda del dueño con el servicio tocado.
 - [ ] **4. "Reservar cita" no cambió.** En la página, tocar "Reservar cita": abre "Servicios" sin nada elegido.
 - [ ] **5. Se ve que se toca.** Al tocar una fila, la fila responde enseguida. En iPhone y en Android, la flecha de la derecha se ve en cada servicio y el texto no se corta con nombres largos.
+
+## Tarea 7.5: el celular es obligatorio al reservar
+- [ ] **1. Sin celular no reserva.** En el paso de los datos, dejar el celular vacío y confirmar: dice "Escribe tu celular." y lo demás no se pierde.
+- [ ] **2. Con celular.** Reservar con un celular: la cita queda, y en su detalle el dueño tiene "Escribirle por WhatsApp".
+- [ ] **3. La cita manual no lo exige.** Desde el panel, el dueño crea una cita sin celular.

@@ -4,7 +4,11 @@ import { parseCustomerDetails } from "./customer-details";
 describe("parseCustomerDetails", () => {
   it("needs the box of the data policy (task 6.5)", () => {
     expect(
-      parseCustomerDetails({ name: "Ana", email: "ana@correo.com", phone: "" }),
+      parseCustomerDetails({
+        name: "Ana",
+        email: "ana@correo.com",
+        phone: "300 123 4567",
+      }),
     ).toMatchObject({ success: false, errors: { acepto: "privacy_required" } });
   });
 
@@ -26,15 +30,29 @@ describe("parseCustomerDetails", () => {
     });
   });
 
-  it("leaves the phone out when it is empty", () => {
-    expect(
-      parseCustomerDetails({
-        acepto: "on",
-        name: "Ana",
-        email: "ana@correo.com",
-        phone: " ",
-      }),
-    ).toMatchObject({ success: true, data: { phone: null } });
+  // Founder, 2026-11-15 (D6 of phase 7): the mobile is how the professional
+  // and the establishment reach the customer.
+  it("needs the mobile", () => {
+    for (const phone of ["", " "]) {
+      expect(
+        parseCustomerDetails({
+          acepto: "on",
+          name: "Ana",
+          email: "ana@correo.com",
+          phone,
+        }),
+      ).toMatchObject({ success: false, errors: { phone: "phone_required" } });
+    }
+    const { phone: _phone, ...without } = {
+      acepto: "on",
+      name: "Ana",
+      email: "ana@correo.com",
+      phone: "",
+    };
+    expect(parseCustomerDetails(without)).toMatchObject({
+      success: false,
+      errors: { phone: "phone_required" },
+    });
   });
 
   it("refuses control characters in the name", () => {
@@ -43,7 +61,7 @@ describe("parseCustomerDetails", () => {
         acepto: "on",
         name: "Ana\nBcc: x@y.co",
         email: "ana@correo.com",
-        phone: "",
+        phone: "300 123 4567",
       }),
     ).toMatchObject({ success: false, errors: { name: "name_invalid" } });
   });
@@ -65,7 +83,11 @@ describe("parseCustomerDetails", () => {
       },
     });
     expect(
-      parseCustomerDetails({ name: "", email: "ana@correo.com", phone: "" }),
+      parseCustomerDetails({
+        name: "",
+        email: "ana@correo.com",
+        phone: "300 123 4567",
+      }),
     ).toMatchObject({ success: false, errors: { name: "name_required" } });
   });
 });

@@ -238,14 +238,14 @@ export const textos = {
           parrafos: [
             "De los dueños: nombre, correo, celular, los datos de su establecimiento (nombre, dirección, horarios, servicios y fotos) y los pagos de su suscripción.",
             "De los profesionales: nombre, foto si el dueño la sube y correo si el dueño lo agrega para los avisos.",
-            "De los clientes: nombre, correo, celular si lo dan, sus citas en cada establecimiento y las notas que el establecimiento escriba sobre ellos.",
+            "De los clientes: nombre, correo y celular, sus citas en cada establecimiento y las notas que el establecimiento escriba sobre ellos.",
             "Datos técnicos: la sesión de quien ingresa al panel y, para frenar abusos, una huella cifrada de la dirección IP que no permite saber cuál es. No pedimos datos sensibles ni datos de menores de edad.",
           ],
         },
         {
           titulo: "3. Para qué los usamos",
           parrafos: [
-            'Para prestar el servicio: mostrar la página del establecimiento, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas"; y avisarle de la reserva al profesional que te atiende, con tu nombre y tu celular si lo diste.',
+            'Para prestar el servicio: mostrar la página del establecimiento, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas"; y avisarle de la reserva al profesional que te atiende, con tu nombre y tu celular.',
             "Para la suscripción: avisar los vencimientos y registrar los pagos.",
             "Para la seguridad: verificar que quien reserva o se registra no es un robot y limitar los abusos.",
             "No vendemos tus datos, no los usamos para publicidad y no los compartimos con nadie fuera de los proveedores de la sección 5.",
@@ -1993,6 +1993,7 @@ export const textos = {
       name_has_link: "Escribe solo tu nombre, sin links ni páginas web.",
       privacy_required: "Para reservar, autoriza el tratamiento de tus datos.",
       email_invalid: "Escribe un correo válido, como nombre@correo.com.",
+      phone_required: "Escribe tu celular.",
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:
         "El establecimiento cambió sus servicios. Elígelos de nuevo, por favor.",

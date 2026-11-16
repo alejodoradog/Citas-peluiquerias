@@ -1,8 +1,8 @@
 # 0010 Cuentas de profesional por invitación
 
-Fecha: 2026-11-15 · Tarea: 7.6 (y lo que cuelga de ella: 7.7 y parte de la 7.5) · Estado: **propuesta**; espera la aceptación del fundador. La redactó Claude Code.
+Fecha: 2026-11-15 · Tarea: 7.6 (y lo que cuelga de ella: 7.7 y parte de la 7.5) · Estado: **aceptada** por el fundador el 2026-11-15, con las siete recomendaciones de la tabla final. La redactó Claude Code.
 
-Cambia una regla de la spec. Hoy "los barberos no necesitan cuenta y ven su agenda desde un link privado", y las cuentas por barbero estaban en "Fase 2". Con la aceptación, el profesional entra con su propia cuenta y el link privado desaparece.
+Cambia una regla de la spec. Hoy "los barberos no necesitan cuenta y ven su agenda desde un link privado", y las cuentas por barbero estaban en "Fase 2". El profesional entra con su propia cuenta y el link privado desaparece.
 
 ## Contexto
 
@@ -70,10 +70,10 @@ Tres PR, cada uno con `ingeniero-critico` y `revisor-seguridad`:
 - **La llave de servicio.** Invitar y borrar una cuenta solo se puede con la llave de servicio, desde el servidor. Esas dos acciones comprueban antes que quien las pide es el dueño de ese profesional.
 - **Unas dos semanas de trabajo** con sus revisiones. La spec estimaba una.
 
-## Lo que falta que decida el fundador
-Cada una trae la recomendación con la que está escrita la decisión.
+## Lo que decidió el fundador (2026-11-15)
+Respondió "sí a todo": cada pregunta queda como dice su recomendación.
 
-| # | Pregunta | Recomendación |
+| # | Pregunta | Decidido |
 | --- | --- | --- |
 | 1 | ¿El profesional entra con correo y contraseña? | Sí, como el dueño. Es lo que ya existe y está probado. |
 | 2 | ¿Se puede invitar un correo que ya tiene cuenta? | No por ahora (punto 3). |

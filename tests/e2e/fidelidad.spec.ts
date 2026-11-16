@@ -934,6 +934,10 @@ test("C-01, C-02, C-04, C-06 and C-08 match the design", async ({ page }) => {
     .getByRole("textbox", { name: r.datos.correo })
     .filter({ visible: true })
     .fill("camila@correo.com");
+  await page
+    .getByRole("textbox", { name: r.datos.celular })
+    .filter({ visible: true })
+    .fill("300 123 4567");
   await acceptDataPolicy(page);
   await page
     .getByRole("button", { name: r.datos.confirmar })
