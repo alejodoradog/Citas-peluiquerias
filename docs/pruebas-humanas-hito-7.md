@@ -15,12 +15,10 @@ Con una cuenta nueva de dueño, de principio a fin.
 - [ ] **7. Link corto.** Registrar un negocio con un nombre de dos letras: su link termina en "-citas".
 - [ ] **8. Lo que sí debe decir "barbería".** La landing sigue rotando "barbería", "spa", "consultorio", "veterinaria" y "salón", y su demostración sigue siendo "Barbería La Esquina".
 
-## Tarea 7.4: bloqueos del profesional
-Desde el link privado de un profesional.
-
-- [ ] **1. Todo el día.** En "Bloquear horas", marcar "Todo el día": desaparecen "Desde" y "Hasta". Elegir un día sin citas y bloquear: el día queda bloqueado entero, y la página pública no ofrece horas con ese profesional ese día.
-- [ ] **2. Día con cita.** Marcar "Todo el día" en un día donde tiene una cita: no deja, y dice que le pida al dueño que la mueva.
-- [ ] **3. Festivo cerrado.** En la lista de días, el próximo festivo que el establecimiento no abre sale apagado, con "· cerrado".
-- [ ] **4. Día que no trabaja.** Un día en que el profesional no tiene horario sale apagado igual.
-- [ ] **5. Cierre del establecimiento.** El dueño cierra el establecimiento un día entero en Festivos y cierres. Ese día sale apagado para el profesional.
-- [ ] **6. Quitar.** El bloqueo de todo el día se puede quitar desde la agenda del profesional.
+## Tarea 7.2: tipo de establecimiento y textos legales
+- [ ] **1. El tipo es obligatorio.** En el registro, llenar todo menos "Tipo de establecimiento" y tocar "Crear cuenta": dice "Elige el tipo de establecimiento." y no se pierde lo escrito.
+- [ ] **2. "Otro" pide cuál.** Elegir "Otro": aparece "¿Cuál?". Dejarlo vacío no deja crear la cuenta.
+- [ ] **3. Volver de los términos.** Con el formulario a medio llenar, abrir "términos de uso" y tocar "Volver": el formulario está igual, con el tipo elegido.
+- [ ] **4. Volver de la política, en la reserva.** En el paso de los datos de una reserva, abrir la política de datos y tocar "Volver": los datos y la hora elegida siguen ahí.
+- [ ] **5. Abierto directo.** Abrir `www.yapoin.com/terminos` escribiendo la dirección: el botón dice "Volver al inicio".
+- [ ] **6. Queda guardado.** En Supabase, la sede nueva tiene el tipo elegido en `business_type` (y el texto en `business_type_other` si fue "Otro").
