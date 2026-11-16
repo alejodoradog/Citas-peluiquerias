@@ -198,7 +198,11 @@ select is(
     'public.create_manual_appointment:authenticated',
     -- Task 7.6a: the professional's own session (decision 0010).
     'public.create_my_time_block:authenticated',
+    -- Task 7.7: the walk-in appointment, by the professional's session.
+    'public.create_my_walk_in:authenticated',
     'public.create_time_block:authenticated',
+    -- Task 7.7: the walk-in appointment, by the owner.
+    'public.create_walk_in_appointment:authenticated',
     -- Task 7.6c: the owner deletes a professional.
     'public.delete_barber:authenticated',
     'public.delete_barbershop:authenticated',
@@ -219,6 +223,8 @@ select is(
     'public.my_appointments:anon',
     'public.my_appointments:authenticated',
     'public.my_professional_access:authenticated',
+    -- Task 7.7: the services of the professional's session, for the walk-in.
+    'public.my_services:authenticated',
     'public.platform_barbershops:authenticated',
     'public.platform_business_types:authenticated',
     'public.platform_monthly_revenue:authenticated',
