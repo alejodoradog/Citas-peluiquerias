@@ -159,16 +159,16 @@ reset role;
 
 -- 2. Anon cannot even run them --------------------------------------------------------------------------
 
-set local role anon;
-select throws_ok($$select * from public.platform_barbershops()$$, '42501', null,
+-- The grant itself, not the error: inside the functions anon would get the
+-- same 42501 from the super admin check (security review of task 7.12).
+select ok(not has_function_privilege('anon', 'public.platform_barbershops(text)', 'execute'),
   'anon cannot run platform_barbershops');
-select throws_ok($$select * from public.platform_weekly_activity(4)$$, '42501', null,
+select ok(not has_function_privilege('anon', 'public.platform_weekly_activity(integer)', 'execute'),
   'anon cannot run platform_weekly_activity');
-select throws_ok($$select * from public.platform_monthly_revenue(3)$$, '42501', null,
+select ok(not has_function_privilege('anon', 'public.platform_monthly_revenue(integer)', 'execute'),
   'anon cannot run platform_monthly_revenue');
-select throws_ok($$select * from public.platform_business_types()$$, '42501', null,
+select ok(not has_function_privilege('anon', 'public.platform_business_types()', 'execute'),
   'anon cannot run platform_business_types');
-reset role;
 
 -- Snapshots after the fixtures, as the super admin -----------------------------------------------------
 

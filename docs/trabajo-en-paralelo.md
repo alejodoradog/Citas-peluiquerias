@@ -47,7 +47,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |
 | 7.10 Servicios tocables en la página pública | Socio | Fusionada (#91) |
 | 7.11 Intervalo de reserva configurable (15, 30 o 60 minutos) | Socio | Pendiente |
-| 7.12 Panel de plataforma para computador, con métricas | Socio | En curso (`hito-7-admin-escritorio`) |
+| 7.12 Panel de plataforma para computador, con métricas | Socio | Fusionada (#102) |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`).
 

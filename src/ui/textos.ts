@@ -2300,7 +2300,6 @@ export const textos = {
       anterior: (valor: string, pagos: number) =>
         `${valor} · ${pagos === 1 ? "1 pago" : `${pagos} pagos`}`,
       // The charts (task 7.12).
-      hoy: "Establecimientos hoy",
       cuando: "Las semanas empiezan el lunes, en hora de Colombia.",
       verTabla: "Ver tabla",
       verGrafico: "Ver gráfico",
