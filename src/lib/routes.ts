@@ -6,6 +6,8 @@ export const routes = {
   // The owners' entry, the one they add to their home screen (2026-11-15).
   app: "/app",
   signUp: "/registro",
+  // Task 7.8: the sign-up with a plan chosen in the landing's prices.
+  signUpWithPlan: (plan: "1" | "2") => `/registro?plan=${plan}`,
   signIn: "/ingresar",
   recoverPassword: "/recuperar-clave",
   newPassword: "/nueva-clave",

@@ -38,6 +38,8 @@ export type Access =
       barbershop: OwnerBarbershop & {
         subscriptionStatus: SubscriptionStatus;
         expiresOn: BogotaDate;
+        // The plan chosen (task 7.8): only plan 1 shows a free trial.
+        selectedPlan: string;
         // It has not finished the setup wizard (task 2.1), so the panel
         // sends the owner there. Read with the barbershop itself, in the
         // same query, so the panel spends no extra round trip on it.
@@ -84,7 +86,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
     supabase
       .from("memberships")
       .select(
-        "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at, setup_completed_at)",
+        "barbershops(id, name, slug, logo_path, subscription_status, expires_on, trial_ends_on, created_at, setup_completed_at, selected_plan)",
       )
       .eq("user_id", user.id)
       .eq("role", "owner"),
@@ -140,6 +142,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
       ...summary(active),
       subscriptionStatus: active.subscription_status,
       expiresOn: active.expires_on,
+      selectedPlan: active.selected_plan,
       needsSetup: active.setup_completed_at === null,
     },
     barbershops: owned.map(summary),

@@ -81,6 +81,7 @@ async function Payment({
       plan={quote.planCode}
       planLine={t.plan(quote.planName, quote.activeBarbers)}
       amount={quote.priceCop === null ? null : formatPesos(quote.priceCop)}
+      amountCop={quote.priceCop}
       methods={PAYMENT_METHODS.map((method) => ({
         value: method,
         label: t.medios[method],

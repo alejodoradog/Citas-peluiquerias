@@ -6,7 +6,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(20);
+select plan(21);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000064cc', 'nadie-p@example.com'),
@@ -32,6 +32,8 @@ insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-0000000064aa', 'aaaaaaaa-0000-0000-0000-000000000641', 'owner'),
   ('00000000-0000-0000-0000-0000000064aa', 'aaaaaaaa-0000-0000-0000-000000000642', 'owner'),
   ('00000000-0000-0000-0000-0000000064bb', 'aaaaaaaa-0000-0000-0000-000000000643', 'owner');
+update public.barbershops set selected_plan = 'plus' where id = 'aaaaaaaa-0000-0000-0000-000000000642';
+update public.barbershops set selected_plan = 'por_acuerdo' where id = 'aaaaaaaa-0000-0000-0000-000000000643';
 insert into public.barbers (barbershop_id, display_name, link_token_hash, sort_order, active)
 select shop, 'Barbero ' || n, encode(sha256(convert_to(shop::text || n, 'UTF8')), 'hex'), n, active
 from (values
@@ -94,7 +96,7 @@ select is(
 );
 select is(
   (select row(plan_code, price_cop, active_barbers)::text from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000642')),
-  '(plus,40000,5)', 'five active barbers pay $40.000; an inactive one does not count'
+  '(plus,25000,5)', 'the chosen plan sets the plan; its first payment is $25.000; an inactive barber does not count'
 );
 select is(
   pg_temp.hint_of($$select * from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000643')$$),
@@ -115,7 +117,7 @@ set local role service_role;
 set local request.jwt.claims to '{"role": "service_role"}';
 select is(
   (select price_cop from public.subscription_quote('aaaaaaaa-0000-0000-0000-000000000642')),
-  40000, 'the server key reads it, for the emails'
+  25000, 'the server key reads it, for the emails'
 );
 reset role;
 select ok(
@@ -137,7 +139,7 @@ select is(
 );
 select is(
   (select row(plan, amount_cop, active_barbers)::text from public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000642', 'plus', 'nequi', 'P-2')),
-  '(plus,40000,5)', 'five barbers pay $40.000, and the payment keeps how many were counted'
+  '(plus,25000,5)', 'the first payment of plus is $25.000, and the payment keeps how many were counted'
 );
 select is(
   (select plan from public.barbershops where id = 'aaaaaaaa-0000-0000-0000-000000000642'),
@@ -160,8 +162,12 @@ select is(
   '(por_acuerdo,120000)', 'nine barbers pay what was agreed'
 );
 select is(
-  (select amount_cop from public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000641', 'standard', 'bre_b', 'P-4', null, 1)),
-  25000, 'a fixed price ignores any amount sent'
+  pg_temp.hint_of($$select public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000641', 'standard', 'bre_b', 'P-4', null, 1)$$),
+  'price_changed', 'a fixed price refuses an amount that is not the one that applies'
+);
+select is(
+  (select amount_cop from public.register_subscription_payment('aaaaaaaa-0000-0000-0000-000000000641', 'standard', 'bre_b', 'P-4', null, 25000)),
+  25000, 'and takes the amount that applies'
 );
 reset role;
 

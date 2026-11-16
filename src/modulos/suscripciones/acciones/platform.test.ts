@@ -93,6 +93,8 @@ describe("registerPayment (P-03)", () => {
   const valid = {
     barberia: SHOP,
     plan: "standard",
+    // The price P-03 showed (task 7.8a).
+    valor: "25000",
     metodo: "nequi",
     referencia: " NEQ-1 ",
     fecha: "2026-11-07",
@@ -111,8 +113,25 @@ describe("registerPayment (P-03)", () => {
       method: "nequi",
       reference: "NEQ-1",
       paidOn: "2026-11-07",
-      amountCop: null,
+      amountCop: 25000,
     });
+  });
+
+  it("refuses a price that is no longer the one shown (task 7.8a)", async () => {
+    loadQuote.mockResolvedValueOnce({
+      planCode: "plus",
+      planName: "De 5 a 8 profesionales",
+      priceCop: 40000,
+      byAgreement: false,
+      activeBarbers: 6,
+    });
+    expect(
+      await actions.registerPayment(
+        IDLE,
+        form({ ...valid, plan: "plus", valor: "25000" }),
+      ),
+    ).toMatchObject({ status: "failed", error: "plan_changed" });
+    expect(registerPayment).not.toHaveBeenCalled();
   });
 
   it("asks for the agreed value of 9 barbers or more (task 5.6)", async () => {

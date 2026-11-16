@@ -22,6 +22,7 @@ export function PaymentForm({
   plan,
   planLine,
   amount,
+  amountCop,
   methods,
   days,
 }: {
@@ -32,6 +33,9 @@ export function PaymentForm({
   planLine: string;
   // Null for a plan by agreement: the super admin types it.
   amount: string | null;
+  // The same in pesos: the database refuses it if the price changed since
+  // (task 7.8a, price_changed).
+  amountCop: number | null;
   methods: SelectOption[];
   days: { value: string; label: string; until: string; explanation: string }[];
 }) {
@@ -43,6 +47,9 @@ export function PaymentForm({
     <ActionForm form={form} className="flex min-h-full flex-1 flex-col">
       <input type="hidden" name="barberia" value={barbershopId} />
       <input type="hidden" name="plan" value={plan} />
+      {amountCop === null ? null : (
+        <input type="hidden" name="valor" value={amountCop} />
+      )}
       <FlowShell
         header={
           <TopBar

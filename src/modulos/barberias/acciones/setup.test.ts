@@ -30,7 +30,9 @@ const saveShopLocation = vi.fn<
 vi.mock("../datos/shop-profile", () => ({ getShopProfile, saveShopLocation }));
 
 const completeBarbershopSetup = vi.fn<
-  (...args: unknown[]) => Promise<"saved" | "location_required" | "failed">
+  (
+    ...args: unknown[]
+  ) => Promise<"saved" | "location_required" | "plan_limit" | "failed">
 >(async () => "saved");
 vi.mock("../datos/setup", () => ({ completeBarbershopSetup }));
 
@@ -177,5 +179,14 @@ describe("completeSetup", () => {
       ),
     ).toEqual({ redirectedTo: "/panel/configurar/ubicacion" });
     expect(completeBarbershopSetup).not.toHaveBeenCalled();
+  });
+
+  it("says the plan allows no more professionals (task 7.8)", async () => {
+    completeBarbershopSetup.mockResolvedValueOnce("plan_limit");
+    expect(
+      await run(() =>
+        completeSetup({ status: "idle" }, form({ setup: SETUP })),
+      ),
+    ).toMatchObject({ status: "failed", error: "plan_limit" });
   });
 });

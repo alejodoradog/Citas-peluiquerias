@@ -117,7 +117,7 @@ describe("account screen frame", () => {
       screen.getByRole("heading", { level: 1, name: "Política de datos" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Vigente desde el 15 de noviembre de 2026."),
+      screen.getByText("Vigente desde el 16 de noviembre de 2026."),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 2, name: "7. Tus derechos" }),

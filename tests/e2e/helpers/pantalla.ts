@@ -76,10 +76,19 @@ export async function expectVisibleFocus(page: Page, stops = 12) {
       if (element.tagName.includes("-")) return null;
       const style = getComputedStyle(element);
       // A visually hidden input shows its ring on the drawn control next to it.
-      const drawn =
-        element.classList.contains("sr-only") && element.nextElementSibling
-          ? getComputedStyle(element.nextElementSibling)
-          : style;
+      // (or, for a card-like option, on its whole label: has-focus-visible).
+      let drawn = style;
+      if (element.classList.contains("sr-only")) {
+        const next = element.nextElementSibling;
+        const nextStyle = next ? getComputedStyle(next) : null;
+        const label = element.closest("label");
+        drawn =
+          nextStyle && nextStyle.outlineStyle !== "none"
+            ? nextStyle
+            : label
+              ? getComputedStyle(label)
+              : (nextStyle ?? style);
+      }
       return {
         name: element.textContent?.trim() || element.getAttribute("name"),
         width: parseFloat(drawn.outlineWidth),

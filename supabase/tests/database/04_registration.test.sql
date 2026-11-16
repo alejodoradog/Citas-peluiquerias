@@ -47,8 +47,8 @@ select is(
 );
 select is(
   (select expires_on from public.barbershops where slug = 'barberia-el-parche'),
-  (now() at time zone 'America/Bogota')::date + 20,
-  'the trial runs through the signup day in Bogotá plus 20 days'
+  (now() at time zone 'America/Bogota')::date + 30,
+  'the trial runs through the signup day in Bogotá plus 30 days'
 );
 select is(
   (select m.barbershop_id from public.memberships m where m.user_id = '00000000-0000-0000-0000-0000000000a1'),
@@ -84,7 +84,7 @@ select is(
 );
 select is(
   (select expires_on from public.barbershops where slug = 'otra'),
-  (now() at time zone 'America/Bogota')::date + 20,
+  (now() at time zone 'America/Bogota')::date + 30,
   'a signup can never choose its own expiry'
 );
 

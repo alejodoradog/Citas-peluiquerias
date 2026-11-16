@@ -43,7 +43,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.5 Aviso de reserva al profesional, con WhatsApp (`docs/tareas/7.5-aviso-profesional.md`) | Fundador | Fusionada (#95 y #99: el celular del cliente es obligatorio al reservar). Falta desplegar la función en `barberias-dev`. Toca `send-notifications` (`appointment-emails.ts` e `index.ts`): hay que desplegar la función. Cambia la política de datos: `LEGAL_VERSION` es `2026-11-15.3` |
 | 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | La decisión 0010 fue aceptada por el fundador el 2026-11-15. En curso |
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
-| 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |
+| 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | En dos partes: 7.8a (30 días, el plan en el registro, el límite de profesionales y el cobro por plan) fusionada (#105); 7.8b ("Cambiar plan" con aprobación por pago) después |
 | 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |
 | 7.10 Servicios tocables en la página pública | Socio | Fusionada (#91) |
 | 7.11 Intervalo de reserva configurable (15, 30 o 60 minutos) | Socio | Pendiente |
