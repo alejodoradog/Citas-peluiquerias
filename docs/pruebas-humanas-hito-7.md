@@ -138,3 +138,21 @@ Con la cuenta de dueño y dos profesionales con cuenta (de la 7.6b). Desde dos c
 - [ ] **13. El plan.** Con el plan 1 lleno (4 activos), eliminar a uno y agregar otro: deja. El eliminado no cuenta.
 - [ ] **14. El dueño no se elimina.** En la ficha del dueño que atiende no está "Eliminar".
 - [ ] **15. Pausado.** Con el establecimiento pausado, eliminar a un profesional sin citas por venir también funciona.
+
+## Tarea 7.7: cita al momento
+Con la cuenta de dueño y un profesional con cuenta (de la 7.6b), en un rato en que el establecimiento atiende. Desde dos celulares: el del dueño y el del profesional.
+
+- [ ] **1. El botón.** En "Mi agenda" de hoy sale "Cita al momento". En otro día o en la semana no sale. En la agenda del dueño sale en el día de hoy.
+- [ ] **2. La pantalla.** Dice "Empieza: Ahora, …" con la hora actual (redondeada hacia abajo a 5 minutos). Sin servicios marcados, "Crear cita" no deja.
+- [ ] **3. Totales.** Marcar dos servicios: abajo salen "2 servicios · N min" y el precio, y "Termina" da la hora de fin. Desmarcar uno: cambian.
+- [ ] **4. Crear con nombre.** Escribir un nombre y tocar "Crear cita": vuelve a "Mi agenda" con la cita ya puesta, a la hora de ahora.
+- [ ] **5. Sin correo.** El cliente no recibe nada y al profesional no le llega el aviso de reserva (en Supabase, `notifications` no tiene nada de esa cita).
+- [ ] **6. Atendida.** En esa cita, "Atendida" funciona de una vez. Al final del día, el cierre la cuenta.
+- [ ] **7. Choque con una cita.** Con una cita del profesional que empieza en unos minutos, intentar una cita al momento más larga: dice "No cabe ahora: no se creó la cita", con qué cita choca ("Tienes una cita a las …") y cuántos minutos libres hay. No se crea nada. Elegir un servicio más corto que quepa: se crea.
+- [ ] **8. Choque con un bloqueo y un cierre.** Igual con un bloqueo propio que empieza pronto ("Tienes un bloqueo desde las …") y con un cierre del establecimiento ("El establecimiento cierra desde las …").
+- [ ] **9. Fin del horario.** Cerca del fin de su horario: dice "Tu horario termina a las …". Fuera de su horario: "No atiendes a esta hora".
+- [ ] **10. Desde el dueño.** En la agenda del dueño, "Cita al momento": primero el profesional, y solo salen los servicios que él hace. Crear sin nombre: vuelve a la agenda con la cita gris, "· al momento".
+- [ ] **11. Fuera de Clientes.** La cita sin nombre queda como "Cliente al momento" y no aparece en Clientes. En su detalle, ponerle nombre al cliente: desde ahí aparece en Clientes.
+- [ ] **12. El dueño habla del profesional.** Un choque desde el dueño dice "Ana tiene una cita a las …" (con el nombre del profesional).
+- [ ] **13. Pausado o inactivo.** Con el establecimiento pausado, el profesional no ve el botón y, si abre `/mi-agenda/al-momento`, dice que está pausado. Desactivado, igual.
+- [ ] **14. Doble toque.** Tocar "Crear cita" dos veces seguidas: se crea una sola cita.

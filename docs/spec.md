@@ -58,7 +58,7 @@ Son 24 funciones: P1 es imprescindible para lanzar. Las P2 se construyen dentro 
 | 9 | Crear barberos, asignarles servicios y horario, e invitarlos a su cuenta (decisión 0010; antes, enviarles su link privado) | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
 | 11 | Agenda del día y de la semana, por barbero o todos | Dueño; barbero por link | P1 |  |
-| 12 | Crear cita manual (cliente que llamó o llegó sin cita) | Dueño | P1 |  |
+| 12 | Crear cita manual (cliente que llamó o llegó sin cita); para quien llega sin reserva, la "cita al momento" empieza ahora y también la crea el profesional (tarea 7.7, `docs/tareas/7.7-cita-inmediata.md`) | Dueño; profesional con su cuenta | P1 |  |
 | 13 | Bloquear horas (almuerzo, permiso, diligencia) | Dueño; barbero por link | P1 |  |
 | 14 | Marcar cita: atendida, no asistió, cancelada | Dueño; barbero por link | P1 |  |
 | 15 | Lista de clientes con historial de visitas e inasistencias | Dueño | P1 |  |
