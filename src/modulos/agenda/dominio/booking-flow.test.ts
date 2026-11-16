@@ -102,14 +102,36 @@ describe("readBookingParams", () => {
     ).toBeNull();
   });
 
-  it("keeps a time only with its day, and choices only after the services", () => {
+  it("keeps a time only with its day, and the day only after the services", () => {
     expect(
       readBookingParams({ servicios: A, barbero: BARBER, hora: "10:30" }).time,
     ).toBeNull();
     expect(
-      readBookingParams({ barbero: BARBER, dia: "2026-11-24" }),
-    ).toMatchObject({ barber: null, date: null });
+      readBookingParams({ barbero: BARBER, dia: "2026-11-24", hora: "10:30" }),
+    ).toMatchObject({ date: null, time: null, step: "servicios" });
     expect(readBookingParams({ tomada: "10:30" }).taken).toBe("10:30");
+  });
+
+  // Task 7.6b: the link a professional shares, /<slug>/reservar?profesional=<id>.
+  it("keeps the professional the link chose through the services step", () => {
+    const shared = readBookingParams({ profesional: BARBER });
+    expect(shared).toMatchObject({
+      serviceIds: [],
+      barber: BARBER,
+      step: "servicios",
+    });
+    // Once the services are chosen, straight to the time with them.
+    expect(
+      readBookingParams({ servicios: A, profesional: BARBER }),
+    ).toMatchObject({ barber: BARBER, step: "hora" });
+    // The services step carries them on.
+    expect(bookingQuery({ serviceIds: [A], barber: shared.barber })).toBe(
+      `?servicios=${A}&profesional=${BARBER}`,
+    );
+  });
+
+  it("drops a professional in the shared link that is not an id", () => {
+    expect(readBookingParams({ profesional: "../panel" }).barber).toBeNull();
   });
 });
 

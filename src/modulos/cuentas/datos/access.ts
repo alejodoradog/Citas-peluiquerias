@@ -1,6 +1,7 @@
 import "server-only";
 import { connection } from "next/server";
 import { cache } from "react";
+import { z } from "zod";
 import { now, type BogotaDate } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -49,7 +50,37 @@ export type Access =
       // which create_barbershop gives every new sede (spec, P7).
       companyTrialEndsOn: BogotaDate;
     }
-  | { kind: "super_admin"; name: string };
+  | { kind: "super_admin"; name: string }
+  | ProfessionalAccess;
+
+// A professional with their own account (task 7.6b, decision 0010): not a
+// member of the barbershop, so RLS gives them no table. What they are comes
+// from my_professional_access, which looks at auth.uid() only.
+export type ProfessionalAccess = {
+  kind: "professional";
+  // The sign-in email, for "Cerrar sesión" and the screens that name it.
+  email: string;
+  // The session's own professional, as the database resolved it. Used only
+  // on the server (the link to share); no screen sends it back.
+  barberId: string;
+  name: string;
+  active: boolean;
+  barbershop: { name: string; slug: string; writable: boolean };
+  // They accepted the terms and the data policy when creating their
+  // password (task 7.6b). Until then "Mi agenda" sends them to that screen.
+  acceptedTerms: boolean;
+};
+
+const professionalSchema = z.object({
+  barberId: z.string(),
+  name: z.string(),
+  active: z.boolean(),
+  barbershop: z.object({
+    name: z.string(),
+    slug: z.string(),
+    writable: z.boolean(),
+  }),
+});
 
 // The session is checked against the current time (token expiry), so this
 // always runs at request time, never while prerendering. React's cache keeps
@@ -78,7 +109,7 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, is_super_admin")
+      .select("full_name, is_super_admin, terms_version")
       .eq("id", user.id)
       .maybeSingle(),
     supabase
@@ -124,7 +155,22 @@ export const getCurrentAccess = cache(async (): Promise<Access> => {
   const active = pickActiveBarbershop(owned, chosenId);
   const oldest = owned[0];
   if (!active || !oldest) {
-    return { kind: "no_access" };
+    // Not an owner: maybe a professional (task 7.6b). Asked only here, so an
+    // owner's panel waits for nothing more than before.
+    const { data, error } = await supabase.rpc("my_professional_access");
+    if (error) {
+      throw error;
+    }
+    const professional = professionalSchema.safeParse(data);
+    if (!professional.success) {
+      return { kind: "no_access" };
+    }
+    return {
+      kind: "professional",
+      email: user.email ?? "",
+      ...professional.data,
+      acceptedTerms: profile.terms_version !== null,
+    };
   }
   const summary = (barbershop: (typeof owned)[number]): OwnerBarbershop => ({
     id: barbershop.id,

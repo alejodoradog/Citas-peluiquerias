@@ -8,12 +8,14 @@ import { TURNSTILE_FIELD } from "@/lib/turnstile/keys";
 import { toAccountError, type AccountError } from "@/lib/supabase/auth-errors";
 import { now } from "@/lib/fechas/fechas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasRecentRecoverySession } from "../datos/access";
+import { LEGAL_VERSION } from "@/lib/legal/version";
+import { getCurrentAccess, hasRecentRecoverySession } from "../datos/access";
 import { forgetActiveBarbershop } from "../datos/active-barbershop";
 import { recoveryLinkIsFresh } from "../dominio/recovery-session";
 import {
   parseNewPassword,
   parseEmailLinkToken,
+  parseWelcomePassword,
   parseRecoveryRequest,
   parseSignIn,
   type CredentialsErrorCode,
@@ -33,7 +35,7 @@ export type ResendConfirmationState = FormState<
   "confirmation_sent"
 >;
 export type NewPasswordState = FormState<
-  "password" | "confirmation",
+  "password" | "confirmation" | "acepto",
   AccountErrorCode
 >;
 
@@ -182,6 +184,28 @@ export async function confirmEmailAddress(formData: FormData): Promise<void> {
   redirect(`${routes.signIn}?confirmado=1`);
 }
 
+// Task 7.6b: the invitation of a professional. Verifying it opens their
+// session (the database joined the account when Auth created it), and they
+// go on to create their password and accept the terms. A link that expired
+// or was already used says to ask the owner for another one.
+export async function confirmInvitation(formData: FormData): Promise<void> {
+  const expired = `${routes.signIn}?invitacion=vencida`;
+  const form = readEmailLink(formData);
+  if (!form.valid) {
+    redirect(expired);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.verifyOtp({
+    type: "invite",
+    token_hash: form.data.tokenHash,
+  });
+  if (error) {
+    redirect(expired);
+  }
+  redirect(routes.newPassword);
+}
+
 function readEmailLink(formData: FormData) {
   return readForm(formData, {
     fields: ["tokenHash", "next"],
@@ -189,24 +213,38 @@ function readEmailLink(formData: FormData) {
   });
 }
 
+// D-09, and by an invitation (task 7.6b): a professional who has not
+// accepted the terms yet accepts them here, and goes to "Mi agenda".
 export async function setNewPassword(
   _previous: NewPasswordState,
   formData: FormData,
 ): Promise<NewPasswordState> {
+  const access = await getCurrentAccess();
+  const welcome = access.kind === "professional" && !access.acceptedTerms;
   const form = readForm(formData, {
-    fields: ["password", "confirmation"],
+    fields: ["password", "confirmation", "acepto"],
     secret: ["password", "confirmation"],
-    parse: parseNewPassword,
+    parse: welcome ? parseWelcomePassword : parseNewPassword,
   });
   if (!form.valid) {
     return form.state;
   }
-  // Only the session a recovery link opened may set a new password.
+  // Only the session a recovery link (or an invitation) opened may set a
+  // new password.
   if (!(await hasRecentRecoverySession())) {
     return { status: "failed", error: "link_expired", values: {} };
   }
 
   const supabase = await createSupabaseServerClient();
+  if (welcome) {
+    // Kept first, so a password is never set without the acceptance.
+    const { error } = await supabase.rpc("accept_professional_terms", {
+      p_version: LEGAL_VERSION,
+    });
+    if (error) {
+      return { status: "failed", error: "unknown", values: form.values };
+    }
+  }
   const { error } = await supabase.auth.updateUser({
     password: form.data.password,
   });
@@ -218,7 +256,7 @@ export async function setNewPassword(
       values: {},
     };
   }
-  redirect(routes.panel);
+  redirect(access.kind === "professional" ? routes.myAgenda : routes.panel);
 }
 
 // The token of the Turnstile widget (src/ui/turnstile-field.tsx), for Auth.

@@ -49,6 +49,15 @@ let memberships: { barbershops: Shop | null }[] = [];
 let cookie: string | undefined;
 let tables: string[] = [];
 let selects: string[] = [];
+let rpcs: string[] = [];
+let profile: {
+  full_name: string;
+  is_super_admin: boolean;
+  terms_version: string | null;
+} | null = null;
+// What my_professional_access answers (task 7.6b).
+let professional: unknown = null;
+let professionalError: { message: string } | null = null;
 
 // Each query ends where the code awaits it: maybeSingle for the profile, the
 // last eq for the memberships.
@@ -63,10 +72,7 @@ function query(table: string) {
       table === "memberships" && column === "role"
         ? Promise.resolve({ data: memberships, error: null })
         : builder,
-    maybeSingle: async () => ({
-      data: { full_name: "Carlos Pérez", is_super_admin: false },
-      error: null,
-    }),
+    maybeSingle: async () => ({ data: profile, error: null }),
   };
   return builder;
 }
@@ -79,6 +85,10 @@ vi.mock("@/lib/supabase/server", () => ({
       }),
     },
     from: query,
+    rpc: async (name: string) => {
+      rpcs.push(name);
+      return { data: professional, error: professionalError };
+    },
   }),
 }));
 vi.mock("./active-barbershop", () => ({
@@ -93,6 +103,14 @@ beforeEach(() => {
   cookie = undefined;
   tables = [];
   selects = [];
+  rpcs = [];
+  profile = {
+    full_name: "Carlos Pérez",
+    is_super_admin: false,
+    terms_version: "2026-11-15.3",
+  };
+  professional = null;
+  professionalError = null;
 });
 
 async function owner() {
@@ -192,5 +210,69 @@ describe("getCurrentAccess and the setup wizard", () => {
       { barbershops: norte },
     ];
     expect((await owner()).barbershop.needsSetup).toBe(false);
+  });
+});
+
+// Task 7.6b: a professional with their own account is no member, so the
+// memberships come empty and my_professional_access says who they are.
+describe("getCurrentAccess for a professional", () => {
+  const ana = {
+    barberId: "eeeeeeee-0000-4000-8000-000000000000",
+    name: "Ana Gómez",
+    active: true,
+    barbershop: { name: "El Parche", slug: "el-parche", writable: true },
+  };
+
+  beforeEach(() => {
+    memberships = [];
+    profile = {
+      full_name: "Ana Gómez",
+      is_super_admin: false,
+      terms_version: null,
+    };
+  });
+
+  it("is a professional when the database says so", async () => {
+    professional = ana;
+    expect(await getCurrentAccess()).toEqual({
+      kind: "professional",
+      email: "carlos@example.com",
+      ...ana,
+      acceptedTerms: false,
+    });
+  });
+
+  it("knows whether they accepted the terms", async () => {
+    professional = ana;
+    profile = { ...profile!, terms_version: "2026-11-15.3" };
+    const access = await getCurrentAccess();
+    expect(access.kind === "professional" && access.acceptedTerms).toBe(true);
+  });
+
+  it("has no access when the database says nothing, or something else", async () => {
+    expect((await getCurrentAccess()).kind).toBe("no_access");
+    professional = { barberId: 1 };
+    expect((await getCurrentAccess()).kind).toBe("no_access");
+  });
+
+  it("never asks for an owner, so the panel waits for nothing more", async () => {
+    memberships = [{ barbershops: norte }];
+    professional = ana;
+    expect((await getCurrentAccess()).kind).toBe("owner");
+    expect(rpcs).toEqual([]);
+  });
+
+  it("never asks for a super admin, nor for an account without profile", async () => {
+    professional = ana;
+    profile = { full_name: "Admin", is_super_admin: true, terms_version: null };
+    expect((await getCurrentAccess()).kind).toBe("super_admin");
+    profile = null;
+    expect((await getCurrentAccess()).kind).toBe("no_access");
+    expect(rpcs).toEqual([]);
+  });
+
+  it("throws when the question fails, instead of signing them out", async () => {
+    professionalError = { message: "network" };
+    await expect(getCurrentAccess()).rejects.toEqual({ message: "network" });
   });
 });

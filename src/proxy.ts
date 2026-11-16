@@ -23,6 +23,8 @@ export const config = {
     // The owners' entry sends a signed-in owner to their agenda.
     "/app",
     "/admin/:path*",
+    // "Mi agenda" of a professional with their own account (task 7.6b).
+    "/mi-agenda/:path*",
     "/registro",
     "/ingresar",
     "/recuperar-clave",

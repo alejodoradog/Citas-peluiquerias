@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { routes } from "@/lib/routes";
 import {
   confirmEmailAddress,
+  confirmInvitation,
   confirmPasswordRecovery,
 } from "@/modulos/cuentas/acciones/account";
 import { AuthHeading, AuthShell } from "@/ui/auth-shell";
@@ -15,7 +16,8 @@ const t = textos.cuentas.confirmar;
 
 export const metadata: Metadata = { title: t.titulo };
 
-// D-04. The recovery and email confirmation links land here. The one-time
+// D-04. The recovery and email confirmation links land here, and the
+// invitation of a professional (task 7.6b). The one-time
 // token is spent only after a tap, because some email scanners open links on
 // their own.
 export default function ConfirmPage({
@@ -35,6 +37,18 @@ async function ConfirmForm({
   searchParams,
 }: Pick<PageProps<"/auth/confirm">, "searchParams">) {
   const { token_hash: tokenHash, type, next } = await searchParams;
+  if (typeof tokenHash !== "string" && type === "invite") {
+    return (
+      <>
+        <Notice tone="warning" title={textos.cuentas.invitacion.vencida.titulo}>
+          {textos.cuentas.invitacion.vencida.cuerpo}
+        </Notice>
+        <TextLink href={routes.signIn} standalone>
+          {textos.cuentas.recuperar.volver}
+        </TextLink>
+      </>
+    );
+  }
   if (typeof tokenHash !== "string" && type === "signup") {
     return (
       <>
@@ -47,7 +61,7 @@ async function ConfirmForm({
   }
   if (
     typeof tokenHash !== "string" ||
-    (type !== "recovery" && type !== "signup")
+    (type !== "recovery" && type !== "signup" && type !== "invite")
   ) {
     return (
       <>
@@ -61,7 +75,13 @@ async function ConfirmForm({
 
   return (
     <form
-      action={type === "signup" ? confirmEmailAddress : confirmPasswordRecovery}
+      action={
+        type === "signup"
+          ? confirmEmailAddress
+          : type === "invite"
+            ? confirmInvitation
+            : confirmPasswordRecovery
+      }
     >
       <input type="hidden" name="tokenHash" value={tokenHash} />
       <input

@@ -1,6 +1,8 @@
 // Why a function of the barber's link refused (migration add_barber_agenda),
 // by the hint of its error, as the screens of "Mi agenda" react to it:
 // - link_invalid: the link was deactivated or replaced: B-05;
+// - not_professional: the session is not (or no longer) of a professional
+//   (task 7.6b, the my_* functions): its agenda sends it home;
 // - read_only: the barbershop is paused (B-06);
 // - not_yours: not an appointment or block of this barber, or the block
 //   already ended;
@@ -17,6 +19,7 @@
 
 export type BarberRefusal =
   | "link_invalid"
+  | "not_professional"
   | "read_only"
   | "not_yours"
   | "not_confirmed"
@@ -30,6 +33,7 @@ export type BarberRefusal =
 
 const KNOWN: ReadonlySet<string> = new Set<BarberRefusal>([
   "link_invalid",
+  "not_professional",
   "read_only",
   "not_yours",
   "not_confirmed",

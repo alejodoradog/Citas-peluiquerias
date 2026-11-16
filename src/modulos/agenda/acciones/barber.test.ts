@@ -23,14 +23,14 @@ vi.mock("@/lib/fechas/fechas", async (original) => ({
 
 type Result = { ok: true } | { ok: false; error: string };
 const markAppointmentByBarber = vi.fn<
-  (token: string, id: string, status: string) => Promise<Result>
+  (source: unknown, id: string, status: string) => Promise<Result>
 >(async () => ({ ok: true }));
 const deleteTimeBlockByBarber = vi.fn<
-  (token: string, id: string) => Promise<Result>
+  (source: unknown, id: string) => Promise<Result>
 >(async () => ({ ok: true }));
 const createTimeBlockByBarber = vi.fn<
   (
-    token: string,
+    source: unknown,
     block: { start: Date; end: Date; reason: string | null },
   ) => Promise<Result>
 >(async () => ({ ok: true }));
@@ -47,6 +47,7 @@ vi.mock("@/lib/tokens/link-token", () => ({
 const { markAppointment, removeBlock, createBlock } = await import("./barber");
 
 const TOKEN = "a".repeat(43);
+const LINK = { kind: "link", token: TOKEN };
 const APPOINTMENT = "a0000000-0000-4000-8000-000000000001";
 const BLOCK = "b0000000-0000-4000-8000-000000000001";
 
@@ -82,7 +83,7 @@ describe("markAppointment", () => {
       ),
     );
     expect(markAppointmentByBarber).toHaveBeenCalledWith(
-      TOKEN,
+      LINK,
       APPOINTMENT,
       "attended",
     );
@@ -186,7 +187,7 @@ describe("removeBlock", () => {
         ),
       ),
     ).toEqual({ redirectedTo: `/b/${TOKEN}?dia=2026-11-08` });
-    expect(deleteTimeBlockByBarber).toHaveBeenCalledWith(TOKEN, BLOCK);
+    expect(deleteTimeBlockByBarber).toHaveBeenCalledWith(LINK, BLOCK);
   });
 
   it("says why it could not remove it", async () => {
@@ -217,7 +218,7 @@ describe("createBlock", () => {
     ).toEqual({
       redirectedTo: `/b/${TOKEN}?dia=2026-11-08`,
     });
-    expect(createTimeBlockByBarber).toHaveBeenCalledWith(TOKEN, {
+    expect(createTimeBlockByBarber).toHaveBeenCalledWith(LINK, {
       start: new Date("2026-11-08T18:00:00Z"),
       end: new Date("2026-11-08T19:00:00Z"),
       reason: "Almuerzo",
@@ -232,7 +233,7 @@ describe("createBlock", () => {
         form({ ...valid, desde: "", hasta: "", todoElDia: "on" }),
       ),
     );
-    expect(createTimeBlockByBarber).toHaveBeenCalledWith(TOKEN, {
+    expect(createTimeBlockByBarber).toHaveBeenCalledWith(LINK, {
       start: new Date("2026-11-08T05:00:00Z"),
       end: new Date("2026-11-09T05:00:00Z"),
       reason: "Almuerzo",
