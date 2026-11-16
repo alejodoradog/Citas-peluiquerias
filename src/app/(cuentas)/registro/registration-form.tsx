@@ -3,11 +3,16 @@
 import { useState } from "react";
 import { routes } from "@/lib/routes";
 import { registerBarbershop } from "@/modulos/barberias/acciones/barbershops";
+import {
+  BUSINESS_TYPE_OTHER_MAX,
+  BUSINESS_TYPES,
+} from "@/modulos/barberias/dominio/business-type";
 import { AuthHeading } from "@/ui/auth-shell";
 import { ButtonLink } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { Field } from "@/ui/field";
 import { ActionForm, useFormAction } from "@/ui/form";
+import { SelectField, type SelectOption } from "@/ui/select-field";
 import { ProtectedSubmit } from "@/ui/turnstile-field";
 import { MailIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
@@ -18,10 +23,20 @@ import { textos } from "@/ui/textos";
 const t = textos.cuentas.registro;
 const messages = { ...textos.cuentas.errores, ...textos.barberias.errores };
 
+// The first one is no choice at all: the owner has to pick a kind.
+const BUSINESS_OPTIONS: SelectOption[] = [
+  { value: "", label: t.tipos.elegir },
+  ...BUSINESS_TYPES.map((type) => ({ value: type, label: t.tipos[type] })),
+];
+
 export function RegistrationForm() {
   const form = useFormAction(registerBarbershop, messages);
   // Kept on this device only, to say where the link went (D-03).
   const [email, setEmail] = useState(form.value("email") ?? "");
+  // Controlled, to show "¿Cuál?" only when the kind is "other".
+  const [businessType, setBusinessType] = useState(
+    form.value("businessType") ?? "",
+  );
 
   if (form.notice === "check_email") {
     return <CheckEmail email={email} />;
@@ -51,6 +66,25 @@ export function RegistrationForm() {
           error={form.fieldError("barbershopName")}
           required
         />
+        <SelectField
+          label={t.campos.businessType}
+          name="businessType"
+          options={BUSINESS_OPTIONS}
+          value={businessType}
+          onChange={(event) => setBusinessType(event.target.value)}
+          error={form.fieldError("businessType")}
+          required
+        />
+        {businessType === "other" ? (
+          <Field
+            label={t.campos.businessTypeOther}
+            name="businessTypeOther"
+            maxLength={BUSINESS_TYPE_OTHER_MAX}
+            defaultValue={form.value("businessTypeOther")}
+            error={form.fieldError("businessTypeOther")}
+            required
+          />
+        ) : null}
         <Field
           label={t.campos.phone}
           name="phone"
@@ -98,9 +132,9 @@ export function RegistrationForm() {
         </div>
         <p className="text-help text-muted leading-[1.45]">
           {t.legal.antes}
-          <TextLink href={routes.terms}>{t.legal.terminos}</TextLink>
+          <TextLink href={routes.termsFromApp}>{t.legal.terminos}</TextLink>
           {t.legal.y}
-          <TextLink href={routes.privacy}>{t.legal.privacidad}</TextLink>
+          <TextLink href={routes.privacyFromApp}>{t.legal.privacidad}</TextLink>
           {t.legal.despues}
         </p>
         <ProtectedSubmit state={form.state} pendingText={t.enviando}>
