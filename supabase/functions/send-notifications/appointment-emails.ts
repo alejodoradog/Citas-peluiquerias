@@ -132,6 +132,10 @@ export type AppointmentRecord = {
   startsAt: string;
   endsAt: string;
   barberName: string;
+  // The email of the professional who has the appointment now. Their notice
+  // is sent only to it (task 7.5): the queue chose the recipient earlier, and
+  // the appointment may have moved to someone else since.
+  barberEmail: string | null;
   serviceNames: string[];
   customerFirstName: string;
   // Task 7.5, for the professional's notice only: the customer's mobile as
@@ -454,6 +458,14 @@ export function outdatedReason(
 
 const LINKED = new Set(["appointment_reminder", "appointment_rescheduled"]);
 
+function sameEmail(a: string | null, b: string | null): boolean {
+  return (
+    a !== null &&
+    b !== null &&
+    a.trim().toLowerCase() === b.trim().toLowerCase()
+  );
+}
+
 // What to send for one appointment's message, or why not: no appointment
 // any more, or outdated. The link of the email is issued here, before it is
 // sent, so the database knows its hash when the customer taps it.
@@ -476,6 +488,14 @@ export async function composeAppointmentEmail(
     now,
   );
   if (outdated) return { cancel: outdated };
+  // A professional's notice carries the customer's mobile: it never goes to
+  // a professional who no longer has the appointment.
+  if (
+    message.type.startsWith("barber_") &&
+    !sameEmail(message.recipient, appointment.barberEmail)
+  ) {
+    return { cancel: "outdated" };
+  }
 
   let manageUrl: string | null = null;
   if (LINKED.has(message.type)) {

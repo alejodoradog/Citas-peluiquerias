@@ -28,6 +28,7 @@ function record(extra: Partial<AppointmentRecord> = {}): AppointmentRecord {
     startsAt: START,
     endsAt: END,
     barberName: "Kevin",
+    barberEmail: "kevin@correo.com",
     serviceNames: ["Corte", "Barba"],
     customerFirstName: "Camila",
     customerPhone: "+573001234567",
@@ -269,7 +270,14 @@ describe("the professional's notice of a new appointment", () => {
       );
       expect(email?.html ?? "").not.toContain("3001234567");
       expect(email?.text ?? "").not.toContain("3001234567");
+      expect(email?.subject ?? "").not.toContain("3001234567");
+      // Nor what the services add up to.
+      expect(email?.text ?? "").not.toContain("40.000");
     }
+    // The notice itself keeps both out of its subject.
+    const subject = notice({}).subject;
+    expect(subject).not.toContain("3001234567");
+    expect(subject).not.toContain("40.000");
   });
 });
 
@@ -358,6 +366,40 @@ describe("composeAppointmentEmail", () => {
       "appt",
       await linkTokenHash(token!),
     );
+  });
+
+  // Task 7.5: the notice carries the customer's mobile. The queue chose the
+  // recipient before the appointment was read, and it may have moved since.
+  it("sends a professional's notice only to who has the appointment now", async () => {
+    const toKevin = {
+      ...message("barber_new_booking"),
+      recipient: "Kevin@Correo.com",
+    };
+    expect(
+      await composeAppointmentEmail(toKevin, fakeDb(), env, now),
+    ).toMatchObject({ subject: expect.stringMatching(/^Nueva cita/) });
+    for (const type of ["barber_new_booking", "barber_booking_cancelled"]) {
+      const record_ =
+        type === "barber_booking_cancelled"
+          ? record({ status: "cancelled_by_customer" })
+          : record();
+      expect(
+        await composeAppointmentEmail(
+          { ...message(type), recipient: "otro@correo.com" },
+          fakeDb(record_),
+          env,
+          now,
+        ),
+      ).toEqual({ cancel: "outdated" });
+    }
+    expect(
+      await composeAppointmentEmail(
+        toKevin,
+        fakeDb(record({ barberEmail: null })),
+        env,
+        now,
+      ),
+    ).toEqual({ cancel: "outdated" });
   });
 
   it("issues no link for the barber's notices", async () => {

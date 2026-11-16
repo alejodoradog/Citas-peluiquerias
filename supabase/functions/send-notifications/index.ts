@@ -131,7 +131,7 @@ function appointmentDb(db: SupabaseClient): AppointmentDb {
           .maybeSingle(),
         db
           .from("barbers")
-          .select("display_name")
+          .select("display_name, email")
           .eq("barbershop_id", barbershopId)
           .eq("id", appointment.barber_id)
           .maybeSingle(),
@@ -158,6 +158,7 @@ function appointmentDb(db: SupabaseClient): AppointmentDb {
         startsAt: appointment.starts_at,
         endsAt: appointment.ends_at,
         barberName: barberRow.display_name,
+        barberEmail: barberRow.email ?? null,
         serviceNames: lineRows
           .map((line) => (line.services as { name?: string } | null)?.name)
           .filter((name): name is string => typeof name === "string"),
