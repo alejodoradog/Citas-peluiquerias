@@ -107,7 +107,7 @@ describe("render", () => {
       }),
     )!;
     expect(email.text).toContain(
-      "Registramos tu pago de $25.000. Barbería La Esquina queda activa hasta el 24 de diciembre de 2026.",
+      "Registramos tu pago de $25.000. La suscripción de Barbería La Esquina queda activa hasta el 24 de diciembre de 2026.",
     );
     expect(email.text).not.toContain("Paga");
     expect(render("subscription_payment_registered", data())).toBeNull();

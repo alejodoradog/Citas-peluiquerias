@@ -129,7 +129,7 @@ test("P-01 to P-06 match the design", async ({ page }) => {
   );
   await compare(
     "filtro elegido",
-    page.getByRole("link", { name: /^Todas/ }),
+    page.getByRole("link", { name: /^Todos/ }),
     design.getByRole("button", { name: /^Todas/ }),
     ["background-color", "color", "font-size", "font-weight"],
   );

@@ -52,7 +52,7 @@ export const textos = {
     pago: {
       asunto: "Recibimos tu pago",
       cuerpo: (valor: string, barberia: string, fecha: string) =>
-        `Registramos tu pago de ${valor}. ${barberia} queda activa hasta el ${fecha}.`,
+        `Registramos tu pago de ${valor}. La suscripción de ${barberia} queda activa hasta el ${fecha}.`,
     },
   },
 } as const;

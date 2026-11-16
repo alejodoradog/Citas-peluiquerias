@@ -403,7 +403,7 @@ export const textos = {
     // customer and the services: "10:00 a. m., Nueva".
     cita: (hora: string, estado: string) => `${hora}, ${estado}`,
     bloqueo: "Bloqueado",
-    cierre: "Establecimiento cerrado",
+    cierre: "Cerrado",
     libre: (hasta: string) => `Libre hasta las ${hasta}`,
     libreDesde: (hora: string, barbero: string) =>
       `Crear cita a las ${hora} con ${barbero}`,
@@ -427,7 +427,7 @@ export const textos = {
       },
     },
     sinBarberos:
-      "Aún no tienes profesionales activos. Agrégalos en Más › Profesionales.",
+      "Aún no tienes profesionales activos. Agrégalos en Más › Profesionales y horarios.",
     // D-34 to D-39 (task 4.2).
     detalle: "Detalle de la cita",
     detalleCita: {
@@ -827,7 +827,8 @@ export const textos = {
     barbero: {
       agregar: "Agregar profesional",
       editar: "Editar profesional",
-      fotoDespues: "La foto la agregas después en Más › Profesionales.",
+      fotoDespues:
+        "La foto la agregas después en Más › Profesionales y horarios.",
       campos: { nombre: "Nombre visible", correo: "Correo" },
       ayudas: {
         nombre: "Así lo ven tus clientes al reservar.",
@@ -838,7 +839,7 @@ export const textos = {
       horario: "Horario",
       usaHorario: "Usa el horario del establecimiento",
       horarioPropio:
-        "Si trabaja otro horario, lo cambias después en Más › Profesionales.",
+        "Si trabaja otro horario, lo cambias después en Más › Profesionales y horarios.",
       guardar: "Guardar profesional",
       guardando: "Guardando…",
       quitar: "Quitar profesional",
@@ -1662,7 +1663,7 @@ export const textos = {
         confirmed: "Confirmada",
         attended: "Atendida",
         no_show: "No asistió",
-        cancelled_by_customer: "Cancelada por cliente",
+        cancelled_by_customer: "Cancelada por el cliente",
         cancelled_by_barbershop: "Cancelada por el establecimiento",
       },
       // "Nueva cita para Diego": the first name.
@@ -1739,7 +1740,7 @@ export const textos = {
     continuar: "Continuar",
     minutos: (minutos: number) => `${minutos} min`,
     servicios: {
-      titulo: "¿Qué te vas a hacer?",
+      titulo: "¿Qué servicios quieres?",
       bajada: "Puedes elegir varios. La cita dura lo que sumen.",
       resumen: (cantidad: number, minutos: number) =>
         `${cantidad} ${cantidad === 1 ? "servicio" : "servicios"} · ${minutos} min`,
@@ -1858,7 +1859,7 @@ export const textos = {
       fueraDePlazo: {
         titulo: "Ya no puedes cancelar ni cambiar desde aquí",
         detalle: (horas: number) =>
-          `El establecimiento permite hacerlo hasta ${duracion(horas * 60)} antes. Escríbeles si no puedes ir.`,
+          `El establecimiento permite hacerlo hasta ${duracion(horas * 60)} antes. Escríbele si no puedes ir.`,
       },
       hoy: (cuando: string) =>
         `Hoy, ${cuando.charAt(0).toLocaleLowerCase("es-CO")}${cuando.slice(1)}`,
@@ -1873,7 +1874,7 @@ export const textos = {
         cerrar: "Cerrar",
       },
       cancelada: {
-        estado: "Cancelada por cliente",
+        estado: "Cancelada por el cliente",
         titulo: "Cancelaste tu cita",
         reservarOtra: "Reservar otra cita",
       },
@@ -1904,11 +1905,11 @@ export const textos = {
         link_invalid: "Este link ya no sirve.",
         too_late: "Ya no puedes cancelar ni cambiar desde aquí.",
         not_accepting:
-          "El establecimiento no está recibiendo cambios ahora. Escríbeles por WhatsApp.",
+          "El establecimiento no está recibiendo cambios ahora. Escríbele por WhatsApp.",
         slot_gone: "Esa hora ya no está libre. Elige otra.",
         same_time: "Tu cita ya está a esa hora. Elige otra.",
         services_changed:
-          "El establecimiento cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbeles por WhatsApp.",
+          "El establecimiento cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbele por WhatsApp.",
         too_many_changes:
           "Ya cambiaste esta cita varias veces. Si necesitas otra hora, escríbele al establecimiento por WhatsApp.",
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
@@ -2092,21 +2093,21 @@ export const textos = {
     },
     filtros: {
       etiqueta: "Estado",
-      todas: "Todas",
+      todas: "Todos",
       prueba: "En prueba",
-      activas: "Activas",
+      activas: "Activos",
       porVencer: "Por vencer",
-      vencidas: "Vencidas",
-      suspendidas: "Suspendidas",
+      vencidas: "Vencidos",
+      suspendidas: "Suspendidos",
       conteo: (nombre: string, cantidad: number) => `${nombre} · ${cantidad}`,
     },
     estados: {
       trial: "En prueba",
-      active: "Activa",
+      active: "Activo",
       expiring: "Por vencer",
-      grace: "Vencida · en gracia",
-      expired: "Vencida",
-      suspended: "Suspendida",
+      grace: "Vencido · en gracia",
+      expired: "Vencido",
+      suspended: "Suspendido",
       awaiting: "Sin primer pago",
     },
     // "Chapinero, Bogotá · vence 24 nov 2026".
@@ -2181,10 +2182,10 @@ export const textos = {
       },
       referencia: "Referencia del comprobante",
       fecha: "Fecha del pago",
-      quedaHasta: "Queda activa hasta",
+      quedaHasta: "Queda activo hasta",
       aTiempo: (vence: string) =>
-        `Pagó antes de vencer: el mes se suma a la fecha de vencimiento (${vence}). Si hubiera pagado vencida, contaría desde el día del pago.`,
-      tarde: "Pagó vencida: el mes cuenta desde el día del pago.",
+        `Pagó antes de vencer: el mes se suma a la fecha de vencimiento (${vence}). Si hubiera pagado después de vencer, contaría desde el día del pago.`,
+      tarde: "Pagó después de vencer: el mes cuenta desde el día del pago.",
       enviar: "Registrar y activar",
       enviando: "Registrando…",
     },
@@ -2201,7 +2202,7 @@ export const textos = {
       titulo: (barberia: string) => `¿Suspender ${barberia}?`,
       detalle:
         "Su página deja de recibir reservas nuevas y muestra su WhatsApp. El panel queda en solo lectura. No se borra nada y las citas tomadas se respetan.",
-      avisoTitulo: "Para reactivarla, registra un pago",
+      avisoTitulo: "Para reactivarlo, registra un pago",
       aviso: "Todo vuelve a funcionar al instante.",
       enviar: "Suspender ahora",
       enviando: "Suspendiendo…",
@@ -2226,10 +2227,10 @@ export const textos = {
     },
     metricas: {
       titulo: "Métricas",
-      activas: "Activas",
+      activas: "Activos",
       prueba: "En prueba",
-      vencidas: "Vencidas",
-      suspendidas: "Suspendidas",
+      vencidas: "Vencidos",
+      suspendidas: "Suspendidos",
       ingresoMes: "Ingreso del mes",
       mesAnterior: "Mes anterior",
       delMes: (valor: string, pagos: number) =>
@@ -2240,7 +2241,7 @@ export const textos = {
     errores: {
       not_allowed: "Solo el equipo de la plataforma puede hacer esto.",
       payment_required:
-        "Su vigencia ya venció: registra un pago para reactivarla.",
+        "Su vigencia ya venció: registra un pago para reactivarlo.",
       already_registered:
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       plan_changed:
