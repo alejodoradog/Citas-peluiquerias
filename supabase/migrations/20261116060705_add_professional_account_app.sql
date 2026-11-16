@@ -25,6 +25,17 @@
 --    invited_at) and Postgres' now() may differ by some milliseconds; the
 --    comparisons with the invitation allow one minute. An account made
 --    before the invitation is still stopped by invite_barber (email_taken).
+-- 7. Terms first (review of 7.6b, point 1): a professional who opened the
+--    invitation has a session before accepting the terms of use and the data
+--    policy (Ley 1581). private.barber_by_session, which every my_* function
+--    uses, now also requires profiles.terms_accepted_at; the new
+--    private.linked_barber_by_session is the same without that condition,
+--    and only my_professional_access (so the app can send them to accept,
+--    with the acceptedTerms flag) and accept_professional_terms use it.
+-- 8. invite_barber (review of 7.6b, point 3): while any account this
+--    professional had is still in Auth, whatever its email, the answer is
+--    revoked_account_pending, so a renewed invitation never makes the next
+--    revocation lose it.
 
 -- 1. The route ----------------------------------------------------------------------------------
 
@@ -109,8 +120,8 @@ grant execute on function public.barber_account_status(uuid) to authenticated;
 -- Null when there is nothing the app may delete. Only for an owner of the
 -- professional (owner_reaches), in any phase of the subscription, as
 -- revoke_barber_account.
--- - The revoked account: the invitation of this professional is revoked and
---   keeps it (revoked_profile_id).
+-- - The revoked account: the invitation of this professional keeps it
+--   (revoked_profile_id) until Auth deletes it.
 -- - The orphan: this professional's invitation never joined (accepted_at is
 --   null, pending or revoked), and Auth holds an account with its email that
 --   only an invitation makes: invited, without password, not confirmed, by
@@ -142,7 +153,10 @@ begin
     return null;
   end if;
 
-  if invitation.revoked_at is not null and invitation.revoked_profile_id is not null then
+  -- The account the owner took away, while the invitation keeps it, even
+  -- if a renewal cleared revoked_at since (review of 7.6b, point 3). The
+  -- checks below make sure it is nobody's now.
+  if invitation.revoked_profile_id is not null then
     candidate := invitation.revoked_profile_id;
   elsif invitation.accepted_at is null then
     select u.id into candidate
@@ -199,7 +213,9 @@ begin
     raise exception 'invalid version'
       using errcode = 'invalid_parameter_value', hint = 'version_invalid';
   end if;
-  if not exists (select 1 from private.barber_by_session()) then
+  -- A professional joined to the session, before or after accepting
+  -- (section 7): the terms are exactly what they accept here.
+  if not exists (select 1 from private.linked_barber_by_session()) then
     raise exception 'the session is not of a professional'
       using errcode = 'P0001', hint = 'not_professional';
   end if;
@@ -371,3 +387,230 @@ end;
 $$;
 
 revoke all on function private.link_invited_professional() from public, anon, authenticated;
+
+-- 7. Terms first ----------------------------------------------------------------------------------
+-- The professional of auth.uid(), as private.barber_by_session was in
+-- add_professional_accounts: joined, whether or not they accepted the terms.
+
+create function private.linked_barber_by_session()
+returns setof private.barber_access
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select
+    br.id,
+    br.barbershop_id,
+    br.display_name,
+    br.active,
+    br.uses_barbershop_hours,
+    b.name,
+    private.barbershop_phase(
+      b.subscription_status, b.plan, b.trial_ends_on, b.expires_on,
+      (b.created_at at time zone 'America/Bogota')::date
+    ) = 'active'
+  from public.barbers br
+  join public.profiles p on p.id = br.profile_id
+  join public.barbershops b on b.id = br.barbershop_id
+  where auth.uid() is not null
+    and br.profile_id = auth.uid()
+    and p.active
+    and not p.is_super_admin
+    and not br.is_owner
+    and b.deleted_at is null
+$$;
+
+revoke all on function private.linked_barber_by_session() from public, anon, authenticated;
+
+-- What every my_* function reaches: only once they accepted the terms of use
+-- and the data policy. Before that, my_agenda and my_appointment give
+-- nothing and the others refuse with not_professional.
+create or replace function private.barber_by_session()
+returns setof private.barber_access
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select s.*
+  from private.linked_barber_by_session() s
+  join public.profiles p on p.id = auth.uid()
+  where p.terms_accepted_at is not null
+$$;
+
+revoke all on function private.barber_by_session() from public, anon, authenticated;
+
+-- As in add_professional_accounts, for a professional joined to the session
+-- even before accepting the terms, and with whether they did, so the app
+-- sends them to accept them first.
+create or replace function public.my_professional_access()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'barberId', s.barber_id,
+    'name', s.display_name,
+    'active', s.barber_active,
+    'acceptedTerms', p.terms_accepted_at is not null,
+    'barbershop', jsonb_build_object(
+      'name', s.barbershop_name,
+      'slug', b.slug,
+      'writable', s.writable
+    )
+  )
+  from private.linked_barber_by_session() s
+  join public.barbershops b on b.id = s.barbershop_id
+  join public.profiles p on p.id = auth.uid()
+$$;
+
+revoke all on function public.my_professional_access() from public, anon, authenticated;
+grant execute on function public.my_professional_access() to authenticated;
+
+-- 8. invite_barber: never past an account still in Auth -------------------------------------------
+-- As in add_professional_accounts, except for the revoked_account_pending
+-- check, which no longer looks at the email.
+
+create or replace function public.invite_barber(p_barber_id uuid)
+returns table (status text, email text)
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+#variable_conflict use_column
+declare
+  caller uuid := auth.uid();
+  target record;
+  linked record;
+  shop_attempts integer;
+  account_attempts integer;
+begin
+  -- The row lock makes two invitations (or an invitation and a revocation)
+  -- of the same professional run one after the other.
+  select br.id, br.barbershop_id, br.active, br.is_owner, br.profile_id,
+         lower(btrim(br.email)) as email
+  into target
+  from public.barbers br
+  where br.id = p_barber_id
+    and private.owner_reaches(br.barbershop_id)
+  for update of br;
+  if not found then
+    raise exception 'barber not found'
+      using errcode = 'P0002', hint = 'barber_not_found';
+  end if;
+
+  if not (target.barbershop_id = any (private.writable_barbershop_ids())) then
+    raise exception 'barbershop is read only'
+      using errcode = 'insufficient_privilege', hint = 'barbershop_read_only';
+  end if;
+  if target.is_owner then
+    raise exception 'the owner already has an account'
+      using errcode = 'P0001', hint = 'barber_is_owner';
+  end if;
+  if not target.active then
+    raise exception 'barber is inactive'
+      using errcode = 'P0001', hint = 'barber_inactive';
+  end if;
+  if coalesce(target.email, '') = '' then
+    raise exception 'the professional needs an email'
+      using errcode = 'P0001', hint = 'email_required';
+  end if;
+
+  if target.profile_id is not null then
+    -- Joined already. While the account is not confirmed and has no
+    -- password, the invitation can be sent again to the same email; Auth
+    -- resends it to the account it already made. These look only at this
+    -- professional's own account, never at another email.
+    select u.email, u.email_confirmed_at, u.encrypted_password
+    into linked
+    from auth.users u
+    where u.id = target.profile_id;
+    if linked.email_confirmed_at is not null or coalesce(linked.encrypted_password, '') <> '' then
+      raise exception 'the professional already has an account'
+        using errcode = 'P0001', hint = 'already_linked';
+    end if;
+    if lower(linked.email) is distinct from target.email then
+      raise exception 'an invitation to another email is pending'
+        using errcode = 'P0001', hint = 'invitation_pending_other_email';
+    end if;
+  end if;
+
+  -- The attempt counts before the email is looked at: with the limit spent
+  -- the answer is invitation_limit, whether the email has an account or not.
+  -- 20 a day per barbershop (decision 0010), 40 per account (provisional).
+  insert into private.barber_invitation_attempts as s (barbershop_id, day, attempts)
+  values (target.barbershop_id, private.today_bogota(), 1)
+  on conflict (barbershop_id, day) do update set attempts = s.attempts + 1
+  returning s.attempts into shop_attempts;
+  insert into private.barber_invitation_attempts_by_account as s (user_id, day, attempts)
+  values (caller, private.today_bogota(), 1)
+  on conflict (user_id, day) do update set attempts = s.attempts + 1
+  returning s.attempts into account_attempts;
+  if shop_attempts > 20 or account_attempts > 40 then
+    raise exception 'too many invitations today'
+      using errcode = 'P0001', hint = 'invitation_limit';
+  end if;
+
+  if target.profile_id is null then
+    -- Two invitations of the same email (from two barbershops) run one
+    -- after the other, so only one of them is pending.
+    perform pg_advisory_xact_lock(hashtextextended('invite_barber:' || target.email, 0));
+
+    -- Any account this professional had and the app has not deleted yet,
+    -- whatever its email (review of 7.6b, point 3): renewing now would let
+    -- the next revocation keep only the new account, and the old one would
+    -- stay in Auth forever. The app deletes it (barber_account_to_delete)
+    -- and asks again.
+    if exists (
+      select 1
+      from public.barber_invitations i
+      join auth.users u on u.id = i.revoked_profile_id
+      where i.barbershop_id = target.barbershop_id
+        and i.barber_id = target.id
+    ) then
+      return query select 'revoked_account_pending'::text, null::text;
+      return;
+    end if;
+
+    -- Decision 0010, point 3: one email, one account. Also an email another
+    -- professional has a pending invitation for. The same answer for both,
+    -- so the owner does not learn whose it is.
+    if exists (select 1 from auth.users u where lower(u.email) = target.email)
+      or exists (
+        select 1 from public.barber_invitations i
+        where i.email = target.email
+          and i.accepted_at is null
+          and i.revoked_at is null
+          and i.expires_at > now()
+          and i.barber_id <> target.id
+      ) then
+      return query select 'email_taken'::text, null::text;
+      return;
+    end if;
+  end if;
+
+  insert into public.barber_invitations as i (
+    barbershop_id, barber_id, email, invited_by, created_at, expires_at, accepted_at, revoked_at
+  ) values (
+    target.barbershop_id, target.id, target.email, caller, now(), now() + interval '7 days', null, null
+  )
+  on conflict (barbershop_id, barber_id) do update set
+    email = excluded.email,
+    invited_by = excluded.invited_by,
+    created_at = excluded.created_at,
+    expires_at = excluded.expires_at,
+    -- A professional already joined stays joined: the renewal only resends.
+    accepted_at = case when target.profile_id is null then null else i.accepted_at end,
+    revoked_at = null;
+  -- revoked_profile_id stays: it goes null when the app deletes that account.
+
+  return query select 'invited'::text, target.email;
+end;
+$$;
+
+revoke all on function public.invite_barber(uuid) from public, anon, authenticated;
+grant execute on function public.invite_barber(uuid) to authenticated;

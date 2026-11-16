@@ -17,7 +17,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(73);
+select plan(99);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -186,7 +186,12 @@ from (values
   ('15', 'aaaaaaaa-0000-0000-0000-000000006801', 'Huerfano', 'huerfano-68@example.com'),
   ('16', 'aaaaaaaa-0000-0000-0000-000000006801', 'Miembro', 'miembro-68@example.com'),
   ('17', 'aaaaaaaa-0000-0000-0000-000000006801', 'Agenda', 'agenda-68@example.com'),
-  ('21', 'aaaaaaaa-0000-0000-0000-000000006802', 'Tres', 'tres-68@example.com')
+  ('18', 'aaaaaaaa-0000-0000-0000-000000006801', 'Cambio', 'cambio-68@example.com'),
+  ('19', 'aaaaaaaa-0000-0000-0000-000000006801', 'Vee', 'vee-68@example.com'),
+  ('1a', 'aaaaaaaa-0000-0000-0000-000000006801', 'Google', 'google-68@example.com'),
+  ('1b', 'aaaaaaaa-0000-0000-0000-000000006801', 'Perfil', 'perfil-68@example.com'),
+  ('21', 'aaaaaaaa-0000-0000-0000-000000006802', 'Tres', 'tres-68@example.com'),
+  ('22', 'aaaaaaaa-0000-0000-0000-000000006802', 'Vee T', 'vee-68@example.com')
 ) as v (k, shop, name, email);
 
 -- The reserved route -------------------------------------------------------------------------
@@ -458,6 +463,28 @@ insert into public.time_blocks (id, barbershop_id, barber_id, starts_at, ends_at
    pg_temp.at(1, '16:00'), pg_temp.at(1, '17:00'), 'Permiso');
 
 select pg_temp.as_user('00000000-0000-0000-0000-0000000068e7');
+-- Review of 7.6b, point 1: joined, but without the terms, the session
+-- reaches nothing yet; my_professional_access does know them, to send them
+-- to accept.
+select is((public.my_professional_access() ->> 'acceptedTerms'), 'false',
+  'my_professional_access knows the professional, who has not accepted the terms');
+select is(public.my_agenda((now() at time zone 'America/Bogota')::date, (now() at time zone 'America/Bogota')::date + 1), null,
+  'without the terms, my_agenda gives nothing');
+select is((select count(*)::integer from public.my_appointment('a0000000-0000-0000-0000-000000006801')), 0,
+  'nor my_appointment (nor the customer''s phone)');
+select is(pg_temp.hint_of($$select public.mark_my_appointment('a0000000-0000-0000-0000-000000006802', 'no_show')$$),
+  'not_professional', 'mark_my_appointment refuses');
+select is(pg_temp.hint_of($$select public.create_my_time_block(pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'), null)$$),
+  'not_professional', 'create_my_time_block refuses');
+select is(pg_temp.hint_of($$select public.delete_my_time_block('b0000000-0000-0000-0000-000000006801')$$),
+  'not_professional', 'delete_my_time_block refuses');
+select is(pg_temp.hint_of($$select public.accept_professional_terms('2026-11-15.3')$$), 'no error',
+  'they accept the terms');
+select is((public.my_professional_access() ->> 'acceptedTerms'), 'true', 'and the flag says so');
+select ok(public.my_agenda((now() at time zone 'America/Bogota')::date, (now() at time zone 'America/Bogota')::date + 1) is not null,
+  'now my_agenda answers');
+select is(pg_temp.hint_of($$select public.create_my_time_block(pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'), null)$$),
+  'no error', 'and create_my_time_block blocks');
 select is(
   (select array_agg(customer_phone is not null order by starts_at)
    from (
@@ -486,6 +513,73 @@ select is(pg_temp.hint_of($$select public.delete_my_time_block('b0000000-0000-00
 reset role;
 select is((select count(*)::integer from public.time_blocks where id = 'b0000000-0000-0000-0000-000000006802'), 1,
   'the block is still there');
+
+-- Review of 7.6b, point 3: the old account is never lost --------------------------------------
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(pg_temp.inv('ba000000-0000-0000-0000-000000006818'), 'cambio-68@example.com', 'the owner invites Cambio');
+reset role;
+select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000068e8', 'cambio-68@example.com');
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.revoke_barber_account('ba000000-0000-0000-0000-000000006818'),
+  '00000000-0000-0000-0000-0000000068e8'::uuid, 'and takes the access away (Auth then fails to delete it)');
+reset role;
+update public.barbers set email = 'cambio-otro-68@example.com' where id = 'ba000000-0000-0000-0000-000000006818';
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(pg_temp.inv('ba000000-0000-0000-0000-000000006818'), 'revoked_account_pending',
+  'with another email, the invitation waits for the old account');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-000000006818'),
+  '00000000-0000-0000-0000-0000000068e8'::uuid, 'which is offered for deletion');
+reset role;
+update public.barber_invitations set revoked_at = null
+where barber_id = 'ba000000-0000-0000-0000-000000006818';
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-000000006818'),
+  '00000000-0000-0000-0000-0000000068e8'::uuid,
+  'even if a renewal (from before this migration) cleared revoked_at');
+
+-- Review of 7.6b, point 2: the walls of the orphan branch -------------------------------------
+
+-- (a) S invited Vee and revoked; T invites the same email and Auth's account
+-- does not join (its clock far off). It is T's to clean, never S's.
+select is(pg_temp.inv('ba000000-0000-0000-0000-000000006819'), 'vee-68@example.com', 'S invites Vee');
+select is(public.revoke_barber_account('ba000000-0000-0000-0000-000000006819'), null, 'and revokes it');
+select pg_temp.as_user('00000000-0000-0000-0000-000000006802');
+select is(pg_temp.inv('ba000000-0000-0000-0000-000000006822'), 'vee-68@example.com', 'T invites the same email');
+reset role;
+select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000068e9', 'vee-68@example.com', '-2 minutes');
+select is(pg_temp.linked('ba000000-0000-0000-0000-000000006822'), null, 'the account does not join');
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-000000006819'), null,
+  'S never gets the orphan of the pending invitation of T');
+select pg_temp.as_user('00000000-0000-0000-0000-000000006802');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-000000006822'),
+  '00000000-0000-0000-0000-0000000068e9'::uuid, 'T does');
+
+-- (b) An orphan with a profile is someone's: never.
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(pg_temp.inv('ba000000-0000-0000-0000-00000000681b'), 'perfil-68@example.com', 'S invites Perfil');
+reset role;
+select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000068ea', 'perfil-68@example.com', '-2 minutes');
+insert into public.profiles (id, full_name, active) values ('00000000-0000-0000-0000-0000000068ea', 'Alguien', false);
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-00000000681b'), null,
+  'an orphan with a profile row is never offered');
+
+-- (c) Nor one with an identity of another provider.
+select is(pg_temp.inv('ba000000-0000-0000-0000-00000000681a'), 'google-68@example.com', 'S invites Google');
+reset role;
+select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000068eb', 'google-68@example.com', '-2 minutes');
+insert into auth.identities (provider_id, user_id, identity_data, provider)
+values ('google-68eb', '00000000-0000-0000-0000-0000000068eb', '{}', 'google');
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-00000000681a'), null,
+  'an orphan with a Google identity is never offered');
+reset role;
+delete from auth.identities where user_id = '00000000-0000-0000-0000-0000000068eb';
+select pg_temp.as_user('00000000-0000-0000-0000-000000006801');
+select is(public.barber_account_to_delete('ba000000-0000-0000-0000-00000000681a'),
+  '00000000-0000-0000-0000-0000000068eb'::uuid, 'without it, it is (the wall was the identity)');
 
 select * from finish();
 rollback;

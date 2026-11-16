@@ -23,7 +23,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(174);
+select plan(175);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -181,6 +181,8 @@ end;
 $$;
 
 -- What Auth does when it invites: insert the user, then set invited_at.
+-- Then, if it joined, the professional accepts the terms (task 7.6b: the
+-- my_* functions need them; 68_professional_account_app tests without).
 create function pg_temp.invited_by_auth(user_id uuid, user_email text)
 returns void
 language sql
@@ -188,6 +190,7 @@ as $$
   select set_config('request.jwt.claims', '', true);
   insert into auth.users (id, email, encrypted_password, created_at) values (user_id, user_email, '', now());
   update auth.users set invited_at = now(), confirmation_sent_at = now() where id = user_id;
+  update public.profiles set terms_accepted_at = now(), terms_version = 'prueba-67' where id = user_id;
 $$;
 
 -- invite_barber in one word: the email when invited, the status otherwise,
@@ -962,6 +965,8 @@ select is(
     'barberId', 'ba000000-0000-0000-0000-000000006711',
     'name', 'Kevin Mora',
     'active', true,
+    -- Task 7.6b: whether they accepted the terms (the helper accepts them).
+    'acceptedTerms', true,
     'barbershop', jsonb_build_object('name', 'Barbería S', 'slug', 'barberia-s-67', 'writable', true)
   ),
   'the session is of Uno, of Barbería S'
@@ -1325,13 +1330,21 @@ select pg_temp.invited_by_auth('00000000-0000-0000-0000-0000000067e2', 'revocar@
 select is((select profile_id from public.barbers where id = 'ba000000-0000-0000-0000-00000000674e'),
   '00000000-0000-0000-0000-0000000067e2'::uuid, 'and a new account joins');
 
--- Another email can be invited right away.
+-- Another email waits for the old account too (task 7.6b, review point 3:
+-- otherwise the next revocation would keep only the new account, and the
+-- old one would stay in Auth). The app deletes it and asks again.
 select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
 select is(public.revoke_barber_account('ba000000-0000-0000-0000-00000000674e'),
   '00000000-0000-0000-0000-0000000067e2'::uuid, 'taken away again');
 update public.barbers set email = 'revocar-nuevo@example.com' where id = 'ba000000-0000-0000-0000-00000000674e';
+select is(pg_temp.inv('ba000000-0000-0000-0000-00000000674e'), 'revoked_account_pending',
+  'with another email it also waits until the old account is deleted');
+reset role;
+set local request.jwt.claims to '';
+delete from auth.users where id = '00000000-0000-0000-0000-0000000067e2';
+select pg_temp.as_user('00000000-0000-0000-0000-000000006704');
 select is(pg_temp.inv('ba000000-0000-0000-0000-00000000674e'), 'revocar-nuevo@example.com',
-  'and with another email it is invited at once');
+  'and once it is deleted, the other email is invited');
 
 -- Only an invitation, without account: revoking it stops the join.
 select is(public.revoke_barber_account('ba000000-0000-0000-0000-00000000674f'), null,
