@@ -102,6 +102,7 @@ Son 21 pantallas principales en cuatro partes de la web; todas se diseñan prime
 **Página pública de reservas** (`yapoin.com/nombre-barberia`)
 
 1. Perfil de la barbería: logo, foto, dirección con mapa, horario, botón "Reservar" y link para escribirle por WhatsApp.
+   - Muestra los primeros servicios. Tocar uno lleva a reservar con ese servicio ya elegido (tarea 7.10).
 2. Elegir servicios: lista con precio y duración; se pueden elegir varios.
 3. Elegir barbero: foto y nombre, o "El primero disponible".
 4. Elegir día y hora: calendario de los próximos 30 días y horas libres.
