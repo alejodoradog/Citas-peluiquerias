@@ -37,11 +37,11 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 6.2 Prueba en celulares reales | Los dos | Al final, con las pruebas humanas |
 | **Fase 7: mejoras de la revisión del 2026-11-15** (`docs/mejoras-revision-2026-11-15.md`; el reparto y sus reglas, en `docs/reparto-mejoras.md`) | — | — |
 | 7.1 Lenguaje neutral: "establecimiento" y "profesional" en toda la plataforma (`docs/tareas/7.1-lenguaje-neutral.md`) | Fundador | Fusionada (#90). Ya se pueden editar textos con la regla de siempre: cada quien en su bloque, y con "establecimiento" y "profesional". Las direcciones visibles van después, en la 7.1b |
-| 7.2 Registro: tipo de establecimiento y volver de los textos legales sin perder lo escrito (`docs/tareas/7.2-registro.md`) | Fundador | En curso (`hito-7-registro`). No vuelve a definir la función del registro: el tipo se guarda con un disparador aparte |
-| 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria | Fundador | Pendiente |
-| 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado | Fundador | Pendiente |
-| 7.5 Aviso de reserva al profesional, con WhatsApp | Fundador | Pendiente |
-| 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | Pendiente. Espera la decisión 0010 |
+| 7.2 Registro: tipo de establecimiento y volver de los textos legales sin perder lo escrito (`docs/tareas/7.2-registro.md`) | Fundador | Fusionada (#92). No vuelve a definir la función del registro: el tipo se guarda con un disparador aparte, y la 7.8 puede hacer lo mismo con el plan |
+| 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria (`docs/tareas/7.3-asistente.md`) | Fundador | Los servicios y el formulario, fusionados (#93). La ubicación obligatoria va en un PR aparte y espera D9 |
+| 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado (`docs/tareas/7.4-bloqueos.md`) | Fundador | Fusionada (#94). Volvió a definir `create_time_block_by_barber` |
+| 7.5 Aviso de reserva al profesional, con WhatsApp (`docs/tareas/7.5-aviso-profesional.md`) | Fundador | En revisión (#95). Toca `send-notifications` (`appointment-emails.ts` e `index.ts`): hay que desplegar la función. Cambia la política de datos: `LEGAL_VERSION` pasa a `2026-11-15.2` |
+| 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | La decisión 0010 está propuesta (#96) y espera la aceptación del fundador |
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
 | 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |
 | 7.9 Afiche en la pantalla final y en Compartir; logo oficial | Socio | Pendiente |
