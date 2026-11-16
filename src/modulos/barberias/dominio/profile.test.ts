@@ -57,6 +57,24 @@ describe("parseShopProfile", () => {
     });
   });
 
+  // Task 7.3: the location is required once there is one.
+  it("does not let a saved location be removed, only marked again", () => {
+    const withPoint = {
+      ...SAVED,
+      location: { latitude: 3.4516, longitude: -76.532 },
+    };
+    expect(parseShopProfile(input({ location: "" }), withPoint)).toEqual({
+      success: false,
+      errors: { location: "location_required" },
+    });
+    expect(
+      parseShopProfile(input({ location: "4.711000,-74.072100" }), withPoint),
+    ).toMatchObject({
+      success: true,
+      data: { location: { latitude: 4.711, longitude: -74.0721 } },
+    });
+  });
+
   it("asks for the name, with the rules of the sign-up", () => {
     expect(parseShopProfile(input({ name: "  " }), SAVED)).toEqual({
       success: false,

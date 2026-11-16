@@ -94,7 +94,7 @@ test("D-01 offers to sign up and to sign in @ui", async ({ page }) => {
 
 test("D-02 links the terms and the data policy @ui", async ({ page }) => {
   await page.goto("/registro");
-  await expect(page.getByText(textos.ui.paso(1, 3))).toBeAttached();
+  await expect(page.getByText(textos.ui.paso(1, 4))).toBeAttached();
   await page.getByRole("link", { name: t.registro.legal.terminos }).click();
   // Opened from the form: its "Volver" comes back to it (task 7.2).
   await expect(page).toHaveURL(/\/terminos\?volver=1$/);
