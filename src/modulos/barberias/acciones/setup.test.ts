@@ -16,7 +16,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 const SHOP = "aaaaaaaa-0000-4000-8000-000000000000";
-const requireOwner = vi.fn(async () => ({ barbershop: { id: SHOP } }));
+const requireOwner = vi.fn(async () => ({
+  barbershop: { id: SHOP, needsSetup: true },
+}));
 vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
 
 const getShopProfile = vi.fn<
@@ -28,8 +30,8 @@ const saveShopLocation = vi.fn<
 vi.mock("../datos/shop-profile", () => ({ getShopProfile, saveShopLocation }));
 
 const completeBarbershopSetup = vi.fn<
-  (...args: unknown[]) => Promise<"done" | "failed">
->(async () => "done");
+  (...args: unknown[]) => Promise<"saved" | "location_required" | "failed">
+>(async () => "saved");
 vi.mock("../datos/setup", () => ({ completeBarbershopSetup }));
 
 const { completeSetup, saveSetupLocation } = await import("./setup");
@@ -120,6 +122,21 @@ describe("saveSetupLocation", () => {
     expect(saveShopLocation).not.toHaveBeenCalled();
   });
 
+  it("is only for the wizard: a set up owner changes the point in Datos", async () => {
+    requireOwner.mockResolvedValueOnce({
+      barbershop: { id: SHOP, needsSetup: false },
+    });
+    expect(
+      await run(() =>
+        saveSetupLocation(
+          { status: "idle" },
+          form({ location: "3.45,-76.53" }),
+        ),
+      ),
+    ).toEqual({ redirectedTo: "/panel" });
+    expect(saveShopLocation).not.toHaveBeenCalled();
+  });
+
   it("says so when the database writes nothing", async () => {
     saveShopLocation.mockResolvedValueOnce(false);
     expect(
@@ -141,6 +158,15 @@ describe("completeSetup", () => {
       ),
     ).toEqual({ redirectedTo: "/panel/configurar/listo" });
     expect(completeBarbershopSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it("goes back to the location step when the database refuses to finish without it", async () => {
+    completeBarbershopSetup.mockResolvedValueOnce("location_required");
+    expect(
+      await run(() =>
+        completeSetup({ status: "idle" }, form({ setup: SETUP })),
+      ),
+    ).toEqual({ redirectedTo: "/panel/configurar/ubicacion" });
   });
 
   it("sends an owner who skipped the location back to its step", async () => {

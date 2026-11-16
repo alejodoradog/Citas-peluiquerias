@@ -4,7 +4,7 @@
 --
 -- - The wizard cannot be finished without it: setup_completed_at is only set
 --   on a barbershop that has its point (latitude and longitude go together,
---   barbershops_location_both).
+--   barbershops_coordinates_together).
 -- - Once the establishment is set up, the point can be marked again but not
 --   removed.
 -- - A barbershop set up before this rule, without a point, stays as it is

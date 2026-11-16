@@ -25,6 +25,9 @@ export async function saveSetupLocation(
   formData: FormData,
 ): Promise<SetupLocationState> {
   const { barbershop } = await requireOwner();
+  // Only while the wizard lasts: afterwards the point is changed in Datos
+  // (D-57), which also refreshes the public page.
+  if (!barbershop.needsSetup) redirect(routes.panel);
   const sent = formData.get("location");
   const value = typeof sent === "string" ? sent.slice(0, 60) : "";
   const location = readLocation(value);
@@ -76,6 +79,8 @@ export async function completeSetup(
     DEFAULT_BARBERSHOP_HOURS,
     payload.data,
   );
+  // The point went away between the check above and the save.
+  if (result === "location_required") redirect(routes.setupLocation);
   if (result === "failed") {
     return { status: "failed", error: "unknown", values: {} };
   }
