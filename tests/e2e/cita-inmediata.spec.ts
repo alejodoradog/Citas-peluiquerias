@@ -108,6 +108,18 @@ test("a professional creates a walk-in now and marks it attended", async ({
   await expect
     .poll(async () => (await walkInAppointments(shop.id))[0]?.status)
     .toBe("attended");
+
+  // The owner sees that Ana made it.
+  await page.context().clearCookies();
+  await signInOwner(page, shop.owner);
+  await page.goto(`/panel/citas/${created!.id}`);
+  await expect(
+    page
+      .getByText(
+        new RegExp(textos.agenda.detalleCita.creadaAlMomentoPor("Ana")),
+      )
+      .filter({ visible: true }),
+  ).toBeVisible(FIRST_VISIT);
 });
 
 test("a walk-in that clashes is refused and says with what and how much is free", async ({
@@ -192,6 +204,16 @@ test("the owner creates a walk-in from the agenda for a professional", async ({
       (email) => email.appointment_id === created!.id,
     ),
   ).toEqual([]);
+
+  // Its detail says who made it (the history keeps a "created" event).
+  await page.goto(`/panel/citas/${created!.id}`);
+  await expect(
+    page
+      .getByText(
+        new RegExp(textos.agenda.detalleCita.creadaAlMomentoPorEstablecimiento),
+      )
+      .filter({ visible: true }),
+  ).toBeVisible(FIRST_VISIT);
 
   // The customer without a name stays out of the list of customers.
   await page.goto("/panel/clientes");

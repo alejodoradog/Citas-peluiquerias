@@ -456,6 +456,11 @@ export const textos = {
         manual: "Creada por el establecimiento",
         walk_in: "Cita al momento, sin reserva",
       },
+      // Task 7.7: who made a walk-in, from its history.
+      creadaAlMomentoPor: (profesional: string) =>
+        `Creada al momento por ${profesional}`,
+      creadaAlMomentoPorEstablecimiento:
+        "Creada al momento por el establecimiento",
       // "Reservada por la web · hace 20 min".
       origenCuando: (origen: string, cuando: string) => `${origen} · ${cuando}`,
       haceMinutos: (minutos: number) =>
