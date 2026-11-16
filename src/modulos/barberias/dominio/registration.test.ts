@@ -76,6 +76,19 @@ describe("parseRegistration", () => {
     });
   });
 
+  it('keeps the text of "other" as plain text on one line', () => {
+    expect(
+      parseRegistration({
+        ...valid,
+        businessType: "other",
+        businessTypeOther: "Estudio\n\tde\u202E  tatuajes\u200B",
+      }),
+    ).toMatchObject({
+      success: true,
+      data: { businessTypeOther: "Estudio de tatuajes" },
+    });
+  });
+
   it('drops what was written for "other" when the kind is another', () => {
     expect(
       parseRegistration({ ...valid, businessTypeOther: "Tatuajes" }),

@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(11);
+select plan(13);
 
 select ok(
   has_column_privilege('authenticated', 'public.barbershops', 'business_type', 'SELECT')
@@ -71,6 +71,27 @@ select is(
 select is(
   (select row(business_type, business_type_other)::text from public.barbershops where slug = 'tipo-65-vacio'),
   '(other,)', '"other" with only spaces keeps no text'
+);
+
+-- Metadata sent by hand, with line breaks and the character that reverses
+-- the text (U+202E).
+insert into auth.users (id, email, raw_user_meta_data) values (
+  '00000000-0000-0000-0000-0000000065a7', 'raro@example.com',
+  jsonb_build_object(
+    'owner_name', 'Rita Rara', 'barbershop_name', 'Raro', 'barbershop_slug', 'tipo-65-raro',
+    'phone', '+573001230657', 'business_type', 'other',
+    'business_type_other', 'Estudio' || chr(10) || chr(9) || 'de' || chr(8238) || '  tatuajes' || chr(8203))
+);
+select is(
+  (select business_type_other from public.barbershops where slug = 'tipo-65-raro'),
+  'Estudio de tatuajes', 'the text is kept as plain text on one line, without invisible characters'
+);
+select throws_ok(
+  format(
+    $$update public.barbershops set business_type_other = %L where slug = 'tipo-65-raro'$$,
+    'Estudio' || chr(8238) || 'x'
+  ),
+  '23514', null, 'and the table refuses one that carries them'
 );
 
 select throws_ok(

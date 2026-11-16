@@ -42,6 +42,16 @@ export const colombianMobileSchema = z
     return phone;
   });
 
+// Plain text on one line, as barbershops.business_type_other keeps it: the
+// invisible characters that hide or reverse a text are dropped, and any run
+// of spaces or line breaks is one space.
+function plainLine(value: string): string {
+  return value
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g, "")
+    .replace(/[\p{Cc}\s]+/gu, " ")
+    .trim();
+}
+
 const registrationSchema = z
   .object({
     ownerName: z
@@ -52,7 +62,7 @@ const registrationSchema = z
     barbershopName: barbershopNameSchema,
     // The kind of business (task 7.2), and which one when it is "other".
     businessType: z.enum(BUSINESS_TYPES, { error: "business_type_required" }),
-    businessTypeOther: z.string().trim().optional(),
+    businessTypeOther: z.string().transform(plainLine).optional(),
     phone: colombianMobileSchema,
     email: emailSchema,
     password: passwordSchema,

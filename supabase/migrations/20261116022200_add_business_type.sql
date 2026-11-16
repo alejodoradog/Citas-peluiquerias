@@ -31,12 +31,19 @@ alter table public.barbershops
       business_type = 'other'
       and business_type_other = btrim(business_type_other)
       and char_length(business_type_other) between 1 and 60
+      -- Plain text on one line: no control characters, and none of the
+      -- invisible ones that hide or reverse what is read.
+      and business_type_other !~ '[[:cntrl:]]'
+      and business_type_other !~ '[\u200B-\u200F\u202A-\u202E\u2066-\u2069]'
     )
   );
 
 -- After on_auth_user_created (triggers run in name order), which made the
 -- barbershop and the membership. The metadata comes from the browser: an
--- unknown kind is ignored, and the text is trimmed and cut.
+-- unknown kind is ignored, and the text is cleaned (invisible characters
+-- out, any run of spaces or line breaks as one space), trimmed and cut.
+-- "other" without a text is kept as it is: the form asks for it, and a
+-- missing text must never stop a sign-up.
 create function private.record_business_type()
 returns trigger
 language plpgsql
@@ -46,7 +53,13 @@ as $$
 declare
   meta jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   chosen text := meta ->> 'business_type';
-  other text := nullif(btrim(left(btrim(coalesce(meta ->> 'business_type_other', '')), 60)), '');
+  other text := nullif(btrim(left(btrim(regexp_replace(
+    regexp_replace(
+      coalesce(meta ->> 'business_type_other', ''),
+      '[\u200B-\u200F\u202A-\u202E\u2066-\u2069]', '', 'g'
+    ),
+    '[[:cntrl:][:space:]]+', ' ', 'g'
+  )), 60)), '');
 begin
   if chosen is null
     or not (chosen = any (enum_range(null::public.business_type)::text[])) then
