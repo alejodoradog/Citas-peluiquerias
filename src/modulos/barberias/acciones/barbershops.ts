@@ -32,6 +32,7 @@ export type RegistrationField =
   | "barbershopName"
   | "businessType"
   | "businessTypeOther"
+  | "plan"
   | "phone"
   | "email"
   | "password"
@@ -55,6 +56,7 @@ export async function registerBarbershop(
       "barbershopName",
       "businessType",
       "businessTypeOther",
+      "plan",
       "phone",
       "email",
       "password",
@@ -88,6 +90,8 @@ export async function registerBarbershop(
         ...(registration.businessTypeOther
           ? { business_type_other: registration.businessTypeOther }
           : {}),
+        // The plan chosen (task 7.8): plan 2 starts without the trial.
+        plan: registration.plan,
         // Kept in the profile as proof of the authorization (task 6.5).
         terms_version: LEGAL_VERSION,
       },

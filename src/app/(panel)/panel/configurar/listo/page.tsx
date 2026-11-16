@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { formatBogotaDayMonth, startOfBogotaDay } from "@/lib/fechas/fechas";
+import {
+  formatBogotaDayMonth,
+  now,
+  startOfBogotaDay,
+  toBogotaDate,
+} from "@/lib/fechas/fechas";
+import { hasTrial } from "@/modulos/suscripciones/dominio/plans";
+import { trialHasEnded } from "@/modulos/suscripciones/dominio/trial";
 import { routes } from "@/lib/routes";
 import { publicBookingUrl, qrFileName } from "@/lib/sitio";
 import { countActiveBarbers } from "@/modulos/barberias/datos/setup";
@@ -39,6 +46,12 @@ async function SetupDone() {
   const hasBarbers = (await countActiveBarbers(barbershop.id)) > 0;
   const url = publicBookingUrl(barbershop.slug);
   const trialEnd = formatBogotaDayMonth(startOfBogotaDay(barbershop.expiresOn));
+  // Only plan 1 has a free trial (task 7.8): plan 2's ended the day before
+  // it signed up, and it learns how its first payment opens the bookings.
+  const inTrial =
+    hasTrial(barbershop.selectedPlan) &&
+    barbershop.subscriptionStatus === "trial" &&
+    !trialHasEnded(barbershop.expiresOn, toBogotaDate(now()));
 
   return (
     <>
@@ -50,7 +63,9 @@ async function SetupDone() {
         <h1 className="text-title">
           {hasBarbers ? t.titulo : t.tituloSinBarberos}
         </h1>
-        <p className="text-body text-muted">{t.prueba(trialEnd)}</p>
+        <p className="text-body text-muted">
+          {inTrial ? t.prueba(trialEnd) : textos.planes.listo.primerPago}
+        </p>
       </div>
       {hasBarbers ? null : <Notice tone="warning" title={t.sinBarberos} />}
       <BookingLinkCard

@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
-import { formatBogotaDayMonth, startOfBogotaDay } from "@/lib/fechas/fechas";
+import {
+  formatBogotaDayMonth,
+  now,
+  startOfBogotaDay,
+  toBogotaDate,
+} from "@/lib/fechas/fechas";
+import { hasTrial } from "@/modulos/suscripciones/dominio/plans";
+import { trialHasEnded } from "@/modulos/suscripciones/dominio/trial";
 import { routes } from "@/lib/routes";
 import { displayBookingUrl } from "@/lib/sitio";
 import { countActive } from "@/modulos/barberias/datos/services";
@@ -85,7 +92,10 @@ async function More() {
           activeId={barbershop.id}
           switchTo={switchBarbershop}
         />
-        {barbershop.subscriptionStatus === "trial" ? (
+        {/* Only while the free trial runs: plan 2 has none (task 7.8). */}
+        {hasTrial(barbershop.selectedPlan) &&
+        barbershop.subscriptionStatus === "trial" &&
+        !trialHasEnded(barbershop.expiresOn, toBogotaDate(now())) ? (
           <Notice tone="info" title={t.prueba(trialEnd)}>
             {t.pruebaDetalle}
           </Notice>

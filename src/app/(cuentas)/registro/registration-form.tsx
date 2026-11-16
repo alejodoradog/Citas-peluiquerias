@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { yapoinWhatsapp } from "@/lib/contacto/whatsapp";
 import { routes } from "@/lib/routes";
 import { registerBarbershop } from "@/modulos/barberias/acciones/barbershops";
 import {
   BUSINESS_TYPE_OTHER_MAX,
   BUSINESS_TYPES,
 } from "@/modulos/barberias/dominio/business-type";
+import {
+  planFromParam,
+  SIGNUP_PLANS,
+  type SignupPlan,
+} from "@/modulos/suscripciones/dominio/plans";
+import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
+import { cx } from "@/ui/cx";
 import { AuthHeading } from "@/ui/auth-shell";
 import { ButtonLink } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
@@ -29,8 +37,27 @@ const BUSINESS_OPTIONS: SelectOption[] = [
   ...BUSINESS_TYPES.map((type) => ({ value: type, label: t.tipos[type] })),
 ];
 
+const p = textos.planes.registro;
+
+// The plan the landing chose (?plan=2), read once in the browser: the
+// server renders plan 1, the default (task 7.8).
+const noSubscription = () => () => {};
+const planInUrl = () =>
+  planFromParam(new URLSearchParams(window.location.search).get("plan"));
+const planOnServer = (): SignupPlan => "standard";
+
+function isSignupPlan(value: string | undefined): value is SignupPlan {
+  return (SIGNUP_PLANS as readonly string[]).includes(value ?? "");
+}
+
 export function RegistrationForm() {
   const form = useFormAction(registerBarbershop, messages);
+  const urlPlan = useSyncExternalStore(noSubscription, planInUrl, planOnServer);
+  const sent = form.value("plan");
+  const [picked, setPicked] = useState<SignupPlan | null>(
+    isSignupPlan(sent) ? sent : null,
+  );
+  const plan = picked ?? urlPlan;
   // Kept on this device only, to say where the link went (D-03).
   const [email, setEmail] = useState(form.value("email") ?? "");
   // Controlled, to show "¿Cuál?" only when the kind is "other".
@@ -45,11 +72,15 @@ export function RegistrationForm() {
   return (
     <>
       <Steps current={1} total={4} />
-      <AuthHeading title={t.titulo} intro={t.bajada} />
+      <AuthHeading
+        title={t.titulo}
+        intro={plan === "plus" ? p.bajadaPlan2 : t.bajada}
+      />
       <ActionForm form={form}>
         {form.formError ? (
           <Notice tone="danger" title={form.formError} />
         ) : null}
+        <PlanChoice plan={plan} onChange={setPicked} />
         <Field
           label={t.campos.ownerName}
           name="ownerName"
@@ -145,6 +176,58 @@ export function RegistrationForm() {
         {t.yaTienes} <TextLink href={routes.signIn}>{t.ingresa}</TextLink>
       </p>
     </>
+  );
+}
+
+// Task 7.8: plan 1 (with the free trial) or plan 2 (from its first
+// payment). "Por acuerdo" is agreed by WhatsApp.
+function PlanChoice({
+  plan,
+  onChange,
+}: {
+  plan: SignupPlan;
+  onChange: (plan: SignupPlan) => void;
+}) {
+  const options = [
+    { value: "standard", ...p.plan1, detalle: p.plan1.detalle(TRIAL_DAYS) },
+    { value: "plus", ...p.plan2 },
+  ] as const;
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-label mb-1 font-semibold">{p.leyenda}</legend>
+      {options.map((option) => (
+        <label
+          key={option.value}
+          className={cx(
+            "border-line flex min-h-11 cursor-pointer flex-col gap-0.5 rounded-xl border bg-white px-3.5 py-3",
+            "has-checked:border-brand has-checked:bg-brand-soft has-checked:border-2 has-checked:px-3.25 has-checked:py-2.75",
+            "has-focus-visible:outline-brand has-focus-visible:outline-2 has-focus-visible:outline-offset-2",
+          )}
+        >
+          <input
+            type="radio"
+            name="plan"
+            value={option.value}
+            checked={plan === option.value}
+            onChange={() => onChange(option.value)}
+            className="sr-only"
+          />
+          <span className="font-semibold">{option.nombre}</span>
+          <span className="text-help text-muted">{option.detalle}</span>
+        </label>
+      ))}
+      <p className="text-help text-muted">
+        {p.masDe8}{" "}
+        <a
+          href={yapoinWhatsapp(textos.landing.precios.acuerdo.mensaje)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-brand-strong inline-flex min-h-11 items-center font-semibold underline"
+        >
+          {p.escribenos}
+        </a>
+      </p>
+    </fieldset>
   );
 }
 

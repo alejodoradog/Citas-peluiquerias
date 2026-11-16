@@ -53,7 +53,9 @@ export type BarberWriteResult =
       field: BarberFormField;
       code: TeamBarberErrorCode | "photo_invalid" | "invalid";
     }
-  | { ok: false; field?: undefined; code: "unknown" };
+  | { ok: false; field?: undefined; code: "unknown" }
+  // Task 7.8: the plan allows no more active professionals.
+  | { ok: false; field?: undefined; code: "plan_limit" };
 
 // The services a barber can do: the active ones, by name.
 export async function listActiveServiceOptions(
@@ -212,7 +214,14 @@ export async function photoInUse(
   return data.length > 0;
 }
 
-function failure(error: { code?: string; message?: string }) {
+function failure(error: {
+  code?: string;
+  message?: string;
+  hint?: string | null;
+}) {
+  if (error.hint === "plan_limit") {
+    return { ok: false, code: "plan_limit" } as const;
+  }
   const field = toBarberFieldError(error);
   return field
     ? ({ ok: false, ...field } as const)
@@ -296,7 +305,7 @@ export async function setBarberActiveRow(
   barbershopId: string,
   id: string,
   active: boolean,
-): Promise<boolean> {
+): Promise<"saved" | "plan_limit" | "failed"> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("barbers")
@@ -304,7 +313,9 @@ export async function setBarberActiveRow(
     .eq("barbershop_id", barbershopId)
     .eq("id", id)
     .select("id");
-  return !error && data.length === 1;
+  // Task 7.8: reactivating one more than the plan allows.
+  if (error?.hint === "plan_limit") return "plan_limit";
+  return !error && data.length === 1 ? "saved" : "failed";
 }
 
 // Replaces which active services the barber does (set_barber_services,
