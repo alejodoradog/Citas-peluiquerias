@@ -8,7 +8,7 @@ import {
   toBogotaTime,
 } from "@/lib/fechas/fechas";
 import { barberAgendaHref } from "@/lib/routes";
-import { loadBarberAgenda } from "@/modulos/agenda/datos/barber-agenda";
+import { loadBarberAgendaSpan } from "@/modulos/agenda/datos/barber-agenda";
 import {
   blockDayOptions,
   closedBlockDays,
@@ -52,7 +52,7 @@ async function BarberBlock({
   const today = toBogotaDate(instant);
   // The whole window of the picker: its closed days are not offered.
   const days = blockDayOptions(today);
-  const agenda = await loadBarberAgenda(token, today, days.at(-1)!);
+  const agenda = await loadBarberAgendaSpan(token, today, days.at(-1)!);
   if (!agenda) return <BarberLinkGone />;
 
   const close = { href: barberAgendaHref(token), label: t.bloquear.cerrar };
