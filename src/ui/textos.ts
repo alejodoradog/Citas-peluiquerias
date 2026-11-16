@@ -128,26 +128,26 @@ export const textos = {
   // date, and the database keeps which one each person accepted.
   legal: {
     version: LEGAL_VERSION,
-    fecha: "14 de noviembre de 2026",
+    fecha: "15 de noviembre de 2026",
     vigencia: (fecha: string) => `Vigente desde el ${fecha}.`,
     correo: "manuelalejo429@gmail.com",
     volver: "Volver al inicio",
     terminos: {
       titulo: "Términos de uso",
       intro:
-        "Estos términos regulan el uso de Yapoin por parte de las barberías y peluquerías que crean una cuenta. Al registrarte y marcar la casilla de aceptación, los aceptas.",
+        "Estos términos regulan el uso de Yapoin por parte de los establecimientos que crean una cuenta. Al registrarte y marcar la casilla de aceptación, los aceptas.",
       secciones: [
         {
           titulo: "1. Qué es Yapoin",
           parrafos: [
-            "Yapoin es una aplicación web para que las barberías y peluquerías de Colombia reciban reservas en línea, organicen su agenda y su equipo, y envíen recordatorios por correo a sus clientes. Se usa desde el navegador: no hay app que descargar.",
+            "Yapoin es una aplicación web para que los establecimientos de Colombia que atienden con cita reciban reservas en línea, organicen su agenda y su equipo, y envíen recordatorios por correo a sus clientes. Se usa desde el navegador: no hay app que descargar.",
           ],
         },
         {
           titulo: "2. La cuenta",
           parrafos: [
-            "Para crear una cuenta debes ser mayor de edad y dar datos verdaderos: tu nombre, el de tu barbería, un celular y un correo. Tú respondes por lo que se haga con tu cuenta, así que guarda bien tu contraseña y los links privados de tus barberos.",
-            "Una cuenta puede tener varias sedes. Cada sede es una barbería con su propia página, su agenda y su suscripción.",
+            "Para crear una cuenta debes ser mayor de edad y dar datos verdaderos: tu nombre, el de tu establecimiento, un celular y un correo. Tú respondes por lo que se haga con tu cuenta, así que guarda bien tu contraseña y los links privados de tus profesionales.",
+            "Una cuenta puede tener varias sedes. Cada sede es un establecimiento con su propia página, su agenda y su suscripción.",
           ],
         },
         {
@@ -159,7 +159,7 @@ export const textos = {
         {
           titulo: "4. El precio y el pago",
           parrafos: [
-            "Después de la prueba, cada sede paga una suscripción mensual según el número de barberos activos, contando al dueño si también corta: $25.000 al mes de 1 a 4 barberos y $40.000 al mes de 5 a 8. Con 9 o más barberos, el precio se acuerda con el área financiera de Yapoin.",
+            "Después de la prueba, cada sede paga una suscripción mensual según el número de profesionales activos, contando al dueño si también atiende: $25.000 al mes de 1 a 4 profesionales y $40.000 al mes de 5 a 8. Con 9 o más profesionales, el precio se acuerda con el área financiera de Yapoin.",
             "El pago se hace por transferencia (Bre-B, Nequi o transferencia bancaria) a los datos que Yapoin te envía, y el comprobante se envía al correo de Yapoin. Cuando lo verificamos, registramos el pago y la sede queda activa por un mes más. Cada pago cubre un mes y no hay reembolsos por meses parciales.",
             "Yapoin puede cambiar los precios avisándote por correo con al menos 30 días de anticipación. El cambio aplica desde el siguiente pago.",
           ],
@@ -174,9 +174,9 @@ export const textos = {
         {
           titulo: "6. Lo que te comprometes a hacer",
           parrafos: [
-            "Usar Yapoin solo para la reserva y la gestión de citas de tu barbería, con información verdadera.",
+            "Usar Yapoin solo para la reserva y la gestión de citas de tu establecimiento, con información verdadera.",
             "No usar Yapoin para enviar publicidad, cadenas, engaños ni links a otras páginas, ni registrar personas o correos sin su conocimiento.",
-            "Tratar los datos de tus clientes conforme a la Ley 1581 de 2012: frente a ellos, tu barbería es la responsable de esos datos, y Yapoin los trata por encargo tuyo (ver la política de datos).",
+            "Tratar los datos de tus clientes conforme a la Ley 1581 de 2012: frente a ellos, tu establecimiento es el responsable de esos datos, y Yapoin los trata por encargo tuyo (ver la política de datos).",
             "Pagar la suscripción de cada sede que tengas activa.",
           ],
         },
@@ -189,14 +189,14 @@ export const textos = {
         {
           titulo: "8. Responsabilidad",
           parrafos: [
-            "Yapoin es una herramienta: no responde por las inasistencias de los clientes, por los acuerdos o pagos entre tu barbería y sus clientes, ni por la calidad de los servicios que prestas.",
-            "En lo que la ley permita, la responsabilidad de Yapoin frente a una barbería por cualquier daño se limita a lo que esa barbería pagó por su suscripción en los últimos 3 meses. Nada en estos términos limita los derechos que te dé la Ley 1480 de 2011 cuando seas consumidor.",
+            "Yapoin es una herramienta: no responde por las inasistencias de los clientes, por los acuerdos o pagos entre tu establecimiento y sus clientes, ni por la calidad de los servicios que prestas.",
+            "En lo que la ley permita, la responsabilidad de Yapoin frente a un establecimiento por cualquier daño se limita a lo que ese establecimiento pagó por su suscripción en los últimos 3 meses. Nada en estos términos limita los derechos que te dé la Ley 1480 de 2011 cuando seas consumidor.",
           ],
         },
         {
           titulo: "9. Propiedad",
           parrafos: [
-            "Yapoin, su marca, su diseño y su código son de Yapoin. Los datos de tu barbería y de tus clientes son tuyos y de ellos: no los vendemos ni los usamos para publicidad.",
+            "Yapoin, su marca, su diseño y su código son de Yapoin. Los datos de tu establecimiento y de tus clientes son tuyos y de ellos: no los vendemos ni los usamos para publicidad.",
           ],
         },
         {
@@ -227,23 +227,23 @@ export const textos = {
         {
           titulo: "1. Quién trata tus datos",
           parrafos: [
-            "Yapoin trata los datos de los dueños de las barberías y de sus barberos como responsable. Los datos de los clientes de cada barbería los trata por encargo de esa barbería, que es su responsable: cuando reservas en una barbería, autorizas a esa barbería y a Yapoin, como su encargado, a tratar tus datos para gestionar tu cita.",
+            "Yapoin trata los datos de los dueños de los establecimientos y de sus profesionales como responsable. Los datos de los clientes de cada establecimiento los trata por encargo de ese establecimiento, que es su responsable: cuando reservas en un establecimiento, autorizas a ese establecimiento y a Yapoin, como su encargado, a tratar tus datos para gestionar tu cita.",
             "Para cualquier consulta o reclamo sobre tus datos, escríbenos a manuelalejo429@gmail.com.",
           ],
         },
         {
           titulo: "2. Qué datos tratamos",
           parrafos: [
-            "De los dueños: nombre, correo, celular, los datos de su barbería (nombre, dirección, horarios, servicios y fotos) y los pagos de su suscripción.",
-            "De los barberos: nombre, foto si el dueño la sube y correo si el dueño lo agrega para los avisos.",
-            "De los clientes: nombre, correo, celular si lo dan, sus citas en cada barbería y las notas que la barbería escriba sobre ellos.",
+            "De los dueños: nombre, correo, celular, los datos de su establecimiento (nombre, dirección, horarios, servicios y fotos) y los pagos de su suscripción.",
+            "De los profesionales: nombre, foto si el dueño la sube y correo si el dueño lo agrega para los avisos.",
+            "De los clientes: nombre, correo, celular si lo dan, sus citas en cada establecimiento y las notas que el establecimiento escriba sobre ellos.",
             "Datos técnicos: la sesión de quien ingresa al panel y, para frenar abusos, una huella cifrada de la dirección IP que no permite saber cuál es. No pedimos datos sensibles ni datos de menores de edad.",
           ],
         },
         {
           titulo: "3. Para qué los usamos",
           parrafos: [
-            'Para prestar el servicio: mostrar la página de la barbería, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas".',
+            'Para prestar el servicio: mostrar la página del establecimiento, recibir y gestionar reservas, organizar la agenda, enviar el recordatorio de cada cita, los avisos de cambios y cancelaciones, y el link de "Mis citas".',
             "Para la suscripción: avisar los vencimientos y registrar los pagos.",
             "Para la seguridad: verificar que quien reserva o se registra no es un robot y limitar los abusos.",
             "No vendemos tus datos, no los usamos para publicidad y no los compartimos con nadie fuera de los proveedores de la sección 5.",
@@ -259,14 +259,14 @@ export const textos = {
           titulo: "5. Con quién los compartimos",
           parrafos: [
             "Usamos proveedores que guardan o procesan los datos por nuestra cuenta, con contratos que los obligan a protegerlos: Supabase (base de datos y archivos), Vercel (servidores de la aplicación), Resend (envío de correos) y Cloudflare (dominio y verificación contra robots). Sus servidores están en Estados Unidos, así que tus datos se transfieren a ese país; al aceptar esta política, autorizas esa transferencia.",
-            "La página de cada barbería muestra un mapa de OpenFreeMap, con datos de OpenStreetMap. Al verlo, tu navegador le pide a ese servicio las imágenes del mapa y él ve tu dirección IP, como cualquier sitio que visitas. No le enviamos ningún otro dato tuyo y no pone cookies.",
+            "La página de cada establecimiento muestra un mapa de OpenFreeMap, con datos de OpenStreetMap. Al verlo, tu navegador le pide a ese servicio las imágenes del mapa y él ve tu dirección IP, como cualquier sitio que visitas. No le enviamos ningún otro dato tuyo y no pone cookies.",
           ],
         },
         {
           titulo: "6. Cuánto tiempo los guardamos",
           parrafos: [
             "Los datos de una cuenta se guardan mientras exista. La cola de correos enviados se borra a los 90 días. Los links privados de los correos vencen solos.",
-            "Cuando una barbería borra a un cliente, su nombre, correo, celular y notas se eliminan, y su historial de citas queda sin ningún dato que lo identifique. Las copias de seguridad se borran solas en un plazo máximo de 8 semanas.",
+            "Cuando un establecimiento borra a un cliente, su nombre, correo, celular y notas se eliminan, y su historial de citas queda sin ningún dato que lo identifique. Las copias de seguridad se borran solas en un plazo máximo de 8 semanas.",
           ],
         },
         {
@@ -278,15 +278,15 @@ export const textos = {
         {
           titulo: "8. Cómo ejercerlos",
           parrafos: [
-            "Escríbenos a manuelalejo429@gmail.com con tu nombre, el correo o celular con el que te registraste o reservaste, la barbería y lo que pides.",
+            "Escríbenos a manuelalejo429@gmail.com con tu nombre, el correo o celular con el que te registraste o reservaste, el establecimiento y lo que pides.",
             "Respondemos las consultas en un máximo de 10 días hábiles y los reclamos en un máximo de 15 días hábiles. Si necesitamos más tiempo, te avisamos el motivo antes de que venza el plazo.",
-            "Si eres cliente de una barbería, también puedes pedírselo a ella. Si nos llega a nosotros, se lo trasladamos y te avisamos.",
+            "Si eres cliente de un establecimiento, también puedes pedírselo a él. Si nos llega a nosotros, se lo trasladamos y te avisamos.",
           ],
         },
         {
           titulo: "9. Seguridad",
           parrafos: [
-            "Todo viaja cifrado. Cada barbería solo ve sus propios datos. Los links privados de las citas y de los barberos se guardan como huellas que no se pueden convertir de nuevo en el link, y el acceso al panel exige tu contraseña.",
+            "Todo viaja cifrado. Cada establecimiento solo ve sus propios datos. Los links privados de las citas y de los profesionales se guardan como huellas que no se pueden convertir de nuevo en el link, y el acceso al panel exige tu contraseña.",
           ],
         },
         {
@@ -369,10 +369,10 @@ export const textos = {
     siguiente: { dia: "Día siguiente", semana: "Semana siguiente" },
     irAHoy: "Hoy",
     barberos: {
-      etiqueta: "Barbero",
+      etiqueta: "Profesional",
       todos: "Todos",
       // The name of the filter button: what it shows now.
-      boton: (actual: string) => `Barbero: ${actual}`,
+      boton: (actual: string) => `Profesional: ${actual}`,
       agendaDe: (nombre: string) => `Agenda de ${nombre}`,
       inactivo: "Inactivo",
     },
@@ -383,7 +383,7 @@ export const textos = {
     sinCitasHoy: "Aún no tienes citas hoy",
     sinCitas: "Sin citas este día",
     cerrado: "Cerrado",
-    diaCerrado: "La barbería no abre este día.",
+    diaCerrado: "El establecimiento no abre este día.",
     // "Mario 2 · Andrés 3" under each day of D-32.
     porBarbero: (nombre: string, cantidad: number) => `${nombre} ${cantidad}`,
     ocupacion: (porcentaje: number) => `${porcentaje} % ocupado`,
@@ -403,30 +403,30 @@ export const textos = {
     // customer and the services: "10:00 a. m., Nueva".
     cita: (hora: string, estado: string) => `${hora}, ${estado}`,
     bloqueo: "Bloqueado",
-    cierre: "Barbería cerrada",
+    cierre: "Establecimiento cerrado",
     libre: (hasta: string) => `Libre hasta las ${hasta}`,
     libreDesde: (hora: string, barbero: string) =>
       `Crear cita a las ${hora} con ${barbero}`,
     ahora: (hora: string) => `Ahora, ${hora}`,
-    columnas: "Citas del día por barbero",
+    columnas: "Citas del día por profesional",
     vacia: {
       compartir: {
         titulo: "Comparte tu link para recibir la primera cita",
         cuerpo:
-          "Ponlo en tu Instagram, en tu estado de WhatsApp y en el espejo de la barbería.",
+          "Ponlo en tu Instagram, en tu estado de WhatsApp y en un lugar visible de tu establecimiento.",
         boton: "Compartir mi link",
       },
       barberos: {
-        titulo: "Envía a tus barberos su link privado",
+        titulo: "Envía a tus profesionales su link privado",
         cuerpo: "Así ven su agenda y marcan las citas desde su celular.",
-        boton: "Ir a barberos",
+        boton: "Ir a profesionales",
       },
       manual: {
         titulo: "¿Alguien llamó o llegó sin cita?",
         boton: "Crear cita manual",
       },
     },
-    sinBarberos: "Aún no tienes barberos activos. Agrégalos en Más › Barberos.",
+    sinBarberos: "Aún no tienes profesionales activos. Agrégalos en Más › Profesionales.",
     // D-34 to D-39 (task 4.2).
     detalle: "Detalle de la cita",
     detalleCita: {
@@ -435,7 +435,7 @@ export const textos = {
       editar: "Editar servicios",
       origen: {
         web: "Reservada por la web",
-        manual: "Creada por la barbería",
+        manual: "Creada por el establecimiento",
       },
       // "Reservada por la web · hace 20 min".
       origenCuando: (origen: string, cuando: string) => `${origen} · ${cuando}`,
@@ -445,14 +445,14 @@ export const textos = {
         horas === 1 ? "hace 1 hora" : `hace ${horas} horas`,
       chips: {
         canceladaCliente: "Cancelada por el cliente",
-        canceladaBarberia: "Cancelada por la barbería",
+        canceladaBarberia: "Cancelada por el establecimiento",
       },
       cuando: "Cuándo",
       servicios: "Servicios",
       // "Corte (40 min) + Barba (20 min)".
       servicio: (nombre: string, minutos: number) =>
         `${nombre} (${minutos} min)`,
-      barbero: "Barbero",
+      barbero: "Profesional",
       valor: "Valor",
       // "Hoy, sábado 7 de nov · 10:40 – 11:40 a. m."
       horario: (dia: string, desde: string, hasta: string) =>
@@ -510,10 +510,10 @@ export const textos = {
     reprogramar: {
       titulo: "Reprogramar cita",
       actual: "Cita actual",
-      barbero: "Barbero",
+      barbero: "Profesional",
       dia: "Día",
       horas: (minutos: number) => `Horas libres (${minutos} min)`,
-      sinHoras: "No hay horas libres ese día. Prueba otro día u otro barbero.",
+      sinHoras: "No hay horas libres ese día. Prueba otro día u otro profesional.",
       guardar: "Guardar cambio",
       enviando: "Guardando…",
     },
@@ -535,8 +535,8 @@ export const textos = {
         cuerpo: "El cliente no recibe nada. Solo pedimos el nombre.",
       },
       servicios: "Servicios",
-      barbero: "Barbero",
-      sinBarbero: "Ningún barbero activo hace todos esos servicios.",
+      barbero: "Profesional",
+      sinBarbero: "Ningún profesional activo hace todos esos servicios.",
       diaHora: "Día y hora",
       elegirHora: "Elige día y hora",
       // "Hoy · 3:00 p. m. (hasta 3:40)".
@@ -553,8 +553,8 @@ export const textos = {
     bloquear: {
       titulo: "Bloquear horas",
       quien: "¿A quién?",
-      todaLaBarberia: "Toda la barbería",
-      ayudaQuien: "Elige “Toda la barbería” para cerrar por unas horas.",
+      todaLaBarberia: "Todo el establecimiento",
+      ayudaQuien: "Elige “Todo el establecimiento” para cerrar por unas horas.",
       dia: "Día",
       desde: "Desde",
       hasta: "Hasta",
@@ -586,7 +586,7 @@ export const textos = {
     },
     rechazos: {
       not_found: "Ya no encontramos esto. Vuelve a la agenda.",
-      barber_not_found: "Ese barbero ya no está en tu barbería.",
+      barber_not_found: "Ese profesional ya no está en tu establecimiento.",
       customer_not_found: "Ese cliente ya no está. Búscalo de nuevo.",
       customer_name_invalid:
         "Escribe el nombre del cliente (hasta 100 letras).",
@@ -598,14 +598,14 @@ export const textos = {
         "Uno de los servicios ya no está activo. Revisa la lista.",
       too_long: "La cita pasaría de 8 horas. Quita algún servicio.",
       barber_inactive:
-        "Ese barbero está desactivado y no recibe citas ni bloqueos nuevos.",
+        "Ese profesional está desactivado y no recibe citas ni bloqueos nuevos.",
       barber_does_not_offer_service:
-        "Ese barbero no hace todos esos servicios.",
+        "Ese profesional no hace todos esos servicios.",
       slot_invalid: "Elige una hora de la lista.",
       too_early: "Esa hora ya pasó. Elige otra.",
       outside_booking_window: "Solo puedes agendar hasta 30 días adelante.",
-      closed: "La barbería no abre ese día.",
-      outside_hours: "El barbero no trabaja a esa hora.",
+      closed: "El establecimiento no abre ese día.",
+      outside_hours: "El profesional no trabaja a esa hora.",
       blocked: "Esas horas están bloqueadas.",
       slot_taken: "Esa hora ya la tomaron. Elige otra, por favor.",
       not_confirmed: "La cita cambió mientras tanto. Revísala de nuevo.",
@@ -633,7 +633,7 @@ export const textos = {
     errores: {
       owner_name_required: "Escribe tu nombre.",
       owner_name_too_long: "El nombre es muy largo. Usa máximo 100 caracteres.",
-      barbershop_name_required: "Escribe el nombre de tu barbería.",
+      barbershop_name_required: "Escribe el nombre de tu establecimiento.",
       barbershop_name_too_long:
         "El nombre es muy largo. Usa máximo 100 caracteres.",
       phone_invalid:
@@ -644,18 +644,18 @@ export const textos = {
   },
   cuentas: {
     registro: {
-      titulo: "Crea la cuenta de tu barbería",
+      titulo: "Crea la cuenta de tu establecimiento",
       bajada: `Tienes ${TRIAL_DAYS} días gratis para probar todo. No pedimos tarjeta.`,
       campos: {
         ownerName: "Tu nombre",
-        barbershopName: "Nombre de la barbería",
+        barbershopName: "Nombre del establecimiento",
         phone: "Tu celular",
         email: "Correo",
         password: "Contraseña",
       },
       ayudas: {
         phone:
-          "Será también el WhatsApp de tu barbería. Lo puedes cambiar después.",
+          "Será también el WhatsApp de tu establecimiento. Lo puedes cambiar después.",
         email: "Con este correo ingresas y recuperas tu contraseña.",
         password: "Mínimo 8 caracteres.",
       },
@@ -680,7 +680,7 @@ export const textos = {
       ingresa: "Ingresa",
     },
     ingreso: {
-      titulo: "Ingresa a tu barbería",
+      titulo: "Ingresa a tu establecimiento",
       campos: { email: "Correo", password: "Contraseña" },
       enviar: "Ingresar",
       enviando: "Ingresando…",
@@ -759,7 +759,7 @@ export const textos = {
     } satisfies Record<AccountErrorCode | "invalid", string>,
   },
   panel: {
-    cargando: "Cargando tu barbería…",
+    cargando: "Cargando tu establecimiento…",
     prueba: (fecha: string) => `Tu prueba gratis va hasta el ${fecha}.`,
     secciones: {
       clientes: "Clientes",
@@ -775,7 +775,7 @@ export const textos = {
     titulo: "Panel de plataforma",
     cargando: "Cargando…",
     saludo: (nombre: string) => `Hola, ${nombre}`,
-    proximo: "Aquí verás las barberías, sus pagos y su estado.",
+    proximo: "Aquí verás los establecimientos, sus pagos y su estado.",
   },
   asistente: {
     servicios: {
@@ -804,15 +804,15 @@ export const textos = {
     equipo: {
       barra: "Tu equipo",
       paso: "Paso 3 de 3",
-      titulo: "¿Quiénes cortan en tu barbería?",
+      titulo: "¿Quiénes atienden en tu establecimiento?",
       bajada:
-        "Cada barbero recibe un link privado para ver su agenda. No necesita cuenta ni contraseña.",
-      yoCorto: "Yo también corto",
+        "Cada profesional recibe un link privado para ver su agenda. No necesita cuenta ni contraseña.",
+      yoCorto: "Yo también atiendo",
       yoCortoAyuda: "Tu agenda aparece junto a la de los demás.",
       tu: "Tú",
       resumen: (servicios: number) =>
-        `Horario de la barbería · ${servicios} ${servicios === 1 ? "servicio" : "servicios"}`,
-      agregar: "Agregar barbero",
+        `Horario del establecimiento · ${servicios} ${servicios === 1 ? "servicio" : "servicios"}`,
+      agregar: "Agregar profesional",
       terminar: "Terminar",
       terminando: "Guardando…",
       despues: "Lo hago después",
@@ -823,9 +823,9 @@ export const textos = {
       volverServicios: "Volver a mis servicios",
     },
     barbero: {
-      agregar: "Agregar barbero",
-      editar: "Editar barbero",
-      fotoDespues: "La foto la agregas después en Más › Barberos.",
+      agregar: "Agregar profesional",
+      editar: "Editar profesional",
+      fotoDespues: "La foto la agregas después en Más › Profesionales.",
       campos: { nombre: "Nombre visible", correo: "Correo" },
       ayudas: {
         nombre: "Así lo ven tus clientes al reservar.",
@@ -834,19 +834,19 @@ export const textos = {
       },
       servicios: "Servicios que hace",
       horario: "Horario",
-      usaHorario: "Usa el horario de la barbería",
+      usaHorario: "Usa el horario del establecimiento",
       horarioPropio:
-        "Si trabaja otro horario, lo cambias después en Más › Barberos.",
-      guardar: "Guardar barbero",
+        "Si trabaja otro horario, lo cambias después en Más › Profesionales.",
+      guardar: "Guardar profesional",
       guardando: "Guardando…",
-      quitar: "Quitar barbero",
+      quitar: "Quitar profesional",
     },
     listo: {
-      titulo: "¡Tu barbería ya recibe citas!",
-      tituloSinBarberos: "Tu barbería está casi lista",
+      titulo: "¡Tu establecimiento ya recibe citas!",
+      tituloSinBarberos: "Tu establecimiento está casi listo",
       prueba: (fecha: string) =>
         `Tu prueba gratis va hasta el ${fecha}. Comparte este link con tus clientes.`,
-      sinBarberos: "Agrega al menos un barbero para recibir citas.",
+      sinBarberos: "Agrega al menos un profesional para recibir citas.",
       link: "Link de reservas",
       descargarQr: "Descargar QR para imprimir",
       agenda: "Ir a mi agenda",
@@ -864,7 +864,7 @@ export const textos = {
       service_price_invalid:
         "Escribe el precio en pesos, sin decimales. Ej.: 25.000",
       service_duration_invalid: "Elige una duración de 5 a 240 minutos.",
-      barber_name_required: "Escribe el nombre del barbero.",
+      barber_name_required: "Escribe el nombre del profesional.",
       barber_name_too_long: "El nombre es muy largo. Usa máximo 60 caracteres.",
       barber_services_required: "Marca al menos un servicio.",
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
@@ -883,16 +883,16 @@ export const textos = {
     pruebaDetalle: "Todo está habilitado durante la prueba.",
     secciones: {
       equipo: "Tu equipo",
-      barberia: "Tu barbería",
+      barberia: "Tu establecimiento",
       dinero: "Dinero",
       cuenta: "Tu cuenta",
     },
     servicios: "Servicios",
     conteoServicios: (total: number) =>
       `${total} ${total === 1 ? "servicio" : "servicios"}`,
-    barberos: "Barberos y horarios",
+    barberos: "Profesionales y horarios",
     conteoBarberos: (total: number) =>
-      `${total} ${total === 1 ? "barbero" : "barberos"}`,
+      `${total} ${total === 1 ? "profesional" : "profesionales"}`,
     datos: "Datos y fotos",
     horario: "Horario",
     festivos: "Festivos y cierres",
@@ -910,7 +910,7 @@ export const textos = {
     subtitulo: "Tu link de reservas",
     cargando: "Cargando tu link…",
     bajada:
-      "Ponlo en tu Instagram, en tu estado de WhatsApp y en el espejo de la barbería.",
+      "Ponlo en tu Instagram, en tu estado de WhatsApp y en un lugar visible de tu establecimiento.",
     qrTitulo: "Reserva tu cita aquí",
     descargarQr: "Descargar QR",
     afiche: "Afiche",
@@ -925,7 +925,7 @@ export const textos = {
     },
     // The link goes without the protocol, as the design writes it.
     mensaje: (barberia: string, link: string) =>
-      `¡Ya puedes reservar tu cita en ${barberia} sin escribirnos! Elige servicio, barbero y hora aquí: ${link}`,
+      `¡Ya puedes reservar tu cita en ${barberia} sin escribirnos! Elige servicio, profesional y hora aquí: ${link}`,
   },
   servicios: {
     titulo: "Servicios",
@@ -947,7 +947,7 @@ export const textos = {
     ayudaDuracion: "La duración va de 5 a 240 minutos, de 5 en 5.",
     quien: "¿Quién lo hace?",
     sinBarberos:
-      "Aún no tienes barberos activos. Los agregas en Más › Barberos y horarios.",
+      "Aún no tienes profesionales activos. Los agregas en Más › Profesionales y horarios.",
     activo: "Activo",
     activoAyuda:
       "Si lo desactivas, no aparece al reservar. Las citas ya tomadas se mantienen.",
@@ -968,13 +968,13 @@ export const textos = {
     } satisfies Record<ServiceActionErrorCode | "invalid", string>,
   },
   barberos: {
-    titulo: "Barberos",
+    titulo: "Profesionales",
     cargando: "Cargando tu equipo…",
-    agregar: "Agregar barbero",
+    agregar: "Agregar profesional",
     tu: "Tú",
     inactivos: "Inactivos",
     inactivo: "Inactivo",
-    horarioBarberia: "Horario de la barbería",
+    horarioBarberia: "Horario del establecimiento",
     horarioPropio: "Horario propio",
     conteoServicios: (total: number) =>
       `${total} ${total === 1 ? "servicio" : "servicios"}`,
@@ -987,12 +987,12 @@ export const textos = {
     // Between the parts of a barber's line in D-53.
     separador: " · ",
     vacio: {
-      titulo: "Aún no tienes barberos",
+      titulo: "Aún no tienes profesionales",
       cuerpo:
-        "Agrega a quienes cortan en tu barbería para que tus clientes reserven con ellos.",
+        "Agrega a quienes atienden en tu establecimiento para que tus clientes reserven con ellos.",
     },
-    nuevo: "Nuevo barbero",
-    editar: "Editar barbero",
+    nuevo: "Nuevo profesional",
+    editar: "Editar profesional",
     foto: {
       agregar: "Agregar foto",
       cambiar: "Cambiar foto",
@@ -1053,7 +1053,7 @@ export const textos = {
     guardar: "Guardar",
     guardando: "Guardando…",
     errores: {
-      barber_name_required: "Escribe el nombre del barbero.",
+      barber_name_required: "Escribe el nombre del profesional.",
       barber_name_too_long: "El nombre es muy largo. Usa máximo 60 caracteres.",
       barber_services_required: "Marca al menos un servicio.",
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
@@ -1061,7 +1061,7 @@ export const textos = {
         "Escribe su correo para enviarle avisos, o apaga los avisos.",
       photo_invalid: "No pudimos guardar la foto. Elígela de nuevo.",
       services_not_saved:
-        "Guardamos al barbero, pero no sus servicios. Ábrelo en Barberos y guárdalo de nuevo.",
+        "Guardamos al profesional, pero no sus servicios. Ábrelo en Profesionales y guárdalo de nuevo.",
       owner_cannot_deactivate: "Tu propia agenda no se desactiva desde aquí.",
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
@@ -1075,10 +1075,10 @@ export const textos = {
       estadoDesactivado: "Link desactivado",
       cargando: "Cargando el link…",
       alcance: (nombre: string) =>
-        `Con este link ${nombre} ve su agenda del día y la semana, marca citas y bloquea sus horas. No ve totales, reportes ni a los demás barberos.`,
+        `Con este link ${nombre} ve su agenda del día y la semana, marca citas y bloquea sus horas. No ve totales, reportes ni a los demás profesionales.`,
       // An inactive barber takes no new blocks (spec).
       alcanceInactivo: (nombre: string) =>
-        `Con este link ${nombre} ve su agenda del día y la semana y marca las citas que ya tenía. No ve totales, reportes ni a los demás barberos.`,
+        `Con este link ${nombre} ve su agenda del día y la semana y marca las citas que ya tenía. No ve totales, reportes ni a los demás profesionales.`,
       reemplaza: {
         titulo: "Cada link nuevo reemplaza al anterior",
         cuerpo:
@@ -1131,7 +1131,7 @@ export const textos = {
         owner_has_no_link:
           "Tú no necesitas link: ves toda la agenda desde tu cuenta.",
         not_found:
-          "No encontramos a este barbero. Vuelve a Barberos e intenta de nuevo.",
+          "No encontramos a este profesional. Vuelve a Profesionales e intenta de nuevo.",
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
       } satisfies Record<BarberLinkErrorCode, string>,
     },
@@ -1141,10 +1141,10 @@ export const textos = {
     titulo: (nombre: string) => `Horario de ${nombre}`,
     tituloCargando: "Horario",
     cargando: "Cargando el horario…",
-    usaBarberia: "Usa el horario de la barbería",
-    barberiaSinHorario: "La barbería aún no tiene horario.",
+    usaBarberia: "Usa el horario del establecimiento",
+    barberiaSinHorario: "El establecimiento aún no tiene horario.",
     bajada:
-      "Su horario va dentro del de la barbería. Puedes partir la jornada en dos tramos.",
+      "Su horario va dentro del horario del establecimiento. Puedes partir la jornada en dos tramos.",
     // By weekday: 0 is Sunday.
     dias: [
       "Domingo",
@@ -1168,8 +1168,8 @@ export const textos = {
     quitarDia: (dia: string) =>
       `Quitar el segundo tramo del ${dia.toLocaleLowerCase("es-CO")}`,
     // After hours_outside_shop, what the barbershop opens that day.
-    barberiaAbre: (horas: string) => `Ese día la barbería abre ${horas}.`,
-    barberiaCerrada: "Ese día la barbería no abre.",
+    barberiaAbre: (horas: string) => `Ese día el establecimiento abre ${horas}.`,
+    barberiaCerrada: "Ese día el establecimiento no abre.",
     guardar: "Guardar horario",
     guardando: "Guardando…",
     errores: {
@@ -1178,16 +1178,16 @@ export const textos = {
       hours_order: "La hora de «Hasta» debe ser después de la de «Desde».",
       hours_overlap:
         "Los dos tramos se cruzan. El segundo debe empezar después de que termine el primero.",
-      hours_outside_shop: "Se sale del horario de la barbería.",
+      hours_outside_shop: "Se sale del horario del establecimiento.",
       unknown: "No pudimos guardar el horario. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<ScheduleActionErrorCode | "invalid", string>,
   },
   // D-58. The days, shifts and their buttons are in horario.
   horarioBarberia: {
-    titulo: "Horario de la barbería",
+    titulo: "Horario del establecimiento",
     cargando: "Cargando el horario…",
-    bajada: "Los barberos trabajan dentro de este horario.",
+    bajada: "Los profesionales trabajan dentro de este horario.",
     // The name of each day's switch; on screen it reads as the day alone.
     abre: (dia: string) => `Abre el ${dia.toLocaleLowerCase("es-CO")}`,
     cerrado: "Cerrado",
@@ -1246,8 +1246,8 @@ export const textos = {
     cierres: "Cierres especiales",
     sinCierres: "No tienes cierres programados",
     sinCierresDetalle:
-      "Agrega uno para cerrar la barbería un día, varios o unas horas.",
-    todaLaBarberia: "Toda la barbería",
+      "Agrega uno para cerrar el establecimiento un día, varios o unas horas.",
+    todaLaBarberia: "Todo el establecimiento",
     // How a closure reads, by its kind (dominio/closures.ts).
     cierre: {
       day: (dia: string) => `${dia} · todo el día`,
@@ -1381,10 +1381,10 @@ export const textos = {
       } satisfies Record<ImageUploadErrorCode, string>,
     },
     campos: {
-      nombre: "Nombre de la barbería",
+      nombre: "Nombre del establecimiento",
       direccion: "Dirección",
       barrio: "Barrio y ciudad",
-      whatsapp: "WhatsApp de la barbería",
+      whatsapp: "WhatsApp del establecimiento",
     },
     ayudas: {
       nombre: "Cambiarlo no cambia tu link de reservas.",
@@ -1394,7 +1394,7 @@ export const textos = {
     ubicacion: {
       titulo: "Ubicación en el mapa",
       ayuda:
-        "Tócalo estando en la barbería, cerca de la puerta, para que tus clientes lleguen fácil.",
+        "Tócalo estando en el establecimiento, cerca de la puerta, para que tus clientes lleguen fácil.",
       usar: "Usar mi ubicación actual",
       buscando: "Buscando tu ubicación…",
       marcada: "Ubicación marcada",
@@ -1412,7 +1412,7 @@ export const textos = {
     guardar: "Guardar",
     guardando: "Guardando…",
     errores: {
-      barbershop_name_required: "Escribe el nombre de tu barbería.",
+      barbershop_name_required: "Escribe el nombre de tu establecimiento.",
       barbershop_name_too_long:
         "El nombre es muy largo. Usa máximo 100 caracteres.",
       address_too_long: "La dirección es muy larga. Usa máximo 200 caracteres.",
@@ -1444,7 +1444,7 @@ export const textos = {
     // Decision P12: 90 days, said as months.
     aviso: `Tu link anterior seguirá funcionando ${SLUG_SET_ASIDE_DAYS / 30} meses`,
     avisoDetalle:
-      "Los QR y afiches que ya imprimiste llevarán a tu link nuevo. Después, otra barbería podrá tomarlo.",
+      "Los QR y afiches que ya imprimiste llevarán a tu link nuevo. Después, otro establecimiento podrá tomarlo.",
     cambiar: "Cambiar link",
     cambiando: "Cambiando…",
     cambiado: (link: string) => `Listo, tu link ahora es ${link}`,
@@ -1453,7 +1453,7 @@ export const textos = {
     // Each link the barbershop left that still leads to the new one.
     anteriores: "Tus links anteriores",
     apartado: (link: string, fecha: string) =>
-      `Tu link anterior ${link} seguirá llevando al nuevo hasta el ${fecha}. Después, otra barbería podrá tomarlo.`,
+      `Tu link anterior ${link} seguirá llevando al nuevo hasta el ${fecha}. Después, otro establecimiento podrá tomarlo.`,
     compartir: "Compartir el link nuevo",
     errores: {
       slug_invalid:
@@ -1489,7 +1489,7 @@ export const textos = {
       titulo: "Nueva sede",
       cargando: "Cargando…",
       bajada:
-        "Tendrá su propio link de reservas, horario, servicios y barberos. Después de crearla la configuras.",
+        "Tendrá su propio link de reservas, horario, servicios y profesionales. Después de crearla la configuras.",
       campos: {
         nombre: "Nombre de la sede",
         whatsapp: "WhatsApp de la sede",
@@ -1527,7 +1527,7 @@ export const textos = {
       boton: "Eliminar esta sede",
       titulo: "Eliminar sede",
       bajada: (nombre: string) =>
-        `Se borran de ${nombre} sus servicios, barberos, horarios, clientes y citas. No se puede deshacer.`,
+        `Se borran de ${nombre} sus servicios, profesionales, horarios, clientes y citas. No se puede deshacer.`,
       link: "Su link de reservas deja de funcionar. Por 3 meses nadie más podrá usarlo.",
       campo: "Escribe el nombre de la sede para confirmar",
       confirmar: "Eliminar",
@@ -1660,7 +1660,7 @@ export const textos = {
         attended: "Atendida",
         no_show: "No asistió",
         cancelled_by_customer: "Cancelada por cliente",
-        cancelled_by_barbershop: "Cancelada por barbería",
+        cancelled_by_barbershop: "Cancelada por el establecimiento",
       },
       // "Nueva cita para Diego": the first name.
       nuevaCita: (nombre: string) =>
@@ -1688,7 +1688,7 @@ export const textos = {
     tituloPestana: (barberia: string) => `Reservar en ${barberia}`,
     cargando: "Cargando…",
     perfil: {
-      portada: "Foto de portada de la barbería",
+      portada: "Foto de portada del establecimiento",
       logo: (barberia: string) => `Logo de ${barberia}`,
       abiertoHoy: (desde: string, hasta: string) =>
         `Abierto hoy · ${desde} – ${hasta}`,
@@ -1703,10 +1703,10 @@ export const textos = {
       rango: (desde: string, hasta: string) =>
         `${desde} a ${String(hasta).toLocaleLowerCase("es-CO")}`,
       festivos: "Festivos",
-      festivosCerrado: "Cerrado, salvo los que la barbería abre",
+      festivosCerrado: "Cerrado, salvo los que el establecimiento abre",
       ubicacion: "Ubicación",
       reservasCon: "Reservas con",
-      politicaDatos: "Política de datos de la barbería",
+      politicaDatos: "Política de datos del establecimiento",
     },
     dias: [
       "Domingo",
@@ -1724,13 +1724,13 @@ export const textos = {
       bajada:
         "Escríbenos por WhatsApp y te agendamos. Si ya tienes una cita, sigue en pie.",
       bajadaSinWhatsapp:
-        "Comunícate directamente con la barbería. Si ya tienes una cita, sigue en pie.",
+        "Comunícate directamente con el establecimiento. Si ya tienes una cita, sigue en pie.",
       whatsapp: "Escribir por WhatsApp",
     },
     noExiste: {
-      titulo: "No encontramos esta barbería",
-      bajada: "Revisa el link. Puede que la barbería lo haya cambiado.",
-      conoceYapoin: "¿Tienes una barbería? Conoce Yapoin",
+      titulo: "No encontramos este establecimiento",
+      bajada: "Revisa el link. Puede que el establecimiento lo haya cambiado.",
+      conoceYapoin: "¿Tienes un negocio? Conoce Yapoin",
     },
     volver: "Volver",
     continuar: "Continuar",
@@ -1742,12 +1742,12 @@ export const textos = {
         `${cantidad} ${cantidad === 1 ? "servicio" : "servicios"} · ${minutos} min`,
       ninguno: "Elige al menos un servicio",
       maximo: "Puedes elegir hasta 5 servicios por cita.",
-      vacio: "Esta barbería todavía no tiene servicios para reservar.",
+      vacio: "Este establecimiento todavía no tiene servicios para reservar.",
     },
     barbero: {
       titulo: "¿Con quién?",
       bajada:
-        "Solo aparecen los barberos que hacen todos los servicios que elegiste.",
+        "Solo aparecen los profesionales que hacen todos los servicios que elegiste.",
       primero: "El primero disponible",
       primeroDetalle: "Te mostramos más horas",
       hoyDesde: (hora: string) => `Hoy desde las ${hora}`,
@@ -1755,7 +1755,7 @@ export const textos = {
       sinHoras: "Sin horas libres en los próximos 30 días",
       nadie: {
         titulo: "Nadie hace todos estos servicios en una sola cita",
-        bajada: "Cambia los servicios para ver los barberos.",
+        bajada: "Cambia los servicios para ver los profesionales.",
         accion: "Cambiar servicios",
       },
     },
@@ -1773,7 +1773,7 @@ export const textos = {
         `La próxima hora libre es el ${dia} a las ${hora}.`,
       ninguna: "No hay horas libres en los próximos 30 días.",
       ir: (dia: string) => `Ir al ${dia}`,
-      otroBarbero: "Ver otro barbero",
+      otroBarbero: "Ver otro profesional",
       tomada: {
         titulo: "Esa hora ya la tomaron. Elige otra, por favor.",
         detalle: (hora: string) =>
@@ -1788,14 +1788,14 @@ export const textos = {
       borrar: "Borrar mis datos",
       nombre: "Nombre",
       correo: "Correo",
-      correoAyuda: "Con tu correo la barbería reconoce tus citas.",
+      correoAyuda: "Con tu correo el establecimiento reconoce tus citas.",
       celular: "Celular",
-      celularAyuda: "Solo para que la barbería te pueda llamar.",
+      celularAyuda: "Solo para que el establecimiento te pueda llamar.",
       celularEjemplo: "300 123 4567",
       aceptas: "Lee la",
       politica: "política de datos",
-      deLaBarberia: "de la barbería y de Yapoin.",
-      total: "Total en la barbería",
+      deLaBarberia: "del establecimiento y de Yapoin.",
+      total: "Total en el establecimiento",
       confirmar: "Confirmar reserva",
       confirmando: "Reservando…",
       serviciosCambiaron: "Elegir los servicios de nuevo",
@@ -1811,10 +1811,10 @@ export const textos = {
       asignado: (barbero: string) =>
         `El primero disponible: te asignamos a ${barbero}`,
       donde: "Dónde",
-      pagas: "Pagas en la barbería",
+      pagas: "Pagas en el establecimiento",
       abono: "Abono",
       abonoBajada:
-        "Si la barbería te pide un abono para apartar tu cita, estos son sus datos.",
+        "Si el establecimiento te pide un abono para apartar tu cita, estos son sus datos.",
       metodos: {
         nequi: "Nequi",
         daviplata: "Daviplata",
@@ -1823,13 +1823,13 @@ export const textos = {
       } as Record<string, string>,
       calendario: "Agregar a mi calendario",
       cancelar:
-        "¿No puedes ir? Escríbele a la barbería por WhatsApp para cancelar o cambiar tu cita.",
+        "¿No puedes ir? Escríbele al establecimiento por WhatsApp para cancelar o cambiar tu cita.",
       calendarioTitulo: (barberia: string) => `Cita en ${barberia}`,
       reservarOtra: "Reservar otra cita",
       // Task 3.4: until the confirmation email, the link is given here.
       gestionar: "Cancelar o cambiar mi cita",
       gestionarAyuda: (horas: number) =>
-        `¿No puedes ir? Con este botón cancelas o cambias tu cita, hasta ${duracion(horas * 60)} antes. Este celular lo recuerda: también lo encuentras en la página de la barbería.`,
+        `¿No puedes ir? Con este botón cancelas o cambias tu cita, hasta ${duracion(horas * 60)} antes. Este celular lo recuerda: también lo encuentras en la página del establecimiento.`,
     },
     // C-09 to C-13 and C-16 (task 3.4): the customer's appointment, from its
     // private link.
@@ -1851,15 +1851,15 @@ export const textos = {
       cambiar: "Cambiar día u hora",
       cancelar: "Cancelar cita",
       plazo: (horas: number) =>
-        `Puedes cancelar o cambiar hasta ${duracion(horas * 60)} antes de la cita. Después, escríbele a la barbería.`,
+        `Puedes cancelar o cambiar hasta ${duracion(horas * 60)} antes de la cita. Después, escríbele al establecimiento.`,
       fueraDePlazo: {
         titulo: "Ya no puedes cancelar ni cambiar desde aquí",
         detalle: (horas: number) =>
-          `La barbería permite hacerlo hasta ${duracion(horas * 60)} antes. Escríbeles si no puedes ir.`,
+          `El establecimiento permite hacerlo hasta ${duracion(horas * 60)} antes. Escríbeles si no puedes ir.`,
       },
       hoy: (cuando: string) =>
         `Hoy, ${cuando.charAt(0).toLocaleLowerCase("es-CO")}${cuando.slice(1)}`,
-      escribir: "Escribir a la barbería",
+      escribir: "Escribir al establecimiento",
       hoja: {
         titulo: "¿Cancelar tu cita?",
         detalle: (cuando: string, barbero: string) =>
@@ -1883,13 +1883,13 @@ export const textos = {
         sinHoras: (barbero: string, dia: string) =>
           `${barbero} no tiene horas libres ${dia}.`,
         sinHorasMes: (barbero: string) =>
-          `${barbero} no tiene horas libres en los próximos 30 días. Escríbele a la barbería.`,
+          `${barbero} no tiene horas libres en los próximos 30 días. Escríbele al establecimiento.`,
       },
       vencido: {
         titulo: "Este link ya no sirve",
         detalle:
           "La cita ya pasó, se canceló o el link cambió. Si tienes otra cita, usa el link de esa cita.",
-        ir: "Ir a la barbería",
+        ir: "Ir al establecimiento",
         inicio: "Ir a Yapoin",
       },
       // C-01: the appointments this phone remembers.
@@ -1901,13 +1901,13 @@ export const textos = {
         link_invalid: "Este link ya no sirve.",
         too_late: "Ya no puedes cancelar ni cambiar desde aquí.",
         not_accepting:
-          "La barbería no está recibiendo cambios ahora. Escríbeles por WhatsApp.",
+          "El establecimiento no está recibiendo cambios ahora. Escríbeles por WhatsApp.",
         slot_gone: "Esa hora ya no está libre. Elige otra.",
         same_time: "Tu cita ya está a esa hora. Elige otra.",
         services_changed:
-          "La barbería cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbeles por WhatsApp.",
+          "El establecimiento cambió los servicios de tu cita, así que no puedes moverla desde aquí. Escríbeles por WhatsApp.",
         too_many_changes:
-          "Ya cambiaste esta cita varias veces. Si necesitas otra hora, escríbele a la barbería por WhatsApp.",
+          "Ya cambiaste esta cita varias veces. Si necesitas otra hora, escríbele al establecimiento por WhatsApp.",
         unknown: "No pudimos hacer el cambio. Intenta de nuevo.",
         invalid: "No pudimos hacer el cambio. Intenta de nuevo.",
       } satisfies Record<ManageRefusal | "invalid", string>,
@@ -1926,14 +1926,14 @@ export const textos = {
       enviado: {
         titulo: "Revisa tu correo",
         detalle: (correo: string) =>
-          `Si tienes citas próximas en esta barbería, te llegó un link a ${correo}. Sirve por 24 horas.`,
+          `Si tienes citas próximas en este establecimiento, te llegó un link a ${correo}. Sirve por 24 horas.`,
         otro: "Usar otro correo",
       },
       lista: {
         titulo: (nombre: string) =>
           nombre ? `Tus citas, ${nombre}` : "Tus citas",
         bajada: "Toca una cita para confirmarla, cambiarla o cancelarla.",
-        vacia: "No tienes citas próximas en esta barbería.",
+        vacia: "No tienes citas próximas en este establecimiento.",
         ver: "Ver o cambiar",
         abriendo: "Abriendo…",
         reservar: "Reservar una cita",
@@ -1963,11 +1963,11 @@ export const textos = {
       email_invalid: "Escribe un correo válido, como nombre@correo.com.",
       phone_invalid: "Escribe un celular de Colombia de 10 dígitos.",
       services_changed:
-        "La barbería cambió sus servicios. Elígelos de nuevo, por favor.",
+        "El establecimiento cambió sus servicios. Elígelos de nuevo, por favor.",
       captcha_failed:
         "No pudimos confirmar que no eres un robot. Intenta de nuevo en un momento.",
       too_many_upcoming:
-        "Ya tienes 5 citas por venir en esta barbería. Cancela una o escríbele a la barbería.",
+        "Ya tienes 5 citas por venir en este establecimiento. Cancela una o escríbele al establecimiento.",
       too_many_from_ip:
         "Se hicieron muchas reservas seguidas desde esta conexión. Intenta de nuevo en un rato.",
       unknown: "No pudimos reservar tu cita. Intenta de nuevo.",
@@ -2008,7 +2008,7 @@ export const textos = {
     // "15 de noviembre", the ends of the week of B-02.
     diaDeMes: (dia: number, mes: string) => `${dia} de ${mes}`,
     pausada: {
-      titulo: "La barbería está pausada",
+      titulo: "El establecimiento está pausado",
       detalle:
         "Tu agenda es solo de lectura y no entran reservas nuevas. Las citas tomadas siguen en pie.",
     },
@@ -2055,15 +2055,15 @@ export const textos = {
     vencido: {
       titulo: "Este link ya no funciona",
       detalle:
-        "La barbería lo cambió o lo desactivó. Pídele al dueño que te envíe el nuevo.",
+        "El establecimiento lo cambió o lo desactivó. Pídele al dueño que te envíe el nuevo.",
     },
     errores: {
       link_invalid: "Este link ya no funciona.",
-      read_only: "La barbería está pausada: tu agenda es solo de lectura.",
+      read_only: "El establecimiento está pausado: tu agenda es solo de lectura.",
       not_yours: "Eso ya no está en tu agenda.",
       not_confirmed: "Esa cita ya estaba marcada o cancelada.",
       too_early: "Esa cita todavía no empieza.",
-      barber_inactive: "La barbería te desactivó: ya no puedes bloquear horas.",
+      barber_inactive: "El establecimiento te desactivó: ya no puedes bloquear horas.",
       overlaps_appointment:
         "Tienes una cita en ese rango. Pídele al dueño que la mueva.",
       overlaps_block: "Ya tienes un bloqueo en ese rango.",
@@ -2078,12 +2078,12 @@ export const textos = {
     // The platform panel of the super admin (task 5.4): P-01 to P-06. P-01
     // says "Barberías", the repo's provisional name that no copy uses
     // (textos.test.ts).
-    titulo: "Lista de barberías",
+    titulo: "Lista de establecimientos",
     cargando: "Cargando…",
     verMetricas: "Métricas",
     buscar: {
-      etiqueta: "Buscar barbería",
-      placeholder: "Buscar barbería, dueño o correo",
+      etiqueta: "Buscar establecimiento",
+      placeholder: "Buscar establecimiento, dueño o correo",
     },
     filtros: {
       etiqueta: "Estado",
@@ -2107,10 +2107,10 @@ export const textos = {
     // "Chapinero, Bogotá · vence 24 nov 2026".
     linea: (lugar: string | null, vence: string) =>
       lugar ? `${lugar} · vence ${vence}` : `Vence ${vence}`,
-    sinResultados: "No hay barberías con esa búsqueda.",
-    sinBarberias: "No hay barberías en este estado.",
+    sinResultados: "No hay establecimientos con esa búsqueda.",
+    sinBarberias: "No hay establecimientos en este estado.",
     ficha: {
-      volver: "Volver a las barberías",
+      volver: "Volver a los establecimientos",
       venceEl: (fecha: string, cuando: string) =>
         `Vence el ${fecha} · ${cuando}`,
       cuando: (dias: number) =>
@@ -2129,7 +2129,7 @@ export const textos = {
       link: "Link",
       sinDato: "—",
       citasEn: (mes: string) => `Citas en ${mes}`,
-      barberos: "Barberos",
+      barberos: "Profesionales",
       registro: "Registro",
       plan: "Plan",
       planValor: (plan: string, valor: string | null) =>
@@ -2148,8 +2148,8 @@ export const textos = {
       hecho: {
         pago: "Pago registrado.",
         anulado: "Pago anulado.",
-        suspendida: "Barbería suspendida.",
-        reactivada: "Barbería reactivada.",
+        suspendida: "Establecimiento suspendido.",
+        reactivada: "Establecimiento reactivado.",
         extendida: "Prueba extendida.",
       },
     },
@@ -2159,10 +2159,10 @@ export const textos = {
       valor: "Valor recibido",
       // Task 5.6: the tier by active barbers.
       plan: (nombre: string, barberos: number) =>
-        `${nombre} · ${barberos === 1 ? "1 barbero activo" : `${barberos} barberos activos`}`,
+        `${nombre} · ${barberos === 1 ? "1 profesional activo" : `${barberos} profesionales activos`}`,
       acordado: "Valor acordado",
       ayudaAcordado:
-        "Con 9 barberos o más el valor se acuerda con la barbería. Escríbelo en pesos.",
+        "Con 9 profesionales o más el valor se acuerda con el establecimiento. Escríbelo en pesos.",
       periodo: "Periodo",
       unMes: "1 mes",
       // Decision P1: one payment is one month at the plan's price.
@@ -2239,7 +2239,7 @@ export const textos = {
       already_registered:
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       plan_changed:
-        "La barbería cambió su número de barberos y ahora le toca otro valor. Vuelve a abrir Registrar pago.",
+        "El establecimiento cambió su número de profesionales y ahora le toca otro valor. Vuelve a abrir Registrar pago.",
       amount_invalid:
         "Escribe un valor entre $40.000 y $5.000.000, con punto solo para los miles.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
@@ -2265,13 +2265,13 @@ export const textos = {
     serviciosAtendidos: "Servicios atendidos",
     noAsistio: "No asistió",
     pendientes: "Pendientes",
-    porBarbero: "Por barbero",
+    porBarbero: "Por profesional",
     atendidos: (cantidad: number) =>
       cantidad === 1 ? "1 atendido" : `${cantidad} atendidos`,
     comisionDe: (valor: string, porcentaje: number) =>
       `Comisión ${valor} (${porcentaje}%)`,
     sinComision: "Comisión —",
-    comision: "Comisión de los barberos",
+    comision: "Comisión de los profesionales",
     porcentaje: (valor: number) => `${valor}%`,
     guardarComision: "Guardar comisión",
     guardando: "Guardando comisión…",
@@ -2282,7 +2282,7 @@ export const textos = {
     // The CSV of "Descargar resumen" (decision C3).
     csv: {
       encabezado: [
-        "Barbero",
+        "Profesional",
         "Servicios atendidos",
         "Total",
         "Comisión",
@@ -2296,10 +2296,10 @@ export const textos = {
   suscripcion: {
     vencePrueba: (fecha: string) => `Tu prueba gratis vence el ${fecha}`,
     venceMes: (fecha: string) => `Tu mes vence el ${fecha}`,
-    vencida: (fecha: string) => `Tu barbería venció el ${fecha}`,
+    vencida: (fecha: string) => `Tu suscripción venció el ${fecha}`,
     reservasHasta: (fecha: string) =>
       `Sigues recibiendo reservas hasta el ${fecha}.`,
-    pausada: "Tu barbería está pausada",
+    pausada: "Tu establecimiento está pausado",
     pausadaDetalle:
       "Tu página no recibe reservas nuevas y la agenda es solo de lectura. Las citas tomadas siguen en pie.",
     // A sede awaiting its first payment (decision S4): configurable.
@@ -2319,7 +2319,7 @@ export const textos = {
     },
     // A change refused because the barbershop is paused.
     soloLectura:
-      "Tu barbería está pausada: la agenda es solo de lectura hasta que registremos tu pago.",
+      "Tu establecimiento está pausado: la agenda es solo de lectura hasta que registremos tu pago.",
   },
   // The map of a barbershop (decision 0009): in D-57 and on its public page.
   // Tapping it opens the person's maps app.
@@ -2443,14 +2443,14 @@ export const textos = {
       cargando: "Cargando…",
       titulo: (barberia: string) => `Muy pronto podrás reservar en ${barberia}`,
       bajada:
-        "Estamos terminando la página de reservas. Vuelve en unos días o escríbele a la barbería.",
+        "Estamos terminando la página de reservas. Vuelve en unos días o escríbele al establecimiento.",
     },
     barbero: {
       titulo: "Muy pronto verás tus citas aquí",
       bajada:
         "Guarda este link: con él vas a ver tus citas del día sin crear una cuenta.",
     },
-    conoceYapoin: "¿Tienes una barbería? Conoce Yapoin",
+    conoceYapoin: "¿Tienes un negocio? Conoce Yapoin",
   },
   noEncontrado: {
     titulo: "No encontramos esta página",

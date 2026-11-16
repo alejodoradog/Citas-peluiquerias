@@ -82,13 +82,13 @@ describe("render", () => {
 
   it("says until when an expired barbershop keeps its bookings", () => {
     const email = render("subscription_expired", data())!;
-    expect(email.subject).toBe("Tu barbería venció el 24 de noviembre de 2026");
+    expect(email.subject).toBe("Tu suscripción venció el 24 de noviembre de 2026");
     expect(email.text).toContain("hasta el 29 de noviembre de 2026");
   });
 
   it("says the barbershop is paused", () => {
     expect(render("subscription_suspended", data())!.subject).toBe(
-      "Tu barbería está pausada",
+      "Tu establecimiento está pausado",
     );
   });
 

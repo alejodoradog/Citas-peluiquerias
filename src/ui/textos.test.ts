@@ -43,7 +43,7 @@ describe("textos", () => {
         "yapoin.com/barberia-la-esquina",
       ),
     ).toBe(
-      "¡Ya puedes reservar tu cita en Barbería La Esquina sin escribirnos! Elige servicio, barbero y hora aquí: yapoin.com/barberia-la-esquina",
+      "¡Ya puedes reservar tu cita en Barbería La Esquina sin escribirnos! Elige servicio, profesional y hora aquí: yapoin.com/barberia-la-esquina",
     );
   });
 
