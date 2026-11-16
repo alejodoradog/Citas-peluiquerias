@@ -40,11 +40,11 @@ export const routes = {
   panelServices: "/panel/servicios",
   panelServiceNew: "/panel/servicios/nuevo",
   panelServiceEdit: (id: string) => `/panel/servicios/${id}`,
-  panelBarbers: "/panel/barberos",
-  panelBarberNew: "/panel/barberos/nuevo",
-  panelBarberEdit: (id: string) => `/panel/barberos/${id}`,
-  panelBarberSchedule: (id: string) => `/panel/barberos/${id}/horario`,
-  panelBarberLink: (id: string) => `/panel/barberos/${id}/link`,
+  panelBarbers: "/panel/profesionales",
+  panelBarberNew: "/panel/profesionales/nuevo",
+  panelBarberEdit: (id: string) => `/panel/profesionales/${id}`,
+  panelBarberSchedule: (id: string) => `/panel/profesionales/${id}/horario`,
+  panelBarberLink: (id: string) => `/panel/profesionales/${id}/link`,
   // A barber's private agenda (task 4.4). The token is the whole credential:
   // only the owner's screen right after issuing it ever holds this path.
   barberAgenda: (token: string) => `/b/${token}`,

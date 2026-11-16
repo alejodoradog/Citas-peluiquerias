@@ -69,7 +69,7 @@ describe("BarberLinkPanel", () => {
     expect(screen.getByText("Enviado el 3 de noviembre")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: textos.ui.volver }),
-    ).toHaveAttribute("href", `/panel/barberos/${kevin.id}`);
+    ).toHaveAttribute("href", `/panel/profesionales/${kevin.id}`);
   });
 
   it("has no email button until emails arrive (task 5.2)", () => {

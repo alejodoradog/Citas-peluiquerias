@@ -93,7 +93,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   }
 
   // A new barber: D-53 says their link was never sent.
-  await page.goto("/panel/barberos/nuevo");
+  await page.goto("/panel/profesionales/nuevo");
   await expect(
     page.getByRole("heading", { level: 1, name: t.nuevo }),
   ).toBeVisible(FIRST_VISIT);
@@ -118,7 +118,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   await expect(linkRow).toContainText(t.linkSinEnviarChip);
   await linkRow.click();
   await expect(page).toHaveURL(
-    new RegExp(`/panel/barberos/${unsent.id}/link$`),
+    new RegExp(`/panel/profesionales/${unsent.id}/link$`),
     FIRST_VISIT,
   );
   await expect(
@@ -149,7 +149,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   await expect(page.getByText(l.nuevo.titulo)).toHaveCount(0);
   expect(await page.content()).not.toContain(first);
   // The HTML of the page itself, as the server sends it to this session.
-  const served = await page.request.get(`/panel/barberos/${unsent.id}/link`);
+  const served = await page.request.get(`/panel/profesionales/${unsent.id}/link`);
   const html = await served.text();
   expect(served.ok()).toBe(true);
   expect(html).toContain(l.titulo("Kevin"));
@@ -188,14 +188,14 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   await expect(page.getByRole("button", { name: l.desactivar })).toHaveCount(0);
   await checkScreen(page);
 
-  await page.goto("/panel/barberos");
+  await page.goto("/panel/profesionales");
   await expect(barberRow(page, "Kevin")).toContainText(
     t.linkDesactivado,
     FIRST_VISIT,
   );
 
   // Only a new link brings them back.
-  await page.goto(`/panel/barberos/${unsent.id}/link`);
+  await page.goto(`/panel/profesionales/${unsent.id}/link`);
   await page.getByRole("button", { name: l.crearNuevo }).click();
   await expect(page.getByText(l.nuevo.titulo)).toBeVisible(FIRST_VISIT);
   const third = await shownToken(page);
@@ -207,7 +207,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
 
   // An inactive barber keeps a link for what they had, and D-56 says so.
   await setBarberActive(slug, "Kevin", false);
-  await page.goto(`/panel/barberos/${unsent.id}/link`);
+  await page.goto(`/panel/profesionales/${unsent.id}/link`);
   await expect(page.getByText(l.inactivo.titulo)).toBeVisible(FIRST_VISIT);
   await expect(page.getByText(l.alcanceInactivo("Kevin"))).toBeVisible();
   await expect(page.getByRole("button", { name: l.copiarNuevo })).toBeVisible();
@@ -239,7 +239,7 @@ test("the owner's barber and other barbershops' barbers have no link screen", as
   const stranger = await insertBarber(other.slug, "Ajeno");
 
   for (const id of [owner.id, stranger, "no-existe"]) {
-    await page.goto(`/panel/barberos/${id}/link`);
+    await page.goto(`/panel/profesionales/${id}/link`);
     await expect(
       page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
     ).toBeVisible(FIRST_VISIT);
@@ -248,7 +248,7 @@ test("the owner's barber and other barbershops' barbers have no link screen", as
   expect(after.issuedAt).toBeNull();
 
   // D-54 of the owner offers no link screen either.
-  await page.goto(`/panel/barberos/${owner.id}`);
+  await page.goto(`/panel/profesionales/${owner.id}`);
   await expect(page.getByText(t.linkDueno)).toBeVisible(FIRST_VISIT);
   await expect(
     page.getByRole("link", { name: new RegExp(`^${t.linkPrivado}`) }),

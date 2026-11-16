@@ -26,7 +26,7 @@ describe("readBookingParams", () => {
   });
 
   it("walks to the first missing choice", () => {
-    expect(readBookingParams({ servicios: A }).step).toBe("barbero");
+    expect(readBookingParams({ servicios: A }).step).toBe("profesional");
     expect(
       readBookingParams({ servicios: [A, B], barbero: FIRST_AVAILABLE }).step,
     ).toBe("hora");
@@ -40,6 +40,29 @@ describe("readBookingParams", () => {
     ).toBe("datos");
   });
 
+  // Task 7.1b: the address says "profesional". A link made before, with
+  // "barbero", still opens where it should.
+  it("reads the professional by the new word and by the old one", () => {
+    expect(
+      readBookingParams({ servicios: A, profesional: BARBER }).barber,
+    ).toBe(BARBER);
+    expect(readBookingParams({ servicios: A, barbero: BARBER }).barber).toBe(
+      BARBER,
+    );
+    const full = {
+      servicios: A,
+      profesional: BARBER,
+      dia: "2026-11-24",
+      hora: "10:30",
+    };
+    expect(readBookingParams({ ...full, paso: "profesional" }).step).toBe(
+      "profesional",
+    );
+    expect(readBookingParams({ ...full, paso: "barbero" }).step).toBe(
+      "profesional",
+    );
+  });
+
   it("goes back to an earlier step when asked, never forward", () => {
     const full = {
       servicios: A,
@@ -49,7 +72,7 @@ describe("readBookingParams", () => {
     };
     expect(readBookingParams({ ...full, paso: "hora" }).step).toBe("hora");
     expect(readBookingParams({ servicios: A, paso: "datos" }).step).toBe(
-      "barbero",
+      "profesional",
     );
     expect(readBookingParams({ ...full, paso: "otro" }).step).toBe("datos");
   });
@@ -103,7 +126,7 @@ describe("bookingQuery", () => {
         taken: "09:00",
       }),
     ).toBe(
-      `?servicios=${A}&servicios=${B}&barbero=primero&dia=2026-11-24&hora=10%3A30&paso=datos&tomada=09%3A00`,
+      `?servicios=${A}&servicios=${B}&profesional=primero&dia=2026-11-24&hora=10%3A30&paso=datos&tomada=09%3A00`,
     );
   });
 

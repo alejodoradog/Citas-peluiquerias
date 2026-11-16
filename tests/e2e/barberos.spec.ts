@@ -233,7 +233,11 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
 test("the owner cannot deactivate themselves", async ({ page }) => {
   test.setTimeout(120_000);
   await signInSetUpOwner(page);
+  // Task 7.1b: the address this screen had before still gets here.
   await page.goto("/panel/barberos");
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, {
+    timeout: 20_000,
+  });
   await openBarber(page, "Carlos Pérez");
   await expect(page.getByRole("button", { name: /^Desactivar/ })).toHaveCount(
     0,
@@ -245,7 +249,7 @@ test("a barber link that leads nowhere is not found", async ({ page }) => {
   test.setTimeout(90_000);
   await signInSetUpOwner(page);
   for (const id of ["no-existe", "00000000-0000-0000-0000-000000000000"]) {
-    await page.goto(`/panel/barberos/${id}`);
+    await page.goto(`/panel/profesionales/${id}`);
     await expect(
       page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
     ).toBeVisible(FIRST_VISIT);

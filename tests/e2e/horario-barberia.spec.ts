@@ -49,7 +49,7 @@ const hoursRow = (page: Page) =>
 
 // Kevin, with hours of his own: a copy of the barbershop's (Mon-Fri 9-20).
 async function addKevinWithOwnHours(page: Page) {
-  await page.goto("/panel/barberos/nuevo");
+  await page.goto("/panel/profesionales/nuevo");
   await expect(
     page.getByRole("heading", { level: 1, name: b.nuevo }),
   ).toBeVisible(FIRST_VISIT);

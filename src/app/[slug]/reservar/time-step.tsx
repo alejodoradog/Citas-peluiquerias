@@ -30,7 +30,7 @@ export function TimeStep({
 }) {
   const flow = routes.bookingFlow(profile.slug);
   const toBarber =
-    flow + bookingQuery({ serviceIds: selection.serviceIds, step: "barbero" });
+    flow + bookingQuery({ serviceIds: selection.serviceIds, step: "profesional" });
   const who = barberName(profile, selection.barber);
 
   return (

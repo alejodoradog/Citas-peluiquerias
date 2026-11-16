@@ -65,7 +65,7 @@ async function BookingFlow({
   // Availability is always live (task 3.2): the moment is the request's.
   await connection();
   const instant = now();
-  if (selection.step === "barbero") {
+  if (selection.step === "profesional") {
     const availability = (await loadPublicAvailability(
       profile,
       selection.serviceIds,
@@ -95,7 +95,7 @@ async function BookingFlow({
   ) {
     redirect(
       flow +
-        bookingQuery({ serviceIds: selection.serviceIds, step: "barbero" }),
+        bookingQuery({ serviceIds: selection.serviceIds, step: "profesional" }),
     );
   }
 

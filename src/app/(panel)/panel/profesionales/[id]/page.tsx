@@ -31,7 +31,7 @@ export const metadata: Metadata = { title: t.editar };
 // id, or a barber of another barbershop, is "not found".
 export default function EditBarberPage({
   params,
-}: PageProps<"/panel/barberos/[id]">) {
+}: PageProps<"/panel/profesionales/[id]">) {
   return (
     <Suspense fallback={<EditorLoading title={t.editar} />}>
       <EditBarber params={params} />

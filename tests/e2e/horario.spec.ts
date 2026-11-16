@@ -89,7 +89,7 @@ test("an owner gives a barber their own hours and puts them back on the barbersh
   await signInSetUpOwner(page);
 
   // A new barber "Kevin", on the barbershop's hours.
-  await page.goto("/panel/barberos/nuevo");
+  await page.goto("/panel/profesionales/nuevo");
   await expect(
     page.getByRole("heading", { level: 1, name: t.nuevo }),
   ).toBeVisible(FIRST_VISIT);
@@ -191,7 +191,7 @@ test("a schedule link that leads nowhere is not found", async ({ page }) => {
   test.setTimeout(90_000);
   await signInSetUpOwner(page);
   for (const id of ["no-existe", "00000000-0000-0000-0000-000000000000"]) {
-    await page.goto(`/panel/barberos/${id}/horario`);
+    await page.goto(`/panel/profesionales/${id}/horario`);
     await expect(
       page.getByRole("heading", { level: 1, name: textos.noEncontrado.titulo }),
     ).toBeVisible(FIRST_VISIT);
