@@ -5,6 +5,7 @@ import {
   type CredentialCode,
 } from "@/lib/validacion/credentials";
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
+import { BUSINESS_TYPE_OTHER_MAX, BUSINESS_TYPES } from "./business-type";
 import { normalizeColombianMobile } from "./phone";
 
 // Error codes, not copy: the screen maps each one to src/ui/textos.ts.
@@ -14,6 +15,9 @@ export type BarbershopErrorCode =
   | "barbershop_name_required"
   | "barbershop_name_too_long"
   | "phone_invalid"
+  | "business_type_required"
+  | "business_type_other_required"
+  | "business_type_other_too_long"
   | "terms_required";
 
 export type RegistrationErrorCode = BarbershopErrorCode | CredentialCode;
@@ -46,14 +50,41 @@ const registrationSchema = z
       .min(1, "owner_name_required")
       .max(100, "owner_name_too_long"),
     barbershopName: barbershopNameSchema,
+    // The kind of business (task 7.2), and which one when it is "other".
+    businessType: z.enum(BUSINESS_TYPES, { error: "business_type_required" }),
+    businessTypeOther: z.string().trim().optional(),
     phone: colombianMobileSchema,
     email: emailSchema,
     password: passwordSchema,
     // The express authorization of Ley 1581 (task 6.5): the box, marked.
     acepto: z.literal("on", { error: "terms_required" }),
   })
-  // The box is proof enough once checked; the data carries the rest.
-  .transform(({ acepto: _accepted, ...registration }) => registration);
+  .superRefine(({ businessType, businessTypeOther }, ctx) => {
+    if (businessType !== "other") return;
+    const other = businessTypeOther ?? "";
+    if (other === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["businessTypeOther"],
+        message: "business_type_other_required",
+      });
+    } else if (other.length > BUSINESS_TYPE_OTHER_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["businessTypeOther"],
+        message: "business_type_other_too_long",
+      });
+    }
+  })
+  // The box is proof enough once checked; the data carries the rest. What
+  // was written for "other" only counts when "other" is the kind chosen.
+  .transform(({ acepto: _accepted, businessTypeOther, ...registration }) => ({
+    ...registration,
+    businessTypeOther:
+      registration.businessType === "other"
+        ? (businessTypeOther ?? null)
+        : null,
+  }));
 
 export type Registration = z.output<typeof registrationSchema>;
 

@@ -12,6 +12,10 @@ export const routes = {
   confirmEmailLink: "/auth/confirm",
   terms: "/terminos",
   privacy: "/privacidad",
+  // The same two, opened from a form or a page of the app (task 7.2): their
+  // "Volver" goes back to it, with what was written still there.
+  termsFromApp: "/terminos?volver=1",
+  privacyFromApp: "/privacidad?volver=1",
   panel: "/panel",
   setup: "/panel/configurar",
   setupTeam: "/panel/configurar/equipo",
