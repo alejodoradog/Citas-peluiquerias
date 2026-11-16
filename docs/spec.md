@@ -24,16 +24,16 @@ El MVP es una web app que permite a los clientes de una barbería reservar su ci
 
 ## Usuarios y roles
 
-Cada barbería (sede) tiene un solo dueño, que entra con su cuenta; un mismo dueño puede tener varias sedes desde esa cuenta y crear otra cuando quiera. Los barberos no necesitan cuenta y ven su agenda desde un link privado. El cliente final tampoco crea cuenta.
+Cada barbería (sede) tiene un solo dueño, que entra con su cuenta; un mismo dueño puede tener varias sedes desde esa cuenta y crear otra cuando quiera. Los barberos entran con su propia cuenta, que se crea solo por invitación del dueño, y ven su agenda en "Mi agenda" (decisión 0010; antes era un link privado sin cuenta). El cliente final no crea cuenta.
 
 | Rol | Quién es | Dónde entra | Cómo se identifica |
 | --- | --- | --- | --- |
 | Super admin | Tú y tu equipo | Panel de plataforma | Correo y contraseña |
 | Dueño | Quien paga la suscripción y administra la barbería | Panel de barbería completo | Correo y contraseña; recupera acceso por correo |
-| Barbero | Empleado de la barbería | Vista "Mi agenda" | Link privado y secreto, sin cuenta ni contraseña |
+| Barbero | Empleado de la barbería | Vista "Mi agenda" | Su propia cuenta, por invitación del dueño (decisión 0010) |
 | Cliente final | Quien se corta el pelo | Página pública de reservas | Nombre y correo, sin contraseña ni código |
 
-**Link privado del barbero:** el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. El dueño puede desactivar el link y deja de funcionar al instante. Si el barbero se va, el dueño **desactiva al barbero** (no se borra): no recibe citas nuevas, movidas ni bloqueos nuevos, pero con su link sigue gestionando las citas que ya tenía (marcarlas o cancelarlas), y el dueño puede reasignarlas o cancelarlas. Desactivar al barbero no desactiva su link. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
+**Link privado del barbero** (reemplazado por la decisión 0010: el barbero entra con su cuenta, por invitación del dueño, y el link se quitó en la tarea 7.6c; lo que ve y hace en "Mi agenda" es lo mismo, y el dueño puede además eliminarlo; queda aquí como historia): el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. El dueño puede desactivar el link y deja de funcionar al instante. Si el barbero se va, el dueño **desactiva al barbero** (no se borra): no recibe citas nuevas, movidas ni bloqueos nuevos, pero con su link sigue gestionando las citas que ya tenía (marcarlas o cancelarlas), y el dueño puede reasignarlas o cancelarlas. Desactivar al barbero no desactiva su link. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
 
 **Avisos al barbero (opcional):** si el dueño registra el correo del barbero y activa los avisos, este recibe por correo cada nueva reserva o cancelación, sin entrar a ninguna parte.
 
@@ -55,7 +55,7 @@ Son 24 funciones: P1 es imprescindible para lanzar. Las P2 se construyen dentro 
 | 6 | Ver "mis citas" con un link que llega al correo, sin código | Cliente | P2 |  |
 | 7 | Registro de la barbería en 3 pasos, eligiendo el plan; el plan 1 con prueba gratis de 30 días (una por cuenta: las sedes que se creen después la comparten) y el plan 2 sin prueba (tarea 7.8) | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
-| 9 | Crear barberos (sin cuenta), asignarles servicios y horario, y enviarles su link privado | Dueño | P1 |  |
+| 9 | Crear barberos, asignarles servicios y horario, e invitarlos a su cuenta (decisión 0010; antes, enviarles su link privado) | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
 | 11 | Agenda del día y de la semana, por barbero o todos | Dueño; barbero por link | P1 |  |
 | 12 | Crear cita manual (cliente que llamó o llegó sin cita) | Dueño | P1 |  |
@@ -86,7 +86,7 @@ La hora se vuelve a validar al confirmar, porque dos clientes pueden estar miran
 
 1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular (que queda como WhatsApp de contacto de la barbería), su correo y una contraseña. Confirma el correo con un link, sin código, e ingresa con su contraseña.
 2. Agrega sus servicios con precio y duración. Como el cliente puede reservar varios servicios en una cita, no hacen falta combos, aunque el dueño puede crearlos. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
-3. Agrega sus barberos con nombre, foto y correo opcionales, y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
+3. Agrega sus barberos con nombre, foto y correo opcionales, y horario; por defecto cada barbero usa el horario de la barbería. Después invita a cada barbero a su cuenta desde su ficha (decisión 0010).
 4. Recibe su link y QR listos para compartir; con el plan 1 empieza la prueba de 30 días, y con el plan 2 recibe citas desde su primer pago (tarea 7.8).
 
 Después, el dueño puede crear otra sede desde su misma cuenta. La sede nueva comparte la prueba de la primera; si se crea con la prueba ya vencida, se puede configurar pero no recibe citas hasta su primer pago.
@@ -130,7 +130,7 @@ Son 21 pantallas principales en cuatro partes de la web; todas se diseñan prime
 
 El estado de la suscripción no tiene pantalla propia: se muestra con avisos en la agenda (prueba por vencer, vencida en gracia, suspendida en solo lectura) y un link "Ver cómo pagar" (decisión del fundador, 2026-11-07, según el diseño). El selector de sede y "Nueva sede" se diseñan en la fase 2.
 
-**Vista del barbero** (link privado, sin cuenta)
+**Vista del barbero** ("Mi agenda", con su cuenta; decisión 0010)
 
 1. Mi agenda: citas del día y la semana, marcar atendida o no asistió, bloquear horas.
 
@@ -221,7 +221,7 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 | Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque, más agregar al calendario y el link para gestionar la cita | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día). Es el único correo de la cita para el cliente: no hay correo de confirmación al reservar (decisión del fundador, 2026-11-14) |
 | Cita cancelada o reprogramada | Cliente con correo | Cuando la barbería cambia la cita |
 | Nueva reserva o cancelación (opcional) | Barbero con correo | Al instante |
-| Link privado de su agenda (opcional; el dueño también lo puede copiar) | Barbero con correo | Cuando el dueño lo envía |
+| Invitación a su cuenta (decisión 0010; reemplaza el link privado) | Barbero con correo | Cuando el dueño lo invita |
 | Confirmación de correo y recuperación de contraseña | Dueño | Al registrarse o al pedirla |
 | Suscripción por vencer, vencida, suspendida, pago registrado | Dueño | Según el ciclo de suscripción |
 
@@ -243,7 +243,7 @@ Son 17 tablas. Todas las de negocio llevan `barbershop_id` para separar los dato
 | barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, fin de la prueba, vence el | Raíz de cada sede |
 | usuarios (`profiles`) | nombre, celular, super admin (sí o no), activo; el correo vive en la cuenta de acceso | Una persona; se une a sus sedes por `memberships` |
 | membresías (`memberships`) | cuenta, barbería, rol (`owner` en el MVP) | Un dueño por barbería; un dueño puede tener varias sedes |
-| barberos (`barbers`) | nombre visible, foto, correo opcional, link privado (guardado solo como hash), link activo, avisos por correo, orden, activo | Pertenece a una barbería |
+| barberos (`barbers`) | nombre visible, foto, correo opcional, su cuenta (decisión 0010), avisos por correo, orden, activo, eliminado | Pertenece a una barbería |
 | horarios del barbero (`barber_schedules`) | barbero, día de la semana, hora de inicio y de fin | Varios por barbero; admiten jornada partida |
 | horario de la barbería (`barbershop_hours`) | día de la semana, hora de inicio y de fin | Varios por barbería; admiten jornada partida |
 | festivos que abre (`holiday_openings`) | fecha | Los festivos están cerrados por defecto; cada fila es uno en que la barbería abre |
@@ -300,7 +300,7 @@ Nada de esto entra al MVP; se decide qué construir según lo que pidan las barb
 
 | Idea | Por qué esperar | Señal para construirla |
 | --- | --- | --- |
-| Cuentas por barbero con roles (administrador, recepcionista) | Una semana extra de desarrollo; el link privado cubre a la mayoría | Barberías de 5 o más barberos piden que alguien más maneje la agenda |
+| Cuentas por barbero con roles (administrador, recepcionista) | Una semana extra de desarrollo; la cuenta del barbero (decisión 0010) solo ve su agenda | Barberías de 5 o más barberos piden que alguien más maneje la agenda |
 | Pasarela de pagos y anticipos en línea | Costo, trámites y comisión | Varias barberías piden cobrar el abono automático |
 | Pago de la suscripción automatizado (link de pago, conciliación) | Con menos de \~200 barberías se maneja a mano | Más de 15 pagos diarios por verificar |
 | Facturación electrónica DIAN para la barbería | Complejo y no lo piden las barberías pequeñas | Barberías formales lo exigen para cambiarse |
