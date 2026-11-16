@@ -33,6 +33,10 @@ function Page() {
       <form action="/panel/horario" method="post" aria-label="Guardar">
         <button>Guardar</button>
       </form>
+      <form aria-label="Borrador">
+        <input name="nombre" defaultValue="Kevin" />
+        <button>Guardar borrador</button>
+      </form>
     </>
   );
 }
@@ -138,6 +142,14 @@ describe("TapFeedback", () => {
     expect(screen.getByRole("button", { name: "Buscar" })).not.toHaveAttribute(
       "data-pending",
     );
+  });
+
+  it("leaves alone a form handled in the browser, which goes nowhere", () => {
+    render(<Page />);
+    fireEvent.submit(screen.getByRole("form", { name: "Borrador" }));
+    expect(
+      screen.getByRole("button", { name: "Guardar borrador" }),
+    ).not.toHaveAttribute("data-pending");
   });
 
   it("leaves alone a form that saves: its button shows its own wait", () => {

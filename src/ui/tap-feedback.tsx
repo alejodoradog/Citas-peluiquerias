@@ -185,9 +185,15 @@ function navigatingLink(event: MouseEvent): Tapped | null {
 // address with the fields as the query. Null for a form that runs a Server
 // Action, for one that goes to another site, and for a search that would
 // land on the address already open.
+//
+// Null too for a form with no `action`: it is handled in the browser by its
+// own onSubmit (the wizard's sheets) and goes nowhere. The browser reports
+// such a form as a GET to the address already open, so without this its
+// button would stay marked until the limit.
 function searchingButton(event: SubmitEvent): Tapped | null {
   const form = event.target;
   if (!(form instanceof HTMLFormElement)) return null;
+  if (!form.hasAttribute("action")) return null;
   if (form.method !== "get") return null;
   const url = new URL(form.action, window.location.href);
   if (url.origin !== window.location.origin) return null;
