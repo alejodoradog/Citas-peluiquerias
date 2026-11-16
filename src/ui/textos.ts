@@ -56,6 +56,12 @@ function duracion(minutos: number): string {
 // Error copy lives with each module and is keyed by the codes its actions
 // return (decision 0005), plus "invalid" for anything a schema did not name.
 
+// Task 7.8: one more professional than the plan allows (the database says
+// plan_limit). The wizard and Más › Profesionales show it. Until "Cambiar
+// plan" exists (task 7.8b) it sends to Yapoin's WhatsApp.
+const LIMITE_PLAN =
+  "Tu plan no permite más profesionales activos: hasta 4 en el plan 1 y hasta 8 en el plan 2. Para cambiar de plan, escríbenos por WhatsApp al 322 938 1101.";
+
 export const textos = {
   marca: "Yapoin",
   inicio: {
@@ -131,7 +137,7 @@ export const textos = {
   // date, and the database keeps which one each person accepted.
   legal: {
     version: LEGAL_VERSION,
-    fecha: "15 de noviembre de 2026",
+    fecha: "16 de noviembre de 2026",
     vigencia: (fecha: string) => `Vigente desde el ${fecha}.`,
     correo: "manuelalejo429@gmail.com",
     volver: "Volver al inicio",
@@ -158,13 +164,14 @@ export const textos = {
         {
           titulo: "3. La prueba gratis",
           parrafos: [
-            "Cada cuenta tiene 20 días de prueba gratis con todas las funciones, desde el día en que se registra. No pedimos tarjeta. Las sedes que crees durante la prueba comparten su fecha de vencimiento.",
+            "Al registrarte eliges tu plan. El plan 1 tiene 30 días de prueba gratis con todas las funciones, desde el día en que te registras. No pedimos tarjeta. Las sedes que crees durante la prueba comparten su fecha de vencimiento.",
+            "El plan 2 no tiene prueba gratis: puedes configurar todo desde el primer día, y tu página recibe reservas desde que registramos tu primer pago. Yapoin puede dar días gratis en casos especiales.",
           ],
         },
         {
           titulo: "4. El precio y el pago",
           parrafos: [
-            "Después de la prueba, cada sede paga una suscripción mensual según el número de profesionales activos, contando al dueño si también atiende: $25.000 al mes de 1 a 4 profesionales y $40.000 al mes de 5 a 8. Con 9 o más profesionales, el precio se acuerda con el área financiera de Yapoin.",
+            "Cada sede paga una suscripción mensual según su plan, que fija cuántos profesionales activos puede tener, contando al dueño si también atiende. Plan 1: hasta 4 profesionales, $25.000 al mes después de la prueba. Plan 2: hasta 8 profesionales, $25.000 el primer mes y $40.000 al mes desde el segundo. Con 9 o más profesionales, el precio se acuerda con el área financiera de Yapoin.",
             "El pago se hace por transferencia (Bre-B, Nequi o transferencia bancaria) a los datos que Yapoin te envía, y el comprobante se envía al correo de Yapoin. Cuando lo verificamos, registramos el pago y la sede queda activa por un mes más. Cada pago cubre un mes y no hay reembolsos por meses parciales.",
             "Yapoin puede cambiar los precios avisándote por correo con al menos 30 días de anticipación. El cambio aplica desde el siguiente pago.",
           ],
@@ -941,6 +948,7 @@ export const textos = {
       barber_services_required: "Marca al menos un servicio.",
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
       setup_invalid: "Revisa tus servicios y tu equipo e intenta de nuevo.",
+      plan_limit: LIMITE_PLAN,
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<
@@ -1203,6 +1211,7 @@ export const textos = {
       services_not_saved:
         "Guardamos al profesional, pero no sus servicios. Ábrelo en Profesionales y guárdalo de nuevo.",
       owner_cannot_deactivate: "Tu propia agenda no se desactiva desde aquí.",
+      plan_limit: LIMITE_PLAN,
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<BarberActionErrorCode | "invalid", string>,
@@ -2473,7 +2482,7 @@ export const textos = {
       already_registered:
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       plan_changed:
-        "El establecimiento cambió su número de profesionales y ahora le toca otro valor. Vuelve a abrir Registrar pago.",
+        "El plan o el valor de este establecimiento cambió desde que abriste Registrar pago. Vuelve a abrirlo.",
       amount_invalid:
         "Escribe un valor entre $40.000 y $5.000.000, con punto solo para los miles.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
@@ -2594,28 +2603,34 @@ export const textos = {
       abrir: "Precios",
       titulo: "Precios",
       prueba: (dias: number) =>
-        `Los primeros ${dias} días son gratis, con todo incluido. No pedimos tarjeta.`,
+        `El plan 1 tiene ${dias} días gratis, con todo incluido. No pedimos tarjeta.`,
+      // Task 7.8: each plan is chosen here. The crossed-out price is the
+      // monthly one; the first month is what is paid at the start.
       planes: [
         {
-          quien: "1 a 4 profesionales",
-          detalle: "La mayoría de negocios",
+          quien: "Plan 1 · Hasta 4 profesionales",
+          detalle: "Después, $25.000 al mes",
+          antes: "$25.000",
+          valor: "$0",
+          elegir: "Elegir plan 1",
+        },
+        {
+          quien: "Plan 2 · Hasta 8 profesionales",
+          detalle: "Después, $40.000 al mes. Sin prueba gratis",
+          antes: "$40.000",
           valor: "$25.000",
-          mes: true,
-        },
-        {
-          quien: "5 a 8 profesionales",
-          detalle: "Equipos más grandes",
-          valor: "$40.000",
-          mes: true,
-        },
-        {
-          quien: "9 o más",
-          detalle: "Hablemos de tu caso",
-          valor: "Por acuerdo",
-          mes: false,
+          elegir: "Elegir plan 2",
         },
       ],
-      porMes: "/mes",
+      primerMes: "el primer mes",
+      acuerdo: {
+        quien: "9 o más profesionales",
+        detalle: "Hablemos de tu caso",
+        valor: "Por acuerdo",
+        elegir: "Escribir por WhatsApp",
+        mensaje:
+          "Hola, quiero el plan por acuerdo de Yapoin para un establecimiento de 9 o más profesionales.",
+      },
       incluye:
         "Cada sede paga su mes. Incluye reservas por link, agenda, recordatorios por correo, links para tu equipo y cierre del día. Pagas mes a mes.",
     },
@@ -2672,6 +2687,33 @@ export const textos = {
   },
   // The links that already circulate (the QR, the poster, the barber's
   // link) while their pages are built: tasks 3.2 and 4.4.
+  // Task 7.8: the plans an establishment chooses. Plan 1 has the free trial;
+  // plan 2 starts with its first payment; "por acuerdo" is by WhatsApp.
+  planes: {
+    registro: {
+      leyenda: "Tu plan",
+      plan1: {
+        nombre: "Plan 1 · Hasta 4 profesionales",
+        detalle: (dias: number) =>
+          `${dias} días gratis. Después, $25.000 al mes.`,
+      },
+      plan2: {
+        nombre: "Plan 2 · Hasta 8 profesionales",
+        detalle:
+          "$25.000 el primer mes y $40.000 desde el segundo. Sin prueba gratis.",
+      },
+      // Under the title when plan 2 is chosen: it has no free days.
+      bajadaPlan2:
+        "Configuras todo hoy, y tu página recibe citas desde que registremos tu primer pago. No pedimos tarjeta.",
+      masDe8: "¿Más de 8 profesionales?",
+      escribenos: "Escríbenos por WhatsApp",
+    },
+    // The wizard's last screen of plan 2, instead of the trial's end.
+    listo: {
+      primerPago:
+        "Tu página recibe citas desde que registremos tu primer pago. En la agenda verás cómo hacerlo.",
+    },
+  },
   proximamente: {
     reservas: {
       tituloPestana: "Reservas",

@@ -29,11 +29,24 @@ describe("parseRegistration", () => {
         barbershopName: "Barbería El Parche",
         businessType: "barbershop",
         businessTypeOther: null,
+        plan: "standard",
         phone: "+573001234567",
         email: "carlos@example.com",
         password: "una-clave-segura",
       },
     });
+  });
+
+  it("keeps the plan chosen, and plan 1 for anything else (task 7.8)", () => {
+    const planOf = (plan: unknown) => {
+      const result = parseRegistration({ ...valid, plan });
+      return result.success ? result.data.plan : null;
+    };
+    expect(planOf("plus")).toBe("plus");
+    expect(planOf("standard")).toBe("standard");
+    expect(planOf(undefined)).toBe("standard");
+    expect(planOf("por_acuerdo")).toBe("standard");
+    expect(planOf("gratis")).toBe("standard");
   });
 
   it("needs the kind of business (task 7.2)", () => {

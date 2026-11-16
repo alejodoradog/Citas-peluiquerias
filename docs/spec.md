@@ -53,7 +53,7 @@ Son 24 funciones: P1 es imprescindible para lanzar. Las P2 se construyen dentro 
 | 4 | Link para cancelar o reprogramar la cita sin llamar | Cliente | P1 |  |
 | 5 | Recordatorio de la cita (ver sección Notificaciones) | Cliente | P1 |  |
 | 6 | Ver "mis citas" con un link que llega al correo, sin código | Cliente | P2 |  |
-| 7 | Registro de la barbería en 3 pasos con prueba gratis de 20 días (una por cuenta: las sedes que se creen después la comparten) | Dueño | P1 |  |
+| 7 | Registro de la barbería en 3 pasos, eligiendo el plan; el plan 1 con prueba gratis de 30 días (una por cuenta: las sedes que se creen después la comparten) y el plan 2 sin prueba (tarea 7.8) | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
 | 9 | Crear barberos (sin cuenta), asignarles servicios y horario, y enviarles su link privado | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
@@ -87,7 +87,7 @@ La hora se vuelve a validar al confirmar, porque dos clientes pueden estar miran
 1. El dueño entra desde un link de venta o anuncio y escribe su nombre, el nombre de la barbería, su celular (que queda como WhatsApp de contacto de la barbería), su correo y una contraseña. Confirma el correo con un link, sin código, e ingresa con su contraseña.
 2. Agrega sus servicios con precio y duración. Como el cliente puede reservar varios servicios en una cita, no hacen falta combos, aunque el dueño puede crearlos. El sistema sugiere los típicos, que el dueño edita o quita: corte ($25.000, 40 min), barba ($15.000, 20 min), corte + barba ($35.000, 60 min), cejas ($8.000, 10 min) y niños ($20.000, 30 min).
 3. Agrega sus barberos con nombre, foto y correo opcionales, y horario; por defecto cada barbero usa el horario de la barbería. El sistema genera el link privado de cada barbero.
-4. Recibe su link y QR listos para compartir; empieza la prueba de 20 días.
+4. Recibe su link y QR listos para compartir; con el plan 1 empieza la prueba de 30 días, y con el plan 2 recibe citas desde su primer pago (tarea 7.8).
 
 Después, el dueño puede crear otra sede desde su misma cuenta. La sede nueva comparte la prueba de la primera; si se crea con la prueba ya vencida, se puede configurar pero no recibe citas hasta su primer pago.
 
@@ -182,19 +182,23 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 No hay pasarela: la barbería paga solo por transferencia (bancaria, Nequi o llave Bre-B), envía el comprobante por correo y tú registras el pago en el panel, lo que extiende su fecha de vencimiento. Los pagos registrados no se editan ni se borran: un registro equivocado se anula y queda el rastro.
 
-**Precio según los barberos de la sede** (decisión del fundador, 2026-11-14; antes era un plan único, decisión 0006)
+**Planes** (decisión del fundador, 2026-11-15, tarea 7.8; antes el precio salía de los barberos activos, tarea 5.6)
 
-| Barberos activos de la sede | Precio |
-| --- | --- |
-| 1 a 4 | $25.000 COP al mes |
-| 5 a 8 | $40.000 COP al mes |
-| 9 o más | Por acuerdo con el área financiera de Yapoin |
+| Plan | Profesionales activos | Precio |
+| --- | --- | --- |
+| Plan 1 | Hasta 4 | 30 días gratis; después $25.000 COP al mes |
+| Plan 2 | Hasta 8 | Sin prueba: $25.000 COP el primer mes y $40.000 desde el segundo |
+| Por acuerdo | 9 o más | Por acuerdo con el área financiera de Yapoin; se pide por WhatsApp |
 
-El dueño que corta cuenta como barbero, y nunca se bloquea registrar más barberos. Incluye todas las funciones del MVP y los links privados de los barberos. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6). Se construye en la tarea 5.6.
+- El dueño elige el plan al registrarse (la landing lo trae elegido). El precio sale del plan elegido.
+- El plan limita cuántos profesionales activos tiene la sede, contando al dueño si también atiende. La base de datos rechaza crear o reactivar uno más, en cualquier pantalla.
+- El plan 2 configura todo desde el primer día, pero su página no recibe citas hasta que se registre su primer pago. Yapoin puede darle días gratis desde el panel de plataforma ("Extender prueba").
+- Cambiar de plan se pide desde la configuración del establecimiento y se acepta al registrar el pago de la diferencia (tarea 7.8b). Bajar de plan se pide por WhatsApp.
+- Incluye todas las funciones del MVP. No hay periodos trimestrales ni anuales: cada pago cubre un mes de una sede. Cada sede paga su propia suscripción (interpretación a confirmar, decisión 0006, sección 6).
 
 **Ciclo de la suscripción**
 
-1. Registro: empieza la prueba gratis de 20 días con todo habilitado, desde que se crea la cuenta. Si se registra el 4 de noviembre, funciona hasta el 24 de noviembre inclusive. La prueba es por cuenta: las sedes creadas después comparten su fecha, y una sede creada con la prueba vencida espera su primer pago para recibir citas (se puede configurar mientras tanto).
+1. Registro: con el plan 1 empieza la prueba gratis de 30 días con todo habilitado, desde que se crea la cuenta. Si se registra el 4 de noviembre, funciona hasta el 4 de diciembre inclusive. Con el plan 2 no hay prueba: la sede espera su primer pago para recibir citas. La prueba es por cuenta: las sedes creadas después comparten su fecha, y una sede creada con la prueba vencida espera su primer pago para recibir citas (se puede configurar mientras tanto).
 2. Avisos automáticos al dueño: 3 días antes de vencer, el día del vencimiento y 3 días después, con tus datos de pago y el valor exacto.
 3. Pago: el dueño transfiere y envía el comprobante a tu correo.
 4. Activación: en el panel eliges la barbería, escribes la referencia del comprobante y guardas; el sistema calcula la nueva fecha de vencimiento.

@@ -38,6 +38,8 @@ export type BarberActionErrorCode =
   | "photo_invalid"
   | "services_not_saved"
   | "owner_cannot_deactivate"
+  // Task 7.8: the plan allows no more active professionals.
+  | "plan_limit"
   | "unknown";
 
 // serviceIds, emailNotifications and photoPath are echoed too, so the
@@ -159,6 +161,9 @@ async function writeFailed(
   if (saved.field === "photo" || saved.code === "photo_invalid") {
     return { status: "failed", error: "photo_invalid", values };
   }
+  if (saved.code === "plan_limit") {
+    return { status: "failed", error: "plan_limit", values };
+  }
   return saved.field
     ? {
         status: "invalid",
@@ -266,9 +271,9 @@ export async function setBarberActive(
   if (barber.is_owner && !active) {
     return { ok: false, error: "owner_cannot_deactivate" };
   }
-  if (!(await setBarberActiveRow(barbershop.id, barber.id, active))) {
-    return { ok: false, error: "unknown" };
-  }
+  const saved = await setBarberActiveRow(barbershop.id, barber.id, active);
+  if (saved === "plan_limit") return { ok: false, error: "plan_limit" };
+  if (saved === "failed") return { ok: false, error: "unknown" };
   afterSave(barber.id);
 }
 

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { yapoinWhatsapp } from "@/lib/contacto/whatsapp";
+import { paramOf, SIGNUP_PLANS } from "@/modulos/suscripciones/dominio/plans";
 import { routes } from "@/lib/routes";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
 import { buttonClasses } from "@/ui/button";
@@ -10,9 +12,17 @@ import { textos } from "@/ui/textos";
 
 const t = textos.landing;
 
-// WhatsApp of Yapoin (the founder's, published in docs/trabajo-en-paralelo.md),
-// with a message ready for someone who wants to ask something.
-const WHATSAPP = `https://wa.me/573229381101?text=${encodeURIComponent(t.contacto.mensaje)}`;
+// WhatsApp of Yapoin, with a message ready for someone who wants to ask
+// something.
+const WHATSAPP = yapoinWhatsapp(t.contacto.mensaje);
+
+// Each plan leads to the sign-up with it chosen (task 7.8).
+const PLAN_LINKS = SIGNUP_PLANS.map((plan) =>
+  routes.signUpWithPlan(paramOf(plan)),
+);
+
+const planCard =
+  "flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-ink no-underline hover:border-ink";
 
 const navButton =
   "inline-flex min-h-11 items-center rounded-xl px-3.5 text-[0.98rem] font-semibold text-ink hover:bg-paper";
@@ -20,6 +30,10 @@ const navButton =
 // The landing's bar: the prices and the contact open in a sheet.
 export function LandingNav() {
   const [open, setOpen] = useState<"precios" | "contacto" | null>(null);
+  // A link inside a sheet closes it first: the sheet is a modal <dialog>,
+  // and Next keeps this page mounted and hidden after the link, so an open
+  // one would leave the next page inert (task 7.8a).
+  const closeSheet = () => setOpen(null);
 
   return (
     <>
@@ -56,30 +70,59 @@ export function LandingNav() {
         </p>
         <ul className="flex flex-col gap-2.5">
           {t.precios.planes.map((plan, i) => (
-            <li
-              key={plan.quien}
-              className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 ${
-                i === 0 ? "border-brand border-2 bg-[#f6fbfb]" : "border-line"
-              }`}
-            >
-              <span>
-                <b className="block">{plan.quien}</b>
-                <span className="text-muted text-sm">{plan.detalle}</span>
-              </span>
-              <strong className="text-xl font-extrabold whitespace-nowrap tabular-nums">
-                {plan.valor}
-                {plan.mes ? (
+            <li key={plan.quien}>
+              <Link
+                href={PLAN_LINKS[i]!}
+                onClick={closeSheet}
+                aria-label={`${plan.elegir}: ${plan.quien}. ${plan.valor} ${t.precios.primerMes}. ${plan.detalle}.`}
+                className={`${planCard} ${
+                  i === 0 ? "border-brand border-2 bg-[#f6fbfb]" : "border-line"
+                }`}
+              >
+                <span className="min-w-0">
+                  <b className="block">{plan.quien}</b>
+                  <span className="text-muted text-sm">{plan.detalle}</span>
+                </span>
+                <span className="flex shrink-0 flex-col items-end">
+                  <s className="text-muted text-sm tabular-nums">
+                    {plan.antes}
+                  </s>
+                  <strong className="text-xl font-extrabold whitespace-nowrap tabular-nums">
+                    {plan.valor}
+                  </strong>
                   <small className="text-muted text-xs font-semibold">
-                    {" "}
-                    {t.precios.porMes}
+                    {t.precios.primerMes}
                   </small>
-                ) : null}
-              </strong>
+                </span>
+              </Link>
             </li>
           ))}
+          <li>
+            <a
+              href={yapoinWhatsapp(t.precios.acuerdo.mensaje)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t.precios.acuerdo.elegir}: ${t.precios.acuerdo.quien}. ${t.precios.acuerdo.valor}.`}
+              className={`${planCard} border-line`}
+            >
+              <span className="min-w-0">
+                <b className="block">{t.precios.acuerdo.quien}</b>
+                <span className="text-muted text-sm">
+                  {t.precios.acuerdo.detalle}
+                </span>
+              </span>
+              <strong className="text-lg font-extrabold whitespace-nowrap">
+                {t.precios.acuerdo.valor}
+              </strong>
+            </a>
+          </li>
         </ul>
         <p className="text-muted text-sm">{t.precios.incluye}</p>
-        <Link href={routes.signUp} className={buttonClasses()}>
+        <Link
+          href={routes.signUp}
+          onClick={closeSheet}
+          className={buttonClasses()}
+        >
           {t.crearCuenta}
         </Link>
       </Sheet>

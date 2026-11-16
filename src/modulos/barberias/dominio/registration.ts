@@ -5,6 +5,7 @@ import {
   type CredentialCode,
 } from "@/lib/validacion/credentials";
 import { parseWith, type ParseResult } from "@/lib/validacion/parse";
+import { SIGNUP_PLANS } from "@/modulos/suscripciones/dominio/plans";
 import { BUSINESS_TYPE_OTHER_MAX, BUSINESS_TYPES } from "./business-type";
 import { normalizeColombianMobile } from "./phone";
 
@@ -63,6 +64,9 @@ const registrationSchema = z
     // The kind of business (task 7.2), and which one when it is "other".
     businessType: z.enum(BUSINESS_TYPES, { error: "business_type_required" }),
     businessTypeOther: z.string().transform(plainLine).optional(),
+    // The plan chosen (task 7.8): plan 1 when it is missing or unknown. The
+    // database reads it again and only plan 2 changes anything.
+    plan: z.enum(SIGNUP_PLANS).catch("standard"),
     phone: colombianMobileSchema,
     email: emailSchema,
     password: passwordSchema,

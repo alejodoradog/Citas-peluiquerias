@@ -266,6 +266,8 @@ insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, e
   ('aaaaaaaa-0000-0000-0000-000000000069', 'Barbería P', 'barberia-p-67', '+573001112255',
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '3 days');
 update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000000069';
+-- S has 9 active professionals: it is on the plan without a limit.
+update public.barbershops set selected_plan = 'por_acuerdo' where id = 'aaaaaaaa-0000-0000-0000-000000000067';
 
 insert into auth.users (id, email, encrypted_password) values
   ('00000000-0000-0000-0000-000000006701', 'owner-s@example.com', '$2a$10$x'),
@@ -314,6 +316,7 @@ insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, e
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '3 days'),
   ('aaaaaaaa-0000-0000-0000-00000000006c', 'Barbería W', 'barberia-w-67', '+573001112288',
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '3 days');
+update public.barbershops set selected_plan = 'por_acuerdo' where id in ('aaaaaaaa-0000-0000-0000-00000000006a', 'aaaaaaaa-0000-0000-0000-00000000006b', 'aaaaaaaa-0000-0000-0000-00000000006c');
 insert into auth.users (id, email, encrypted_password) values
   ('00000000-0000-0000-0000-000000006704', 'owner-u@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-0000000067ad', 'admin-67@example.com', '$2a$10$x');

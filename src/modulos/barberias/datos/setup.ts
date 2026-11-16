@@ -64,8 +64,13 @@ export async function setBarbershopHours(
 
 // location_required: the database refuses to finish without the point
 // (task 7.3).
+// plan_limit: more active professionals than the plan allows (task 7.8).
 export type SetupSaveResult =
-  "saved" | "already_done" | "location_required" | "failed";
+  | "saved"
+  | "already_done"
+  | "location_required"
+  | "plan_limit"
+  | "failed";
 
 // Saves the whole wizard in one transaction (complete_barbershop_setup).
 // "already_done" covers a second tap or a second tab: the setup exists.
@@ -88,5 +93,6 @@ export async function completeBarbershopSetup(
   if (!error) return "saved";
   if (error.hint === "setup_done") return "already_done";
   if (error.hint === "location_required") return "location_required";
+  if (error.hint === "plan_limit") return "plan_limit";
   return "failed";
 }

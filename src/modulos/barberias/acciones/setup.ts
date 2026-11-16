@@ -10,7 +10,7 @@ import { DEFAULT_BARBERSHOP_HOURS } from "../dominio/hours";
 import { readLocation } from "../dominio/profile";
 import { parseSetupPayload } from "../dominio/setup";
 
-export type SetupErrorCode = "setup_invalid" | "unknown";
+export type SetupErrorCode = "setup_invalid" | "plan_limit" | "unknown";
 
 export type SetupLocationErrorCode =
   "location_required" | "location_invalid" | "unknown";
@@ -81,6 +81,9 @@ export async function completeSetup(
   );
   // The point went away between the check above and the save.
   if (result === "location_required") redirect(routes.setupLocation);
+  if (result === "plan_limit") {
+    return { status: "failed", error: "plan_limit", values: {} };
+  }
   if (result === "failed") {
     return { status: "failed", error: "unknown", values: {} };
   }

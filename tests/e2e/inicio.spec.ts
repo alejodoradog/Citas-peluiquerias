@@ -17,10 +17,20 @@ test("the landing shows the prices and the contact @ui", async ({ page }) => {
 
   await page.getByRole("button", { name: t.precios.abrir }).click();
   const prices = page.getByRole("dialog", { name: t.precios.titulo });
-  for (const plan of t.precios.planes) {
-    await expect(prices.getByText(plan.quien)).toBeVisible();
-    await expect(prices.getByText(plan.valor)).toBeVisible();
+  for (const [i, plan] of t.precios.planes.entries()) {
+    const link = prices.getByRole("link", {
+      name: new RegExp(`^${plan.elegir}`),
+    });
+    await expect(link).toHaveAttribute("href", `/registro?plan=${i + 1}`);
+    await expect(link.getByText(plan.quien)).toBeVisible();
+    await expect(link.getByText(plan.valor)).toBeVisible();
   }
+  await expect(
+    prices.getByRole("link", { name: new RegExp(`^${t.precios.acuerdo.elegir}`) }),
+  ).toHaveAttribute(
+    "href",
+    `https://wa.me/573229381101?text=${encodeURIComponent(t.precios.acuerdo.mensaje)}`,
+  );
   await prices.getByRole("button", { name: textos.ui.cerrar }).click();
 
   await page.getByRole("button", { name: t.contacto.abrir }).click();

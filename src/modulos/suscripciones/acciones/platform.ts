@@ -79,7 +79,14 @@ export async function registerPayment(
     return { status: "failed", error: "plan_changed", values: form.values };
   }
   let amountCop: number | null = null;
-  if (quote.byAgreement) {
+  if (!quote.byAgreement) {
+    // The price P-03 showed (task 7.8a): plan 2's first month is another.
+    const shown = Number(formData.get("valor"));
+    if (shown !== quote.priceCop) {
+      return { status: "failed", error: "plan_changed", values: form.values };
+    }
+    amountCop = shown;
+  } else {
     const typed = String(formData.get("acordado") ?? "");
     amountCop = parseAgreedAmount(typed);
     if (amountCop === null) {

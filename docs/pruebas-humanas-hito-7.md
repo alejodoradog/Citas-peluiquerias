@@ -85,6 +85,18 @@ En un computador (pantalla de 1024 px de ancho o más), con la cuenta del super 
 - [ ] **7. Los números cuadran.** El ingreso de este mes en el gráfico es igual al de la tarjeta "Ingreso del mes". Un establecimiento nuevo creado hoy suma 1 a la última barra de "Registros por semana" y a su tipo en la tabla.
 - [ ] **8. En el celular no cambió.** Abrir `/admin` desde el celular: se ve la lista de siempre, sin menú lateral, con el ícono de métricas arriba.
 
+## Tarea 7.8a: prueba de 30 días, planes y límite de profesionales
+Con dos correos nuevos y el celular, y la cuenta del super admin en un computador.
+
+- [ ] **1. Precios.** En `www.yapoin.com`, tocar "Precios": el plan 1 dice $25.000 tachado y $0 el primer mes; el plan 2, $40.000 tachado y $25.000 el primer mes. "Por acuerdo" abre WhatsApp con un mensaje listo.
+- [ ] **2. Plan 1.** Tocar el plan 1: el registro lo trae elegido y dice 30 días gratis. Registrarse, confirmar y terminar el asistente: la pantalla final y Más dicen que la prueba termina 30 días después de hoy.
+- [ ] **3. Plan 2.** Con otro correo, tocar el plan 2 en Precios: el registro lo trae elegido y explica que recibe citas desde el primer pago. Registrarse y terminar el asistente: la pantalla final no habla de prueba. En la agenda sale el aviso del primer pago, con $25.000. La página pública no deja reservar.
+- [ ] **4. Días gratis al plan 2.** Desde el admin, en la ficha de ese establecimiento, "Extender prueba" unos días: su página ya deja reservar.
+- [ ] **5. Primer pago del plan 2.** En otra cuenta de plan 2, "Registrar pago": el valor es $25.000. Registrarlo: la página deja reservar. El siguiente pago ya es de $40.000.
+- [ ] **6. El límite.** En la cuenta del plan 1, con 4 profesionales activos (contándote si atiendes), crear un quinto en Más › Profesionales: no deja y explica el límite. Desactivar uno y crear el nuevo: sí deja. Volver a activar el desactivado: no deja.
+- [ ] **7. "Crear cuenta gratis".** Desde la landing, "Crear cuenta gratis" lleva al registro con el plan 1 elegido, y se puede cambiar al plan 2 antes de enviar.
+- [ ] **8. Términos.** Los términos dicen "Vigente desde el 16 de noviembre de 2026", los 30 días del plan 1 y que el plan 2 no tiene prueba.
+
 ## Tarea 7.6b: cuentas de profesional, invitación y "Mi agenda"
 Con la plantilla `invite.html` pegada en Supabase (Emails › Invite user), una cuenta de dueño y un profesional con un correo tuyo. Desde dos celulares: el del dueño y el del profesional.
 

@@ -162,6 +162,10 @@ insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, e
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '3 days'),
   ('aaaaaaaa-0000-0000-0000-000000006803', 'Barbería X', 'barberia-x-68', '+573001112255',
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '3 days');
+-- More professionals than the first plan allows (task 7.8): these barbershops
+-- take the plan without a limit, as the tests of 7.6a do.
+update public.barbershops set selected_plan = 'por_acuerdo'
+where id::text like 'aaaaaaaa-0000-0000-0000-0000000068%';
 insert into auth.users (id, email, encrypted_password) values
   ('00000000-0000-0000-0000-000000006801', 'owner-s-68@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-000000006802', 'owner-t-68@example.com', '$2a$10$x'),
