@@ -35,8 +35,11 @@
 -- The customer is optional. With a name, a new customer with that name only
 -- (as the manual appointment does with a new customer). Without one, a row
 -- marked walk_in, named "Cliente al momento", that list_customers leaves out:
--- the list does not fill with empty records. Giving it a name, an email or a
--- phone later makes it a customer like any other.
+-- the list does not fill with empty records. Giving it a name, an email, a
+-- phone or a note later makes it a customer like any other.
+--
+-- Who made it stays in the history: a 'created' event in appointment_events
+-- with the actor ('barber' with the professional's account, or 'staff').
 --
 -- No email: a walk-in starts at or before now(), and
 -- private.queue_appointment_emails queues the reminder and the
@@ -52,7 +55,7 @@ alter table public.customers
   check (not walk_in or (email is null and phone is null and anonymized_at is null));
 
 comment on column public.customers.walk_in is
-  'Task 7.7: the customer of a walk-in appointment created without a name. Left out of list_customers. Only the walk-in functions set it; a name, email or phone given later clears it.';
+  'Task 7.7: the customer of a walk-in appointment created without a name. Left out of list_customers. Only the walk-in functions set it; a name, email, phone or note given later clears it.';
 
 -- Runs with the statement's role and calls no helper, so the app's server
 -- (service_role), anon and a session are all fine to fire it (the lesson of
@@ -77,12 +80,14 @@ begin
     raise exception 'a customer does not become a walk-in'
       using errcode = 'insufficient_privilege', hint = 'walk_in_reserved';
   end if;
-  -- A name, an email or a phone (or the anonymization, which renames it):
-  -- from here it is a customer like any other.
+  -- A name, an email, a phone or a note (or the anonymization, which
+  -- renames it): from here it is a customer like any other, back in the list,
+  -- so no personal data hides behind the walk-in mark.
   if old.walk_in and (
     new.full_name is distinct from old.full_name
     or new.email is distinct from old.email
     or new.phone is distinct from old.phone
+    or coalesce(btrim(new.notes), '') <> coalesce(btrim(old.notes), '')
     or new.anonymized_at is distinct from old.anonymized_at
   ) then
     new.walk_in := false;
@@ -337,6 +342,17 @@ begin
       raise exception 'the time was taken'
         using errcode = 'P0001', hint = 'slot_taken';
   end;
+
+  -- Who made it: 'barber' with their account (create_my_walk_in sets the
+  -- mark that private.current_actor reads after checking the session) or
+  -- 'staff' (the owner). The owner sees it in the appointment.
+  insert into public.appointment_events (
+    barbershop_id, appointment_id, type, actor, actor_user_id,
+    new_status, new_barber_id, new_starts_at, new_ends_at
+  ) values (
+    p_barbershop_id, new_id, 'created', private.current_actor(), auth.uid(),
+    'confirmed', p_barber_id, starts, ends
+  );
   return new_id;
 end;
 $$;
@@ -423,6 +439,10 @@ begin
     raise exception 'unknown barbershop'
       using errcode = 'P0002', hint = 'not_found';
   end if;
+  -- The owner's: 'staff' in the history. The professional's mark is local to
+  -- the transaction, so it is cleared here: a professional's call earlier in
+  -- the same transaction never makes the owner's walk-in a 'barber' one.
+  perform set_config('yapoin.actor', '', true);
   return private.create_walk_in_of(p_barbershop_id, p_barber_id, p_service_ids, p_customer_name);
 end;
 $$;

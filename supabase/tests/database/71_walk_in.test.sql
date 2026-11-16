@@ -20,12 +20,19 @@
 -- - It takes the lock of the public booking for that day.
 -- - The server path (service_role) and the session path still book and
 --   create customers as before (the lesson of refuse_deleted_barber, 7.6c).
+-- - Independent review: who made it stays in the history ('created', with
+--   the actor); a note takes the walk-in mark off; the super admin is
+--   refused by its own filter (with a row and a membership that would
+--   otherwise reach); check_appointment_source is reached for real; the
+--   anonymization of walk-in customers; control characters in the name; a
+--   deleted establishment and one awaiting its first payment; an inactive
+--   profile; the lock of the day before.
 begin;
 
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(74);
+select plan(104);
 
 -- Structure and privileges -------------------------------------------------------------------
 
@@ -163,8 +170,22 @@ insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, e
   ('aaaaaaaa-0000-0000-0000-000000007102', 'Barbería X', 'barberia-x-71', '+573001112244',
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '10 days', 'standard'),
   ('aaaaaaaa-0000-0000-0000-000000007103', 'Barbería P', 'barberia-p-71', '+573001112255',
+   private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '10 days', 'standard'),
+  ('aaaaaaaa-0000-0000-0000-000000007104', 'Barbería D', 'barberia-d-71', '+573001112266',
+   private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '10 days', 'standard'),
+  -- F: a trial that ended before the establishment was created, without a
+  -- plan: "awaiting the first payment" (task 5.5).
+  ('aaaaaaaa-0000-0000-0000-000000007105', 'Barbería F', 'barberia-f-71', '+573001112277',
+   private.today_bogota() - 11, private.today_bogota() + 10, now() - interval '10 days', 'standard'),
+  -- A: the super admin's own establishment (one owner per establishment).
+  ('aaaaaaaa-0000-0000-0000-000000007106', 'Barbería A', 'barberia-a-71', '+573001112288',
    private.today_bogota() + 10, private.today_bogota() + 10, now() - interval '10 days', 'standard');
 insert into auth.users (id, email, encrypted_password) values
+  ('00000000-0000-0000-0000-000000007104', 'owner-d-71@example.com', '$2a$10$x'),
+  ('00000000-0000-0000-0000-000000007105', 'owner-f-71@example.com', '$2a$10$x'),
+  ('00000000-0000-0000-0000-0000000071ba', 'diez-71@example.com', '$2a$10$x'),
+  ('00000000-0000-0000-0000-0000000071c4', 'pro-d-71@example.com', '$2a$10$x'),
+  ('00000000-0000-0000-0000-0000000071c5', 'pro-f-71@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-000000007101', 'owner-w-71@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-000000007102', 'owner-x-71@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-000000007103', 'owner-p-71@example.com', '$2a$10$x'),
@@ -176,11 +197,17 @@ insert into auth.users (id, email, encrypted_password) values
   ('00000000-0000-0000-0000-0000000071b5', 'cinco-71@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-0000000071b8', 'ocho-71@example.com', '$2a$10$x'),
   ('00000000-0000-0000-0000-0000000071b9', 'pausa-71@example.com', '$2a$10$x');
+insert into public.profiles (id, full_name, is_super_admin, terms_accepted_at, terms_version, active) values
+  ('00000000-0000-0000-0000-000000007104', 'Dueña D', false, null, null, true),
+  ('00000000-0000-0000-0000-000000007105', 'Dueño F', false, null, null, true),
+  ('00000000-0000-0000-0000-0000000071ba', 'Diez', false, now(), 'prueba-71', false),
+  ('00000000-0000-0000-0000-0000000071c4', 'Pro D', false, now(), 'prueba-71', true),
+  ('00000000-0000-0000-0000-0000000071c5', 'Pro F', false, now(), 'prueba-71', true);
 insert into public.profiles (id, full_name, is_super_admin, terms_accepted_at, terms_version) values
   ('00000000-0000-0000-0000-000000007101', 'Dueña W', false, null, null),
   ('00000000-0000-0000-0000-000000007102', 'Dueño X', false, null, null),
   ('00000000-0000-0000-0000-000000007103', 'Dueño P', false, null, null),
-  ('00000000-0000-0000-0000-0000000071ad', 'Admin', true, null, null),
+  ('00000000-0000-0000-0000-0000000071ad', 'Admin', true, now(), 'prueba-71'),
   ('00000000-0000-0000-0000-0000000071b1', 'Uno', false, now(), 'prueba-71'),
   ('00000000-0000-0000-0000-0000000071b2', 'Dos', false, now(), 'prueba-71'),
   ('00000000-0000-0000-0000-0000000071b3', 'Tres', false, null, null),
@@ -191,12 +218,17 @@ insert into public.profiles (id, full_name, is_super_admin, terms_accepted_at, t
 insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-000000007101', 'aaaaaaaa-0000-0000-0000-000000007101', 'owner'),
   ('00000000-0000-0000-0000-000000007102', 'aaaaaaaa-0000-0000-0000-000000007102', 'owner'),
-  ('00000000-0000-0000-0000-000000007103', 'aaaaaaaa-0000-0000-0000-000000007103', 'owner');
+  ('00000000-0000-0000-0000-000000007103', 'aaaaaaaa-0000-0000-0000-000000007103', 'owner'),
+  ('00000000-0000-0000-0000-000000007104', 'aaaaaaaa-0000-0000-0000-000000007104', 'owner'),
+  ('00000000-0000-0000-0000-000000007105', 'aaaaaaaa-0000-0000-0000-000000007105', 'owner'),
+  -- The super admin owns A: only their own filter refuses them there.
+  ('00000000-0000-0000-0000-0000000071ad', 'aaaaaaaa-0000-0000-0000-000000007106', 'owner');
 insert into public.barbershop_hours (barbershop_id, weekday, start_time, end_time)
 select s, d, '00:00', '24:00'
 from generate_series(0, 6) d,
      unnest(array['aaaaaaaa-0000-0000-0000-000000007101', 'aaaaaaaa-0000-0000-0000-000000007102',
-                  'aaaaaaaa-0000-0000-0000-000000007103']::uuid[]) s;
+                  'aaaaaaaa-0000-0000-0000-000000007103', 'aaaaaaaa-0000-0000-0000-000000007104',
+                  'aaaaaaaa-0000-0000-0000-000000007105']::uuid[]) s;
 -- Open on holidays too, today and tomorrow: the test must not depend on the
 -- day it runs (the closed holiday is tested at the end).
 insert into public.holiday_openings (barbershop_id, holiday_date)
@@ -204,7 +236,8 @@ select s, d
 from generate_series(private.today_bogota(), private.today_bogota() + 1, interval '1 day') g (day)
 cross join lateral (select g.day::date as d) x,
      unnest(array['aaaaaaaa-0000-0000-0000-000000007101', 'aaaaaaaa-0000-0000-0000-000000007102',
-                  'aaaaaaaa-0000-0000-0000-000000007103']::uuid[]) s
+                  'aaaaaaaa-0000-0000-0000-000000007103', 'aaaaaaaa-0000-0000-0000-000000007104',
+                  'aaaaaaaa-0000-0000-0000-000000007105']::uuid[]) s
 where private.is_colombian_holiday(d);
 insert into public.services (id, barbershop_id, name, price_cop, duration_minutes, active) values
   ('5e000000-0000-0000-0000-000000007101', 'aaaaaaaa-0000-0000-0000-000000007101', 'Corte', 25000, 30, true),
@@ -212,7 +245,9 @@ insert into public.services (id, barbershop_id, name, price_cop, duration_minute
   ('5e000000-0000-0000-0000-000000007103', 'aaaaaaaa-0000-0000-0000-000000007101', 'Cejas', 8000, 10, true),
   ('5e000000-0000-0000-0000-000000007104', 'aaaaaaaa-0000-0000-0000-000000007101', 'Tinte', 40000, 60, false),
   ('5e000000-0000-0000-0000-000000007121', 'aaaaaaaa-0000-0000-0000-000000007102', 'Corte X', 20000, 30, true),
-  ('5e000000-0000-0000-0000-000000007131', 'aaaaaaaa-0000-0000-0000-000000007103', 'Corte P', 20000, 30, true);
+  ('5e000000-0000-0000-0000-000000007131', 'aaaaaaaa-0000-0000-0000-000000007103', 'Corte P', 20000, 30, true),
+  ('5e000000-0000-0000-0000-000000007141', 'aaaaaaaa-0000-0000-0000-000000007104', 'Corte D', 20000, 30, true),
+  ('5e000000-0000-0000-0000-000000007151', 'aaaaaaaa-0000-0000-0000-000000007105', 'Corte F', 20000, 30, true);
 insert into public.barbers (id, barbershop_id, display_name, email, is_owner, email_notifications, uses_barbershop_hours, active, deactivated_at) values
   ('ba000000-0000-0000-0000-000000007111', 'aaaaaaaa-0000-0000-0000-000000007101', 'Uno', 'uno-71@example.com', false, false, true, true, null),
   ('ba000000-0000-0000-0000-000000007112', 'aaaaaaaa-0000-0000-0000-000000007101', 'Dos', 'dos-71@example.com', false, true, true, true, null),
@@ -223,7 +258,11 @@ insert into public.barbers (id, barbershop_id, display_name, email, is_owner, em
   ('ba000000-0000-0000-0000-000000007117', 'aaaaaaaa-0000-0000-0000-000000007101', 'Siete', null, false, false, false, true, null),
   ('ba000000-0000-0000-0000-000000007119', 'aaaaaaaa-0000-0000-0000-000000007101', 'Nueve', null, false, false, false, true, null),
   ('ba000000-0000-0000-0000-000000007121', 'aaaaaaaa-0000-0000-0000-000000007102', 'Ocho', 'ocho-71@example.com', false, false, true, true, null),
-  ('ba000000-0000-0000-0000-000000007131', 'aaaaaaaa-0000-0000-0000-000000007103', 'Pausa', 'pausa-71@example.com', false, false, true, true, null);
+  ('ba000000-0000-0000-0000-000000007131', 'aaaaaaaa-0000-0000-0000-000000007103', 'Pausa', 'pausa-71@example.com', false, false, true, true, null),
+  ('ba000000-0000-0000-0000-000000007110', 'aaaaaaaa-0000-0000-0000-000000007101', 'Diez', 'diez-71@example.com', false, false, true, true, null),
+  ('ba000000-0000-0000-0000-000000007118', 'aaaaaaaa-0000-0000-0000-000000007101', 'Admin', 'admin-71@example.com', false, false, true, true, null),
+  ('ba000000-0000-0000-0000-000000007141', 'aaaaaaaa-0000-0000-0000-000000007104', 'Pro D', 'pro-d-71@example.com', false, false, true, true, null),
+  ('ba000000-0000-0000-0000-000000007151', 'aaaaaaaa-0000-0000-0000-000000007105', 'Pro F', 'pro-f-71@example.com', false, false, true, true, null);
 insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007111', '5e000000-0000-0000-0000-000000007101'),
   ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007111', '5e000000-0000-0000-0000-000000007102'),
@@ -236,7 +275,11 @@ insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007117', '5e000000-0000-0000-0000-000000007101'),
   ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007119', '5e000000-0000-0000-0000-000000007101'),
   ('aaaaaaaa-0000-0000-0000-000000007102', 'ba000000-0000-0000-0000-000000007121', '5e000000-0000-0000-0000-000000007121'),
-  ('aaaaaaaa-0000-0000-0000-000000007103', 'ba000000-0000-0000-0000-000000007131', '5e000000-0000-0000-0000-000000007131');
+  ('aaaaaaaa-0000-0000-0000-000000007103', 'ba000000-0000-0000-0000-000000007131', '5e000000-0000-0000-0000-000000007131'),
+  ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007110', '5e000000-0000-0000-0000-000000007101'),
+  ('aaaaaaaa-0000-0000-0000-000000007101', 'ba000000-0000-0000-0000-000000007118', '5e000000-0000-0000-0000-000000007102'),
+  ('aaaaaaaa-0000-0000-0000-000000007104', 'ba000000-0000-0000-0000-000000007141', '5e000000-0000-0000-0000-000000007141'),
+  ('aaaaaaaa-0000-0000-0000-000000007105', 'ba000000-0000-0000-0000-000000007151', '5e000000-0000-0000-0000-000000007151');
 
 -- Siete works today from 0:00 to the quarter hour after the current one
 -- (24:00 in the last quarter of the day); Nueve only tomorrow's weekday.
@@ -259,6 +302,12 @@ from (values ('ba000000-0000-0000-0000-000000007111'::uuid, '1'), ('ba000000-000
              ('ba000000-0000-0000-0000-000000007115'::uuid, '5'), ('ba000000-0000-0000-0000-000000007121'::uuid, '8'),
              ('ba000000-0000-0000-0000-000000007131'::uuid, '9')) v (barber, display_name_key)
 where id = v.barber;
+update public.barbers br set profile_id = v.profile
+from (values ('ba000000-0000-0000-0000-000000007110'::uuid, '00000000-0000-0000-0000-0000000071ba'::uuid),
+             ('ba000000-0000-0000-0000-000000007118'::uuid, '00000000-0000-0000-0000-0000000071ad'::uuid),
+             ('ba000000-0000-0000-0000-000000007141'::uuid, '00000000-0000-0000-0000-0000000071c4'::uuid),
+             ('ba000000-0000-0000-0000-000000007151'::uuid, '00000000-0000-0000-0000-0000000071c5'::uuid)) v (barber, profile)
+where br.id = v.barber;
 
 insert into public.customers (id, barbershop_id, full_name, email) values
   ('c0000000-0000-0000-0000-000000007101', 'aaaaaaaa-0000-0000-0000-000000007101', 'Camila Rojas', 'camila-71@example.com');
@@ -284,6 +333,8 @@ select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
 select public.delete_barber('ba000000-0000-0000-0000-000000007115');
 reset role;
 update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000007103';
+update public.barbershops set deleted_at = now() where id = 'aaaaaaaa-0000-0000-0000-000000007104';
+update public.barbershops set plan = null where id = 'aaaaaaaa-0000-0000-0000-000000007105';
 -- From here, as in the app: the lines are checked when the transaction
 -- ends (check_appointment_lines); the end of this test checks them.
 set constraints all deferred;
@@ -324,15 +375,75 @@ select is(
   pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007131']::uuid[])$$),
   'read_only', 'nor a professional of a paused establishment'
 );
+-- The super admin has a professional row with their account in W, the
+-- terms, and owns A: without the flag they would reach both.
 select pg_temp.as_user('00000000-0000-0000-0000-0000000071ad');
 select is(
-  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007101']::uuid[])$$),
-  'not_professional', 'the super admin is no professional'
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007102']::uuid[])$$),
+  'not_professional', 'the super admin is no professional, even with a row of their own'
+);
+select is((select count(*)::integer from public.my_services()), 0, 'and reads no services');
+select is(
+  pg_temp.hint_of($$select public.create_walk_in_appointment('aaaaaaaa-0000-0000-0000-000000007106',
+    'ba000000-0000-0000-0000-000000007116', array[]::uuid[])$$),
+  'not_found', 'nor the owner, not even of the establishment they own'
+);
+reset role;
+update public.profiles set is_super_admin = false where id = '00000000-0000-0000-0000-0000000071ad';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071ad');
+select is(
+  (select count(*)::integer from public.my_services()), 1,
+  'control: without the flag, the same account is the professional (so the flag is what refuses)'
 );
 select is(
-  pg_temp.hint_of($$select public.create_walk_in_appointment('aaaaaaaa-0000-0000-0000-000000007101',
-    'ba000000-0000-0000-0000-000000007116', array['5e000000-0000-0000-0000-000000007101']::uuid[])$$),
-  'not_found', 'nor the owner of W'
+  pg_temp.hint_of($$select public.create_walk_in_appointment('aaaaaaaa-0000-0000-0000-000000007106',
+    'ba000000-0000-0000-0000-000000007116', array[]::uuid[])$$),
+  'services_required', 'control: and reaches A as its owner'
+);
+reset role;
+update public.profiles set is_super_admin = true where id = '00000000-0000-0000-0000-0000000071ad';
+
+-- An inactive profile (task 7.6a: revoked) reaches nothing; with it active,
+-- the same professional would.
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071ba');
+select is(
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007101']::uuid[])$$),
+  'not_professional', 'a professional whose profile is inactive cannot'
+);
+reset role;
+update public.profiles set active = true where id = '00000000-0000-0000-0000-0000000071ba';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071ba');
+select is((select count(*)::integer from public.my_services()), 1, 'control: active, the same account reaches');
+reset role;
+update public.profiles set active = false where id = '00000000-0000-0000-0000-0000000071ba';
+
+-- A deleted establishment, and one awaiting its first payment, by both.
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071c4');
+select is(
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007141']::uuid[])$$),
+  'not_professional', 'a professional of a deleted establishment cannot'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-000000007104');
+select is(
+  pg_temp.hint_of($$select public.create_walk_in_appointment('aaaaaaaa-0000-0000-0000-000000007104',
+    'ba000000-0000-0000-0000-000000007141', array['5e000000-0000-0000-0000-000000007141']::uuid[])$$),
+  'not_found', 'nor its owner'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071c5');
+select is(
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007151']::uuid[])$$),
+  'read_only', 'a professional of an establishment awaiting its first payment cannot'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-000000007105');
+select is(
+  pg_temp.hint_of($$select public.create_walk_in_appointment('aaaaaaaa-0000-0000-0000-000000007105',
+    'ba000000-0000-0000-0000-000000007151', array['5e000000-0000-0000-0000-000000007151']::uuid[])$$),
+  'barbershop_read_only', 'nor its owner'
+);
+reset role;
+select is(
+  private.phase_of('aaaaaaaa-0000-0000-0000-000000007105'), 'awaiting_first_payment',
+  'F is awaiting its first payment'
 );
 select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
 select is(
@@ -405,6 +516,14 @@ select is(
   pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007101']::uuid[], 'mira www.ejemplo.com')$$),
   'customer_name_invalid', 'a name without links'
 );
+select is(
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007101']::uuid[], 'Ana' || chr(10) || 'Ruiz')$$),
+  'customer_name_invalid', 'a name without a line break'
+);
+select is(
+  pg_temp.hint_of($$select public.create_my_walk_in(array['5e000000-0000-0000-0000-000000007101']::uuid[], 'Ana' || chr(27) || '[2J')$$),
+  'customer_name_invalid', 'nor an escape character'
+);
 
 create temporary table made (what text primary key, id uuid) on commit drop;
 grant all on made to authenticated, anon, service_role;
@@ -418,6 +537,16 @@ select ok(
         'book_appointment:aaaaaaaa-0000-0000-0000-000000007101:' || (pg_temp.s() at time zone 'America/Bogota')::date::text, 0)
   ),
   'it takes the lock of the public booking for that establishment and day'
+);
+select ok(
+  exists (
+    select 1 from pg_locks l
+    where l.locktype = 'advisory' and l.pid = pg_backend_pid() and l.granted
+      and ((l.classid::bigint << 32) | l.objid::bigint) = hashtextextended(
+        'book_appointment:aaaaaaaa-0000-0000-0000-000000007101:'
+          || ((pg_temp.s() at time zone 'America/Bogota')::date - 1)::text, 0)
+  ),
+  'and the one of the day before, which a booking that runs past midnight takes'
 );
 reset role;
 select is(
@@ -546,6 +675,53 @@ select is(
 );
 reset role;
 
+-- Who made it --------------------------------------------------------------------------------------
+
+select is(
+  (select array_agg(row(e.type::text, e.actor::text, e.actor_user_id, e.new_barber_id, e.new_starts_at)::text)
+   from public.appointment_events e where e.appointment_id = (select id from made where what = 'uno')
+     and e.type = 'created'),
+  array[row('created', 'barber', '00000000-0000-0000-0000-0000000071b1'::uuid,
+            'ba000000-0000-0000-0000-000000007111'::uuid, pg_temp.s())::text],
+  'the professional''s walk-in records "created" by the barber, with their account'
+);
+select is(
+  (select array_agg(row(e.type::text, e.actor::text, e.actor_user_id, e.new_barber_id)::text)
+   from public.appointment_events e where e.appointment_id = (select id from made where what = 'tres')
+     and e.type = 'created'),
+  array[row('created', 'staff', '00000000-0000-0000-0000-000000007101'::uuid,
+            'ba000000-0000-0000-0000-000000007113'::uuid)::text],
+  'the owner''s records "created" by staff, with the owner''s account'
+);
+select is(
+  (select count(*)::integer from public.appointment_events e
+   where e.appointment_id = (select id from made where what = 'uno') and e.type <> 'status_changed'),
+  1, 'its lines leave no "service_added" at creation: only the one "created"'
+);
+select is(
+  (select count(*)::integer from public.appointment_events e
+   where e.appointment_id = 'a0000000-0000-0000-0000-000000007101' and e.type = 'created'),
+  0, 'other origins keep no creation event, as before'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
+select is(
+  (select count(*)::integer from public.appointment_events
+   where type = 'created' and barbershop_id = 'aaaaaaaa-0000-0000-0000-000000007101'),
+  3, 'the owner of W reads the three "created" events of W'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-000000007102');
+select is(
+  (select count(*)::integer from public.appointment_events
+   where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000007101'),
+  0, 'the owner of X reads none of W'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071b1');
+select is(
+  (select count(*)::integer from public.appointment_events), 0,
+  'and the professional reads no event, not even their own'
+);
+reset role;
+
 -- No email ---------------------------------------------------------------------------------------
 
 select is(
@@ -576,14 +752,29 @@ select is(
   'walk_in_reserved', 'nor turns a customer into one'
 );
 select lives_ok(
-  $$update public.customers set notes = 'Viene los viernes'
+  $$update public.customers set notes = '   '
     where id = (select customer_id from public.appointments where id = (select id from made where what = 'tres'))$$,
-  'the owner can write a note on a walk-in customer'
+  'a blank note on a walk-in customer'
 );
 select is(
   (select walk_in from public.customers
    where id = (select customer_id from public.appointments where id = (select id from made where what = 'tres'))),
-  true, 'which stays a walk-in'
+  true, 'keeps it a walk-in: there is nothing in it'
+);
+select lives_ok(
+  $$update public.customers set notes = 'Viene los viernes'
+    where id = (select customer_id from public.appointments where id = (select id from made where what = 'tres'))$$,
+  'the owner writes a note on a walk-in customer'
+);
+select is(
+  (select walk_in from public.customers
+   where id = (select customer_id from public.appointments where id = (select id from made where what = 'tres'))),
+  false, 'which takes the mark off: no personal data hides from the list'
+);
+select is(
+  array(select full_name from public.list_customers('aaaaaaaa-0000-0000-0000-000000007101')),
+  array['Camila Rojas', 'Cliente al momento', 'Pedro Pérez'],
+  'and it is in the list'
 );
 select lives_ok(
   $$update public.customers set full_name = 'Andrés Gómez'
@@ -618,7 +809,40 @@ select throws_ok(
 reset role;
 select is(
   (select count(*)::integer from public.customers where walk_in),
-  1, 'only the walk-in without a name left a walk-in customer'
+  1, 'only Uno''s walk-in without a name is still a walk-in customer'
+);
+
+-- Anonymization (Ley 1581, task 4.3) -------------------------------------------------------------
+
+select pg_temp.as_user('00000000-0000-0000-0000-0000000071b2');
+select lives_ok(
+  $$select public.mark_my_appointment((select id from made where what = 'dos'), 'attended')$$,
+  'Dos marks the walk-in of Pedro Pérez attended'
+);
+select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
+select lives_ok(
+  $$select public.anonymize_customer('aaaaaaaa-0000-0000-0000-000000007101',
+    (select customer_id from public.appointments where id = (select id from made where what = 'uno')))$$,
+  'the owner deletes the walk-in customer without a name'
+);
+select lives_ok(
+  $$select public.anonymize_customer('aaaaaaaa-0000-0000-0000-000000007101',
+    (select customer_id from public.appointments where id = (select id from made where what = 'dos')))$$,
+  'and the named one of a walk-in'
+);
+reset role;
+select is(
+  (select array_agg(row(c.full_name, c.walk_in, c.anonymized_at is not null)::text order by a.created_at)
+   from public.appointments a join public.customers c on c.id = a.customer_id
+   where a.id in (select id from made where what in ('uno', 'dos'))),
+  array[row('Cliente borrado', false, true)::text, row('Cliente borrado', false, true)::text],
+  'both are "Cliente borrado", no longer walk-ins'
+);
+select is(
+  (select array_agg(status::text order by created_at) from public.appointments
+   where id in (select id from made where what in ('uno', 'dos'))),
+  array['attended', 'attended'],
+  'and their appointments stay, for the day close'
 );
 
 -- The server and the session paths still work (7.6c lesson) ----------------------------------------
@@ -655,6 +879,8 @@ select is(
 
 -- A session still cannot fake the origin --------------------------------------------------------
 
+-- Today the first barrier is the grants: a session executes neither
+-- create_appointment nor inserts into appointments.
 select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
 select throws_ok(
   $$select public.create_appointment('aaaaaaaa-0000-0000-0000-000000007101', 'c0000000-0000-0000-0000-000000007101',
@@ -668,6 +894,28 @@ select throws_ok(
   '42501', null, 'nor straight into the table'
 );
 reset role;
+-- The second barrier, should a grant come back: with them given here (only
+-- inside this test's transaction), the function's own check and the trigger
+-- check_appointment_source still refuse any origin but manual to a session.
+grant execute on function public.create_appointment(uuid, uuid, uuid, timestamptz, uuid[], public.appointment_source, text)
+  to authenticated;
+grant insert on public.appointments to authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-000000007101');
+select is(
+  pg_temp.hint_of($$select public.create_appointment('aaaaaaaa-0000-0000-0000-000000007101', 'c0000000-0000-0000-0000-000000007101',
+    'ba000000-0000-0000-0000-000000007116', pg_temp.at(2, '11:00'), array['5e000000-0000-0000-0000-000000007101']::uuid[], 'walk_in')$$),
+  'source_not_allowed', 'with the grant, create_appointment itself refuses walk_in to a session'
+);
+select is(
+  pg_temp.hint_of($$insert into public.appointments (barbershop_id, customer_id, barber_id, starts_at, ends_at, price_cop, source)
+    values ('aaaaaaaa-0000-0000-0000-000000007101', 'c0000000-0000-0000-0000-000000007101',
+      'ba000000-0000-0000-0000-000000007116', pg_temp.at(2, '11:00'), pg_temp.at(2, '11:30'), 25000, 'walk_in')$$),
+  'source_not_allowed', 'and so does the trigger check_appointment_source on the table'
+);
+reset role;
+revoke execute on function public.create_appointment(uuid, uuid, uuid, timestamptz, uuid[], public.appointment_source, text)
+  from authenticated;
+revoke insert on public.appointments from authenticated;
 
 select lives_ok(
   'set constraints all immediate',
