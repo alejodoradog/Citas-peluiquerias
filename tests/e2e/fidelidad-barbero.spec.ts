@@ -4,12 +4,13 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { addDays, fromBogota, toBogotaDate } from "../../src/lib/fechas/fechas";
 import { textos } from "../../src/ui/textos";
 import { addManualAppointment, bookOnline } from "./helpers/agenda";
+import { signInProfessional } from "./helpers/clientes";
 import {
   createBookableShop,
-  issueBarberLink,
-  setBarberLinkActive,
+  createProfessionalAccount,
   signedInClient,
   suspendBarbershop,
+  uniqueEmail,
 } from "./helpers/supabase";
 
 // Task 4.4: "Mi agenda" of a barber (B-01 to B-06) against the design
@@ -101,7 +102,12 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   test.setTimeout(180_000);
   const shop = await createBookableShop("fidelidad-barbero");
   const owner = await signedInClient(shop.owner.email, shop.owner.password);
-  const token = await issueBarberLink(shop.barbers.ana);
+  // Task 7.6c: "Mi agenda" by the professional's own session.
+  const account = {
+    email: uniqueEmail("fidelidad-ana"),
+    password: "clave-de-ana-1",
+  };
+  await createProfessionalAccount(shop.barbers.ana, { ...account, name: "Ana" });
   const quarter = 15 * 60_000;
   const started = new Date(
     Math.floor((Date.now() - 30 * 60_000) / quarter) * quarter,
@@ -123,7 +129,8 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   });
 
   // B-01
-  await page.goto(`/b/${token}?dia=${day}`);
+  await signInProfessional(page, account);
+  await page.goto(`/mi-agenda?dia=${day}`);
   let design = await openDesign(page, "B01-Mi-agenda.dc.html");
   await compare(
     "saludo",
@@ -187,7 +194,7 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   );
   await compare(
     "solo tuyo",
-    page.getByText(t.soloTuyo),
+    page.getByText(textos.miAgenda.soloTuya),
     design.getByText("Este link es solo tuyo. No lo compartas."),
     ["font-size", "color"],
   );
@@ -214,7 +221,7 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   await design.close();
 
   // B-03
-  await page.goto(`/b/${token}?dia=${tomorrow}`);
+  await page.goto(`/mi-agenda?dia=${tomorrow}`);
   await page.getByRole("link", { name: /Camila R\./ }).click();
   await expect(
     page.getByRole("heading", { level: 1, name: "Camila R." }),
@@ -236,7 +243,7 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   await design.close();
 
   // B-04
-  await page.goto(`/b/${token}/bloquear`);
+  await page.goto("/mi-agenda/bloquear");
   design = await openDesign(page, "B04-Bloquear.dc.html");
   await compare(
     "título",
@@ -268,7 +275,7 @@ test("B-01 to B-06 match the design", async ({ page }) => {
 
   // B-06
   await suspendBarbershop(shop.id);
-  await page.goto(`/b/${token}`);
+  await page.goto("/mi-agenda");
   design = await openDesign(page, "B06-Suspendida.dc.html");
   await compare(
     "pausada",
@@ -279,9 +286,8 @@ test("B-01 to B-06 match the design", async ({ page }) => {
   await attachSideBySide(page, design, "B-06");
   await design.close();
 
-  // B-05
-  await setBarberLinkActive(shop.barbers.ana, false);
-  await page.goto(`/b/${token}`);
+  // B-05 is now what an old address of the link shows (task 7.6c).
+  await page.goto(`/b/${"x".repeat(43)}`);
   design = await openDesign(page, "B05-Link-desactivado.dc.html");
   await compare(
     "título",

@@ -8,9 +8,10 @@ import {
 
 // The links that already circulate. The booking link of the QR and the
 // poster is the booking page now (tasks 3.2 and 3.3, reservar.spec.ts); a
-// link that is no barbershop's is C-18. A barber's private link is "Mi
-// agenda" now (task 4.4, barbero.spec.ts): a token that is no barber's gets
-// B-05, the same for any token.
+// link that is no barbershop's is C-18. A professional's old private link
+// (/b/<token>, task 4.4) is gone since task 7.6c: whatever comes after /b/,
+// the page says it no longer works and sends to the sign-in, without asking
+// the database.
 // The dev server compiles each page the first time it is opened.
 const FIRST_VISIT = { timeout: 20_000 };
 
@@ -27,19 +28,27 @@ test("a link that is no barbershop's is not found", async ({ page }) => {
   ).toBeVisible(FIRST_VISIT);
 });
 
-test("a barber's link that is no one's shows B-05, whatever the token", async ({
+test("an old link of a professional says it no longer works, whatever comes after /b/", async ({
   page,
 }) => {
-  for (const token of ["a".repeat(43), "cualquier-cosa"]) {
-    const response = await page.goto(`/b/${token}`);
+  const old = textos.barbero.linkViejo;
+  for (const path of [
+    `/b/${"a".repeat(43)}`,
+    "/b/cualquier-cosa",
+    `/b/${"a".repeat(43)}/citas/00000000-0000-4000-8000-000000000000`,
+    `/b/${"a".repeat(43)}/bloquear`,
+  ]) {
+    const response = await page.goto(path);
+    // The old token stays out of any cache, Referer or search engine.
     expect(response?.headers()["cache-control"]).toContain("no-store");
     expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
     await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: textos.barbero.vencido.titulo,
-      }),
+      page.getByRole("heading", { level: 1, name: old.titulo }),
     ).toBeVisible(FIRST_VISIT);
+    await expect(page.getByText(old.detalle)).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: old.ingresar }),
+    ).toHaveAttribute("href", "/ingresar");
   }
   await expectAccessible(page);
   await expectTouchTargets(page);

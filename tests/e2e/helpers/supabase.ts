@@ -1,7 +1,7 @@
-import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { addDays, toBogotaDate } from "../../../src/lib/fechas/fechas";
 import { getColombianHolidays } from "../../../src/lib/fechas/festivos";
+import { LEGAL_VERSION } from "../../../src/lib/legal/version";
 
 // Local Supabase only: Mailpit catches every email the local Auth sends.
 const MAILPIT_URL = "http://127.0.0.1:44324";
@@ -246,24 +246,6 @@ export async function shopProfileSnapshot(slug: string) {
   };
 }
 
-// A barber's id and private link as the database keeps them, read past RLS
-// (task 2.3): the hash, whether it works and when it was issued.
-export async function barberLinkSnapshot(slug: string, barberName: string) {
-  const { data, error } = await adminClient()
-    .from("barbers")
-    .select("id, link_token_hash, link_active, link_issued_at")
-    .eq("barbershop_id", await barbershopIdOf(slug))
-    .eq("display_name", barberName)
-    .single();
-  if (error) throw error;
-  return {
-    id: data.id as string,
-    hash: data.link_token_hash as string,
-    active: data.link_active as boolean,
-    issuedAt: data.link_issued_at as string | null,
-  };
-}
-
 // A barber added straight to a barbershop, past the app, so a test has a
 // barber of another barbershop to aim at. Its token is thrown away.
 export async function insertBarber(
@@ -275,7 +257,6 @@ export async function insertBarber(
     .insert({
       barbershop_id: await barbershopIdOf(slug),
       display_name: barberName,
-      link_token_hash: randomBytes(32).toString("hex"),
     })
     .select("id")
     .single();
@@ -574,7 +555,6 @@ export async function createBookableShop(
         barbershop_id: id,
         display_name,
         sort_order: 100 + index,
-        link_token_hash: randomBytes(32).toString("hex"),
       })),
     )
     .select("id, display_name");
@@ -632,29 +612,47 @@ export async function suspendBarbershop(barbershopId: string) {
   if (error) throw error;
 }
 
-// Task 4.4: a barber's private link, issued past the app as the owner's
-// "Copiar link" does (D-56): a new token, and only its hash stored.
-export async function issueBarberLink(barberId: string): Promise<string> {
-  const token = randomBytes(32).toString("base64url");
-  const { createHash } = await import("node:crypto");
-  const { error } = await adminClient()
-    .from("barbers")
-    .update({
-      link_token_hash: createHash("sha256").update(token, "utf8").digest("hex"),
-      link_active: true,
-    })
-    .eq("id", barberId);
+// Task 7.6c: a professional with their own account, joined and with the
+// terms accepted, made past the app (as createConfirmedOwner does for an
+// owner), so "Mi agenda" can be tested without spending Auth's emails on an
+// invitation. The invitation itself is tested in cuentas-profesional.spec.ts.
+export async function createProfessionalAccount(
+  barberId: string,
+  professional: { email: string; password: string; name: string },
+): Promise<string> {
+  const admin = adminClient();
+  const { data, error } = await admin.auth.admin.createUser({
+    email: professional.email,
+    password: professional.password,
+    email_confirm: true,
+  });
   if (error) throw error;
-  return token;
+  const userId = data.user.id;
+  const { error: profileError } = await admin.from("profiles").insert({
+    id: userId,
+    full_name: professional.name,
+    terms_accepted_at: new Date().toISOString(),
+    terms_version: LEGAL_VERSION,
+  });
+  if (profileError) throw profileError;
+  const { error: barberError } = await admin
+    .from("barbers")
+    .update({ profile_id: userId, email: professional.email })
+    .eq("id", barberId);
+  if (barberError) throw barberError;
+  return userId;
 }
 
-// Task 4.4: "Desactivar link" (D-56), past the app.
-export async function setBarberLinkActive(barberId: string, active: boolean) {
-  const { error } = await adminClient()
+// The row of a professional as the database keeps it, past RLS (task 7.6c:
+// what deleting leaves).
+export async function barberRowOf(barberId: string) {
+  const { data, error } = await adminClient()
     .from("barbers")
-    .update({ link_active: active })
-    .eq("id", barberId);
+    .select("display_name, email, photo_path, active, profile_id, deleted_at")
+    .eq("id", barberId)
+    .single();
   if (error) throw error;
+  return data;
 }
 
 // Task 5.3: the emails the queue holds for the appointments of a barbershop

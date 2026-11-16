@@ -162,3 +162,22 @@ export async function signInOwner(
   await page.getByRole("button", { name: ingreso.enviar }).click();
   await expect(page).toHaveURL(/\/panel$/, { timeout: 20_000 });
 }
+
+// Signs a professional in from /ingresar (task 7.6b) and waits for "Mi
+// agenda".
+export async function signInProfessional(
+  page: Page,
+  professional: { email: string; password: string },
+) {
+  const ingreso = textos.cuentas.ingreso;
+  await page.goto("/ingresar");
+  await page
+    .getByRole("textbox", { name: ingreso.campos.email })
+    .fill(professional.email);
+  await page
+    .getByLabel(ingreso.campos.password)
+    .filter({ visible: true })
+    .fill(professional.password);
+  await page.getByRole("button", { name: ingreso.enviar }).click();
+  await expect(page).toHaveURL(/\/mi-agenda$/, { timeout: 20_000 });
+}
