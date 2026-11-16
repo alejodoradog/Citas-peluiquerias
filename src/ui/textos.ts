@@ -426,7 +426,8 @@ export const textos = {
         boton: "Crear cita manual",
       },
     },
-    sinBarberos: "Aún no tienes profesionales activos. Agrégalos en Más › Profesionales.",
+    sinBarberos:
+      "Aún no tienes profesionales activos. Agrégalos en Más › Profesionales.",
     // D-34 to D-39 (task 4.2).
     detalle: "Detalle de la cita",
     detalleCita: {
@@ -513,7 +514,8 @@ export const textos = {
       barbero: "Profesional",
       dia: "Día",
       horas: (minutos: number) => `Horas libres (${minutos} min)`,
-      sinHoras: "No hay horas libres ese día. Prueba otro día u otro profesional.",
+      sinHoras:
+        "No hay horas libres ese día. Prueba otro día u otro profesional.",
       guardar: "Guardar cambio",
       enviando: "Guardando…",
     },
@@ -1168,7 +1170,8 @@ export const textos = {
     quitarDia: (dia: string) =>
       `Quitar el segundo tramo del ${dia.toLocaleLowerCase("es-CO")}`,
     // After hours_outside_shop, what the barbershop opens that day.
-    barberiaAbre: (horas: string) => `Ese día el establecimiento abre ${horas}.`,
+    barberiaAbre: (horas: string) =>
+      `Ese día el establecimiento abre ${horas}.`,
     barberiaCerrada: "Ese día el establecimiento no abre.",
     guardar: "Guardar horario",
     guardando: "Guardando…",
@@ -2059,11 +2062,13 @@ export const textos = {
     },
     errores: {
       link_invalid: "Este link ya no funciona.",
-      read_only: "El establecimiento está pausado: tu agenda es solo de lectura.",
+      read_only:
+        "El establecimiento está pausado: tu agenda es solo de lectura.",
       not_yours: "Eso ya no está en tu agenda.",
       not_confirmed: "Esa cita ya estaba marcada o cancelada.",
       too_early: "Esa cita todavía no empieza.",
-      barber_inactive: "El establecimiento te desactivó: ya no puedes bloquear horas.",
+      barber_inactive:
+        "El establecimiento te desactivó: ya no puedes bloquear horas.",
       overlaps_appointment:
         "Tienes una cita en ese rango. Pídele al dueño que la mueva.",
       overlaps_block: "Ya tienes un bloqueo en ese rango.",
