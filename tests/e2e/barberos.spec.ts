@@ -71,7 +71,7 @@ const storagePhoto =
 async function openBarber(page: Page, name: string) {
   await barberRow(page, name).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible(
@@ -81,7 +81,7 @@ async function openBarber(page: Page, name: string) {
 
 async function save(page: Page) {
   await page.getByRole("button", { name: t.guardar }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
 }
 
 test("an owner adds a barber with a photo, replaces it, removes it and deactivates them", async ({
@@ -101,7 +101,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await page
     .getByRole("link", { name: new RegExp(`^${mas.barberos}`) })
     .click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await expect(
     page.getByRole("heading", { level: 1, name: t.titulo }),
   ).toBeVisible();
@@ -112,7 +112,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
 
   // D-54, new: every service checked, the notices off until there is an email.
   await page.getByRole("link", { name: t.agregar }).first().click();
-  await expect(page).toHaveURL(/\/panel\/barberos\/nuevo$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales\/nuevo$/, FIRST_VISIT);
   await expect(
     page.getByRole("heading", { level: 1, name: t.nuevo }),
   ).toBeVisible();
@@ -205,7 +205,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(sheet).toContainText(t.confirmar.cuerpo);
   await checkScreen(page);
   await sheet.getByRole("button", { name: t.confirmar.si("Kevin") }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await expect(
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toBeVisible();
@@ -216,7 +216,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   // And back.
   await openBarber(page, "Kevin");
   await page.getByRole("button", { name: t.reactivar("Kevin") }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await expect(
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toHaveCount(0);

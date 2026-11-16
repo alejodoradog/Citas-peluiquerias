@@ -55,10 +55,10 @@ async function addKevinWithOwnHours(page: Page) {
   ).toBeVisible(FIRST_VISIT);
   await page.getByRole("textbox", { name: b.campos.nombre }).fill("Kevin");
   await page.getByRole("button", { name: b.guardar, exact: true }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await page.getByRole("link", { name: /^Kevin\b/ }).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   await page
@@ -73,7 +73,7 @@ async function addKevinWithOwnHours(page: Page) {
     .uncheck({ force: true });
   await page.getByRole("button", { name: h.guardar }).click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
 }
@@ -144,7 +144,7 @@ test("an owner changes the barbershop's hours and sees who falls outside", async
   const kevinLink = page.getByRole("link", { name: h.titulo("Kevin") });
   await expect(kevinLink).toHaveAttribute(
     "href",
-    /\/panel\/barberos\/[0-9a-f-]{36}\/horario$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}\/horario$/,
   );
   await checkScreen(page);
 

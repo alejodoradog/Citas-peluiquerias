@@ -99,7 +99,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   ).toBeVisible(FIRST_VISIT);
   await page.getByRole("textbox", { name: t.campos.nombre }).fill("Kevin");
   await page.getByRole("button", { name: t.guardar }).click();
-  await expect(page).toHaveURL(/\/panel\/barberos$/, FIRST_VISIT);
+  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
   await expect(barberRow(page, "Kevin")).toContainText(t.linkSinEnviar);
   const unsent = await barberLinkSnapshot(slug, "Kevin");
   expect(unsent.active).toBe(true);
@@ -108,7 +108,7 @@ test("an owner issues, replaces and turns off a barber's private link", async ({
   // D-54 → D-56.
   await barberRow(page, "Kevin").click();
   await expect(page).toHaveURL(
-    /\/panel\/barberos\/[0-9a-f-]{36}$/,
+    /\/panel\/profesionales\/[0-9a-f-]{36}$/,
     FIRST_VISIT,
   );
   const linkRow = page.getByRole("link", {
