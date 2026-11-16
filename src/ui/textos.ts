@@ -464,6 +464,8 @@ export const textos = {
       celular: "Celular",
       sinCorreo: "Sin correo",
       sinCelular: "Sin celular",
+      // Task 7.5: opens the chat with the customer's mobile.
+      whatsapp: "Escribirle por WhatsApp",
       historial: (visitas: number, inasistencias: number) =>
         `${visitas === 1 ? "1 visita" : `${visitas} visitas`} · ${
           inasistencias === 1
@@ -1641,6 +1643,8 @@ export const textos = {
       celular: "Celular",
       sinCorreo: "Sin correo",
       sinCelular: "Sin celular",
+      // Task 7.5: opens the chat with the customer's mobile.
+      whatsapp: "Escribirle por WhatsApp",
       notas: {
         etiqueta: "Notas",
         guardar: "Guardar notas",

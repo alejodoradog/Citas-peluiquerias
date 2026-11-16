@@ -40,7 +40,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.2 Registro: tipo de establecimiento y volver de los textos legales sin perder lo escrito | Fundador | Pendiente |
 | 7.3 Asistente: servicios genéricos, formulario de profesional vacío y ubicación obligatoria | Fundador | Pendiente |
 | 7.4 Bloqueos del profesional: "todo el día" y no bloquear lo ya cerrado | Fundador | Pendiente |
-| 7.5 Aviso de reserva al profesional, con WhatsApp | Fundador | Pendiente |
+| 7.5 Aviso de reserva al profesional, con WhatsApp (`docs/tareas/7.5-aviso-profesional.md`) | Fundador | En curso (`hito-7-aviso-profesional`). Toca `send-notifications` (`appointment-emails.ts` e `index.ts`): hay que desplegar la función |
 | 7.6 Cuentas de profesional por invitación (reemplaza el link privado) | Fundador | Pendiente. Espera la decisión 0010 |
 | 7.7 Cita inmediata | Fundador | Pendiente. Después de la 7.6 |
 | 7.8 Prueba de 30 días y planes: precios, elegir el plan al registrarse, plan por acuerdo a WhatsApp | Socio | Pendiente. La parte de registro, después de la 7.2 |

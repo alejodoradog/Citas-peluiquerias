@@ -137,13 +137,13 @@ function appointmentDb(db: SupabaseClient): AppointmentDb {
           .maybeSingle(),
         db
           .from("customers")
-          .select("full_name")
+          .select("full_name, phone")
           .eq("barbershop_id", barbershopId)
           .eq("id", appointment.customer_id)
           .maybeSingle(),
         db
           .from("appointment_services")
-          .select("position, services(name)")
+          .select("position, price_cop, services(name)")
           .eq("barbershop_id", barbershopId)
           .eq("appointment_id", appointmentId)
           .order("position"),
@@ -162,6 +162,11 @@ function appointmentDb(db: SupabaseClient): AppointmentDb {
           .map((line) => (line.services as { name?: string } | null)?.name)
           .filter((name): name is string => typeof name === "string"),
         customerFirstName: customerRow.full_name.trim().split(/\s+/)[0] ?? "",
+        customerPhone: customerRow.phone ?? null,
+        totalCop:
+          lineRows.length > 0
+            ? lineRows.reduce((sum, line) => sum + (line.price_cop ?? 0), 0)
+            : null,
         barbershop: {
           name: shopRow.name,
           slug: shopRow.slug,

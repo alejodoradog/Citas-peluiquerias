@@ -108,6 +108,11 @@ export const textos = {
         `Nueva cita: ${cliente}, ${cuando}`,
       cuerpo: (cliente: string, servicios: string, cuando: string) =>
         `${cliente} tiene cita contigo el ${cuando}: ${servicios}.`,
+      // Task 7.5: how long it takes and what it adds up to.
+      duracion: (duracion: string) => `Duración: ${duracion}.`,
+      detalle: (duracion: string, total: string) =>
+        `Duración: ${duracion}. Total: ${total}.`,
+      whatsapp: (cliente: string) => `Escribirle a ${cliente} por WhatsApp`,
     },
     cancelada: {
       asunto: (cliente: string, cuando: string) =>
@@ -129,6 +134,10 @@ export type AppointmentRecord = {
   barberName: string;
   serviceNames: string[];
   customerFirstName: string;
+  // Task 7.5, for the professional's notice only: the customer's mobile as
+  // the barbershop keeps it (E.164), and what the services add up to.
+  customerPhone: string | null;
+  totalCop: number | null;
   barbershop: {
     name: string;
     slug: string;
@@ -215,6 +224,32 @@ export function calendarUrl(
 }
 
 type Button = { label: string; href: string; tone: "primary" | "secondary" };
+
+// The chat with a Colombian mobile, or null: nothing but its own digits ever
+// reaches the link (task 7.5).
+export function whatsappUrl(phone: string | null): string | null {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  return /^573\d{9}$/.test(digits) ? `https://wa.me/${digits}` : null;
+}
+
+// "45 min", "1 h" or "1 h 30 min", from the two instants.
+function duration(startsAt: string, endsAt: string): string {
+  const minutes = Math.max(
+    0,
+    Math.round((Date.parse(endsAt) - Date.parse(startsAt)) / 60_000),
+  );
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest} min`;
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+}
+
+// Whole pesos with the thousands' dot, as the app writes them: "$28.000".
+function pesos(value: number): string {
+  return `$${Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+}
 
 // The frame of E-07 with its buttons: the brand, the title, the paragraphs,
 // the buttons and a footer that names the barbershop and its address.
@@ -346,14 +381,30 @@ export function renderAppointmentEmail(
         [{ label: t.reprogramada.verCita, href: manageUrl, tone: "primary" }],
         place,
       );
-    case "barber_new_booking":
+    case "barber_new_booking": {
+      const lasts = duration(a.startsAt, a.endsAt);
+      const chat = whatsappUrl(a.customerPhone);
       return frame(
         a.barberName,
         t.barbero.nueva.asunto(customer, start),
-        [t.barbero.nueva.cuerpo(customer, services, start)],
-        [],
+        [
+          t.barbero.nueva.cuerpo(customer, services, start),
+          a.totalCop === null
+            ? t.barbero.nueva.duracion(lasts)
+            : t.barbero.nueva.detalle(lasts, pesos(a.totalCop)),
+        ],
+        chat
+          ? [
+              {
+                label: t.barbero.nueva.whatsapp(customer),
+                href: chat,
+                tone: "primary",
+              },
+            ]
+          : [],
         place,
       );
+    }
     case "barber_booking_cancelled":
       return frame(
         a.barberName,
