@@ -834,3 +834,28 @@ export async function inviteAnswer(
   if (error) return error.hint ?? error.message;
   return (data as { status: string }[])[0]?.status ?? "none";
 }
+
+// Task 7.7: a walk-in starts now, so its tests need the establishment open
+// at any hour they run: 0:00 to 24:00 every day (the shop of
+// createBookableShop opens 6:00 to 22:00).
+export async function openAllDay(barbershopId: string) {
+  const { error } = await adminClient()
+    .from("barbershop_hours")
+    .update({ start_time: "00:00", end_time: "24:00" })
+    .eq("barbershop_id", barbershopId);
+  if (error) throw error;
+}
+
+// Task 7.7: the walk-ins of a barbershop with their customer, past RLS.
+export async function walkInAppointments(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("appointments")
+    .select(
+      "id, barber_id, starts_at, ends_at, status, price_cop, customers(full_name, walk_in)",
+    )
+    .eq("barbershop_id", barbershopId)
+    .eq("source", "walk_in")
+    .order("created_at");
+  if (error) throw error;
+  return data;
+}
