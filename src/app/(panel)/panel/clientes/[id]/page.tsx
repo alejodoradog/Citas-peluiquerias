@@ -11,6 +11,7 @@ import {
 } from "@/modulos/clientes/acciones/customers";
 import { getCustomerProfile } from "@/modulos/clientes/datos/customers";
 import {
+  customerWhatsappUrl,
   displayPhone,
   showsNoShowAlert,
   sortHistory,
@@ -165,6 +166,17 @@ async function Customer({ params }: { params: Promise<{ id: string }> }) {
             empty={t.sinCelular}
           />
         </dl>
+        {/* Task 7.5: the customer one tap away. */}
+        {customerWhatsappUrl(customer.phone) ? (
+          <a
+            href={customerWhatsappUrl(customer.phone)!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-strong hover:text-ink text-body inline-flex min-h-11 items-center self-start font-bold underline underline-offset-2"
+          >
+            {t.whatsapp}
+          </a>
+        ) : null}
       </Card>
 
       <NotesForm

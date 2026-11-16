@@ -13,7 +13,10 @@ import {
   DONE_PARAM,
   parseDone,
 } from "@/modulos/agenda/dominio/owner-slots";
-import { displayPhone } from "@/modulos/clientes/dominio/customers";
+import {
+  customerWhatsappUrl,
+  displayPhone,
+} from "@/modulos/clientes/dominio/customers";
 import { Card } from "@/ui/card";
 import { Chip, type ChipTone } from "@/ui/chip";
 import { FlowShell } from "@/ui/flow-shell";
@@ -124,6 +127,7 @@ async function Appointment({
     appointmentLook(appointment, instant) === "new";
   const chip = statusChip[appointment.status];
   const customer = appointment.customer;
+  const whatsapp = customer ? customerWhatsappUrl(customer.phone) : null;
   const when = shortWhen(appointment.start, today);
 
   return (
@@ -213,6 +217,17 @@ async function Appointment({
             {customer.phone ? displayPhone(customer.phone) : t.sinCelular}
           </Detail>
         </dl>
+        {/* Task 7.5: the customer one tap away. */}
+        {whatsapp ? (
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-strong hover:text-ink text-body inline-flex min-h-11 items-center self-start font-bold underline underline-offset-2"
+          >
+            {t.whatsapp}
+          </a>
+        ) : null}
         <p className="text-help text-muted">
           {t.historial(customer.visits, customer.noShows)}
         </p>

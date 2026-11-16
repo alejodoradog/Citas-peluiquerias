@@ -14,6 +14,7 @@ import {
   plainName,
   renderAppointmentEmail,
   timeLine,
+  whatsappUrl,
 } from "./appointment-emails";
 import type { QueuedMessage } from "./run-queue";
 
@@ -27,8 +28,11 @@ function record(extra: Partial<AppointmentRecord> = {}): AppointmentRecord {
     startsAt: START,
     endsAt: END,
     barberName: "Kevin",
+    barberEmail: "kevin@correo.com",
     serviceNames: ["Corte", "Barba"],
     customerFirstName: "Camila",
+    customerPhone: "+573001234567",
+    totalCop: 40000,
     barbershop: {
       name: "Barbería La Esquina",
       slug: "la-esquina",
@@ -192,11 +196,88 @@ describe("renderAppointmentEmail", () => {
     expect(fresh.text).toContain("Hola, Kevin.");
     expect(fresh.text).toMatch(/Camila tiene cita contigo el sábado/);
     expect(fresh.html).not.toContain("/c/");
+    // Task 7.5: how long, how much, and the customer's WhatsApp one tap away.
+    expect(fresh.text).toContain("Duración: 40 min. Total: $40.000.");
+    expect(fresh.html).toContain('href="https://wa.me/573001234567"');
+    expect(fresh.text).toContain("Escribirle a Camila por WhatsApp");
     const gone = renderAppointmentEmail(
       "barber_booking_cancelled",
       data({ manageUrl: null }),
     )!;
     expect(gone.text).toContain("Ese espacio vuelve a estar libre.");
+  });
+});
+
+// Task 7.5.
+describe("the professional's notice of a new appointment", () => {
+  const data = (extra = {}) => ({
+    appointment: record(),
+    manageUrl: MANAGE,
+    oldStartsAt: null,
+    siteUrl: SITE,
+    ...extra,
+  });
+  const notice = (extra: Partial<AppointmentRecord>) =>
+    renderAppointmentEmail(
+      "barber_new_booking",
+      data({ manageUrl: null, appointment: record(extra) }),
+    )!;
+
+  it("has no WhatsApp button when the customer left no mobile", () => {
+    const email = notice({ customerPhone: null });
+    expect(email.html).not.toContain("wa.me");
+    expect(email.text).toContain("Duración: 40 min. Total: $40.000.");
+  });
+
+  it("never builds a link from something that is not a Colombian mobile", () => {
+    // Only the digits reach the link: nothing written after them does.
+    expect(whatsappUrl("573001234567?text=hola&x=<b>")).toBe(
+      "https://wa.me/573001234567",
+    );
+    for (const phone of [
+      "+1 202 555 0100",
+      "javascript:alert(1)",
+      "3001234567",
+      "",
+    ]) {
+      expect(whatsappUrl(phone)).toBeNull();
+      expect(notice({ customerPhone: phone }).html).not.toContain("wa.me");
+    }
+    expect(whatsappUrl("+57 300 123 4567")).toBe("https://wa.me/573001234567");
+  });
+
+  it("writes the duration in hours when it is long, and no total without services", () => {
+    const long = notice({
+      endsAt: "2026-11-21T21:30:00+00:00",
+      totalCop: 125000,
+    });
+    expect(long.text).toContain("Duración: 1 h 30 min. Total: $125.000.");
+    expect(
+      notice({ endsAt: "2026-11-21T21:00:00+00:00", totalCop: null }).text,
+    ).toContain("Duración: 1 h.");
+  });
+
+  it("does not tell the customer's mobile in any other email", () => {
+    for (const type of [
+      "appointment_reminder",
+      "appointment_cancelled",
+      "appointment_rescheduled",
+      "barber_booking_cancelled",
+    ]) {
+      const email = renderAppointmentEmail(
+        type,
+        data({ oldStartsAt: "2026-11-20T20:00:00+00:00" }),
+      );
+      expect(email?.html ?? "").not.toContain("3001234567");
+      expect(email?.text ?? "").not.toContain("3001234567");
+      expect(email?.subject ?? "").not.toContain("3001234567");
+      // Nor what the services add up to.
+      expect(email?.text ?? "").not.toContain("40.000");
+    }
+    // The notice itself keeps both out of its subject.
+    const subject = notice({}).subject;
+    expect(subject).not.toContain("3001234567");
+    expect(subject).not.toContain("40.000");
   });
 });
 
@@ -285,6 +366,40 @@ describe("composeAppointmentEmail", () => {
       "appt",
       await linkTokenHash(token!),
     );
+  });
+
+  // Task 7.5: the notice carries the customer's mobile. The queue chose the
+  // recipient before the appointment was read, and it may have moved since.
+  it("sends a professional's notice only to who has the appointment now", async () => {
+    const toKevin = {
+      ...message("barber_new_booking"),
+      recipient: "Kevin@Correo.com",
+    };
+    expect(
+      await composeAppointmentEmail(toKevin, fakeDb(), env, now),
+    ).toMatchObject({ subject: expect.stringMatching(/^Nueva cita/) });
+    for (const type of ["barber_new_booking", "barber_booking_cancelled"]) {
+      const record_ =
+        type === "barber_booking_cancelled"
+          ? record({ status: "cancelled_by_customer" })
+          : record();
+      expect(
+        await composeAppointmentEmail(
+          { ...message(type), recipient: "otro@correo.com" },
+          fakeDb(record_),
+          env,
+          now,
+        ),
+      ).toEqual({ cancel: "outdated" });
+    }
+    expect(
+      await composeAppointmentEmail(
+        toKevin,
+        fakeDb(record({ barberEmail: null })),
+        env,
+        now,
+      ),
+    ).toEqual({ cancel: "outdated" });
   });
 
   it("issues no link for the barber's notices", async () => {
