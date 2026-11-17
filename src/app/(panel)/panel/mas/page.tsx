@@ -151,6 +151,16 @@ async function More() {
             title={t.cierre}
             href={routes.panelClose}
           />
+          {/* Task 7.8b: the plan, and "Cambiar al plan 2". */}
+          <ListRow
+            icon={<SlidersIcon />}
+            title={textos.planes.plan.fila}
+            subtitle={
+              textos.planes.plan.nombres[barbershop.selectedPlan] ??
+              barbershop.selectedPlan
+            }
+            href={routes.panelPlan}
+          />
         </Section>
         <Section title={t.secciones.cuenta}>
           <ListRow icon={<UserIcon />} title={email} subtitle={t.correo} />
