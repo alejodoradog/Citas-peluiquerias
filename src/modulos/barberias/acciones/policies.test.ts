@@ -5,8 +5,8 @@ import type { Policies } from "../dominio/policies";
 // stand-ins, so the test sees exactly what would be written.
 vi.mock("server-only", () => ({}));
 const revalidatePath = vi.fn();
-vi.mock("next/cache", () => ({ revalidatePath, revalidateTag }));
-const revalidateTag = vi.fn();
+vi.mock("next/cache", () => ({ revalidatePath, updateTag }));
+const updateTag = vi.fn();
 class Redirect extends Error {
   constructor(readonly to: string) {
     super(`redirect ${to}`);
@@ -29,6 +29,7 @@ vi.mock("@/modulos/cuentas/guards", () => ({ requireOwner }));
 const getPolicies = vi.fn<(shop: string) => Promise<Policies>>(async () => ({
   minBookingNoticeMinutes: 60,
   cancellationNoticeHours: 2,
+  bookingIntervalMinutes: 15,
 }));
 const updatePolicies = vi.fn<
   (shop: string, policies: Policies) => Promise<boolean>
@@ -59,19 +60,25 @@ beforeEach(() => {
 describe("savePolicies", () => {
   it("saves both policies in the owner's barbershop and goes back to Más", async () => {
     const result = await run(
-      form({ minBookingNotice: "180", cancellationNotice: "24" }),
+      form({
+        minBookingNotice: "180",
+        cancellationNotice: "24",
+        bookingInterval: "30",
+      }),
     );
     expect(updatePolicies).toHaveBeenCalledWith(SHOP, {
       minBookingNoticeMinutes: 180,
       cancellationNoticeHours: 24,
+      bookingIntervalMinutes: 30,
     });
     expect(result).toEqual({ redirectedTo: "/panel/mas" });
     const paths = revalidatePath.mock.calls.map((call) => call[0]);
     expect(paths).toEqual(
       expect.arrayContaining(["/panel/mas", "/panel/reservas"]),
     );
-    // The booking page shows the new notice at once (task 3.2).
-    expect(revalidateTag).toHaveBeenCalledWith(`public-profile:${SHOP}`, "max");
+    // The booking page shows the new notice and interval on the very next
+    // visit, never the old grid once (tasks 3.2 and 7.11).
+    expect(updateTag).toHaveBeenCalledWith(`public-profile:${SHOP}`);
   });
 
   it("ignores any barbershop the browser sends", async () => {
@@ -79,6 +86,7 @@ describe("savePolicies", () => {
       form({
         minBookingNotice: "60",
         cancellationNotice: "2",
+        bookingInterval: "15",
         barbershopId: OTHER_SHOP,
       }),
     );
@@ -90,36 +98,96 @@ describe("savePolicies", () => {
     getPolicies.mockResolvedValueOnce({
       minBookingNoticeMinutes: 90,
       cancellationNoticeHours: 5,
+      bookingIntervalMinutes: 15,
     });
-    await run(form({ minBookingNotice: "90", cancellationNotice: "5" }));
+    await run(
+      form({
+        minBookingNotice: "90",
+        cancellationNotice: "5",
+        bookingInterval: "15",
+      }),
+    );
     expect(updatePolicies).toHaveBeenCalledWith(SHOP, {
       minBookingNoticeMinutes: 90,
       cancellationNoticeHours: 5,
+      bookingIntervalMinutes: 15,
     });
+  });
+
+  it("saves each interval the owner can choose", async () => {
+    for (const interval of ["15", "30", "60"]) {
+      updatePolicies.mockClear();
+      await run(
+        form({
+          minBookingNotice: "60",
+          cancellationNotice: "2",
+          bookingInterval: interval,
+        }),
+      );
+      expect(updatePolicies).toHaveBeenCalledWith(SHOP, {
+        minBookingNoticeMinutes: 60,
+        cancellationNoticeHours: 2,
+        bookingIntervalMinutes: Number(interval),
+      });
+    }
+  });
+
+  it("refuses an interval the screen does not offer", async () => {
+    const result = await run(
+      form({
+        minBookingNotice: "60",
+        cancellationNotice: "2",
+        bookingInterval: "45",
+      }),
+    );
+    expect(result).toMatchObject({
+      status: "invalid",
+      fieldErrors: { bookingInterval: "booking_interval_invalid" },
+    });
+    expect(updatePolicies).not.toHaveBeenCalled();
   });
 
   it("refuses values the screen does not offer, by field", async () => {
     expect(
-      await run(form({ minBookingNotice: "10080", cancellationNotice: "-1" })),
+      await run(
+        form({
+          minBookingNotice: "10080",
+          cancellationNotice: "-1",
+          bookingInterval: "45",
+        }),
+      ),
     ).toEqual({
       status: "invalid",
       fieldErrors: {
         minBookingNotice: "min_booking_notice_invalid",
         cancellationNotice: "cancellation_notice_invalid",
+        bookingInterval: "booking_interval_invalid",
       },
-      values: { minBookingNotice: "10080", cancellationNotice: "-1" },
+      values: {
+        minBookingNotice: "10080",
+        cancellationNotice: "-1",
+        bookingInterval: "45",
+      },
     });
     expect(updatePolicies).not.toHaveBeenCalled();
   });
 
   it("does not echo back values longer than an option", async () => {
     const result = await run(
-      form({ minBookingNotice: "9".repeat(5_000), cancellationNotice: "2" }),
+      form({
+        minBookingNotice: "9".repeat(5_000),
+        cancellationNotice: "2",
+        bookingInterval: "15",
+      }),
     );
     expect(result).toEqual({
       status: "invalid",
       fieldErrors: { minBookingNotice: "min_booking_notice_invalid" },
-      values: { minBookingNotice: "", cancellationNotice: "2" },
+      values: {
+        minBookingNotice: "",
+        cancellationNotice: "2",
+        bookingInterval: "15",
+      },
     });
     expect(updatePolicies).not.toHaveBeenCalled();
   });
@@ -127,11 +195,21 @@ describe("savePolicies", () => {
   it("says so when the database writes nothing", async () => {
     updatePolicies.mockResolvedValueOnce(false);
     expect(
-      await run(form({ minBookingNotice: "60", cancellationNotice: "2" })),
+      await run(
+        form({
+          minBookingNotice: "60",
+          cancellationNotice: "2",
+          bookingInterval: "30",
+        }),
+      ),
     ).toEqual({
       status: "failed",
       error: "unknown",
-      values: { minBookingNotice: "60", cancellationNotice: "2" },
+      values: {
+        minBookingNotice: "60",
+        cancellationNotice: "2",
+        bookingInterval: "30",
+      },
     });
     expect(revalidatePath).not.toHaveBeenCalled();
   });
@@ -141,7 +219,13 @@ describe("savePolicies", () => {
       barbershop: { id: SHOP, needsSetup: true },
     });
     expect(
-      await run(form({ minBookingNotice: "60", cancellationNotice: "2" })),
+      await run(
+        form({
+          minBookingNotice: "60",
+          cancellationNotice: "2",
+          bookingInterval: "15",
+        }),
+      ),
     ).toEqual({ redirectedTo: "/panel/configurar" });
     expect(updatePolicies).not.toHaveBeenCalled();
   });

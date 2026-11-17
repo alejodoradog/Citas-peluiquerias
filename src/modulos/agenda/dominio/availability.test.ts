@@ -644,3 +644,67 @@ describe("availableSlots: performance", () => {
     expect(Math.min(...runs)).toBeLessThan(200);
   });
 });
+
+// Task 7.11: each barbershop chooses every how many minutes customers are
+// offered times: 15 (the default), 30 or 60, counted from the hour.
+describe("availableSlots: the booking interval", () => {
+  it("keeps every 15 minutes when nothing is chosen", () => {
+    expect(times({}).slice(0, 3)).toEqual(["09:00", "09:15", "09:30"]);
+    expect(times({ slotStepMinutes: 15 })).toEqual(times({}));
+  });
+
+  it("offers every 30 minutes, from the hour", () => {
+    const slots = times({ slotStepMinutes: 30 });
+    expect(slots.slice(0, 3)).toEqual(["09:00", "09:30", "10:00"]);
+    expect(slots.at(-1)).toBe("19:30");
+    expect(slots.every((time) => /:(00|30)$/.test(time))).toBe(true);
+  });
+
+  it("offers every hour, from the hour", () => {
+    const slots = times({ slotStepMinutes: 60 });
+    expect(slots.slice(0, 3)).toEqual(["09:00", "10:00", "11:00"]);
+    expect(slots.at(-1)).toBe("19:00");
+    expect(slots.every((time) => time.endsWith(":00"))).toBe(true);
+  });
+
+  it("starts on the grid even when a shift does not", () => {
+    const shifted: WeeklyShift[] = [
+      { weekday: 4, start: "09:15", end: "12:00" },
+    ];
+    expect(
+      times({ shopHours: shifted, slotStepMinutes: 30 }).slice(0, 2),
+    ).toEqual(["09:30", "10:00"]);
+    expect(times({ shopHours: shifted, slotStepMinutes: 60 })).toEqual([
+      "10:00",
+      "11:00",
+    ]);
+  });
+
+  it("leaves unoffered the rest of an hour a shorter service does not use", () => {
+    // A 40-minute appointment at 10:00 ends 10:40; the next hour is 11:00.
+    const slots = times({
+      slotStepMinutes: 60,
+      durationMinutes: 40,
+      appointments: [
+        { ...interval(THURSDAY, "10:00", "10:40"), barberId: "ana" },
+      ],
+    });
+    expect(slots).not.toContain("10:00");
+    expect(slots).toContain("11:00");
+  });
+
+  it("applies the notice on the grid: the first time at or after it", () => {
+    // Today, 6:00 a. m. now and 3 h 10 min of notice: 9:10 is the earliest.
+    expect(
+      times({ minNoticeMinutes: 190, slotStepMinutes: 30 }, "2026-11-10")[0],
+    ).toBe("09:30");
+  });
+
+  it("refuses an interval the database never stores", () => {
+    for (const step of [0, 10, 20, 45, 90, Number.NaN]) {
+      expect(() =>
+        availableSlots(input({ slotStepMinutes: step as 15 })),
+      ).toThrow(RangeError);
+    }
+  });
+});

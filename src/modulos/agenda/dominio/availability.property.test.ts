@@ -112,6 +112,8 @@ const inputArb: fc.Arbitrary<AvailabilityInput> = fc
     ),
     openAll: fc.boolean(),
     openSome: fc.integer({ min: 0, max: 2 ** 20 }),
+    // Task 7.11: the barbershop's interval, or none (15).
+    step: fc.constantFrom(undefined, 15, 30, 60),
   })
   .map((raw) => {
     const today = bogotaDate(raw.now.getTime());
@@ -129,6 +131,9 @@ const inputArb: fc.Arbitrary<AvailabilityInput> = fc
       toDate: plusDays(fromDate, raw.days),
       durationMinutes: raw.durationMinutes,
       minNoticeMinutes: raw.minNoticeMinutes,
+      ...(raw.step === undefined
+        ? {}
+        : { slotStepMinutes: raw.step as 15 | 30 | 60 }),
       shopHours: raw.shopHours,
       holidayOpenings: holidays.filter(
         (_, i) => raw.openAll || (raw.openSome >> (i % 20)) & 1,
@@ -218,7 +223,10 @@ const windowOf = (input: AvailabilityInput) => {
   return { from: today, until: plusDays(today, 30) };
 };
 
-// Brute force: every quarter hour of every day asked for, every barber.
+// The interval of an input: 15 when it names none (task 7.11).
+const stepOf = (input: AvailabilityInput) => input.slotStepMinutes ?? 15;
+
+// Brute force: every time of the grid of every day asked for, every barber.
 function oracle(input: AvailabilityInput): Offer[] {
   const window = windowOf(input);
   const earliest = input.now.getTime() + input.minNoticeMinutes * MINUTE;
@@ -230,7 +238,7 @@ function oracle(input: AvailabilityInput): Offer[] {
   ) {
     if (date < window.from || date > window.until || closedHoliday(input, date))
       continue;
-    for (let minute = 0; minute < 1440; minute += 15) {
+    for (let minute = 0; minute < 1440; minute += stepOf(input)) {
       const start = dayStart(date) + minute * MINUTE;
       const end = start + input.durationMinutes * MINUTE;
       if (start < earliest) continue;
@@ -312,11 +320,11 @@ describe("availableSlots properties", () => {
     );
   });
 
-  it("starts every slot on the quarter hour of its Bogotá day and fits it whole", () => {
+  it("starts every slot on the grid of its Bogotá day and fits it whole", () => {
     fc.assert(
       fc.property(inputArb, (input) => {
         for (const offer of offers(availableSlots(input))) {
-          expect(bogotaMinute(offer.start) % 15).toBe(0);
+          expect(bogotaMinute(offer.start) % stepOf(input)).toBe(0);
           expect(bogotaDate(offer.start)).toBe(offer.date);
           expect(offer.end - offer.start).toBe(input.durationMinutes * MINUTE);
           expect(offer.end).toBeLessThanOrEqual(

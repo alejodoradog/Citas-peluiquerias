@@ -31,10 +31,14 @@ import { MAX_BOOKING_MINUTES } from "./booking";
 // constraint: an appointment ending at 10:00 leaves 10:00 free.
 //
 // Slots start every 15 minutes of the Bogotá wall clock (:00, :15, :30, :45),
-// at or after now + the minimum notice, on days from today to today + 30 in
-// Bogotá, both included (decision 1 of docs/tareas/3.1, provisional).
+// or every 30 or 60 when the barbershop chose it (task 7.11), counted from the
+// hour; at or after now + the minimum notice, on days from today to today +
+// 30 in Bogotá, both included (decision 1 of docs/tareas/3.1, provisional).
 
 export const SLOT_STEP_MINUTES = 15;
+// barbershops.booking_interval_minutes (task 7.11).
+export const SLOT_STEPS = [15, 30, 60] as const;
+export type SlotStep = (typeof SLOT_STEPS)[number];
 // barbershops.min_booking_notice_minutes, between 0 and 10080 in the database.
 export const MAX_NOTICE_MINUTES = 10_080;
 
@@ -72,6 +76,9 @@ export type AvailabilityInput = {
   barbers: readonly AvailabilityBarber[];
   blocks: readonly TimeBlock[];
   appointments: readonly BusyAppointment[];
+  // Every how many minutes times are offered (task 7.11): 15 when missing,
+  // as for the owner's own appointments and blocks.
+  slotStepMinutes?: SlotStep;
 };
 
 // A start time and the barbers free for the whole appointment, ordered by
@@ -222,6 +229,12 @@ function validate(input: AvailabilityInput): void {
   ) {
     invalid(`Invalid minimum notice: ${minNoticeMinutes}`);
   }
+  if (
+    input.slotStepMinutes !== undefined &&
+    !(SLOT_STEPS as readonly number[]).includes(input.slotStepMinutes)
+  ) {
+    invalid(`Invalid booking interval: ${input.slotStepMinutes}`);
+  }
   if (!input.holidayOpenings.every(isBogotaDate)) invalid("Invalid holiday");
   const ids = new Set(input.barbers.map((barber) => barber.id));
   if (ids.size !== input.barbers.length) invalid("Repeated barber");
@@ -280,6 +293,7 @@ export function availableSlots(input: AvailabilityInput): DayAvailability[] {
               busy,
               durationMs,
               earliest,
+              input.slotStepMinutes ?? SLOT_STEP_MINUTES,
             ),
     });
   }
@@ -293,6 +307,7 @@ function daySlots(
   busy: ReadonlyMap<string, Busy[]>,
   durationMs: number,
   earliest: number,
+  step: number,
 ): Slot[] {
   const weekday = getWeekday(date);
   const shop = daySpans(shopHours, weekday);
@@ -305,9 +320,8 @@ function daySlots(
     const barberBusy = busy.get(barber.id)!;
     for (const span of spans) {
       const spanEnd = wallInstant(date, span.end);
-      const first =
-        Math.ceil(span.start / SLOT_STEP_MINUTES) * SLOT_STEP_MINUTES;
-      for (let minute = first; minute < span.end; minute += SLOT_STEP_MINUTES) {
+      const first = Math.ceil(span.start / step) * step;
+      for (let minute = first; minute < span.end; minute += step) {
         const start = wallInstant(date, minute);
         const end = start + durationMs;
         if (end > spanEnd) break;
