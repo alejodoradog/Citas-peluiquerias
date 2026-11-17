@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
 import {
   formatWallClock,
   now,
   toBogotaDate,
   toBogotaTime,
 } from "@/lib/fechas/fechas";
+import { myAgendaHref } from "@/lib/routes";
 import { loadBarberAgendaSpan } from "@/modulos/agenda/datos/barber-agenda";
 import {
   blockDayOptions,
@@ -14,30 +14,25 @@ import {
 import { Notice } from "@/ui/notice";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
+import { AccessGone } from "./access-gone";
 import { BlockForm } from "./block-form";
-import { agendaHref, type AgendaEntry } from "./entry";
 import { dayLabel } from "./labels";
 
 const t = textos.barbero;
 
-// B-04 (task 4.4), by either entry: the professional blocks hours of their
-// own, from now to 30 days ahead (decision B5), only where they have no
-// appointment. A paused barbershop or an inactive professional cannot block.
-export async function BlockScreen({
-  entry,
-  gone,
-}: {
-  entry: AgendaEntry;
-  gone: ReactNode;
-}) {
+// B-04 (task 4.4), by the professional's session (task 7.6b): they block
+// hours of their own, from now to 30 days ahead (decision B5), only where
+// they have no appointment. A paused barbershop or an inactive professional
+// cannot block.
+export async function BlockScreen() {
   const instant = now();
   const today = toBogotaDate(instant);
   // The whole window of the picker: its closed days are not offered.
   const days = blockDayOptions(today);
-  const agenda = await loadBarberAgendaSpan(entry, today, days.at(-1)!);
-  if (!agenda) return gone;
+  const agenda = await loadBarberAgendaSpan(today, days.at(-1)!);
+  if (!agenda) return <AccessGone />;
 
-  const close = { href: agendaHref(entry), label: t.bloquear.cerrar };
+  const close = { href: myAgendaHref(), label: t.bloquear.cerrar };
   if (!agenda.barbershop.writable || !agenda.barber.active) {
     return (
       <div className="mx-auto flex w-full max-w-md flex-col">
@@ -66,7 +61,6 @@ export async function BlockScreen({
 
   return (
     <BlockForm
-      entry={entry}
       close={close}
       days={days.map((date) => ({
         value: date,

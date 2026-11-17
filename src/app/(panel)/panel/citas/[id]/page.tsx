@@ -25,7 +25,7 @@ import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import { requireReadyOwner } from "../../ready-owner";
-import { agoLabel, shortWhen, whenLabel } from "../labels";
+import { agoLabel, originLabel, shortWhen, whenLabel } from "../labels";
 import {
   AppointmentActionBar,
   EditServicesButton,
@@ -166,7 +166,7 @@ async function Appointment({
         ) : null}
         <span className="text-muted self-center text-xs">
           {t.origenCuando(
-            t.origen[appointment.source],
+            originLabel(appointment.source, appointment.createdBy),
             agoLabel(appointment.createdAt, instant, today),
           )}
         </span>

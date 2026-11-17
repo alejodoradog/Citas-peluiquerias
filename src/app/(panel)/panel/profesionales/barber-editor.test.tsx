@@ -36,8 +36,6 @@ const kevin: EditableBarber = {
   serviceIds: [BARBA],
   active: true,
   isOwner: false,
-  linkState: "active",
-  linkSentOn: "3 de noviembre",
   inactiveSince: null,
 };
 
@@ -91,7 +89,8 @@ describe("BarberEditor", () => {
     expect(
       screen.queryByRole("link", { name: new RegExp(`^${t.horario}`) }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(t.linkNuevo)).toBeInTheDocument();
+    // Task 7.6c: the private link is gone from the card.
+    expect(screen.queryByText(/link/i)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Desactivar/ }),
     ).not.toBeInTheDocument();
@@ -108,7 +107,7 @@ describe("BarberEditor", () => {
     expect(notices).toHaveAccessibleDescription(t.avisosAyuda);
   });
 
-  it("shows a saved barber, with their link and services", () => {
+  it("shows a saved barber, with their services and no link", () => {
     render(
       <BarberEditor
         action={answer(() => ({ status: "idle" }))}
@@ -128,7 +127,9 @@ describe("BarberEditor", () => {
     expect(screen.getByRole("switch", { name: t.avisos })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Corte" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Barba" })).toBeChecked();
-    expect(screen.getByText(t.linkActivoChip)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /link/i }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: new RegExp(`^${t.horario}`) }),
     ).toHaveAttribute("href", `/panel/profesionales/${kevin.id}/horario`);
@@ -137,7 +138,7 @@ describe("BarberEditor", () => {
     ).toBeInTheDocument();
   });
 
-  it("asks before deactivating, and says the link keeps working", async () => {
+  it("asks before deactivating, and says the appointments stay", async () => {
     const user = userEvent.setup();
     const setActive = vi.fn(async () => ({ ok: true }) as const);
     render(
@@ -159,7 +160,7 @@ describe("BarberEditor", () => {
     });
     expect(sheet).toHaveTextContent(t.confirmar.cuerpo);
     expect(t.confirmar.cuerpo).toMatch(/citas ya tomadas se conservan/);
-    expect(t.confirmar.cuerpo).not.toMatch(/deja de funcionar/);
+    expect(t.confirmar.cuerpo).not.toMatch(/link/);
     expect(setActive).not.toHaveBeenCalled();
 
     await user.click(
@@ -227,26 +228,28 @@ describe("BarberEditor", () => {
           ...kevin,
           displayName: "Mario",
           isOwner: true,
-          linkState: "owner",
-          linkSentOn: null,
         }}
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
         discardUpload={discardUpload}
         setActive={vi.fn()}
+        remove={{ upcoming: 0, action: vi.fn() }}
       />,
     );
     expect(
       screen.queryByRole("button", { name: t.desactivar("Mario") }),
     ).not.toBeInTheDocument();
-    expect(screen.getByText(t.linkDueno)).toBeInTheDocument();
+    // Nor to delete them (task 7.6c).
     expect(
-      screen.queryByRole("link", { name: new RegExp(`^${t.linkPrivado}`) }),
+      screen.queryByRole("button", { name: t.eliminar.boton("Mario") }),
     ).not.toBeInTheDocument();
   });
 
-  it("opens D-56 from the link row, saying when it was sent", () => {
+  // Task 7.6c, decision 0010 point 7.
+  it("asks before deleting, saying what goes and what stays", async () => {
+    const user = userEvent.setup();
+    const remove = vi.fn(async () => ({ ok: true }) as const);
     render(
       <BarberEditor
         action={answer(() => ({ status: "idle" }))}
@@ -255,45 +258,121 @@ describe("BarberEditor", () => {
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
         discardUpload={discardUpload}
+        setActive={vi.fn()}
+        remove={{ upcoming: 0, action: remove }}
       />,
     );
-    const row = screen.getByRole("link", {
-      name: new RegExp(`^${t.linkPrivado}`),
-    });
-    expect(row).toHaveAttribute(
-      "href",
-      `/panel/profesionales/${kevin.id}/link`,
+    await user.click(
+      screen.getByRole("button", { name: t.eliminar.boton("Kevin") }),
     );
-    expect(row).toHaveTextContent(t.linkEnviado("3 de noviembre"));
-    expect(row).toHaveTextContent(t.linkActivoChip);
+    const sheet = screen.getByRole("dialog", {
+      name: t.eliminar.titulo("Kevin"),
+    });
+    expect(sheet).toHaveTextContent(t.eliminar.borra);
+    expect(sheet).toHaveTextContent(t.eliminar.queda);
+    expect(sheet).toHaveTextContent(t.eliminar.sinVuelta);
+    expect(remove).not.toHaveBeenCalled();
+    await user.click(
+      within(sheet).getByRole("button", { name: t.eliminar.si }),
+    );
+    expect(remove).toHaveBeenCalledWith(kevin.id);
   });
 
-  it("says when a link was never sent, or is off", () => {
-    const { rerender } = render(
+  it("explains the appointments to come and offers no way to delete", async () => {
+    const user = userEvent.setup();
+    const remove = vi.fn();
+    render(
       <BarberEditor
         action={answer(() => ({ status: "idle" }))}
-        barber={{ ...kevin, linkState: "unsent", linkSentOn: null }}
+        barber={kevin}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+        discardUpload={discardUpload}
+        remove={{ upcoming: 2, action: remove }}
+      />,
+    );
+    await user.click(
+      screen.getByRole("button", { name: t.eliminar.boton("Kevin") }),
+    );
+    const sheet = screen.getByRole("dialog");
+    expect(sheet).toHaveTextContent(t.eliminar.conCitas(2));
+    expect(
+      within(sheet).queryByRole("button", { name: t.eliminar.si }),
+    ).not.toBeInTheDocument();
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("shows the database's refusal, and lets a half-done deletion be tried again", async () => {
+    const user = userEvent.setup();
+    const remove = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        error: "has_upcoming_appointments",
+        upcoming: 1,
+      });
+    const { unmount } = render(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={kevin}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+        discardUpload={discardUpload}
+        remove={{ upcoming: 0, action: remove }}
+      />,
+    );
+    await user.click(
+      screen.getByRole("button", { name: t.eliminar.boton("Kevin") }),
+    );
+    await user.click(screen.getByRole("button", { name: t.eliminar.si }));
+    expect(
+      await screen.findByText(t.eliminar.conCitas(1)),
+    ).toBeInTheDocument();
+    unmount();
+
+    const retry = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, error: "account_not_deleted" });
+    render(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={kevin}
+        services={services}
+        hoursSummary={t.horarioBarberia}
+        requestUpload={requestUpload}
+        discardUpload={discardUpload}
+        remove={{ upcoming: 0, action: retry }}
+      />,
+    );
+    await user.click(
+      screen.getByRole("button", { name: t.eliminar.boton("Kevin") }),
+    );
+    await user.click(screen.getByRole("button", { name: t.eliminar.si }));
+    const sheet = screen.getByRole("dialog");
+    expect(await within(sheet).findByRole("alert")).toHaveTextContent(
+      t.eliminar.errores.account_not_deleted,
+    );
+    expect(
+      within(sheet).getByRole("button", { name: t.eliminar.reintentar }),
+    ).toBeInTheDocument();
+  });
+
+  it("offers no deletion for a new professional", () => {
+    render(
+      <BarberEditor
+        action={answer(() => ({ status: "idle" }))}
+        barber={null}
         services={services}
         hoursSummary={t.horarioBarberia}
         requestUpload={requestUpload}
         discardUpload={discardUpload}
       />,
     );
-    const row = () =>
-      screen.getByRole("link", { name: new RegExp(`^${t.linkPrivado}`) });
-    expect(row()).toHaveTextContent(t.linkSinEnviarAyuda);
-    expect(row()).toHaveTextContent(t.linkSinEnviarChip);
-    rerender(
-      <BarberEditor
-        action={answer(() => ({ status: "idle" }))}
-        barber={{ ...kevin, linkState: "off" }}
-        services={services}
-        hoursSummary={t.horarioBarberia}
-        requestUpload={requestUpload}
-        discardUpload={discardUpload}
-      />,
-    );
-    expect(row()).toHaveTextContent(t.linkDesactivadoChip);
+    expect(
+      screen.queryByRole("button", { name: /Eliminar/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("focuses the email when the notices have nowhere to go", async () => {

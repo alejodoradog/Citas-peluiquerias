@@ -92,7 +92,8 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   test.setTimeout(180_000);
   const { slug } = await signInSetUpOwner(page);
 
-  // D-50 → D-53: the owner is the only barber, without a link.
+  // D-50 → D-53: the owner is the only barber, with nothing to say about an
+  // access (task 7.6c: they have their own account).
   await page
     .getByRole("navigation", { name: textos.ui.navegacion.etiqueta })
     .getByRole("link", { name: textos.ui.navegacion.mas })
@@ -107,7 +108,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   ).toBeVisible();
   const owner = barberRow(page, "Carlos Pérez");
   await expect(owner).toContainText(t.tu);
-  await expect(owner).toContainText(t.sinLink);
+  await expect(owner).not.toContainText(/link|acceso|invita/);
   await checkScreen(page);
 
   // D-54, new: every service checked, the notices off until there is an email.
@@ -139,8 +140,8 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   const kevin = barberRow(page, "Kevin");
   await expect(kevin).toContainText(t.horarioBarberia);
   await expect(kevin).toContainText(t.conteoServicios(3));
-  // A new barber's link was never issued (task 2.3).
-  await expect(kevin).toContainText(t.linkSinEnviar);
+  // A new professional with an email is not invited yet (task 7.6c).
+  await expect(kevin).toContainText(t.accesoLista.not_invited);
   await expect(kevin.locator("img")).toHaveAttribute("src", storagePhoto);
   const first = await barberPhotos(slug, "Kevin");
   expect(first.objects).toEqual([first.photoPath]);
@@ -220,7 +221,10 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toHaveCount(0);
-  await expect(barberRow(page, "Kevin")).toContainText(t.linkSinEnviar);
+  // Their email was cleared above: nowhere to invite them (task 7.6c).
+  await expect(barberRow(page, "Kevin")).toContainText(
+    t.accesoLista.no_email,
+  );
 
   // Más counts both active barbers.
   await page.getByRole("link", { name: textos.ui.volver }).click();
@@ -242,7 +246,8 @@ test("the owner cannot deactivate themselves", async ({ page }) => {
   await expect(page.getByRole("button", { name: /^Desactivar/ })).toHaveCount(
     0,
   );
-  await expect(page.getByText(t.linkDueno)).toBeVisible();
+  // Nor delete themselves (task 7.6c).
+  await expect(page.getByRole("button", { name: /^Eliminar/ })).toHaveCount(0);
 });
 
 test("a barber link that leads nowhere is not found", async ({ page }) => {

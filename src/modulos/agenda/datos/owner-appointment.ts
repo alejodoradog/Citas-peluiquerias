@@ -2,7 +2,11 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isId } from "@/modulos/barberias/dominio/service";
 import { bookingWindow } from "../dominio/availability";
-import type { AgendaData, AppointmentStatus } from "../dominio/owner-agenda";
+import type {
+  AgendaData,
+  AppointmentSource,
+  AppointmentStatus,
+} from "../dominio/owner-agenda";
 import { loadOwnerAgenda } from "./owner-agenda";
 import { toOwnerRefusal, type OwnerRefusal } from "./owner-appointment-errors";
 
@@ -21,7 +25,7 @@ export type OwnerService = {
 export type OwnerAppointmentDetail = {
   id: string;
   status: AppointmentStatus;
-  source: "web" | "manual";
+  source: AppointmentSource;
   createdAt: Date;
   start: Date;
   end: Date;
@@ -41,7 +45,14 @@ export type OwnerAppointmentDetail = {
     noShows: number;
     anonymized: boolean;
   };
+  // Who made a walk-in (task 7.7), from its "created" event: the
+  // professional with their account, or the establishment. Null for the
+  // other origins, which keep no creation event.
+  createdBy: WalkInCreator | null;
 };
+
+export type WalkInCreator =
+  { by: "professional"; name: string } | { by: "barbershop" };
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -55,8 +66,11 @@ export async function getOwnerAppointment(
   const supabase = await createSupabaseServerClient();
   const data = await readAppointment(supabase, barbershopId, id);
   if (!data) return null;
-  const history = await readVisits(supabase, barbershopId, data.customer_id);
-  return toDetail(data, history);
+  const [history, creator] = await Promise.all([
+    readVisits(supabase, barbershopId, data.customer_id),
+    readCreator(supabase, barbershopId, data),
+  ]);
+  return toDetail(data, history, creator);
 }
 
 // D-34 with the sheet of "Editar servicios": the appointment and what its
@@ -75,11 +89,12 @@ export async function getOwnerAppointmentWithOffer(
   const supabase = await createSupabaseServerClient();
   const data = await readAppointment(supabase, barbershopId, id);
   if (!data) return null;
-  const [history, barberServices] = await Promise.all([
+  const [history, barberServices, creator] = await Promise.all([
     readVisits(supabase, barbershopId, data.customer_id),
     readBarberServices(supabase, barbershopId, data.barber_id),
+    readCreator(supabase, barbershopId, data),
   ]);
-  return { appointment: toDetail(data, history), barberServices };
+  return { appointment: toDetail(data, history, creator), barberServices };
 }
 
 async function readAppointment(
@@ -90,10 +105,13 @@ async function readAppointment(
   const { data, error } = await supabase
     .from("appointments")
     .select(
-      "id, status, source, created_at, starts_at, ends_at, price_cop, customer_confirmed_at, barber_id, customer_id, barbers(display_name), customers(full_name, email, phone, anonymized_at), appointment_services(position, service_id, price_cop, duration_minutes, services(name))",
+      "id, status, source, created_at, starts_at, ends_at, price_cop, customer_confirmed_at, barber_id, customer_id, barbers(display_name), customers(full_name, email, phone, anonymized_at), appointment_services(position, service_id, price_cop, duration_minutes, services(name)), appointment_events(type, actor, new_barber_id)",
     )
     .eq("barbershop_id", barbershopId)
     .eq("id", id)
+    // Only the "created" event of a walk-in (task 7.7); the history of
+    // changes is not read here.
+    .eq("appointment_events.type", "created")
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -117,9 +135,35 @@ async function readVisits(
   return data;
 }
 
+// Task 7.7: who made a walk-in, from its "created" event (the database
+// writes it, migration add_walk_in_appointments). A professional makes one
+// only for themself, so the barber of the event is who made it; it is read
+// by id only when the appointment moved to another barber since.
+async function readCreator(
+  supabase: Supabase,
+  barbershopId: string,
+  data: AppointmentRow,
+): Promise<WalkInCreator | null> {
+  const created = data.appointment_events.find((e) => e.type === "created");
+  if (!created) return null;
+  if (created.actor !== "barber") return { by: "barbershop" };
+  if (!created.new_barber_id || created.new_barber_id === data.barber_id) {
+    return { by: "professional", name: data.barbers?.display_name ?? "" };
+  }
+  const { data: barber, error } = await supabase
+    .from("barbers")
+    .select("display_name")
+    .eq("barbershop_id", barbershopId)
+    .eq("id", created.new_barber_id)
+    .maybeSingle();
+  if (error) throw error;
+  return { by: "professional", name: barber?.display_name ?? "" };
+}
+
 function toDetail(
   data: AppointmentRow,
   history: ReadonlyArray<{ status: string }>,
+  createdBy: WalkInCreator | null,
 ): OwnerAppointmentDetail {
   return {
     id: data.id,
@@ -148,6 +192,7 @@ function toDetail(
       noShows: history.filter((row) => row.status === "no_show").length,
       anonymized: data.customers?.anonymized_at != null,
     },
+    createdBy,
   };
 }
 

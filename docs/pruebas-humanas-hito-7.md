@@ -120,6 +120,44 @@ Con la plantilla `invite.html` pegada en Supabase (Emails › Invite user), una 
 - [ ] **17. Volver a invitar.** Tocar "Invitar" con el mismo correo: llega una invitación nueva y funciona.
 - [ ] **18. El link privado sigue igual.** El link `/b/…` de otro profesional sigue mostrando su agenda, sin WhatsApp (se quita en la 7.6c).
 
+## Tarea 7.6c: eliminar un profesional y quitar el link privado
+Con la cuenta de dueño y dos profesionales con cuenta (de la 7.6b). Desde dos celulares: el del dueño y el de un profesional.
+
+- [ ] **1. La lista dice el acceso.** En Más › Profesionales, cada profesional dice al final "sin correo", "sin invitar", "invitado", "invitación vencida", "con acceso" o "sin acceso". El dueño que atiende no dice nada de eso. Ya no aparece "link" en la lista.
+- [ ] **2. La ficha sin link.** En la ficha ya no está la fila "Link privado". El texto del correo dice que sirve para invitarlo.
+- [ ] **3. Dirección vieja de la ficha.** Abrir `/panel/profesionales/<id>/link` (cambia `<id>` por el de un profesional): abre su ficha.
+- [ ] **4. Link viejo del profesional.** Abrir `www.yapoin.com/b/cualquier-cosa`: dice "Este link ya no funciona", que ahora entra con su cuenta, y el botón "Ingresar" lleva a `/ingresar`.
+- [ ] **5. Textos.** La agenda vacía dice "Invita a tus profesionales a ver su agenda". El paso "Tu equipo" del asistente dice que después los invitas desde Más › Profesionales. Nada habla de un link privado.
+- [ ] **6. No se elimina con citas por venir.** A un profesional con una cita mañana, tocar "Eliminar a …": la hoja dice cuántas citas tiene y que las pases o canceles; no hay botón para eliminar.
+- [ ] **7. Qué se borra y qué queda.** Cancelar o mover esa cita y volver a "Eliminar a …": la hoja dice qué se borra (nombre, correo, foto, cuenta, servicios, horario, bloqueos por venir) y qué queda (citas pasadas, cierre, historial). "Cancelar" no hace nada.
+- [ ] **8. Eliminar.** Tocar "Sí, eliminar": vuelve a Profesionales y ya no está. Más cuenta un profesional activo menos.
+- [ ] **9. Su sesión termina.** En el celular del profesional eliminado, recargar "Mi agenda": lo manda a ingresar, y su contraseña ya no sirve.
+- [ ] **10. Su foto.** Si tenía foto, en Supabase › Storage ya no está el archivo.
+- [ ] **11. El historial cuadra.** En la agenda de un día pasado donde tenía citas, salen a nombre de "Profesional eliminado". El cierre de ese día da los mismos totales que antes. En Clientes, las visitas del cliente siguen contando.
+- [ ] **12. No aparece donde no debe.** La página de reservas, "Nueva cita" del dueño y la agenda de mañana no lo muestran.
+- [ ] **13. El plan.** Con el plan 1 lleno (4 activos), eliminar a uno y agregar otro: deja. El eliminado no cuenta.
+- [ ] **14. El dueño no se elimina.** En la ficha del dueño que atiende no está "Eliminar".
+- [ ] **15. Pausado.** Con el establecimiento pausado, eliminar a un profesional sin citas por venir también funciona.
+
+## Tarea 7.7: cita al momento
+Con la cuenta de dueño y un profesional con cuenta (de la 7.6b), en un rato en que el establecimiento atiende. Desde dos celulares: el del dueño y el del profesional.
+
+- [ ] **1. El botón.** En "Mi agenda" de hoy sale "Cita al momento". En otro día o en la semana no sale. En la agenda del dueño sale en el día de hoy.
+- [ ] **2. La pantalla.** Dice "Empieza: Ahora, …" con la hora actual (redondeada hacia abajo a 5 minutos). Sin servicios marcados, "Crear cita" no deja.
+- [ ] **3. Totales.** Marcar dos servicios: abajo salen "2 servicios · N min" y el precio, y "Termina" da la hora de fin. Desmarcar uno: cambian.
+- [ ] **4. Crear con nombre.** Escribir un nombre y tocar "Crear cita": vuelve a "Mi agenda" con la cita ya puesta, a la hora de ahora.
+- [ ] **5. Sin correo.** El cliente no recibe nada y al profesional no le llega el aviso de reserva (en Supabase, `notifications` no tiene nada de esa cita).
+- [ ] **6. Atendida.** En esa cita, "Atendida" funciona de una vez. Al final del día, el cierre la cuenta.
+- [ ] **7. Choque con una cita.** Con una cita del profesional que empieza en unos minutos, intentar una cita al momento más larga: dice "No cabe ahora: no se creó la cita", con qué cita choca ("Tienes una cita a las …") y cuántos minutos libres hay. No se crea nada. Elegir un servicio más corto que quepa: se crea.
+- [ ] **8. Choque con un bloqueo y un cierre.** Igual con un bloqueo propio que empieza pronto ("Tienes un bloqueo desde las …") y con un cierre del establecimiento ("El establecimiento cierra desde las …").
+- [ ] **9. Fin del horario.** Cerca del fin de su horario: dice "Tu horario termina a las …". Fuera de su horario: "No atiendes a esta hora".
+- [ ] **10. Desde el dueño.** En la agenda del dueño, "Cita al momento": primero el profesional, y solo salen los servicios que él hace. Crear sin nombre: vuelve a la agenda con la cita gris, "· al momento".
+- [ ] **11. Fuera de Clientes.** La cita sin nombre queda como "Cliente al momento" y no aparece en Clientes. En su detalle, ponerle nombre o una nota al cliente: desde ahí aparece en Clientes.
+- [ ] **11b. Quién la creó.** En el detalle (del dueño) de una cita al momento que creó el profesional dice "Creada al momento por <su nombre>"; en una que creó el dueño, "Creada al momento por el establecimiento".
+- [ ] **12. El dueño habla del profesional.** Un choque desde el dueño dice "Ana tiene una cita a las …" (con el nombre del profesional).
+- [ ] **13. Pausado o inactivo.** Con el establecimiento pausado, el profesional no ve el botón y, si abre `/mi-agenda/al-momento`, dice que está pausado. Desactivado, igual.
+- [ ] **14. Doble toque.** Tocar "Crear cita" dos veces seguidas: se crea una sola cita.
+
 ## Tarea 7.8b: "Cambiar plan"
 Con una cuenta del plan 1 en el celular y la cuenta del super admin en un computador.
 

@@ -2,13 +2,10 @@ import type { Metadata } from "next";
 import { professionalBookingUrl } from "@/lib/sitio";
 import { requireProfessional } from "@/modulos/cuentas/guards";
 import { ShareButton } from "@/ui/share-button";
-import { SignOutButton } from "@/ui/sign-out-button";
 import { LoadingState } from "@/ui/states";
 import { ScreenSuspense } from "@/ui/tap-feedback";
 import { textos } from "@/ui/textos";
-import { AccessGone } from "../_agenda-profesional/access-gone";
 import { AgendaScreen } from "../_agenda-profesional/agenda-screen";
-import { SESSION_ENTRY } from "../_agenda-profesional/entry";
 
 const t = textos.barbero;
 const m = textos.miAgenda;
@@ -20,8 +17,8 @@ export const metadata: Metadata = {
 };
 
 // B-01 and B-02 by the professional's own session (task 7.6b, decision
-// 0010): the screens of the private link, plus "Cerrar sesión" and the link
-// of the booking page that brings the professional already chosen (point 6).
+// 0010): the screens of task 4.4, plus "Cerrar sesión" and the link of the
+// booking page that brings the professional already chosen (point 6).
 // Who the professional is comes from the session only (my_* functions).
 export default function MyAgendaPage({
   searchParams,
@@ -41,10 +38,7 @@ async function MyAgenda({
   const url = professionalBookingUrl(access.barbershop.slug, access.barberId);
   return (
     <AgendaScreen
-      entry={SESSION_ENTRY}
       search={await searchParams}
-      gone={<AccessGone />}
-      end={<SignOutButton />}
       share={
         <ShareButton
           url={url}
@@ -53,7 +47,6 @@ async function MyAgenda({
           label={m.compartir.boton}
         />
       }
-      footnote={m.soloTuya}
     />
   );
 }

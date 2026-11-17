@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
+import { myAgendaHref } from "@/lib/routes";
 import {
   loadBarberAgenda,
   loadBarberAppointment,
@@ -14,7 +14,7 @@ import { Notice } from "@/ui/notice";
 import { EmptyState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
-import { agendaHref, type AgendaEntry } from "./entry";
+import { AccessGone } from "./access-gone";
 import { dayLabel, timeRangeLabel } from "./labels";
 import { MarkButtons } from "./mark-buttons";
 import { refusalOf } from "./refusal";
@@ -26,41 +26,37 @@ const LOOK_TONES = {
   new: "warning",
   confirmed: "brand",
   manual: "neutral",
+  walk_in: "neutral",
   attended: "success",
   no_show: "danger",
 } as const satisfies Record<string, ChipTone>;
 
-// B-03 (task 4.4), by either entry: one appointment of the professional,
-// without a price, a total or the customer's email or notes (the database
-// does not send them). "Atendida" and "No asistió" once it started (decision
-// B2); never cancel or move (decision B1: the professional asks the owner).
-// By the session (task 7.6b, decision 0010 point 6) the database also sends
-// the customer's phone, and the screen offers "Escribirle por WhatsApp"; the
-// link never brings it.
+// B-03 (task 4.4), by the professional's session (task 7.6b): one of their
+// appointments, without a price, a total or the customer's email or notes
+// (the database does not send them). "Atendida" and "No asistió" once it
+// started (decision B2); never cancel or move (decision B1: the professional
+// asks the owner). The database also sends the customer's phone (decision
+// 0010, point 6), and the screen offers "Escribirle por WhatsApp".
 export async function AppointmentScreen({
-  entry,
   appointmentId,
   aviso,
-  gone,
 }: {
-  entry: AgendaEntry;
   appointmentId: string;
   aviso: string | string[] | undefined;
-  gone: ReactNode;
 }) {
   const instant = now();
   const today = toBogotaDate(instant);
-  const appointment = await loadBarberAppointment(entry, appointmentId);
+  const appointment = await loadBarberAppointment(appointmentId);
 
   if (!appointment) {
-    // Not this professional's: `gone` if the entry itself stopped working.
-    const agenda = await loadBarberAgenda(entry, today, today);
-    if (!agenda) return gone;
+    // Not this professional's, or the session itself stopped working.
+    const agenda = await loadBarberAgenda(today, today);
+    if (!agenda) return <AccessGone />;
     return (
       <div className="mx-auto flex w-full max-w-md flex-col">
         <TopBar
           title={t.cita.titulo}
-          back={{ href: agendaHref(entry), label: t.cita.volver }}
+          back={{ href: myAgendaHref(), label: t.cita.volver }}
         />
         <main className="px-5">
           <EmptyState title={t.errores.not_yours} />
@@ -72,10 +68,7 @@ export async function AppointmentScreen({
   const date = toBogotaDate(appointment.start);
   const look = appointmentLook(appointment, instant);
   const refusal = refusalOf(aviso);
-  const whatsapp =
-    entry.kind === "session"
-      ? customerWhatsappUrl(appointment.customerPhone)
-      : null;
+  const whatsapp = customerWhatsappUrl(appointment.customerPhone);
   const rows = [
     {
       term: t.cita.cuando,
@@ -102,9 +95,7 @@ export async function AppointmentScreen({
         <TopBar
           title={t.cita.titulo}
           back={{
-            href: agendaHref(entry, {
-              dia: date !== today ? date : undefined,
-            }),
+            href: myAgendaHref({ dia: date !== today ? date : undefined }),
             label: t.cita.volver,
           }}
         />
@@ -139,7 +130,6 @@ export async function AppointmentScreen({
         <div className="sticky bottom-0 mx-auto w-full max-w-md">
           <ActionBar>
             <MarkButtons
-              entry={entry}
               appointmentId={appointment.id}
               customerName={appointment.customerName}
               back="cita"

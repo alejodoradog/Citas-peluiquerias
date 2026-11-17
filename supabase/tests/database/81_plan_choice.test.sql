@@ -383,13 +383,13 @@ insert into setup_input values (
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-000000008131", "role": "authenticated"}';
 select throws_ok(
-  $$insert into public.barbers (barbershop_id, display_name, link_token_hash, sort_order)
-    values ('aaaaaaaa-0000-0000-0000-000000000831', 'Quinto', encode(sha256(convert_to('quinto81', 'UTF8')), 'hex'), 5)$$,
+  $$insert into public.barbers (barbershop_id, display_name, sort_order)
+    values ('aaaaaaaa-0000-0000-0000-000000000831', 'Quinto', 5)$$,
   '23514', null, 'an owner with 4 active in standard cannot insert a fifth through the table'
 );
 select is(
-  pg_temp.hint_of($$insert into public.barbers (barbershop_id, display_name, link_token_hash, sort_order)
-    values ('aaaaaaaa-0000-0000-0000-000000000831', 'Quinto', encode(sha256(convert_to('quinto81', 'UTF8')), 'hex'), 5)$$),
+  pg_temp.hint_of($$insert into public.barbers (barbershop_id, display_name, sort_order)
+    values ('aaaaaaaa-0000-0000-0000-000000000831', 'Quinto', 5)$$),
   'plan_limit', 'with the plan_limit hint'
 );
 select throws_ok(
@@ -432,8 +432,8 @@ select is(
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-000000008133", "role": "authenticated"}';
 select is(
-  pg_temp.hint_of($$insert into public.barbers (barbershop_id, display_name, link_token_hash, sort_order)
-    values ('aaaaaaaa-0000-0000-0000-000000000833', 'Quinto', encode(sha256(convert_to('quinto83', 'UTF8')), 'hex'), 5)$$),
+  pg_temp.hint_of($$insert into public.barbers (barbershop_id, display_name, sort_order)
+    values ('aaaaaaaa-0000-0000-0000-000000000833', 'Quinto', 5)$$),
   'plan_limit', 'so the owner row counts and one more is refused'
 );
 reset role;

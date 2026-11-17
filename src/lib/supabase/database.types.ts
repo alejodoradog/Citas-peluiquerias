@@ -193,14 +193,14 @@ isOneToOne: false
                   ]
                 },"barbers": {
                   Row: {
-                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_issued_at": string | null,"link_token_hash": string,"photo_path": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
+                    "active": boolean,"barbershop_id": string,"created_at": string,"deactivated_at": string | null,"deleted_at": string | null,"display_name": string,"email": string | null,"email_notifications": boolean,"id": string,"is_owner": boolean,"link_active": boolean,"link_issued_at": string | null,"link_token_hash": string,"photo_path": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string,"uses_barbershop_hours": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash": string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"deleted_at"?: string | null,"display_name": string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Update: {
-                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
+                    "active"?: boolean,"barbershop_id"?: string,"created_at"?: string,"deactivated_at"?: string | null,"deleted_at"?: string | null,"display_name"?: string,"email"?: string | null,"email_notifications"?: boolean,"id"?: string,"is_owner"?: boolean,"link_active"?: boolean,"link_issued_at"?: string | null,"link_token_hash"?: string,"photo_path"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string,"uses_barbershop_hours"?: boolean
                   }
                   Relationships: [
                     {
@@ -305,14 +305,14 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "anonymized_at": string | null,"barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"privacy_accepted_at": string | null,"privacy_version": string | null,"updated_at": string
+                    "anonymized_at": string | null,"barbershop_id": string,"created_at": string,"email": string | null,"full_name": string,"id": string,"notes": string | null,"phone": string | null,"privacy_accepted_at": string | null,"privacy_version": string | null,"updated_at": string,"walk_in": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name": string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string,"walk_in"?: boolean
                   }
                   Update: {
-                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"barbershop_id"?: string,"created_at"?: string,"email"?: string | null,"full_name"?: string,"id"?: string,"notes"?: string | null,"phone"?: string | null,"privacy_accepted_at"?: string | null,"privacy_version"?: string | null,"updated_at"?: string,"walk_in"?: boolean
                   }
                   Relationships: [
                     {
@@ -595,6 +595,11 @@ isOneToOne: false
 "anonymize_customer":
 { Args: { "p_barbershop_id": string,"p_customer_id": string }; Returns: undefined
                            },
+"barber_account_states":
+{ Args: { "p_barbershop_id": string }; Returns: {
+              "barber_id": string,"expires_at": string,"sent_at": string,"state": string
+            }[]
+                           },
 "barber_account_status":
 { Args: { "p_barber_id": string }; Returns: {
               "expires_at": string,"sent_at": string,"state": string
@@ -602,14 +607,6 @@ isOneToOne: false
                            },
 "barber_account_to_delete":
 { Args: { "p_barber_id": string }; Returns: string
-                           },
-"barber_agenda":
-{ Args: { "p_from": string,"p_to": string,"p_token_hash": string }; Returns: Json
-                           },
-"barber_appointment":
-{ Args: { "p_appointment_id": string,"p_token_hash": string }; Returns: {
-              "created_at": string,"customer_name": string,"ends_at": string,"id": string,"no_shows": number,"service_minutes": (number)[],"service_names": (string)[],"source": Database["public"]['Enums']["appointment_source"],"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"visits": number,"writable": boolean
-            }[]
                            },
 "barbershop_accepts_bookings":
 { Args: { "p_barbershop_id": string }; Returns: boolean
@@ -664,11 +661,17 @@ isOneToOne: false
 "create_my_time_block":
 { Args: { "p_ends_at": string,"p_reason"?: string,"p_starts_at": string }; Returns: string
                            },
+"create_my_walk_in":
+{ Args: { "p_customer_name"?: string,"p_service_ids": (string)[] }; Returns: string
+                           },
 "create_time_block":
 { Args: { "p_barber_id": string,"p_barbershop_id": string,"p_ends_at": string,"p_reason"?: string,"p_starts_at": string }; Returns: string
                            },
-"create_time_block_by_barber":
-{ Args: { "p_ends_at": string,"p_reason"?: string,"p_starts_at": string,"p_token_hash": string }; Returns: string
+"create_walk_in_appointment":
+{ Args: { "p_barber_id": string,"p_barbershop_id": string,"p_customer_name"?: string,"p_service_ids": (string)[] }; Returns: string
+                           },
+"delete_barber":
+{ Args: { "p_barber_id": string }; Returns: string
                            },
 "delete_barbershop":
 { Args: { "p_barbershop_id": string }; Returns: undefined
@@ -678,9 +681,6 @@ isOneToOne: false
                            },
 "delete_time_block":
 { Args: { "p_block_id": string }; Returns: undefined
-                           },
-"delete_time_block_by_barber":
-{ Args: { "p_block_id": string,"p_token_hash": string }; Returns: undefined
                            },
 "extend_trial":
 { Args: { "p_barbershop_id": string,"p_until": string }; Returns: undefined
@@ -712,9 +712,6 @@ isOneToOne: false
               "barber_id": string,"barber_name": string,"barbershop_id": string,"cancellation_notice_hours": number,"changeable": boolean,"customer_confirmed": boolean,"customer_first_name": string,"ends_at": string,"price_cop": number,"service_names": (string)[],"slug": string,"starts_at": string
             }[]
                            },
-"mark_appointment_by_barber":
-{ Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"],"p_token_hash": string }; Returns: undefined
-                           },
 "mark_my_appointment":
 { Args: { "p_appointment_id": string,"p_status": Database["public"]['Enums']["appointment_status"] }; Returns: undefined
                            },
@@ -733,6 +730,11 @@ isOneToOne: false
                            },
 "my_professional_access":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_services":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "duration_minutes": number,"id": string,"name": string,"price_cop": number
+            }[]
                            },
 "platform_barbershops":
 { Args: { "p_search"?: string }; Returns: {
@@ -896,7 +898,7 @@ isOneToOne: false
       } }
           }
           Enums: {
-            "appointment_event_type": "status_changed"|"rescheduled"|"service_added"|"service_removed","appointment_source": "web"|"manual","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","business_type": "barbershop"|"beauty_salon"|"veterinary"|"psychology"|"dentistry"|"other","event_actor": "staff"|"customer"|"barber"|"system","membership_role": "owner","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered"|"customer_appointments","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","plan_change_status": "pending"|"accepted"|"rejected"|"cancelled","subscription_status": "trial"|"active"|"suspended"
+            "appointment_event_type": "status_changed"|"rescheduled"|"service_added"|"service_removed"|"created","appointment_source": "web"|"manual"|"walk_in","appointment_status": "confirmed"|"attended"|"no_show"|"cancelled_by_customer"|"cancelled_by_barbershop","business_type": "barbershop"|"beauty_salon"|"veterinary"|"psychology"|"dentistry"|"other","event_actor": "staff"|"customer"|"barber"|"system","membership_role": "owner","notification_status": "pending"|"sent"|"failed"|"cancelled","notification_type": "appointment_confirmed"|"appointment_reminder"|"appointment_cancelled"|"appointment_rescheduled"|"barber_new_booking"|"barber_booking_cancelled"|"subscription_expiring"|"subscription_expired"|"subscription_suspended"|"subscription_payment_registered"|"customer_appointments","payment_method": "bank_transfer"|"nequi"|"daviplata"|"bre_b","plan_change_status": "pending"|"accepted"|"rejected"|"cancelled","subscription_status": "trial"|"active"|"suspended"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1016,7 +1018,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "appointment_event_type": ["status_changed", "rescheduled", "service_added", "service_removed"],"appointment_source": ["web", "manual"],"appointment_status": ["confirmed", "attended", "no_show", "cancelled_by_customer", "cancelled_by_barbershop"],"business_type": ["barbershop", "beauty_salon", "veterinary", "psychology", "dentistry", "other"],"event_actor": ["staff", "customer", "barber", "system"],"membership_role": ["owner"],"notification_status": ["pending", "sent", "failed", "cancelled"],"notification_type": ["appointment_confirmed", "appointment_reminder", "appointment_cancelled", "appointment_rescheduled", "barber_new_booking", "barber_booking_cancelled", "subscription_expiring", "subscription_expired", "subscription_suspended", "subscription_payment_registered", "customer_appointments"],"payment_method": ["bank_transfer", "nequi", "daviplata", "bre_b"],"plan_change_status": ["pending", "accepted", "rejected", "cancelled"],"subscription_status": ["trial", "active", "suspended"]
+            "appointment_event_type": ["status_changed", "rescheduled", "service_added", "service_removed", "created"],"appointment_source": ["web", "manual", "walk_in"],"appointment_status": ["confirmed", "attended", "no_show", "cancelled_by_customer", "cancelled_by_barbershop"],"business_type": ["barbershop", "beauty_salon", "veterinary", "psychology", "dentistry", "other"],"event_actor": ["staff", "customer", "barber", "system"],"membership_role": ["owner"],"notification_status": ["pending", "sent", "failed", "cancelled"],"notification_type": ["appointment_confirmed", "appointment_reminder", "appointment_cancelled", "appointment_rescheduled", "barber_new_booking", "barber_booking_cancelled", "subscription_expiring", "subscription_expired", "subscription_suspended", "subscription_payment_registered", "customer_appointments"],"payment_method": ["bank_transfer", "nequi", "daviplata", "bre_b"],"plan_change_status": ["pending", "accepted", "rejected", "cancelled"],"subscription_status": ["trial", "active", "suspended"]
           }
         }
 } as const

@@ -78,11 +78,15 @@ export type AppointmentStatus =
   | "cancelled_by_customer"
   | "cancelled_by_barbershop";
 
+// How the appointment was made: booked on the web, created by the
+// establishment, or a walk-in made at the moment (task 7.7).
+export type AppointmentSource = "web" | "manual" | "walk_in";
+
 export type AgendaAppointment = Interval & {
   id: string;
   barberId: string;
   status: AppointmentStatus;
-  source: "web" | "manual";
+  source: AppointmentSource;
   createdAt: Date;
   customerName: string;
   serviceNames: readonly string[];
@@ -106,9 +110,16 @@ export type AgendaData = {
 };
 
 // How a card looks: the states of F-01. "manual" is a confirmed appointment
-// the barbershop created (D-30 draws it grey, "· manual").
+// the barbershop created (D-30 draws it grey, "· manual"); "walk_in" one made
+// at the moment for someone who arrived without a booking (task 7.7), grey
+// too, "· al momento".
 export type AppointmentLook =
-  "new" | "confirmed" | "manual" | "attended" | "no_show";
+  | "new"
+  | "confirmed"
+  | "manual"
+  | "walk_in"
+  | "attended"
+  | "no_show";
 
 const TAKES_TIME: ReadonlySet<AppointmentStatus> = new Set([
   "confirmed",
@@ -127,6 +138,7 @@ export function appointmentLook(
   if (appointment.status === "attended") return "attended";
   if (appointment.status === "no_show") return "no_show";
   if (appointment.source === "manual") return "manual";
+  if (appointment.source === "walk_in") return "walk_in";
   const age = now.getTime() - appointment.createdAt.getTime();
   return age >= 0 && age < NEW_BOOKING_HOURS * HOUR_MS ? "new" : "confirmed";
 }

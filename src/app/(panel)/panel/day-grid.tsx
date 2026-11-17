@@ -27,6 +27,7 @@ export const LOOK_CLASSES: Record<AppointmentLook, string> = {
   new: "bg-warning-soft text-warning",
   confirmed: "bg-brand-soft text-brand-strong",
   manual: "bg-neutral-soft text-ink",
+  walk_in: "bg-neutral-soft text-ink",
   attended: "bg-success-soft text-success",
   no_show: "bg-danger-soft text-danger",
 };
@@ -224,7 +225,11 @@ function Column({
                     no room for (WCAG 2.5.3): services, time and state. */}
                 {minutes >= 40 ? (
                   <span className="text-[10px] leading-[1.2]">
-                    {look === "manual" ? `${services} · ${t.manual}` : services}
+                    {look === "manual"
+                      ? `${services} · ${t.manual}`
+                      : look === "walk_in"
+                        ? `${services} · ${t.alMomento}`
+                        : services}
                   </span>
                 ) : (
                   <span className="sr-only">, {services}</span>

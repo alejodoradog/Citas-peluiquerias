@@ -1,5 +1,5 @@
 import { formatBogotaDayMonth } from "@/lib/fechas/fechas";
-import { barberLinkState } from "@/modulos/barberias/dominio/barber-link";
+import type { AccessView } from "@/modulos/cuentas/dominio/professional-access";
 import { textos } from "@/ui/textos";
 import { summarizeHours } from "../configurar/hours-summary";
 import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
@@ -7,42 +7,30 @@ import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
 const t = textos.barberos;
 
 type SummarizedBarber = {
-  is_owner: boolean;
   uses_barbershop_hours: boolean;
-  link_active: boolean;
-  link_issued_at: string | null;
   deactivated_at: string | null;
   service_ids: readonly string[];
 };
 
-// The line under a barber's name in D-53. Active: "Horario de la barbería ·
-// 3 servicios · link activo"; the owner has no link ("sin link (eres tú)"),
-// and a link never issued is "link sin enviar" (task 2.3).
-// Inactive: "Se fue el 2 de noviembre · link desactivado".
-export function summarizeBarber(barber: SummarizedBarber): string {
-  const link = {
-    owner: t.sinLink,
-    unsent: t.linkSinEnviar,
-    active: t.linkActivo,
-    off: t.linkDesactivado,
-  }[
-    barberLinkState({
-      isOwner: barber.is_owner,
-      linkActive: barber.link_active,
-      linkIssuedAt: barber.link_issued_at,
-    })
-  ];
-  if (barber.deactivated_at !== null) {
-    return [
-      t.seFue(formatBogotaDayMonth(new Date(barber.deactivated_at))),
-      link,
-    ].join(t.separador);
-  }
-  return [
-    barber.uses_barbershop_hours ? t.horarioBarberia : t.horarioPropio,
-    t.conteoServicios(barber.service_ids.length),
-    link,
-  ].join(t.separador);
+// The line under a barber's name in D-53. Active: "Horario del
+// establecimiento · 3 servicios · con acceso"; inactive: "Se fue el 2 de
+// noviembre · sin acceso". The last part is the access to their agenda
+// (task 7.6c, decision 0010; it was the private link before): `access` is
+// what accessView says, and null for the owner who attends, who has their
+// own account and nothing to say there.
+export function summarizeBarber(
+  barber: SummarizedBarber,
+  access: AccessView["kind"] | null,
+): string {
+  const parts =
+    barber.deactivated_at !== null
+      ? [t.seFue(formatBogotaDayMonth(new Date(barber.deactivated_at)))]
+      : [
+          barber.uses_barbershop_hours ? t.horarioBarberia : t.horarioPropio,
+          t.conteoServicios(barber.service_ids.length),
+        ];
+  if (access) parts.push(t.accesoLista[access]);
+  return parts.join(t.separador);
 }
 
 // The Horario row of D-54: the barbershop's hours, or the barber's own week

@@ -16,7 +16,8 @@ const t = textos.barberos;
 export const metadata: Metadata = { title: t.nuevo };
 
 // D-54 for a new barber: the barbershop's hours, every active service
-// (decision 4 of task 2.2) and a private link created when saved.
+// (decision 4 of task 2.2). Inviting them to their account comes after,
+// from their card (task 7.6b).
 export default function NewBarberPage() {
   return (
     <Suspense fallback={<EditorLoading title={t.nuevo} />}>

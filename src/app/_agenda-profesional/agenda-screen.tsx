@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { addDays, now, toBogotaDate } from "@/lib/fechas/fechas";
+import { routes } from "@/lib/routes";
 import { loadBarberAgenda } from "@/modulos/agenda/datos/barber-agenda";
 import {
   DAYS_AHEAD,
@@ -12,12 +13,13 @@ import {
 } from "@/modulos/agenda/dominio/barber-agenda";
 import { weekOf } from "@/modulos/agenda/dominio/owner-agenda";
 import { buttonClasses } from "@/ui/button";
-import { LockIcon } from "@/ui/icons";
+import { ClockIcon, LockIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
+import { SignOutButton } from "@/ui/sign-out-button";
 import { textos } from "@/ui/textos";
+import { AccessGone } from "./access-gone";
 import { BarberHeader } from "./barber-header";
 import { DayList } from "./day-list";
-import { blockHref, type AgendaEntry } from "./entry";
 import { dayLabel, timeLabel } from "./labels";
 import { refusalOf } from "./refusal";
 import { WeekList } from "./week-list";
@@ -26,25 +28,16 @@ const t = textos.barbero;
 
 type Search = Record<string, string | string[] | undefined>;
 
-// B-01 and B-02 (task 4.4), by either entry: the day or the week, with
-// today's summary, the paused notice (B-06) and "Bloquear horas". `gone` is
-// what shows when the entry reaches no agenda (B-05 for the link). By the
-// session (task 7.6b) the header ends with "Cerrar sesión" (`end`) and the
-// day shows the link to share (`share`).
+// B-01 and B-02 (task 4.4), by the professional's session (task 7.6b): the
+// day or the week, with today's summary, the paused notice (B-06), "Bloquear
+// horas", "Cerrar sesión" and the link to share (`share`). AccessGone when
+// the session no longer reaches an agenda.
 export async function AgendaScreen({
-  entry,
   search,
-  gone,
-  end,
   share,
-  footnote,
 }: {
-  entry: AgendaEntry;
   search: Search;
-  gone: ReactNode;
-  end?: ReactNode;
   share?: ReactNode;
-  footnote: string;
 }) {
   const instant = now();
   const today = toBogotaDate(instant);
@@ -54,17 +47,17 @@ export async function AgendaScreen({
   const until = days.at(-1)!;
 
   // The summary is always of today. When the days shown leave today out,
-  // today is read too, at the same time: it depends on the entry only.
+  // today is read too, at the same time: it depends on the session only.
   const [data, todays] =
     from <= today && today <= until
-      ? await loadBarberAgenda(entry, from, until).then(
+      ? await loadBarberAgenda(from, until).then(
           (agenda) => [agenda, agenda] as const,
         )
       : await Promise.all([
-          loadBarberAgenda(entry, from, until),
-          loadBarberAgenda(entry, today, today),
+          loadBarberAgenda(from, until),
+          loadBarberAgenda(today, today),
         ]);
-  if (!data || !todays) return gone;
+  if (!data || !todays) return <AccessGone />;
 
   const summary = todaySummary(todays, today, instant);
   const counted =
@@ -78,8 +71,7 @@ export async function AgendaScreen({
   return (
     <div className="mx-auto flex w-full max-w-md flex-col">
       <BarberHeader
-        entry={entry}
-        end={end}
+        end={<SignOutButton />}
         barbershopName={data.barbershop.name}
         barberName={data.barber.name}
         summary={
@@ -95,7 +87,6 @@ export async function AgendaScreen({
         {refusal ? <Notice tone="danger" title={t.errores[refusal]} /> : null}
         {query.view === "semana" ? (
           <WeekList
-            entry={entry}
             days={weekDays(data, days)}
             canOpen={canOpen}
             previous={canOpen(addDays(from, -1)) ? addDays(from, -7) : null}
@@ -109,13 +100,23 @@ export async function AgendaScreen({
               </h2>
             ) : null}
             <DayList
-              entry={entry}
               date={query.date}
               items={dayItems(data, query.date, instant)}
             />
+            {/* Task 7.7: a customer who arrives without a booking. Only
+                on today: the walk-in starts now. */}
+            {writable && data.barber.active && query.date === today ? (
+              <Link
+                href={routes.myWalkIn}
+                className={buttonClasses({ variant: "primary", size: "md" })}
+              >
+                <ClockIcon size={18} />
+                {textos.citaAlMomento.boton}
+              </Link>
+            ) : null}
             {writable && data.barber.active ? (
               <Link
-                href={blockHref(entry)}
+                href={routes.myBlock}
                 className={buttonClasses({ variant: "secondary", size: "md" })}
               >
                 <LockIcon size={18} />
@@ -123,7 +124,9 @@ export async function AgendaScreen({
               </Link>
             ) : null}
             {share}
-            <p className="text-muted text-center text-[13px]">{footnote}</p>
+            <p className="text-muted text-center text-[13px]">
+              {textos.miAgenda.soloTuya}
+            </p>
           </>
         )}
       </main>

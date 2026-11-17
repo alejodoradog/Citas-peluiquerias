@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
 import { addDays, now, toBogotaDate } from "@/lib/fechas/fechas";
-import { newAppointmentHref, routes } from "@/lib/routes";
+import { newAppointmentHref, routes, walkInHref } from "@/lib/routes";
 import {
   hasAnyAppointment,
   loadOwnerAgenda,
@@ -22,6 +22,9 @@ import { BottomNav } from "@/ui/bottom-nav";
 import { removeOwnerBlock } from "@/modulos/agenda/acciones/owner-appointment";
 import { pollsLive } from "@/modulos/agenda/dominio/live-agenda";
 import { Fab } from "@/ui/fab";
+import { buttonClasses } from "@/ui/button";
+import { ClockIcon } from "@/ui/icons";
+import Link from "next/link";
 import { Notice } from "@/ui/notice";
 import { EmptyState, LoadingState } from "@/ui/states";
 import { ScreenSuspense } from "@/ui/tap-feedback";
@@ -110,6 +113,17 @@ async function OwnerAgenda({
       <Suspense fallback={null}>
         <SubscriptionNotice barbershopId={barbershop.id} today={today} />
       </Suspense>
+      {/* Task 7.7: a customer who arrives without a booking. On the day of
+          today only: the walk-in starts now. */}
+      {view !== "semana" && date === today && barbers.length > 0 ? (
+        <Link
+          href={walkInHref({ profesional: barber?.id })}
+          className={buttonClasses({ variant: "secondary", size: "md" })}
+        >
+          <ClockIcon size={18} />
+          {textos.citaAlMomento.boton}
+        </Link>
+      ) : null}
     </div>
   );
   // Every view ends with the "+"; the day of today also asks the server

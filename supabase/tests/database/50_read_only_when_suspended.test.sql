@@ -2,7 +2,8 @@
 --
 -- - awaiting_first_payment: configuring works, creating appointments fails.
 -- - Suspended:
---   - the owner and the barber close appointments (attended, no_show);
+--   - the owner and the barber (by their session, task 7.6c) close
+--     appointments (attended, no_show);
 --   - the barber does not cancel; the customer cancels, but neither marks
 --     nor moves; a system actor changes nothing;
 --   - no appointment, service change, block or configuration change, also
@@ -106,6 +107,14 @@ insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'ba000000-0000-0000-0000-000000000001', '5e000000-0000-0000-0000-000000000002'),
   ('aaaaaaaa-0000-0000-0000-000000000002', 'ba000000-0000-0000-0000-000000000002', '5e000000-0000-0000-0000-000000000003'),
   ('aaaaaaaa-0000-0000-0000-000000000003', 'ba000000-0000-0000-0000-000000000003', '5e000000-0000-0000-0000-000000000004');
+-- Uno has their own account (task 7.6, decision 0010), with the terms
+-- accepted: "Mi agenda" by the session.
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-0000000000b1', 'uno-pausa@example.com');
+insert into public.profiles (id, full_name, terms_accepted_at, terms_version) values
+  ('00000000-0000-0000-0000-0000000000b1', 'Uno', now(), 'prueba-50');
+update public.barbers set profile_id = '00000000-0000-0000-0000-0000000000b1'
+where id = 'ba000000-0000-0000-0000-000000000001';
 insert into public.customers (id, barbershop_id, full_name, email) values
   ('c0000000-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'Cliente Uno', 'cliente@example.com');
 
@@ -218,15 +227,17 @@ select is(
     null, 'Cliente Nuevo', null, null)$$),
   'barbershop_read_only', 'but takes no appointment');
 
--- The barber and the customer, by their links -----------------------------------------------------
+-- The barber by their session (task 7.6c), and the customer by their link -------------------------
 
 reset role;
+set local role authenticated;
+set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-0000000000b1", "role": "authenticated"}';
+select is(
+  pg_temp.hint_of($$select public.mark_my_appointment('a0000000-0000-0000-0000-000000000002', 'no_show')$$),
+  'no error', 'the barber marks a no-show');
+
 set local role anon;
 set local request.jwt.claims to '{"role": "anon"}';
-
-select is(
-  pg_temp.hint_of($$select public.mark_appointment_by_barber(pg_temp.h('barbero-uno'), 'a0000000-0000-0000-0000-000000000002', 'no_show')$$),
-  'no error', 'the barber marks a no-show');
 select is(
   pg_temp.hint_of($$select public.cancel_appointment_by_token(pg_temp.h('cita-tres'))$$),
   'no error', 'the customer cancels their appointment');
@@ -241,10 +252,13 @@ select is(public.barbershop_accepts_bookings('aaaaaaaa-0000-0000-0000-0000000000
 -- The actor rules of the trigger, for any path ------------------------------------------------------
 
 reset role;
-select set_config('yapoin.actor', 'barber', true);
+-- What the my_* functions set, with the barber's session.
+select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-0000000000b1"}', true);
+select set_config('yapoin.actor', 'barber_session', true);
 select is(
   pg_temp.hint_of($$update public.appointments set status = 'cancelled_by_barbershop' where id = 'a0000000-0000-0000-0000-000000000004'$$),
   'barbershop_read_only', 'a barber never cancels');
+select set_config('request.jwt.claims', '', true);
 select set_config('yapoin.actor', 'customer', true);
 select is(
   pg_temp.hint_of($$update public.appointments set status = 'attended' where id = 'a0000000-0000-0000-0000-000000000004'$$),
@@ -288,12 +302,14 @@ reset role;
 update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000000001';
 set local role authenticated;
 set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000a", "role": "authenticated"}';
--- Taking a barber's access away works in every phase (section 7).
-update public.barbers set link_active = false where id = 'ba000000-0000-0000-0000-000000000001';
+-- Taking a barber's access away works in every phase (section 7; the link
+-- became the account in task 7.6c).
+select public.revoke_barber_account('ba000000-0000-0000-0000-000000000001');
 update public.barbers set active = false where id = 'ba000000-0000-0000-0000-000000000001';
 select is(
-  (select row(link_active, active)::text from public.barbers where id = 'ba000000-0000-0000-0000-000000000001'),
-  '(f,f)', 'the owner turns off a barber''s link and deactivates the barber');
+  (select (select a.state from public.barber_account_status(b.id) a) || ',' || b.active::text
+   from public.barbers b where b.id = 'ba000000-0000-0000-0000-000000000001'),
+  'none,false', 'the owner takes a barber''s access away (no account left) and deactivates the barber');
 select is(
   pg_temp.hint_of($$update public.barbers set active = true where id = 'ba000000-0000-0000-0000-000000000001'$$),
   'barbershop_read_only', 'but does not turn them on again');

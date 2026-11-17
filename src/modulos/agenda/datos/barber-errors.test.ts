@@ -4,7 +4,7 @@ import { toBarberRefusal } from "./barber-errors";
 describe("toBarberRefusal", () => {
   it("keeps the hints the screens react to", () => {
     for (const hint of [
-      "link_invalid",
+      "not_professional",
       "read_only",
       "not_yours",
       "not_confirmed",
@@ -12,6 +12,7 @@ describe("toBarberRefusal", () => {
       "barber_inactive",
       "overlaps_appointment",
       "overlaps_block",
+      "already_closed",
       "range_invalid",
     ]) {
       expect(toBarberRefusal({ hint })).toBe(hint);
@@ -24,6 +25,8 @@ describe("toBarberRefusal", () => {
 
   it("turns anything else into unknown", () => {
     expect(toBarberRefusal({ hint: "status_invalid" })).toBe("unknown");
+    // The private link went with task 7.6c: its refusal means nothing now.
+    expect(toBarberRefusal({ hint: "link_invalid" })).toBe("unknown");
     expect(toBarberRefusal({ code: "08006" })).toBe("unknown");
     expect(toBarberRefusal({ hint: null })).toBe("unknown");
   });

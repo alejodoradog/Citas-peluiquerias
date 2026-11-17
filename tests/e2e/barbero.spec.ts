@@ -7,6 +7,7 @@ import {
 } from "../../src/lib/fechas/fechas";
 import { textos } from "../../src/ui/textos";
 import { addManualAppointment, bookOnline } from "./helpers/agenda";
+import { signInProfessional } from "./helpers/clientes";
 import {
   expectAccessible,
   expectNoZoomOnFocus,
@@ -15,16 +16,17 @@ import {
 import { FIRST_VISIT } from "./helpers/reserva";
 import {
   createBookableShop,
-  issueBarberLink,
-  setBarberLinkActive,
+  createProfessionalAccount,
   signedInClient,
   suspendBarbershop,
+  uniqueEmail,
 } from "./helpers/supabase";
 
-// Task 4.4: "Mi agenda" of a barber, by their private link /b/<token>.
-// B-01 (the day), B-02 (the week), B-03 (an appointment), B-04 ("Bloquear
-// horas"), B-05 (a link that no longer works) and B-06 (a paused
-// barbershop, read only but for the marks).
+// Task 4.4: "Mi agenda" of a barber, by their own session since task 7.6c
+// (the private link /b/<token> is gone; proximamente.spec.ts sees what an
+// old one shows). B-01 (the day), B-02 (the week), B-03 (an appointment),
+// B-04 ("Bloquear horas") and B-06 (a paused barbershop, read only but for
+// the marks). The invitation itself is cuentas-profesional.spec.ts.
 const t = textos.barbero;
 
 const heading = (page: Page, name: string | RegExp) =>
@@ -42,15 +44,16 @@ function startedAgo(minutes: number): Date {
 async function setUp(tag: string) {
   const shop = await createBookableShop(tag);
   const owner = await signedInClient(shop.owner.email, shop.owner.password);
-  const token = await issueBarberLink(shop.barbers.ana);
-  return { shop, owner, token };
+  const ana = { email: uniqueEmail(`${tag}-ana`), password: "clave-de-ana-1" };
+  await createProfessionalAccount(shop.barbers.ana, { ...ana, name: "Ana" });
+  return { shop, owner, ana };
 }
 
 test("a barber reads their day and week, marks appointments and blocks hours", async ({
   page,
 }) => {
   test.setTimeout(240_000);
-  const { shop, owner, token } = await setUp("barbero");
+  const { shop, owner, ana: account } = await setUp("barbero");
   const { ana, beto } = shop.barbers;
   const { corte, barba } = shop.services;
   const tomorrow = addDays(toBogotaDate(new Date()), 1);
@@ -70,7 +73,7 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
     name: "Camila Rojas",
     email: "camila-barbero@example.com",
   });
-  // Beto's appointment never reaches Ana's link.
+  // Beto's appointment never reaches Ana's agenda.
   await addManualAppointment(owner, shop.id, {
     barberId: beto,
     startsAt: fromBogota(tomorrow, "11:00"),
@@ -79,13 +82,14 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
   });
 
   // B-01, on the day of the appointment that started.
-  await page.goto(`/b/${token}?dia=${startedDay}`);
+  await signInProfessional(page, account);
+  await page.goto(`/mi-agenda?dia=${startedDay}`);
   await expect(heading(page, t.hola("Ana"))).toBeVisible(FIRST_VISIT);
   await expect(
     page.getByText(t.encabezado("Barbería La Esquina")),
   ).toBeVisible();
   await expect(page.getByText("Felipe R.")).toBeVisible();
-  await expect(page.getByText(t.soloTuyo)).toBeVisible();
+  await expect(page.getByText(textos.miAgenda.soloTuya)).toBeVisible();
   await expectAccessible(page);
   await expectTouchTargets(page);
 
@@ -139,7 +143,7 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
   await expectAccessible(page);
   await expectTouchTargets(page);
   await page.getByRole("link", { name: t.cita.volver }).click();
-  await expect(page).toHaveURL(new RegExp(`/b/${token}\\?dia=${tomorrow}`));
+  await expect(page).toHaveURL(new RegExp(`/mi-agenda\\?dia=${tomorrow}`));
 
   // B-04: a block over the appointment is refused, then a free one is saved.
   await page
@@ -171,7 +175,7 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
     .getByRole("combobox", { name: t.bloquear.hasta })
     .selectOption("16:00");
   await page.getByRole("button", { name: t.bloquear.enviar }).click();
-  await expect(page).toHaveURL(new RegExp(`/b/${token}\\?dia=${tomorrow}$`));
+  await expect(page).toHaveURL(new RegExp(`/mi-agenda\\?dia=${tomorrow}$`));
   const lunch = `${t.bloquear.motivos.lunch} · ${textos.agenda.minutos(60)}`;
   await expect(page.getByText(lunch)).toBeVisible();
 
@@ -203,38 +207,17 @@ test("a barber reads their day and week, marks appointments and blocks hours", a
   await page.getByRole("combobox", { name: t.bloquear.dia }).selectOption(free);
   await expect(wholeDay).toBeChecked();
   await page.getByRole("button", { name: t.bloquear.enviar }).click();
-  await expect(page).toHaveURL(new RegExp(`/b/${token}\\?dia=${free}$`));
+  await expect(page).toHaveURL(new RegExp(`/mi-agenda\\?dia=${free}$`));
   await expect(
     page.getByText(t.bloquear.motivos.leave).filter({ visible: true }),
   ).toBeVisible();
-});
-
-test("a link that was deactivated or made up shows B-05", async ({ page }) => {
-  test.setTimeout(120_000);
-  const { shop, token } = await setUp("barbero-b05");
-
-  await page.goto(`/b/${token}`);
-  await expect(heading(page, t.hola("Ana"))).toBeVisible(FIRST_VISIT);
-
-  await setBarberLinkActive(shop.barbers.ana, false);
-  await page.reload();
-  await expect(heading(page, t.vencido.titulo)).toBeVisible();
-  await expect(page.getByText(t.vencido.detalle)).toBeVisible();
-  await expectAccessible(page);
-  await expectTouchTargets(page);
-  await expectNoZoomOnFocus(page);
-
-  await page.goto(`/b/${"x".repeat(43)}`);
-  await expect(heading(page, t.vencido.titulo)).toBeVisible();
-  await page.goto(`/b/${token}/citas/00000000-0000-4000-8000-000000000000`);
-  await expect(heading(page, t.vencido.titulo)).toBeVisible(FIRST_VISIT);
 });
 
 test("a paused barbershop leaves the agenda read only, but for the marks (B-06)", async ({
   page,
 }) => {
   test.setTimeout(120_000);
-  const { shop, owner, token } = await setUp("barbero-b06");
+  const { shop, owner, ana } = await setUp("barbero-b06");
   const started = startedAgo(30);
   await addManualAppointment(owner, shop.id, {
     barberId: shop.barbers.ana,
@@ -244,7 +227,8 @@ test("a paused barbershop leaves the agenda read only, but for the marks (B-06)"
   });
   await suspendBarbershop(shop.id);
 
-  await page.goto(`/b/${token}?dia=${toBogotaDate(started)}`);
+  await signInProfessional(page, ana);
+  await page.goto(`/mi-agenda?dia=${toBogotaDate(started)}`);
   await expect(page.getByText(t.pausada.titulo)).toBeVisible(FIRST_VISIT);
   await expect(page.getByRole("link", { name: t.bloquearHoras })).toHaveCount(
     0,
@@ -263,7 +247,7 @@ test("a paused barbershop leaves the agenda read only, but for the marks (B-06)"
       .getByText(textos.agenda.estados.no_show),
   ).toBeVisible();
 
-  await page.goto(`/b/${token}/bloquear`);
+  await page.goto("/mi-agenda/bloquear");
   await expect(page.getByText(t.pausada.titulo)).toBeVisible(FIRST_VISIT);
   await expect(
     page.getByRole("button", { name: t.bloquear.enviar }),

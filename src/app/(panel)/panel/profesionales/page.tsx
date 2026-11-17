@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { now } from "@/lib/fechas/fechas";
 import { publicImageUrl } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
 import { listBarbers, type BarberRow } from "@/modulos/barberias/datos/barbers";
 import { splitBarbers } from "@/modulos/barberias/dominio/barber";
+import { readAccountStates } from "@/modulos/cuentas/datos/professional-access";
+import {
+  accessView,
+  type AccessView,
+} from "@/modulos/cuentas/dominio/professional-access";
 import { Avatar } from "@/ui/avatar";
 import { ButtonLink } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -20,8 +26,10 @@ const t = textos.barberos;
 
 export const metadata: Metadata = { title: t.titulo };
 
-// D-53: the team, the active barbers first. Barbers are never deleted, only
-// deactivated (decision 1 of task 2.2).
+// D-53: the team, the active barbers first, each with the state of the
+// access to their agenda (task 7.6c). A deleted professional (decision 0010,
+// point 7) is no longer listed; the others are deactivated, not deleted
+// (decision 1 of task 2.2).
 export default function BarbersPage() {
   return (
     <FlowShell
@@ -54,7 +62,13 @@ const addButton = (
   </ButtonLink>
 );
 
-function BarberListRow({ barber }: { barber: BarberRow }) {
+function BarberListRow({
+  barber,
+  access,
+}: {
+  barber: BarberRow;
+  access: AccessView["kind"] | null;
+}) {
   return (
     <ListRow
       icon={
@@ -68,7 +82,7 @@ function BarberListRow({ barber }: { barber: BarberRow }) {
       }
       title={barber.display_name}
       badge={barber.is_owner ? <Chip tone="brand">{t.tu}</Chip> : undefined}
-      subtitle={summarizeBarber(barber)}
+      subtitle={summarizeBarber(barber, access)}
       trailing={
         barber.active ? undefined : <Chip tone="neutral">{t.inactivo}</Chip>
       }
@@ -79,7 +93,23 @@ function BarberListRow({ barber }: { barber: BarberRow }) {
 
 async function Barbers() {
   const { barbershop } = await requireReadyOwner();
-  const { active, inactive } = splitBarbers(await listBarbers(barbershop.id));
+  // Two reads at once, never one per professional.
+  const [barbers, states] = await Promise.all([
+    listBarbers(barbershop.id),
+    readAccountStates(barbershop.id),
+  ]);
+  const { active, inactive } = splitBarbers(barbers);
+  const instant = now();
+  const accessOf = (barber: BarberRow): AccessView["kind"] | null => {
+    const status = states.get(barber.id);
+    if (barber.is_owner || !status) return null;
+    return accessView({
+      status,
+      hasEmail: (barber.email ?? "").trim() !== "",
+      active: barber.active,
+      now: instant,
+    }).kind;
+  };
 
   if (active.length === 0 && inactive.length === 0) {
     return (
@@ -94,7 +124,11 @@ async function Barbers() {
       {active.length > 0 ? (
         <List>
           {active.map((barber) => (
-            <BarberListRow key={barber.id} barber={barber} />
+            <BarberListRow
+              key={barber.id}
+              barber={barber}
+              access={accessOf(barber)}
+            />
           ))}
         </List>
       ) : null}
@@ -103,7 +137,11 @@ async function Barbers() {
           <h2 className="text-label text-muted">{t.inactivos}</h2>
           <List>
             {inactive.map((barber) => (
-              <BarberListRow key={barber.id} barber={barber} />
+              <BarberListRow
+              key={barber.id}
+              barber={barber}
+              access={accessOf(barber)}
+            />
             ))}
           </List>
         </section>

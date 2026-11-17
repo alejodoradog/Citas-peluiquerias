@@ -1,16 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { movedAddress } from "@/lib/old-addresses";
 import { updateSession } from "@/lib/supabase/proxy";
 
-// "Profesionales" lived at /panel/barberos until task 7.1b: an address
-// someone saved or left open still gets there.
-const OLD_TEAM = "/panel/barberos";
-const TEAM = "/panel/profesionales";
-
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  if (pathname === OLD_TEAM || pathname.startsWith(`${OLD_TEAM}/`)) {
+  // An address someone saved or left open still gets where it moved
+  // (src/lib/old-addresses.ts).
+  const moved = movedAddress(request.nextUrl.pathname);
+  if (moved) {
     const url = request.nextUrl.clone();
-    url.pathname = TEAM + pathname.slice(OLD_TEAM.length);
+    url.pathname = moved;
     return NextResponse.redirect(url, 308);
   }
   return updateSession(request);

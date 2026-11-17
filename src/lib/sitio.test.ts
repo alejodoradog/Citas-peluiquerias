@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  barberAgendaUrl,
   displayBookingUrl,
   posterFileName,
   publicBookingUrl,
@@ -28,16 +27,6 @@ describe("downloaded files", () => {
     );
     expect(posterFileName("barberia-el-parche")).toBe(
       "afiche-yapoin-barberia-el-parche.png",
-    );
-  });
-});
-
-describe("barber agenda links", () => {
-  it("puts the token under /b, on the public site", () => {
-    const token = "A".repeat(42) + "_";
-    expect(barberAgendaUrl(token)).toBe(`https://yapoin.com/b/${token}`);
-    expect(barberAgendaUrl(token)).toMatch(
-      /^https:\/\/yapoin\.com\/b\/[A-Za-z0-9_-]{43}$/,
     );
   });
 });

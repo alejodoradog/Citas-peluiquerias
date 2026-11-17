@@ -172,15 +172,16 @@ select is(
     'public.accept_professional_terms:authenticated',
     -- Task 4.3: "Borrar cliente" and the list of customers.
     'public.anonymize_customer:authenticated',
+    -- Task 7.6c: the access of every professional of the owner's list.
+    'public.barber_account_states:authenticated',
     -- Task 7.6b: the owner reads the access of a professional, and the
     -- account the app may delete in Auth.
     'public.barber_account_status:authenticated',
     'public.barber_account_to_delete:authenticated',
-    -- Task 4.4: "Mi agenda" of a barber, for anyone who has the link.
-    'public.barber_agenda:anon',
-    'public.barber_agenda:authenticated',
-    'public.barber_appointment:anon',
-    'public.barber_appointment:authenticated',
+    -- Task 4.4's link functions (barber_agenda, barber_appointment,
+    -- mark_appointment_by_barber, create_time_block_by_barber and
+    -- delete_time_block_by_barber) are gone since task 7.6c: "Mi agenda" is
+    -- the my_* functions, by the professional's session.
     -- Task 3.3: the public booking page, for anyone.
     'public.barbershop_accepts_bookings:anon',
     'public.barbershop_accepts_bookings:authenticated',
@@ -199,14 +200,16 @@ select is(
     'public.create_manual_appointment:authenticated',
     -- Task 7.6a: the professional's own session (decision 0010).
     'public.create_my_time_block:authenticated',
+    -- Task 7.7: the walk-in appointment, by the professional's session.
+    'public.create_my_walk_in:authenticated',
     'public.create_time_block:authenticated',
-    'public.create_time_block_by_barber:anon',
-    'public.create_time_block_by_barber:authenticated',
+    -- Task 7.7: the walk-in appointment, by the owner.
+    'public.create_walk_in_appointment:authenticated',
+    -- Task 7.6c: the owner deletes a professional.
+    'public.delete_barber:authenticated',
     'public.delete_barbershop:authenticated',
     'public.delete_my_time_block:authenticated',
     'public.delete_time_block:authenticated',
-    'public.delete_time_block_by_barber:anon',
-    'public.delete_time_block_by_barber:authenticated',
     -- Task 5.4: the platform panel; each function answers the super admin only.
     'public.extend_trial:authenticated',
     -- Task 7.6a: the owner invites a professional.
@@ -216,14 +219,14 @@ select is(
     'public.list_customers:authenticated',
     'public.managed_appointment:anon',
     'public.managed_appointment:authenticated',
-    'public.mark_appointment_by_barber:anon',
-    'public.mark_appointment_by_barber:authenticated',
     'public.mark_my_appointment:authenticated',
     'public.my_agenda:authenticated',
     'public.my_appointment:authenticated',
     'public.my_appointments:anon',
     'public.my_appointments:authenticated',
     'public.my_professional_access:authenticated',
+    -- Task 7.7: the services of the professional's session, for the walk-in.
+    'public.my_services:authenticated',
     'public.platform_barbershops:authenticated',
     'public.platform_business_types:authenticated',
     'public.platform_monthly_revenue:authenticated',
