@@ -171,3 +171,13 @@ Con una cuenta del plan 1 en el celular y la cuenta del super admin en un comput
 - [ ] **8. Rechazar.** Rechazar una solicitud con un motivo: en la ficha sale "Rechazada" con el motivo, y el dueño puede pedir otra.
 - [ ] **9. Anular.** En la ficha, anular el pago del cambio: vuelve al plan 1. Sus profesionales siguen, pero no deja crear otro.
 - [ ] **10. Métricas.** El ingreso del mes suma los $15.000 del cambio, y deja de sumarlos al anularlo.
+
+## Tarea 7.9: afiche y logo
+Con una cuenta nueva de dueño, desde el celular, y una impresora o un computador para ver el PNG.
+
+- [ ] **1. El logo en todas partes.** En Ingresar, Registro, Recuperar contraseña, el panel, el menú de `/admin` en un computador y una pantalla de link vencido (abrir `www.yapoin.com/c/x`), el logo es el peine inclinado de la pestaña, no una barra con dientes rectos.
+- [ ] **2. La pantalla final.** Al terminar el asistente sale el afiche con el nombre del establecimiento, el QR, "Reserva tu cita aquí", el link y el logo de Yapoin abajo. El botón dice "Descargar afiche para imprimir".
+- [ ] **3. Lo que se ve es lo que se descarga.** Descargar el afiche y abrir el PNG: es igual a la vista previa, en tamaño carta.
+- [ ] **4. Con logo propio.** Subir un logo en Más › Datos y abrir Compartir: el afiche lo muestra arriba, y el PNG descargado también.
+- [ ] **5. Compartir.** Se ve el afiche. "Descargar QR" baja solo el código y "Descargar afiche" baja la hoja.
+- [ ] **6. Se imprime y se escanea.** Imprimir el afiche y escanear el QR con otro celular: abre la página de reservas del establecimiento.

@@ -10,15 +10,24 @@ import {
 import { hasTrial } from "@/modulos/suscripciones/dominio/plans";
 import { trialHasEnded } from "@/modulos/suscripciones/dominio/trial";
 import { routes } from "@/lib/routes";
-import { publicBookingUrl, qrFileName } from "@/lib/sitio";
+import { publicImageUrl } from "@/lib/imagenes/keys";
+import {
+  displayBookingUrl,
+  posterFileName,
+  publicBookingUrl,
+} from "@/lib/sitio";
 import { countActiveBarbers } from "@/modulos/barberias/datos/setup";
+import { getShopProfile } from "@/modulos/barberias/datos/shop-profile";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import { BookingLinkCard } from "@/ui/booking-link-card";
 import { buttonClasses } from "@/ui/button";
 import { CheckIcon } from "@/ui/icons";
 import { Notice } from "@/ui/notice";
-import { QrCode, qrMatrix } from "@/ui/qr-code";
-import { QrDownloadButton } from "@/ui/qr-download-button";
+import {
+  PosterDownloadButton,
+  PosterPreview,
+} from "@/ui/poster-download-button";
+import { qrMatrix } from "@/ui/qr-code";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { ClearSetupDraft } from "./clear-setup-draft";
@@ -43,8 +52,19 @@ async function SetupDone() {
   if (barbershop.needsSetup) {
     redirect(routes.setup);
   }
-  const hasBarbers = (await countActiveBarbers(barbershop.id)) > 0;
-  const url = publicBookingUrl(barbershop.slug);
+  const [activeBarbers, profile] = await Promise.all([
+    countActiveBarbers(barbershop.id),
+    getShopProfile(barbershop.id),
+  ]);
+  const hasBarbers = activeBarbers > 0;
+  // Task 7.9: the poster, seen and downloaded from the same drawing.
+  const poster = {
+    matrix: qrMatrix(publicBookingUrl(barbershop.slug)),
+    caption: textos.compartir.qrTitulo,
+    name: barbershop.name,
+    link: displayBookingUrl(barbershop.slug),
+    logoUrl: profile.logoPath ? publicImageUrl(profile.logoPath) : null,
+  };
   const trialEnd = formatBogotaDayMonth(startOfBogotaDay(barbershop.expiresOn));
   // Only plan 1 has a free trial (task 7.8): plan 2's ended the day before
   // it signed up, and it learns how its first payment opens the bookings.
@@ -73,13 +93,14 @@ async function SetupDone() {
         name={barbershop.name}
         label={t.link}
       />
-      <div className="self-center">
-        <QrCode value={url} label={textos.ui.qr.etiqueta} />
-      </div>
-      <QrDownloadButton
-        matrix={qrMatrix(url)}
-        fileName={qrFileName(barbershop.slug)}
-        label={t.descargarQr}
+      <PosterPreview
+        {...poster}
+        alt={textos.compartir.aficheAlt(barbershop.name)}
+      />
+      <PosterDownloadButton
+        {...poster}
+        fileName={posterFileName(barbershop.slug)}
+        label={t.descargarAfiche}
       />
       {/* A full page load, not a client navigation: the panel's first visit
           sent the owner here, and Next.js keeps that hidden page with its

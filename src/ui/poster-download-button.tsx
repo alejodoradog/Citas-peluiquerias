@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { COMB_PARTS, COMB_ROTATION, COMB_VIEWBOX } from "./brand-mark";
 import { Button } from "./button";
 import { ImageIcon } from "./icons";
 import {
@@ -75,15 +76,32 @@ function roundedRect(
   }
 }
 
-// The brand mark of BrandHeader (the `comb` utility of globals.css): a bar
-// with the teeth of a comb under it, 3 of every 9 units.
+// The official logo (CombMark, task 7.9) in white: the same bar and teeth,
+// turned the same way, fitted into the box as the SVG fits its viewBox.
 function drawComb(context: CanvasRenderingContext2D, comb: Box) {
-  const unit = comb.height / 12;
+  const [vx, vy, vw, vh] = COMB_VIEWBOX.split(" ").map(Number) as [
+    number,
+    number,
+    number,
+    number,
+  ];
+  const scale = Math.min(comb.width / vw, comb.height / vh);
+  context.save();
+  context.translate(
+    comb.x + (comb.width - vw * scale) / 2,
+    comb.y + (comb.height - vh * scale) / 2,
+  );
+  context.scale(scale, scale);
+  context.translate(-vx, -vy);
+  context.translate(COMB_ROTATION.cx, COMB_ROTATION.cy);
+  context.rotate((COMB_ROTATION.degrees * Math.PI) / 180);
+  context.translate(-COMB_ROTATION.cx, -COMB_ROTATION.cy);
   context.fillStyle = POSTER_COLORS.white;
-  context.fillRect(comb.x, comb.y, comb.width, Math.round(4 * unit));
-  for (let x = 0; x < comb.width; x += 9 * unit) {
-    context.fillRect(comb.x + x, comb.y, 3 * unit, comb.height);
+  for (const part of COMB_PARTS) {
+    roundedRect(context, part, part.radius);
+    context.fill();
   }
+  context.restore();
 }
 
 // Two soft circles of light on the brand color, at opposite corners, so the
@@ -196,6 +214,8 @@ function drawPoster(
     layout.band.height,
   );
   drawComb(context, layout.comb);
+  // drawComb restores the color of the band: the name goes in white.
+  context.fillStyle = POSTER_COLORS.white;
   context.font = `700 ${POSTER.brandSize}px ${family}`;
   context.fillText(textos.marca, layout.brand.x, layout.brand.y);
   return canvas;
@@ -212,6 +232,70 @@ async function posterPng(
 ): Promise<Blob | null> {
   const canvas = drawPoster(content, logo, family);
   return canvas ? toPng(canvas) : null;
+}
+
+// The poster as the owner will print it (task 7.9): drawn by the same
+// drawPoster as the download, so what is seen is what comes out. A logo the
+// browser will not let the canvas export is left out, as in the download.
+export function PosterPreview({
+  matrix,
+  caption,
+  name,
+  link,
+  logoUrl,
+  alt,
+}: {
+  matrix: boolean[][];
+  caption: string;
+  name: string;
+  link: string;
+  logoUrl: string | null;
+  alt: string;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const content = { matrix, caption, name, link };
+        const [family, logo] = await Promise.all([
+          screenFont(),
+          loadLogo(logoUrl),
+        ]);
+        let url: string | null;
+        try {
+          url =
+            drawPoster(content, logo, family)?.toDataURL("image/png") ?? null;
+        } catch (error) {
+          if (!logo) throw error;
+          url =
+            drawPoster(content, null, family)?.toDataURL("image/png") ?? null;
+        }
+        if (!cancelled) setSrc(url);
+      } catch {
+        if (!cancelled) setSrc(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [matrix, caption, name, link, logoUrl]);
+
+  return (
+    <div
+      className="bg-brand rounded-card mx-auto w-full max-w-72 overflow-hidden shadow-[0_8px_24px_rgb(15_68_75/0.25)]"
+      style={{ aspectRatio: `${POSTER.width} / ${POSTER.height}` }}
+    >
+      {src ? (
+        // A data URL drawn here, not an image Next.js can optimize.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={alt} className="block h-full w-full" />
+      ) : (
+        <span role="img" aria-label={alt} className="block h-full w-full" />
+      )}
+    </div>
+  );
 }
 
 // "Afiche" (D-62): a letter page with the barbershop's logo and name, the QR

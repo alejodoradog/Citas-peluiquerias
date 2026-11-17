@@ -13,8 +13,11 @@ import { BookingLinkCard } from "@/ui/booking-link-card";
 import { Card } from "@/ui/card";
 import { CopyButton } from "@/ui/copy-button";
 import { Notice } from "@/ui/notice";
-import { PosterDownloadButton } from "@/ui/poster-download-button";
-import { QrCode, qrMatrix } from "@/ui/qr-code";
+import {
+  PosterDownloadButton,
+  PosterPreview,
+} from "@/ui/poster-download-button";
+import { qrMatrix } from "@/ui/qr-code";
 import { QrDownloadButton } from "@/ui/qr-download-button";
 import { LoadingState } from "@/ui/states";
 import { TabShell } from "@/ui/tab-shell";
@@ -64,19 +67,17 @@ async function Share() {
         name={barbershop.name}
         copyVariant="primary"
       />
+      {/* Task 7.9: the poster as it prints, from the same drawing as its
+          download; the QR alone can still be downloaded. */}
       <Card>
-        <div className="bg-paper rounded-button flex flex-col items-center gap-2.5 p-4 text-center">
-          <QrCode
-            value={url}
-            label={textos.ui.qr.etiqueta}
-            size={200}
-            bordered={false}
-          />
-          <strong className="text-base">{t.qrTitulo}</strong>
-          <span className="text-help text-muted break-words">
-            {barbershop.name}
-          </span>
-        </div>
+        <PosterPreview
+          matrix={matrix}
+          caption={t.qrTitulo}
+          name={barbershop.name}
+          link={displayBookingUrl(barbershop.slug)}
+          logoUrl={profile.logoPath ? publicImageUrl(profile.logoPath) : null}
+          alt={t.aficheAlt(barbershop.name)}
+        />
         <div className="grid grid-cols-2 gap-2.5">
           <QrDownloadButton
             matrix={matrix}
@@ -88,11 +89,9 @@ async function Share() {
             caption={t.qrTitulo}
             name={barbershop.name}
             link={displayBookingUrl(barbershop.slug)}
-            logoUrl={
-              profile.logoPath ? publicImageUrl(profile.logoPath) : null
-            }
+            logoUrl={profile.logoPath ? publicImageUrl(profile.logoPath) : null}
             fileName={posterFileName(barbershop.slug)}
-            label={t.afiche}
+            label={t.descargarAfiche}
           />
         </div>
       </Card>
