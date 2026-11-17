@@ -938,7 +938,8 @@ export const textos = {
         `Tu prueba gratis va hasta el ${fecha}. Comparte este link con tus clientes.`,
       sinBarberos: "Agrega al menos un profesional para recibir citas.",
       link: "Link de reservas",
-      descargarQr: "Descargar QR para imprimir",
+      // Task 7.9: the poster instead of the QR alone.
+      descargarAfiche: "Descargar afiche para imprimir",
       agenda: "Ir a mi agenda",
     },
     horario: {
@@ -1005,6 +1006,10 @@ export const textos = {
     qrTitulo: "Reserva tu cita aquí",
     descargarQr: "Descargar QR",
     afiche: "Afiche",
+    // Task 7.9: the poster seen before it is printed.
+    descargarAfiche: "Descargar afiche",
+    aficheAlt: (nombre: string) =>
+      `Afiche de ${nombre} con el código QR para reservar`,
     // Under the QR card of the poster.
     aficheAyuda: "Abre la cámara de tu celular y apunta al código",
     falloAfiche:

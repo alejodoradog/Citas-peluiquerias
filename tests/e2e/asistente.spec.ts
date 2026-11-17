@@ -188,8 +188,11 @@ test("an owner sets up services and team, and gets the link to share", async ({
     page.getByRole("heading", { level: 1, name: t.listo.titulo }),
   ).toBeVisible();
   await expect(page.getByText(`yapoin.com/${slug}`)).toBeVisible();
+  // Task 7.9: the poster instead of the QR alone.
   await expect(
-    page.getByRole("img", { name: textos.ui.qr.etiqueta }),
+    page.getByRole("img", {
+      name: textos.compartir.aficheAlt("Barbería El Parche"),
+    }),
   ).toBeVisible();
   await checkScreen(page);
 
@@ -205,8 +208,10 @@ test("an owner sets up services and team, and gets the link to share", async ({
   }
 
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: t.listo.descargarQr }).click();
-  expect((await download).suggestedFilename()).toBe(`qr-yapoin-${slug}.png`);
+  await page.getByRole("button", { name: t.listo.descargarAfiche }).click();
+  expect((await download).suggestedFilename()).toBe(
+    `afiche-yapoin-${slug}.png`,
+  );
 
   expect(await setupSnapshot(slug)).toEqual({
     services: [

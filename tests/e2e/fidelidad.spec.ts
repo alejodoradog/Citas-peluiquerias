@@ -296,7 +296,7 @@ test("D-62 matches the design", async ({ page }) => {
   );
   await compare(
     "botón secundario",
-    page.getByRole("button", { name: c.afiche }),
+    page.getByRole("button", { name: c.descargarAfiche }),
     design.getByRole("button", { name: "Afiche" }),
     [
       "height",
@@ -307,24 +307,8 @@ test("D-62 matches the design", async ({ page }) => {
       "font-weight",
     ],
   );
-  await compare(
-    "bloque del QR",
-    page.getByRole("img", { name: textos.ui.qr.etiqueta }).locator(".."),
-    design.locator('[role="img"]').locator(".."),
-    ["border-radius", "background-color"],
-  );
-  await compare(
-    "QR",
-    page.getByRole("img", { name: textos.ui.qr.etiqueta }),
-    design.locator('[role="img"]'),
-    ["height", "border-radius", "background-color"],
-  );
-  await compare(
-    "leyenda del QR",
-    page.getByText(c.qrTitulo, { exact: true }),
-    design.getByText("Reserva tu cita aquí", { exact: true }),
-    ["font-size", "font-weight", "color"],
-  );
+  // Task 7.9: D-62's card with the QR alone became the poster itself (the
+  // partners asked for it, 2026-11-15), so it is no longer compared.
   await compare(
     "título del texto",
     page.getByRole("heading", { level: 2, name: c.texto.titulo }),

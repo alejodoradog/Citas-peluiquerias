@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { cx } from "@/ui/cx";
 import { BarChartIcon, DollarIcon, StoreIcon } from "@/ui/icons";
+import { CombMark } from "@/ui/brand-mark";
 import { textos } from "@/ui/textos";
 
 const t = textos.plataforma.menu;
@@ -62,7 +63,7 @@ export function AdminNavShell({
       className="border-line sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r bg-white px-3.5 py-5 lg:flex"
     >
       <div className="flex items-center gap-2.5 px-2.5 pt-1.5 pb-4.5">
-        <CombMark />
+        <CombMark className="text-brand h-7.5 w-8.5" />
         <span className="flex flex-col">
           <span className="text-lg font-extrabold">{textos.marca}</span>
           <span className="text-muted text-xs">{t.subtitulo}</span>
@@ -86,25 +87,5 @@ export function AdminNavShell({
       ))}
       <div className="mt-auto px-1">{signOut}</div>
     </nav>
-  );
-}
-
-// The comb of the app's icon (src/app/icon.svg), in the brand color.
-function CombMark() {
-  return (
-    <svg
-      viewBox="80 112 352 300"
-      aria-hidden="true"
-      className="text-brand h-7.5 w-8.5 shrink-0 fill-current"
-    >
-      <g transform="rotate(-16 256 256)">
-        <rect x="96" y="148" width="320" height="66" rx="33" />
-        <rect x="96" y="190" width="38" height="190" rx="19" />
-        <rect x="166.5" y="190" width="38" height="160" rx="19" />
-        <rect x="237" y="190" width="38" height="190" rx="19" />
-        <rect x="307.5" y="190" width="38" height="160" rx="19" />
-        <rect x="378" y="190" width="38" height="190" rx="19" />
-      </g>
-    </svg>
   );
 }

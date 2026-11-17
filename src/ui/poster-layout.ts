@@ -33,11 +33,12 @@ export const POSTER = {
   gapBeforeHint: 32,
   hintSize: 36,
   hintHeight: 44,
-  // The band at the foot with the Yapoin brand: the comb over the name.
+  // The band at the foot with the Yapoin brand: the comb of the official
+  // logo (task 7.9, in the proportions of COMB_VIEWBOX) over the name.
   bandHeight: 200,
-  combWidth: 150,
-  combHeight: 30,
-  gapAfterComb: 22,
+  combWidth: 70,
+  combHeight: 60,
+  gapAfterComb: 10,
   brandSize: 56,
   brandHeight: 66,
 } as const;
