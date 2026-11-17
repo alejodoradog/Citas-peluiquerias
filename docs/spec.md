@@ -148,7 +148,7 @@ La regla central: una hora está libre solo si el barbero trabaja ese día, la b
 
 **Disponibilidad**
 
-- Los espacios se ofrecen cada 15 minutos. Cada servicio dura de 5 a 240 minutos, en múltiplos de 5.
+- Los espacios se ofrecen cada 15 minutos, o cada 30 o 60 si el establecimiento lo elige en Más › Reservas y cancelaciones, contados desde la hora en punto (tarea 7.11). Vale para lo que hace el cliente: reservar y cambiar su cita. Las citas y los bloqueos del dueño y la cita al momento no siguen el intervalo. Cada servicio dura de 5 a 240 minutos, en múltiplos de 5.
 - Una cita puede llevar de 1 a 5 servicios distintos, con un solo barbero y en un solo bloque: su duración y su precio son la suma de los servicios (máximo 480 minutos), y el barbero debe ofrecerlos todos (ej. corte 40 min + barba 20 min = 60 min).
 - Un barbero desactivado no aparece en la página pública ni recibe citas o bloqueos nuevos.
 - El horario de cada barbero va dentro del horario de la barbería.

@@ -171,3 +171,13 @@ Con una cuenta del plan 1 en el celular y la cuenta del super admin en un comput
 - [ ] **8. Rechazar.** Rechazar una solicitud con un motivo: en la ficha sale "Rechazada" con el motivo, y el dueño puede pedir otra.
 - [ ] **9. Anular.** En la ficha, anular el pago del cambio: vuelve al plan 1. Sus profesionales siguen, pero no deja crear otro.
 - [ ] **10. Métricas.** El ingreso del mes suma los $15.000 del cambio, y deja de sumarlos al anularlo.
+
+## Tarea 7.11: intervalo de reserva
+Con una cuenta de dueño y el celular de un cliente, sin sesión.
+
+- [ ] **1. Por defecto no cambia nada.** Sin tocar nada, la página de reservas ofrece las horas cada 15 minutos.
+- [ ] **2. Cada 30 minutos.** En Más › Reservas y cancelaciones elegir "Cada 30 minutos" y guardar. En la página de reservas solo salen las horas en punto y las medias horas (por ejemplo 10:00 y 10:30, nunca 10:15).
+- [ ] **3. Cada hora.** Elegir "Cada hora": solo salen horas en punto. Con un servicio de 40 minutos reservado a las 10:00, la siguiente hora que se ofrece es las 11:00.
+- [ ] **4. Cambiar mi cita.** Reservar con un correo del cliente. Desde el link de ese correo, "Cambiar" ofrece las horas con el mismo intervalo.
+- [ ] **5. El dueño sigue libre.** En la agenda, crear una cita manual a las 10:15 y bloquear de 10:15 a 10:45: se puede, aunque el intervalo sea de 1 hora.
+- [ ] **6. Volver a 15.** Elegir otra vez "Cada 15 minutos": vuelven las :15 y las :45.
