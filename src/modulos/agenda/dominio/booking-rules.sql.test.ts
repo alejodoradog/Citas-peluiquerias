@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 import { toBogotaDate } from "@/lib/fechas/fechas";
 import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
 import { BOOKING_WINDOW_DAYS } from "@/modulos/barberias/dominio/policies";
-import { availableSlots, type AvailabilityBarber } from "./availability";
+import {
+  availableSlots,
+  SLOT_STEPS,
+  type AvailabilityBarber,
+} from "./availability";
 
 // Decision 0005, point 16: the public booking (task 3.3) enforces the rules
 // of this engine again in SQL (book_appointment, migration
@@ -92,5 +96,20 @@ describe("the engine and the SQL of book_appointment", () => {
       sql ?? "",
     )?.[1];
     expect(Number(days)).toBe(BOOKING_WINDOW_DAYS);
+  });
+});
+
+// Task 7.11: the intervals the engine offers are the ones the database keeps.
+describe("the booking interval", () => {
+  it("allows the same intervals as barbershops.booking_interval_minutes", () => {
+    const migrations = join(process.cwd(), "supabase", "migrations");
+    const sql = readdirSync(migrations)
+      .sort()
+      .map((file) => readFileSync(join(migrations, file), "utf8"))
+      .join("\n");
+    const allowed = /booking_interval_minutes in \(([\d, ]+)\)/.exec(sql)?.[1];
+    expect(allowed?.split(",").map((n) => Number(n.trim()))).toEqual([
+      ...SLOT_STEPS,
+    ]);
   });
 });

@@ -1452,6 +1452,12 @@ export const textos = {
     // An option of the select, from hours: "2 horas antes".
     cancelarOpcion: (horas: number) =>
       horas === 0 ? "La hora de la cita" : `${duracion(horas * 60)} antes`,
+    // Task 7.11: every how many minutes customers are offered times.
+    intervalo: "Cada cuánto ofreces las horas",
+    intervaloAyuda:
+      "Tus clientes ven las horas cada tanto, desde la hora en punto. Con 1 hora y servicios más cortos, el resto de esa hora queda libre. Tus citas y bloqueos no cambian.",
+    intervaloOpcion: (minutos: number) =>
+      minutos === 60 ? "Cada hora" : `Cada ${minutos} minutos`,
     siempre: "Tú siempre puedes cancelar o cambiar",
     siempreDetalle: "Si tiene correo, le avisamos.",
     guardar: "Guardar",
@@ -1459,6 +1465,7 @@ export const textos = {
     errores: {
       min_booking_notice_invalid: "Elige una de las opciones de la lista.",
       cancellation_notice_invalid: "Elige una de las opciones de la lista.",
+      booking_interval_invalid: "Elige una de las opciones de la lista.",
       unknown: "No pudimos guardar. Intenta de nuevo.",
       invalid: "Revisa este dato.",
     } satisfies Record<PoliciesActionErrorCode | "invalid", string>,

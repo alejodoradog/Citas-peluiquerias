@@ -1,6 +1,6 @@
 "use server";
 
-import { refreshPublicProfile } from "@/lib/cache-tags";
+import { expirePublicProfile } from "@/lib/cache-tags";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readForm, type FormState } from "@/lib/formularios/form-state";
@@ -13,11 +13,16 @@ import { parsePoliciesForm, type PolicyErrorCode } from "../dominio/policies";
 // - unknown: the database wrote nothing.
 export type PoliciesActionErrorCode = PolicyErrorCode | "unknown";
 
-export type PoliciesField = "minBookingNotice" | "cancellationNotice";
+export type PoliciesField =
+  "minBookingNotice" | "cancellationNotice" | "bookingInterval";
 
 export type PoliciesState = FormState<PoliciesField, PoliciesActionErrorCode>;
 
-const FIELDS = ["minBookingNotice", "cancellationNotice"] as const;
+const FIELDS = [
+  "minBookingNotice",
+  "cancellationNotice",
+  "bookingInterval",
+] as const;
 
 // The options are a few digits; anything far longer is not echoed back.
 const MAX_ECHO_LENGTH = 10;
@@ -54,7 +59,9 @@ export async function savePolicies(
     return { status: "failed", error: "unknown", values: form.values };
   }
 
-  refreshPublicProfile(barbershop.id);
+  // Expired at once, not refreshed in the background: a stale profile would
+  // offer the old interval's times, and the database refuses them (task 7.11).
+  expirePublicProfile(barbershop.id);
   revalidatePath(routes.panelMore);
   revalidatePath(routes.panelPolicies);
   redirect(routes.panelMore);

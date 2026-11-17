@@ -7,7 +7,9 @@ import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 //   0 to 10080 in the database);
 // - until how many hours before customers may cancel or move their
 //   appointment from the email link (barbershops.cancellation_notice_hours,
-//   0 to 168). The barbershop can always cancel.
+//   0 to 168). The barbershop can always cancel;
+// - every how many minutes customers are offered times: 15, 30 or 60
+//   (barbershops.booking_interval_minutes, task 7.11).
 
 // How far ahead customers may book. Fixed for every barbershop; the
 // availability engine (task 3.1) uses it.
@@ -16,12 +18,14 @@ export const BOOKING_WINDOW_DAYS = 30;
 export type Policies = {
   minBookingNoticeMinutes: number;
   cancellationNoticeHours: number;
+  bookingIntervalMinutes: number;
 };
 
 // The spec's defaults, the same as the columns' (decision 0006).
 export const DEFAULT_POLICIES: Policies = {
   minBookingNoticeMinutes: 60,
   cancellationNoticeHours: 2,
+  bookingIntervalMinutes: 15,
 };
 
 // What D-60 offers (decision P9 of task 2.4, provisional): 0, 15 and 30
@@ -33,9 +37,13 @@ export const MIN_BOOKING_NOTICE_OPTIONS: readonly number[] = [
 export const CANCELLATION_NOTICE_OPTIONS: readonly number[] = [
   0, 1, 2, 3, 4, 6, 12, 24, 48,
 ];
+// Task 7.11: 15, 30 or 60 minutes, as the database allows.
+export const BOOKING_INTERVAL_OPTIONS: readonly number[] = [15, 30, 60];
 
 export type PolicyErrorCode =
-  "min_booking_notice_invalid" | "cancellation_notice_invalid";
+  | "min_booking_notice_invalid"
+  | "cancellation_notice_invalid"
+  | "booking_interval_invalid";
 
 // The options with the saved value among them, in order: a value saved
 // another way (the seed data, say) shows as it is and can be kept.
@@ -77,10 +85,16 @@ export function parsePoliciesForm(
         optionsWith(CANCELLATION_NOTICE_OPTIONS, saved.cancellationNoticeHours),
         "cancellation_notice_invalid",
       ),
+      // Only the three the database keeps, never another saved value.
+      bookingInterval: choice(
+        BOOKING_INTERVAL_OPTIONS,
+        "booking_interval_invalid",
+      ),
     })
-    .transform(({ minBookingNotice, cancellationNotice }) => ({
+    .transform(({ minBookingNotice, cancellationNotice, bookingInterval }) => ({
       minBookingNoticeMinutes: minBookingNotice,
       cancellationNoticeHours: cancellationNotice,
+      bookingIntervalMinutes: bookingInterval,
     }));
   return parseWith(schema, input);
 }

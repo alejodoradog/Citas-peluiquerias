@@ -181,3 +181,13 @@ Con una cuenta nueva de dueño, desde el celular, y una impresora o un computado
 - [ ] **4. Con logo propio.** Subir un logo en Más › Datos y abrir Compartir: el afiche lo muestra arriba, y el PNG descargado también.
 - [ ] **5. Compartir.** Se ve el afiche. "Descargar QR" baja solo el código y "Descargar afiche" baja la hoja.
 - [ ] **6. Se imprime y se escanea.** Imprimir el afiche y escanear el QR con otro celular: abre la página de reservas del establecimiento.
+
+## Tarea 7.11: intervalo de reserva
+Con una cuenta de dueño y el celular de un cliente, sin sesión.
+
+- [ ] **1. Por defecto no cambia nada.** Sin tocar nada, la página de reservas ofrece las horas cada 15 minutos.
+- [ ] **2. Cada 30 minutos.** En Más › Reservas y cancelaciones elegir "Cada 30 minutos" y guardar. En la página de reservas solo salen las horas en punto y las medias horas (por ejemplo 10:00 y 10:30, nunca 10:15).
+- [ ] **3. Cada hora.** Elegir "Cada hora": solo salen horas en punto. Con un servicio de 40 minutos reservado a las 10:00, la siguiente hora que se ofrece es las 11:00.
+- [ ] **4. Cambiar mi cita.** Reservar con un correo del cliente. Desde el link de ese correo, "Cambiar" ofrece las horas con el mismo intervalo.
+- [ ] **5. El dueño sigue libre.** En la agenda, crear una cita manual a las 10:15 y bloquear de 10:15 a 10:45: se puede, aunque el intervalo sea de 1 hora.
+- [ ] **6. Volver a 15.** Elegir otra vez "Cada 15 minutos": vuelven las :15 y las :45.

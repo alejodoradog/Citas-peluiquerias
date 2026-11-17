@@ -9,7 +9,11 @@ const t = textos.politicas;
 
 const idle = async (): Promise<PoliciesState> => ({ status: "idle" });
 
-const defaults = { minBookingNoticeMinutes: 60, cancellationNoticeHours: 2 };
+const defaults = {
+  minBookingNoticeMinutes: 60,
+  cancellationNoticeHours: 2,
+  bookingIntervalMinutes: 15,
+};
 
 describe("PoliciesForm", () => {
   it("shows the saved policies, the fixed window and what the owner can always do", () => {
@@ -29,6 +33,11 @@ describe("PoliciesForm", () => {
     expect(
       within(cancel).getByRole("option", { selected: true }),
     ).toHaveTextContent("2 horas antes");
+    const interval = screen.getByRole("combobox", { name: t.intervalo });
+    expect(interval).toHaveValue("15");
+    expect(
+      within(interval).getByRole("option", { selected: true }),
+    ).toHaveTextContent("Cada 15 minutos");
     expect(screen.getByText(t.ventana)).toBeInTheDocument();
     expect(screen.getByText("30 días hacia adelante")).toBeInTheDocument();
     expect(screen.getByText(t.siempre)).toBeInTheDocument();
@@ -74,11 +83,31 @@ describe("PoliciesForm", () => {
     ]);
   });
 
+  it("offers the three intervals and shows the saved one", () => {
+    render(
+      <PoliciesForm
+        action={idle}
+        saved={{ ...defaults, bookingIntervalMinutes: 60 }}
+      />,
+    );
+    const interval = screen.getByRole("combobox", { name: t.intervalo });
+    expect(interval).toHaveValue("60");
+    expect(
+      within(interval)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).toEqual(["Cada 15 minutos", "Cada 30 minutos", "Cada hora"]);
+  });
+
   it("shows a saved value that is not one of the options", () => {
     render(
       <PoliciesForm
         action={idle}
-        saved={{ minBookingNoticeMinutes: 90, cancellationNoticeHours: 5 }}
+        saved={{
+          minBookingNoticeMinutes: 90,
+          cancellationNoticeHours: 5,
+          bookingIntervalMinutes: 15,
+        }}
       />,
     );
     expect(screen.getByRole("combobox", { name: t.anticipacion })).toHaveValue(
@@ -113,11 +142,16 @@ describe("PoliciesForm", () => {
       screen.getByRole("combobox", { name: t.cancelar }),
       "24",
     );
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: t.intervalo }),
+      "30",
+    );
     await user.click(screen.getByRole("button", { name: t.guardar }));
     await screen.findByRole("button", { name: t.guardar });
     expect(sent).not.toBeNull();
     expect(sent!.get("minBookingNotice")).toBe("180");
     expect(sent!.get("cancellationNotice")).toBe("24");
+    expect(sent!.get("bookingInterval")).toBe("30");
   });
 
   it("keeps the choice and shows the error the server sends back", async () => {
@@ -127,7 +161,11 @@ describe("PoliciesForm", () => {
         action={async () => ({
           status: "invalid",
           fieldErrors: { cancellationNotice: "cancellation_notice_invalid" },
-          values: { minBookingNotice: "180", cancellationNotice: "2" },
+          values: {
+            minBookingNotice: "180",
+            cancellationNotice: "2",
+            bookingInterval: "15",
+          },
         })}
         saved={defaults}
       />,

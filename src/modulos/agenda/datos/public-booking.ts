@@ -6,7 +6,21 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import type { WeeklyShift } from "@/modulos/barberias/dominio/hours";
 import { isSlug } from "@/modulos/barberias/dominio/slug";
-import type { BusyAppointment, TimeBlock } from "../dominio/availability";
+import {
+  SLOT_STEP_MINUTES,
+  SLOT_STEPS,
+  type BusyAppointment,
+  type SlotStep,
+  type TimeBlock,
+} from "../dominio/availability";
+
+// The database only keeps 15, 30 or 60; anything else would be a bug, so the
+// engine's default stands in for it.
+function toSlotStep(minutes: number): SlotStep {
+  return (SLOT_STEPS as readonly number[]).includes(minutes)
+    ? (minutes as SlotStep)
+    : SLOT_STEP_MINUTES;
+}
 
 // What the public booking page reads, always as anon (decision 0002, point
 // 3): exactly what anyone with the link may see. anon reads no appointment
@@ -40,6 +54,8 @@ export type PublicProfile = {
   location: { latitude: number; longitude: number } | null;
   whatsappPhone: string | null;
   minBookingNoticeMinutes: number;
+  // Every how many minutes customers are offered times (task 7.11).
+  bookingIntervalMinutes: SlotStep;
   cancellationNoticeHours: number;
   deposit: { method: string; account: string } | null;
   acceptsBookings: boolean;
@@ -67,7 +83,7 @@ export async function loadPublicProfile(
   const shop = await supabase
     .from("barbershops")
     .select(
-      "id, name, slug, logo_path, cover_photo_path, address, locality, latitude, longitude, whatsapp_phone, min_booking_notice_minutes, cancellation_notice_hours, deposit_method, deposit_account",
+      "id, name, slug, logo_path, cover_photo_path, address, locality, latitude, longitude, whatsapp_phone, min_booking_notice_minutes, booking_interval_minutes, cancellation_notice_hours, deposit_method, deposit_account",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -142,6 +158,7 @@ export async function loadPublicProfile(
         : null,
     whatsappPhone: b.whatsapp_phone,
     minBookingNoticeMinutes: b.min_booking_notice_minutes,
+    bookingIntervalMinutes: toSlotStep(b.booking_interval_minutes),
     cancellationNoticeHours: b.cancellation_notice_hours,
     deposit:
       b.deposit_method && b.deposit_account

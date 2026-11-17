@@ -87,6 +87,8 @@ export async function loadPublicAvailability(
     toDate: window.until,
     durationMinutes: chosen.minutes,
     minNoticeMinutes: profile.minBookingNoticeMinutes,
+    // The establishment's interval (task 7.11).
+    slotStepMinutes: profile.bookingIntervalMinutes,
     shopHours: profile.shopHours,
     holidayOpenings: profile.holidayOpenings,
     barbers: barbers.map((b) => ({
@@ -144,6 +146,8 @@ export async function loadRescheduleAvailability(
     toDate: window.until,
     durationMinutes: minutes,
     minNoticeMinutes: profile.minBookingNoticeMinutes,
+    // The establishment's interval (task 7.11).
+    slotStepMinutes: profile.bookingIntervalMinutes,
     shopHours: profile.shopHours,
     holidayOpenings: profile.holidayOpenings,
     barbers: barber

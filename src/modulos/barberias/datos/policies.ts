@@ -10,13 +10,16 @@ export async function getPolicies(barbershopId: string): Promise<Policies> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("barbershops")
-    .select("min_booking_notice_minutes, cancellation_notice_hours")
+    .select(
+      "min_booking_notice_minutes, cancellation_notice_hours, booking_interval_minutes",
+    )
     .eq("id", barbershopId)
     .single();
   if (error) throw error;
   return {
     minBookingNoticeMinutes: data.min_booking_notice_minutes,
     cancellationNoticeHours: data.cancellation_notice_hours,
+    bookingIntervalMinutes: data.booking_interval_minutes,
   };
 }
 
@@ -32,6 +35,7 @@ export async function updatePolicies(
     .update({
       min_booking_notice_minutes: policies.minBookingNoticeMinutes,
       cancellation_notice_hours: policies.cancellationNoticeHours,
+      booking_interval_minutes: policies.bookingIntervalMinutes,
     })
     .eq("id", barbershopId)
     .select("id");

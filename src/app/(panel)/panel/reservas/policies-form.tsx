@@ -4,6 +4,7 @@ import { useState } from "react";
 import { routes } from "@/lib/routes";
 import type { PoliciesState } from "@/modulos/barberias/acciones/policies";
 import {
+  BOOKING_INTERVAL_OPTIONS,
   BOOKING_WINDOW_DAYS,
   CANCELLATION_NOTICE_OPTIONS,
   MIN_BOOKING_NOTICE_OPTIONS,
@@ -39,6 +40,9 @@ export function PoliciesForm({
   // action, so a refused save keeps what the owner chose.
   const [notice, setNotice] = useState(String(saved.minBookingNoticeMinutes));
   const [cancel, setCancel] = useState(String(saved.cancellationNoticeHours));
+  const [step, setStep] = useState(
+    String(saved.bookingIntervalMinutes),
+  );
   const controls = useRestoredControls();
 
   const noticeOptions = optionsWith(
@@ -54,6 +58,11 @@ export function PoliciesForm({
   ).map((hours) => ({
     value: String(hours),
     label: t.cancelarOpcion(hours),
+  }));
+
+  const intervalOptions = BOOKING_INTERVAL_OPTIONS.map((minutes) => ({
+    value: String(minutes),
+    label: t.intervaloOpcion(minutes),
   }));
 
   return (
@@ -83,6 +92,17 @@ export function PoliciesForm({
             value={notice}
             data-value={notice}
             onChange={(event) => setNotice(event.currentTarget.value)}
+          />
+          {/* Task 7.11. */}
+          <SelectField
+            label={t.intervalo}
+            name="bookingInterval"
+            options={intervalOptions}
+            help={t.intervaloAyuda}
+            error={form.fieldError("bookingInterval")}
+            value={step}
+            data-value={step}
+            onChange={(event) => setStep(event.currentTarget.value)}
           />
           <div className="flex flex-col gap-0.5">
             <span className="text-help text-muted">{t.ventana}</span>

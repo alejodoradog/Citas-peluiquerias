@@ -25,8 +25,9 @@ export function refreshPublicProfile(barbershopId: string): void {
 // and nothing broader. A route pattern inside the (panel) group must carry
 // the group ("/(panel)/panel/profesionales/[id]"); without it, it matches no page.
 
-// For data that must stop being served at once (a deleted barbershop: its
-// WhatsApp, deposit account and images, Ley 1581). Server Actions only.
+// For data that must stop being served at once: a deleted barbershop (its
+// WhatsApp, deposit account and images, Ley 1581), or the booking interval,
+// whose old times the database would refuse (task 7.11). Server Actions only.
 export function expirePublicProfile(barbershopId: string): void {
   updateTag(publicProfileTag(barbershopId));
 }
