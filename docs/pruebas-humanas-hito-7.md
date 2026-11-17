@@ -158,6 +158,20 @@ Con la cuenta de dueño y un profesional con cuenta (de la 7.6b), en un rato en 
 - [ ] **13. Pausado o inactivo.** Con el establecimiento pausado, el profesional no ve el botón y, si abre `/mi-agenda/al-momento`, dice que está pausado. Desactivado, igual.
 - [ ] **14. Doble toque.** Tocar "Crear cita" dos veces seguidas: se crea una sola cita.
 
+## Tarea 7.8b: "Cambiar plan"
+Con una cuenta del plan 1 en el celular y la cuenta del super admin en un computador.
+
+- [ ] **1. El límite lleva al plan.** Con 4 profesionales activos, crear un quinto: el aviso dice que se cambia de plan en Más › Plan.
+- [ ] **2. Pedir el cambio.** En Más › Plan, ver el plan 1, sus 4 profesionales y el próximo pago. Tocar "Cambiar al plan 2": la hoja dice el valor ($15.000 si ya pagó un mes, $25.000 si sigue en prueba) y cómo pagarlo. Enviar: sale "Solicitud enviada", y no deja enviar otra.
+- [ ] **3. Cancelar.** Cancelar la solicitud y volver a pedirla.
+- [ ] **4. El admin la ve.** En `/admin` sale el enlace "Solicitudes de cambio de plan · 1 pendiente", y en el computador, "Solicitudes" en el menú.
+- [ ] **5. Aceptar con el pago.** Aceptar con Nequi, una referencia y la fecha de hoy: dice que el establecimiento cambió de plan. En su ficha sale el cambio pagado.
+- [ ] **6. Ya tiene más profesionales.** En el celular, crear el quinto profesional: ahora sí se guarda. Más › Plan dice plan 2.
+- [ ] **7. El mismo comprobante no entra dos veces.** Con otra solicitud de otra cuenta, aceptar con la misma referencia y el mismo medio de un pago mensual de esa cuenta: lo rechaza.
+- [ ] **8. Rechazar.** Rechazar una solicitud con un motivo: en la ficha sale "Rechazada" con el motivo, y el dueño puede pedir otra.
+- [ ] **9. Anular.** En la ficha, anular el pago del cambio: vuelve al plan 1. Sus profesionales siguen, pero no deja crear otro.
+- [ ] **10. Métricas.** El ingreso del mes suma los $15.000 del cambio, y deja de sumarlos al anularlo.
+
 ## Tarea 7.9: afiche y logo
 Con una cuenta nueva de dueño, desde el celular, y una impresora o un computador para ver el PNG.
 

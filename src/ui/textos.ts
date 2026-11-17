@@ -59,10 +59,10 @@ function duracion(minutos: number): string {
 // return (decision 0005), plus "invalid" for anything a schema did not name.
 
 // Task 7.8: one more professional than the plan allows (the database says
-// plan_limit). The wizard and Más › Profesionales show it. Until "Cambiar
-// plan" exists (task 7.8b) it sends to Yapoin's WhatsApp.
+// plan_limit). The wizard and Más › Profesionales show it, and it sends to
+// Más › Plan, where the owner asks to move up (task 7.8b).
 const LIMITE_PLAN =
-  "Tu plan no permite más profesionales activos: hasta 4 en el plan 1 y hasta 8 en el plan 2. Para cambiar de plan, escríbenos por WhatsApp al 322 938 1101.";
+  "Tu plan no permite más profesionales activos: hasta 4 en el plan 1 y hasta 8 en el plan 2. Para tener más, cambia de plan en Más › Plan.";
 
 export const textos = {
   marca: "Yapoin",
@@ -2342,6 +2342,58 @@ export const textos = {
       subtitulo: "Plataforma",
       establecimientos: "Establecimientos",
       metricas: "Métricas",
+      // Task 7.8b.
+      solicitudes: "Solicitudes",
+    },
+    // Task 7.8b: the requests to change plan, accepted only by registering
+    // the payment of the difference.
+    solicitudes: {
+      titulo: "Solicitudes de cambio de plan",
+      pendientes: (cantidad: number) =>
+        cantidad === 1 ? "1 pendiente" : `${cantidad} pendientes`,
+      vacio: "No hay solicitudes pendientes.",
+      // "Plan 1 → Plan 2 · $15.000".
+      cambio: (de: string, a: string, valor: string) =>
+        `${de} → ${a} · ${valor}`,
+      pedida: (fecha: string, quien: string | null) =>
+        quien ? `Pedida el ${fecha} por ${quien}` : `Pedida el ${fecha}`,
+      aceptar: "Aceptar con el pago",
+      rechazar: "Rechazar",
+      hojaAceptar: {
+        titulo: "Registrar el pago del cambio",
+        detalle: (nombre: string, valor: string) =>
+          `${nombre} pasa al plan nuevo cuando registres el pago de ${valor}. Su fecha de vencimiento no cambia.`,
+        enviar: "Registrar y cambiar de plan",
+        enviando: "Registrando…",
+      },
+      hojaRechazar: {
+        titulo: "Rechazar la solicitud",
+        detalle: (nombre: string) =>
+          `${nombre} sigue en su plan. Escribe por qué, para el historial.`,
+        motivo: "Motivo",
+        enviar: "Rechazar solicitud",
+        enviando: "Rechazando…",
+      },
+      volver: "Volver",
+      hecho: {
+        aceptada: "Pago registrado: el establecimiento cambió de plan.",
+        rechazada: "Solicitud rechazada.",
+      } as Record<string, string>,
+      // In the ficha (P-02).
+      ficha: {
+        titulo: "Cambios de plan",
+        pendiente: "Pendiente de pago",
+        aceptada: (fecha: string, referencia: string) =>
+          `Pagado el ${fecha} · ref. ${referencia}`,
+        rechazada: (motivo: string) => `Rechazada: ${motivo}`,
+        cancelada: "Cancelada por el dueño",
+        anulada: (motivo: string) => `Pago anulado: ${motivo}`,
+        anular: "Anular",
+        anularDe: (fecha: string) => `Anular el pago del cambio del ${fecha}`,
+        anularDetalle: (valor: string) =>
+          `Se anula el pago de ${valor} y el establecimiento vuelve a su plan anterior. Sus profesionales se quedan, pero no podrá agregar más hasta caber en su plan.`,
+        hecho: "Pago del cambio anulado: volvió a su plan anterior.",
+      },
     },
     tabla: {
       total: (cantidad: number) =>
@@ -2432,6 +2484,8 @@ export const textos = {
         suspendida: "Establecimiento suspendido.",
         reactivada: "Establecimiento reactivado.",
         extendida: "Prueba extendida.",
+        // Task 7.8b.
+        cambioAnulado: "Pago del cambio anulado: volvió a su plan anterior.",
       },
     },
     pago: {
@@ -2555,7 +2609,7 @@ export const textos = {
       already_registered:
         "Ese pago ya está registrado: hay otro con el mismo medio y la misma referencia.",
       plan_changed:
-        "El plan o el valor de este establecimiento cambió desde que abriste Registrar pago. Vuelve a abrirlo.",
+        "El plan o el valor de este establecimiento cambió desde que abriste esta pantalla. Vuelve a abrirla.",
       amount_invalid:
         "Escribe un valor entre $40.000 y $5.000.000, con punto solo para los miles.",
       not_found: "Esto ya cambió. Vuelve a abrir la ficha.",
@@ -2785,6 +2839,61 @@ export const textos = {
     listo: {
       primerPago:
         "Tu página recibe citas desde que registremos tu primer pago. En la agenda verás cómo hacerlo.",
+    },
+    // Task 7.8b: Más › Plan, where the owner asks to move up a plan.
+    plan: {
+      titulo: "Plan",
+      fila: "Plan",
+      nombres: {
+        standard: "Plan 1",
+        plus: "Plan 2",
+        por_acuerdo: "Por acuerdo",
+      } as Record<string, string>,
+      actual: "Tu plan",
+      limite: (maximo: number) => `Hasta ${maximo} profesionales activos`,
+      sinLimite: "Sin límite de profesionales",
+      activos: (activos: number) =>
+        activos === 1
+          ? "1 profesional activo"
+          : `${activos} profesionales activos`,
+      proximoPago: (valor: string) => `Tu próximo pago: ${valor}`,
+      proximoPagoAcuerdo: "Tu valor se acuerda con Yapoin.",
+      subir: {
+        titulo: "¿Necesitas más profesionales?",
+        detalle:
+          "El plan 2 permite hasta 8 profesionales activos, por $40.000 al mes.",
+        boton: "Cambiar al plan 2",
+      },
+      hoja: {
+        titulo: "Cambiar al plan 2",
+        cuerpo: (valor: string) =>
+          `Para cambiar, paga ${valor}. Cuando registremos tu pago, tu establecimiento pasa al plan 2. Tu fecha de vencimiento no cambia.`,
+        enviar: "Enviar solicitud",
+        enviando: "Enviando…",
+        volver: "Volver",
+      },
+      pendiente: {
+        titulo: "Solicitud enviada",
+        detalle: (valor: string, fecha: string) =>
+          `Pediste el plan 2 el ${fecha}. Cuando registremos tu pago de ${valor}, tu plan cambia.`,
+        cancelar: "Cancelar solicitud",
+        cancelando: "Cancelando…",
+      },
+      otro: "Para bajar al plan 1 o pasar al plan por acuerdo, escríbenos.",
+      escribenos: "Escribir por WhatsApp",
+      mensaje: "Hola, quiero cambiar el plan de mi establecimiento en Yapoin.",
+      hecho: {
+        solicitud: "Enviamos tu solicitud.",
+        cancelada: "Cancelaste tu solicitud.",
+      } as Record<string, string>,
+      errores: {
+        not_offered:
+          "Tu establecimiento no puede pedir este cambio desde aquí. Escríbenos por WhatsApp.",
+        pending: "Ya tienes una solicitud pendiente.",
+        not_found: "Esto ya cambió. Abre de nuevo esta pantalla.",
+        unknown: "No pudimos enviar tu solicitud. Intenta de nuevo.",
+        invalid: "Revisa este dato.",
+      },
     },
   },
   proximamente: {

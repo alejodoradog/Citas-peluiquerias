@@ -8,6 +8,10 @@ import { formatPesos } from "@/lib/dinero/pesos";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
 import {
+  listPlanChanges,
+  type PlanChange,
+} from "@/modulos/suscripciones/datos/plan-changes";
+import {
   loadPlatformBarbershop,
   loadQuote,
 } from "@/modulos/suscripciones/datos/platform";
@@ -29,6 +33,7 @@ import {
   shortMonth,
   STATE_TONES,
 } from "../../labels";
+import { VoidPlanChangeButton } from "../../plan-change-actions";
 import { FichaActions, VoidPaymentButton } from "./ficha-actions";
 
 const t = textos.plataforma;
@@ -41,6 +46,8 @@ const NOTICES = [
   "suspendida",
   "reactivada",
   "extendida",
+  // Task 7.8b.
+  "cambioAnulado",
 ] as const;
 
 // P-02 (task 5.4): one barbershop, its owner, its numbers and its payments,
@@ -65,9 +72,10 @@ async function Barbershop({
   await connection();
   const { id } = await params;
   const today = toBogotaDate(now());
-  const [shop, quote] = await Promise.all([
+  const [shop, quote, planChanges] = await Promise.all([
     loadPlatformBarbershop(id, today),
     loadQuote(id),
+    listPlanChanges({ barbershopId: id }),
   ]);
   if (!shop) notFound();
 
@@ -188,6 +196,9 @@ async function Barbershop({
               ))}
             </ul>
           )}
+          {planChanges.length > 0 ? (
+            <PlanChanges barbershopId={shop.id} changes={planChanges} />
+          ) : null}
         </div>
         <div className="contents lg:flex lg:flex-col lg:gap-3.5">
           <dl className="border-line order-2 flex flex-col gap-2.5 rounded-2xl border bg-white p-4 lg:order-none">
@@ -223,5 +234,74 @@ async function Barbershop({
         </div>
       </main>
     </div>
+  );
+}
+
+// Task 7.8b: its requests to change plan, newest first, and "Anular" on the
+// accepted payment of a difference.
+function PlanChanges({
+  barbershopId,
+  changes,
+}: {
+  barbershopId: string;
+  changes: PlanChange[];
+}) {
+  const f = t.solicitudes.ficha;
+  const name = (code: string) => textos.planes.plan.nombres[code] ?? code;
+  const status = (change: PlanChange) => {
+    if (change.voided) return f.anulada(change.voided.reason);
+    if (change.status === "rejected") {
+      return f.rechazada(change.rejectReason ?? "");
+    }
+    if (change.status === "cancelled") return f.cancelada;
+    return change.payment
+      ? f.aceptada(shortDate(change.payment.paidOn), change.payment.reference)
+      : f.pendiente;
+  };
+  return (
+    <section
+      aria-labelledby="cambios-de-plan"
+      className="order-5 flex flex-col gap-2 lg:order-none"
+    >
+      <h2 id="cambios-de-plan" className="text-muted text-sm font-semibold">
+        {f.titulo}
+      </h2>
+      <ul className="border-line flex flex-col overflow-hidden rounded-2xl border bg-white">
+        {changes.map((change) => (
+          <li
+            key={change.id}
+            className="border-neutral-soft text-ink flex min-h-13 items-center gap-3 border-b px-4 py-3 last:border-b-0"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span
+                className={cx(
+                  "text-[15px] font-semibold",
+                  change.voided && "text-muted line-through",
+                )}
+              >
+                {t.solicitudes.cambio(
+                  name(change.fromPlan),
+                  name(change.toPlan),
+                  formatPesos(change.amountCop),
+                )}
+              </span>
+              <span className="text-muted text-[13px] leading-[1.35]">
+                {status(change)}
+              </span>
+            </span>
+            {change.status === "accepted" &&
+            !change.voided &&
+            change.payment ? (
+              <VoidPlanChangeButton
+                barbershopId={barbershopId}
+                requestId={change.id}
+                label={f.anularDe(longDate(change.payment.paidOn))}
+                detail={f.anularDetalle(formatPesos(change.amountCop))}
+              />
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

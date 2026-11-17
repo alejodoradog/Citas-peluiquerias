@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { cx } from "@/ui/cx";
-import { BarChartIcon, StoreIcon } from "@/ui/icons";
+import { BarChartIcon, DollarIcon, StoreIcon } from "@/ui/icons";
 import { CombMark } from "@/ui/brand-mark";
 import { textos } from "@/ui/textos";
 
@@ -17,13 +17,13 @@ const item =
 // wide. On a phone it is hidden and each screen keeps its own header (P-01 to
 // P-06). The sign-out sits at its end; the pages hide theirs on a computer.
 export function AdminNav({ signOut }: { signOut: React.ReactNode }) {
-  const onMetrics = usePathname().startsWith(routes.adminMetrics);
-  return (
-    <AdminNavShell
-      current={onMetrics ? "metricas" : "establecimientos"}
-      signOut={signOut}
-    />
-  );
+  const pathname = usePathname();
+  const current = pathname.startsWith(routes.adminMetrics)
+    ? "metricas"
+    : pathname.startsWith(routes.adminPlanChanges)
+      ? "solicitudes"
+      : "establecimientos";
+  return <AdminNavShell current={current} signOut={signOut} />;
 }
 
 // The same menu without reading the address: what shows while AdminNav
@@ -32,7 +32,7 @@ export function AdminNavShell({
   current,
   signOut,
 }: {
-  current: "establecimientos" | "metricas" | null;
+  current: "establecimientos" | "metricas" | "solicitudes" | null;
   signOut: React.ReactNode;
 }) {
   const links = [
@@ -47,6 +47,13 @@ export function AdminNavShell({
       label: t.metricas,
       icon: <BarChartIcon size={20} />,
       current: current === "metricas",
+    },
+    // Task 7.8b.
+    {
+      href: routes.adminPlanChanges,
+      label: t.solicitudes,
+      icon: <DollarIcon size={20} />,
+      current: current === "solicitudes",
     },
   ];
 

@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { now, toBogotaDate } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { requireSuperAdmin } from "@/modulos/cuentas/guards";
+import { listPlanChanges } from "@/modulos/suscripciones/datos/plan-changes";
 import {
   listPlatformBarbershops,
   type PlatformRow,
@@ -91,7 +92,11 @@ async function Barbershops({
   const orden = readSort(params.orden);
   const today = toBogotaDate(now());
 
-  const shops = await listPlatformBarbershops(q || undefined);
+  const [shops, pendingChanges] = await Promise.all([
+    listPlatformBarbershops(q || undefined),
+    // Task 7.8b: the requests to change plan waiting for their payment.
+    listPlanChanges({ pendingOnly: true }),
+  ]);
   const counts = platformCounts(shops, today);
   const shown = shops
     .map((shop) => ({ shop, state: platformState(shop, today) }))
@@ -133,6 +138,18 @@ async function Barbershops({
         </Link>
       </header>
       <main className="flex flex-col gap-3 px-5 pt-1 pb-5">
+        {pendingChanges.length > 0 ? (
+          <Link
+            href={routes.adminPlanChanges}
+            className="bg-warning-soft text-warning flex min-h-11 items-center justify-between gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold no-underline"
+          >
+            <span>
+              {t.solicitudes.titulo} ·{" "}
+              {t.solicitudes.pendientes(pendingChanges.length)}
+            </span>
+            <span aria-hidden="true">›</span>
+          </Link>
+        ) : null}
         <form
           action={routes.admin}
           role="search"

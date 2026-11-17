@@ -209,16 +209,31 @@ export async function loadQuote(
 export async function loadRecentPayments(today: BogotaDate) {
   const firstOfLastMonth = `${addDays(`${today.slice(0, 7)}-01`, -1).slice(0, 7)}-01`;
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("subscription_payments")
-    .select("amount_cop, paid_on, voided_at")
-    .gte("paid_on", firstOfLastMonth);
-  if (error) throw new Error(error.message);
-  return data.map((row) => ({
-    amountCop: row.amount_cop,
-    paidOn: row.paid_on,
-    voided: row.voided_at !== null,
-  }));
+  const [months, changes] = await Promise.all([
+    supabase
+      .from("subscription_payments")
+      .select("amount_cop, paid_on, voided_at")
+      .gte("paid_on", firstOfLastMonth),
+    // Task 7.8b: the accepted payments of a plan change are income too.
+    supabase
+      .from("plan_change_requests")
+      .select("amount_cop, paid_on, voided_at")
+      .eq("status", "accepted")
+      .gte("paid_on", firstOfLastMonth),
+  ]);
+  if (months.error) throw new Error(months.error.message);
+  if (changes.error) throw new Error(changes.error.message);
+  return [...months.data, ...changes.data].flatMap((row) =>
+    row.paid_on
+      ? [
+          {
+            amountCop: row.amount_cop,
+            paidOn: row.paid_on,
+            voided: row.voided_at !== null,
+          },
+        ]
+      : [],
+  );
 }
 
 // P-06 on a computer (task 7.12): the totals the database counts, by week
