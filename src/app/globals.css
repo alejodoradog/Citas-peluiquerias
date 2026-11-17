@@ -103,19 +103,6 @@
   }
 }
 
-/* The teeth of a barber's comb, the brand mark next to the name. */
-@utility comb {
-  height: 0.75rem;
-  background:
-    linear-gradient(var(--color-brand), var(--color-brand)) top / 100% 4px
-      no-repeat,
-    repeating-linear-gradient(
-      90deg,
-      var(--color-brand) 0 3px,
-      transparent 3px 9px
-    );
-}
-
 /* Where an image or a map goes while there is none (D-57): the design's
    diagonal stripes, two tints of paper. */
 @utility image-placeholder {

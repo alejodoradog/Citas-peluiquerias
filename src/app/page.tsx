@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { routes } from "@/lib/routes";
 import { TRIAL_DAYS } from "@/modulos/suscripciones/dominio/trial";
+import { CombMark } from "@/ui/brand-mark";
 import { textos } from "@/ui/textos";
 import { InstallAppButton } from "./_landing/install-app";
 import { LandingNav } from "./_landing/landing-nav";
@@ -25,7 +26,7 @@ export default function Landing() {
           href={routes.home}
           className="text-ink flex min-h-11 items-center gap-2.5 text-[1.3rem] font-extrabold"
         >
-          <CombMark />
+          <CombMark className="text-brand h-8.5 w-9.5" />
           {textos.marca}
         </Link>
         <nav aria-label={t.navegacion} className="w-full sm:w-auto">
@@ -189,26 +190,6 @@ function StepIcon({ step }: { step: number }) {
     <svg {...props}>
       <path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" />
       <circle cx="12" cy="9" r="2.5" />
-    </svg>
-  );
-}
-
-// The comb of the app's icon (src/app/icon.svg), in the brand color.
-function CombMark() {
-  return (
-    <svg
-      viewBox="80 112 352 300"
-      aria-hidden="true"
-      className="text-brand h-8.5 w-9.5 shrink-0 fill-current"
-    >
-      <g transform="rotate(-16 256 256)">
-        <rect x="96" y="148" width="320" height="66" rx="33" />
-        <rect x="96" y="190" width="38" height="190" rx="19" />
-        <rect x="166.5" y="190" width="38" height="160" rx="19" />
-        <rect x="237" y="190" width="38" height="190" rx="19" />
-        <rect x="307.5" y="190" width="38" height="160" rx="19" />
-        <rect x="378" y="190" width="38" height="190" rx="19" />
-      </g>
     </svg>
   );
 }

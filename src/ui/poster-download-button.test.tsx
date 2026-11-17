@@ -1,7 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { PosterDownloadButton } from "./poster-download-button";
+import { COMB_PARTS } from "./brand-mark";
+import {
+  PosterDownloadButton,
+  PosterPreview,
+} from "./poster-download-button";
 import { textos } from "./textos";
 
 const matrix = [
@@ -12,6 +16,7 @@ const matrix = [
 // jsdom has no canvas: fake the 2D context (text 10 px per character) and
 // the PNG export.
 function fakeCanvas(blob: Blob | null) {
+  const saved: string[] = [];
   const context = {
     fillStyle: "",
     font: "",
@@ -24,8 +29,17 @@ function fakeCanvas(blob: Blob | null) {
     rect: vi.fn(),
     arc: vi.fn(),
     fill: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
+    // Like the browser's, save and restore keep the fill color.
+    save: vi.fn(() => {
+      saved.push(context.fillStyle);
+    }),
+    restore: vi.fn(() => {
+      context.fillStyle = saved.pop() ?? "";
+    }),
+    // The official logo, turned and scaled into its box (task 7.9).
+    translate: vi.fn(),
+    scale: vi.fn(),
+    rotate: vi.fn(),
     clip: vi.fn(),
     drawImage: vi.fn(),
     measureText: vi.fn((text: string) => ({ width: text.length * 10 })),
@@ -225,5 +239,83 @@ describe("PosterDownloadButton", () => {
       ),
     );
     expect(downloads).toEqual([]);
+  });
+});
+
+describe("the official logo (task 7.9)", () => {
+  it("draws Yapoin's comb at the foot, turned like the icon", async () => {
+    const user = userEvent.setup();
+    const { context } = fakeCanvas(new Blob(["png"]));
+    // The fill color at each fillText.
+    const fillStyles: string[] = [];
+    context.fillText.mockImplementation(() => {
+      fillStyles.push(context.fillStyle);
+    });
+    await user.click(renderButton());
+    await waitFor(() => expect(downloads).toHaveLength(1));
+    expect(context.rotate).toHaveBeenCalledWith((-16 * Math.PI) / 180);
+    // The name under it is written in white on the band, not in its color.
+    const brand = context.fillText.mock.calls.findIndex(
+      ([text]) => text === textos.marca,
+    );
+    expect(brand).toBeGreaterThan(-1);
+    expect(fillStyles[brand]).toBe("#ffffff");
+    for (const part of COMB_PARTS) {
+      expect(context.roundRect).toHaveBeenCalledWith(
+        part.x,
+        part.y,
+        part.width,
+        part.height,
+        part.radius,
+      );
+    }
+  });
+});
+
+describe("PosterPreview", () => {
+  it("shows the same drawing the download makes", async () => {
+    const { context } = fakeCanvas(new Blob(["png"]));
+    const toDataURL = vi
+      .spyOn(HTMLCanvasElement.prototype, "toDataURL")
+      .mockReturnValue("data:image/png;base64,afiche");
+    render(
+      <PosterPreview
+        matrix={matrix}
+        name="Barbería La Esquina"
+        link="yapoin.com/barberia-la-esquina"
+        logoUrl={null}
+        caption="Reserva tu cita aquí"
+        alt="Afiche de Barbería La Esquina"
+      />,
+    );
+    // While it draws, a named placeholder; then the image itself.
+    await waitFor(() =>
+      expect(
+        screen.getByRole("img", { name: "Afiche de Barbería La Esquina" }),
+      ).toHaveAttribute("src", "data:image/png;base64,afiche"),
+    );
+    expect(toDataURL).toHaveBeenCalledWith("image/png");
+    expect(context.fillText).toHaveBeenCalledWith(
+      "Reserva tu cita aquí",
+      expect.any(Number),
+      expect.any(Number),
+    );
+  });
+
+  it("keeps its place, named, when the browser cannot draw it", async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    render(
+      <PosterPreview
+        matrix={matrix}
+        name="Barbería La Esquina"
+        link="yapoin.com/barberia-la-esquina"
+        logoUrl={null}
+        caption="Reserva tu cita aquí"
+        alt="Afiche de Barbería La Esquina"
+      />,
+    );
+    expect(
+      screen.getByRole("img", { name: "Afiche de Barbería La Esquina" }),
+    ).toBeInTheDocument();
   });
 });

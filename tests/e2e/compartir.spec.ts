@@ -104,15 +104,9 @@ test("an owner shares the booking link from D-62", async ({
       .getByText(`yapoin.com/${slug}`, { exact: true })
       .filter({ visible: true }),
   ).toBeVisible();
+  // Task 7.9: the poster as it prints, named for screen readers.
   await expect(
-    page.getByRole("img", { name: textos.ui.qr.etiqueta }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(t.qrTitulo, { exact: true }).filter({ visible: true }),
-  ).toBeVisible();
-  // Next.js keeps the previous page mounted and hidden: only visible text.
-  await expect(
-    page.getByText(BARBERSHOP, { exact: true }).filter({ visible: true }),
+    page.getByRole("img", { name: t.aficheAlt(BARBERSHOP) }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { level: 2, name: t.texto.titulo }),
@@ -160,7 +154,7 @@ test("an owner shares the booking link from D-62", async ({
   });
 
   const poster = page.waitForEvent("download");
-  await page.getByRole("button", { name: t.afiche }).click();
+  await page.getByRole("button", { name: t.descargarAfiche }).click();
   const posterFile = await poster;
   expect(posterFile.suggestedFilename()).toBe(`afiche-yapoin-${slug}.png`);
   // A letter page at 150 dpi (P1 of task 2.5).
@@ -202,7 +196,9 @@ test("D-62 warns when no barber can take bookings yet", async ({ page }) => {
     page.getByText(textos.asistente.listo.sinBarberos),
   ).toBeVisible();
   // The link still works for copying and printing ahead of time.
-  await expect(page.getByRole("button", { name: t.afiche })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: t.descargarAfiche }),
+  ).toBeVisible();
   await checkScreen(page);
 });
 
@@ -211,7 +207,9 @@ test("D-62 and D-50 meet the F-01 rules @ui", async ({ page }) => {
   await signInSetUpOwner(page, "compartir-ui");
 
   await openShare(page);
-  await expect(page.getByRole("button", { name: t.afiche })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: t.descargarAfiche }),
+  ).toBeVisible();
   // No way back: Compartir is a section of the bottom bar.
   await expect(page.getByRole("link", { name: textos.ui.volver })).toHaveCount(
     0,
