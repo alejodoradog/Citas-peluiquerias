@@ -157,3 +157,13 @@ Con la cuenta de dueño y un profesional con cuenta (de la 7.6b), en un rato en 
 - [ ] **12. El dueño habla del profesional.** Un choque desde el dueño dice "Ana tiene una cita a las …" (con el nombre del profesional).
 - [ ] **13. Pausado o inactivo.** Con el establecimiento pausado, el profesional no ve el botón y, si abre `/mi-agenda/al-momento`, dice que está pausado. Desactivado, igual.
 - [ ] **14. Doble toque.** Tocar "Crear cita" dos veces seguidas: se crea una sola cita.
+
+## Tarea 7.9: afiche y logo
+Con una cuenta nueva de dueño, desde el celular, y una impresora o un computador para ver el PNG.
+
+- [ ] **1. El logo en todas partes.** En Ingresar, Registro, Recuperar contraseña, el panel, el menú de `/admin` en un computador y una pantalla de link vencido (abrir `www.yapoin.com/c/x`), el logo es el peine inclinado de la pestaña, no una barra con dientes rectos.
+- [ ] **2. La pantalla final.** Al terminar el asistente sale el afiche con el nombre del establecimiento, el QR, "Reserva tu cita aquí", el link y el logo de Yapoin abajo. El botón dice "Descargar afiche para imprimir".
+- [ ] **3. Lo que se ve es lo que se descarga.** Descargar el afiche y abrir el PNG: es igual a la vista previa, en tamaño carta.
+- [ ] **4. Con logo propio.** Subir un logo en Más › Datos y abrir Compartir: el afiche lo muestra arriba, y el PNG descargado también.
+- [ ] **5. Compartir.** Se ve el afiche. "Descargar QR" baja solo el código y "Descargar afiche" baja la hoja.
+- [ ] **6. Se imprime y se escanea.** Imprimir el afiche y escanear el QR con otro celular: abre la página de reservas del establecimiento.
