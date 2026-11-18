@@ -38,7 +38,7 @@ insert into public.barbers (id, barbershop_id, display_name, link_token_hash, em
   ('ba000000-0000-0000-0000-000000000061', 'aaaaaaaa-0000-0000-0000-000000000061', 'Uno',
    encode(sha256(convert_to('Uno recordatorio', 'UTF8')), 'hex'), 'uno@example.com', true, 1),
   ('ba000000-0000-0000-0000-000000000062', 'aaaaaaaa-0000-0000-0000-000000000061', 'Dos',
-   encode(sha256(convert_to('Dos recordatorio', 'UTF8')), 'hex'), 'dos@example.com', false, 2);
+   encode(sha256(convert_to('Dos recordatorio', 'UTF8')), 'hex'), null, false, 2); -- (tarea 8.12: los avisos siguen al correo) Dos has no email
 insert into public.barber_services (barbershop_id, barber_id, service_id) values
   ('aaaaaaaa-0000-0000-0000-000000000061', 'ba000000-0000-0000-0000-000000000061', '5e000000-0000-0000-0000-000000000061'),
   ('aaaaaaaa-0000-0000-0000-000000000061', 'ba000000-0000-0000-0000-000000000062', '5e000000-0000-0000-0000-000000000061');

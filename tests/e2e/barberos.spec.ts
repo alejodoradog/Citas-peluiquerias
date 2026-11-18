@@ -111,7 +111,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(owner).not.toContainText(/link|acceso|invita/);
   await checkScreen(page);
 
-  // D-54, new: every service checked, the notices off until there is an email.
+  // D-54, new: every service checked; no switch for the notices (task 8.12).
   await page.getByRole("link", { name: t.agregar }).first().click();
   await expect(page).toHaveURL(/\/panel\/profesionales\/nuevo$/, FIRST_VISIT);
   await expect(
@@ -120,8 +120,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   for (const service of ["Corte", "Barba", "Cejas"]) {
     await expect(page.getByRole("checkbox", { name: service })).toBeChecked();
   }
-  const notices = page.getByRole("switch", { name: t.avisos });
-  await expect(notices).toBeDisabled();
+  await expect(page.getByRole("switch")).toHaveCount(0);
   await checkScreen(page);
 
   await page.getByRole("textbox", { name: t.campos.nombre }).fill("Kevin");
@@ -133,8 +132,6 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
     .filter({ visible: true })
     .setInputFiles(png("kevin.png", RED_PIXEL));
   await expect(page.getByText(t.foto.lista)).toBeVisible(FIRST_VISIT);
-  // Visually hidden native input: its drawn switch takes the tap.
-  await notices.check({ force: true });
   await save(page);
 
   const kevin = barberRow(page, "Kevin");
@@ -155,7 +152,6 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(
     page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
   ).toHaveValue("kevin@correo.com");
-  await expect(notices).toBeChecked();
   await checkScreen(page);
   await page
     .getByLabel(t.foto.cambiar)
@@ -182,19 +178,10 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
     .toEqual([]);
   expect((await barberPhotos(slug, "Kevin")).photoPath).toBeNull();
 
-  // Notices without an email: explained on the email, which gets the focus.
+  // Without an email it saves with no error: the notices follow the email.
   await page
     .getByRole("textbox", { name: new RegExp(t.campos.correo) })
     .fill("");
-  await page.getByRole("button", { name: t.guardar }).click();
-  await expect(page.getByText(t.errores.notifications_need_email)).toBeVisible(
-    FIRST_VISIT,
-  );
-  await expect(
-    page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
-  ).toBeFocused();
-  await checkScreen(page);
-  await notices.uncheck({ force: true });
   await save(page);
 
   // Deactivate, after confirming: Kevin moves to "Inactivos".
@@ -222,9 +209,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toHaveCount(0);
   // Their email was cleared above: nowhere to invite them (task 7.6c).
-  await expect(barberRow(page, "Kevin")).toContainText(
-    t.accesoLista.no_email,
-  );
+  await expect(barberRow(page, "Kevin")).toContainText(t.accesoLista.no_email);
 
   // Más counts both active barbers.
   await page.getByRole("link", { name: textos.ui.volver }).click();
