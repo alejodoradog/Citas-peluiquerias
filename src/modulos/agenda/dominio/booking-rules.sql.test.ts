@@ -102,12 +102,16 @@ describe("the engine and the SQL of book_appointment", () => {
 // Task 7.11: the intervals the engine offers are the ones the database keeps.
 describe("the booking interval", () => {
   it("allows the same intervals as barbershops.booking_interval_minutes", () => {
+    // The last migration that sets the check wins (task 8.15 widens it).
     const migrations = join(process.cwd(), "supabase", "migrations");
     const sql = readdirSync(migrations)
       .sort()
       .map((file) => readFileSync(join(migrations, file), "utf8"))
-      .join("\n");
-    const allowed = /booking_interval_minutes in \(([\d, ]+)\)/.exec(sql)?.[1];
+      .filter((text) => /booking_interval_minutes in \(/.test(text))
+      .at(-1);
+    const allowed = /booking_interval_minutes in \(([\d, ]+)\)/.exec(
+      sql ?? "",
+    )?.[1];
     expect(allowed?.split(",").map((n) => Number(n.trim()))).toEqual([
       ...SLOT_STEPS,
     ]);

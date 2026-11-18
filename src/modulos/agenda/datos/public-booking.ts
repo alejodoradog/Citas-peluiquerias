@@ -14,7 +14,7 @@ import {
   type TimeBlock,
 } from "../dominio/availability";
 
-// The database only keeps 15, 30 or 60; anything else would be a bug, so the
+// The database only keeps 5, 10, 15, 30 or 60; anything else would be a bug, so the
 // engine's default stands in for it.
 function toSlotStep(minutes: number): SlotStep {
   return (SLOT_STEPS as readonly number[]).includes(minutes)

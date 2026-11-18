@@ -646,7 +646,8 @@ describe("availableSlots: performance", () => {
 });
 
 // Task 7.11: each barbershop chooses every how many minutes customers are
-// offered times: 15 (the default), 30 or 60, counted from the hour.
+// offered times: 15 (the default), 30 or 60, counted from the hour (5 and 10
+// too, task 8.15, in their own block below).
 describe("availableSlots: the booking interval", () => {
   it("keeps every 15 minutes when nothing is chosen", () => {
     expect(times({}).slice(0, 3)).toEqual(["09:00", "09:15", "09:30"]);
@@ -701,10 +702,165 @@ describe("availableSlots: the booking interval", () => {
   });
 
   it("refuses an interval the database never stores", () => {
-    for (const step of [0, 10, 20, 45, 90, Number.NaN]) {
+    for (const step of [0, 1, 7, 20, 45, 90, Number.NaN]) {
       expect(() =>
         availableSlots(input({ slotStepMinutes: step as 15 })),
       ).toThrow(RangeError);
     }
+  });
+});
+
+// Task 8.15: the barbershop may also offer every 5 or every 10 minutes.
+describe("availableSlots: every 5 and every 10 minutes", () => {
+  const nineToNoon: WeeklyShift[] = [
+    { weekday: 4, start: "09:00", end: "12:00" },
+  ];
+
+  it("offers every 10 minutes from the hour, to the last start that fits", () => {
+    // A 25-minute service in 9:00-12:00: the last start is 11:35, but on the
+    // 10-minute grid it is 11:30.
+    const slots = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 10,
+      durationMinutes: 25,
+    });
+    expect(slots.slice(0, 3)).toEqual(["09:00", "09:10", "09:20"]);
+    expect(slots.at(-1)).toBe("11:30");
+    expect(slots).toHaveLength(16);
+    expect(slots.every((time) => /^\d\d:(00|10|20|30|40|50)$/.test(time))).toBe(
+      true,
+    );
+  });
+
+  it("offers every 5 minutes from the hour, to the last start that fits", () => {
+    const slots = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 5,
+      durationMinutes: 25,
+    });
+    expect(slots.slice(0, 3)).toEqual(["09:00", "09:05", "09:10"]);
+    expect(slots.at(-1)).toBe("11:35");
+    expect(slots).toHaveLength(32);
+    expect(slots.every((time) => Number(time.slice(3)) % 5 === 0)).toBe(true);
+  });
+
+  it("starts at the next multiple when the shift opens off the grid", () => {
+    // Opening at 9:07: the first time of the grid after it is 9:10 for both.
+    const shifted: WeeklyShift[] = [
+      { weekday: 4, start: "09:07", end: "12:00" },
+    ];
+    expect(
+      times({ shopHours: shifted, slotStepMinutes: 10 }).slice(0, 2),
+    ).toEqual(["09:10", "09:20"]);
+    expect(
+      times({ shopHours: shifted, slotStepMinutes: 5 }).slice(0, 2),
+    ).toEqual(["09:10", "09:15"]);
+  });
+
+  it("ends the day on the closing edge: a service that ends at closing fits", () => {
+    // 11:35 with 25 minutes ends at 12:00, closing: the edge is free.
+    const fiveSlots = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 5,
+      durationMinutes: 25,
+    });
+    expect(fiveSlots).toContain("11:35");
+    expect(fiveSlots).not.toContain("11:40");
+    const tenSlots = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 10,
+      durationMinutes: 25,
+    });
+    expect(tenSlots).not.toContain("11:35");
+  });
+
+  it("with 5 offers nothing off its grid, up to a closing on the grid", () => {
+    // Open 9:02 to 10:05, 5-minute services: 9:02 is not a start, 10:05 closes.
+    const shifted: WeeklyShift[] = [
+      { weekday: 4, start: "09:02", end: "10:05" },
+    ];
+    expect(
+      times({ shopHours: shifted, slotStepMinutes: 5, durationMinutes: 5 }),
+    ).toEqual([
+      "09:05",
+      "09:10",
+      "09:15",
+      "09:20",
+      "09:25",
+      "09:30",
+      "09:35",
+      "09:40",
+      "09:45",
+      "09:50",
+      "09:55",
+      "10:00",
+    ]);
+  });
+
+  it("a busy time takes the starts that overlap it, on 10 and on 5", () => {
+    // A 30-minute appointment at 10:00 blocks 10:00-10:30. With 10 the 9:40
+    // start overlaps it; with 5 the 9:35 and 10:05 starts do too.
+    const busy = [{ ...interval(THURSDAY, "10:00", "10:30"), barberId: "ana" }];
+    const ten = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 10,
+      durationMinutes: 30,
+      appointments: busy,
+    });
+    expect(ten).not.toContain("09:40");
+    expect(ten).not.toContain("10:00");
+    expect(ten).toContain("10:30");
+    const five = times({
+      shopHours: nineToNoon,
+      slotStepMinutes: 5,
+      durationMinutes: 30,
+      appointments: busy,
+    });
+    expect(five).not.toContain("09:35");
+    expect(five).not.toContain("10:05");
+    expect(five).toContain("10:30");
+  });
+});
+
+// Task 8.15: the engine offers the five intervals of the database, and the
+// computation stays fast with the finest one.
+describe("availableSlots: the finest interval, performance", () => {
+  // 6 barbers, 31 days, 20 appointments a day each, every 5 minutes.
+  // Generous on purpose so a slow CI machine does not fail it.
+  it("computes a month for 6 barbers every 5 minutes in under 1 s", () => {
+    const barbers = Array.from({ length: 6 }, (_, i) =>
+      barber(`b${i}`, { sortOrder: i }),
+    );
+    const appointments = [];
+    for (let day = 0; day <= 30; day++) {
+      const date = new Date(Date.UTC(2026, 10, 10 + day))
+        .toISOString()
+        .slice(0, 10);
+      for (const { id } of barbers) {
+        for (let k = 0; k < 20; k++) {
+          const start = at(date, "08:00").getTime() + k * 40 * 60_000;
+          appointments.push({
+            barberId: id,
+            start: new Date(start),
+            end: new Date(start + 30 * 60_000),
+          });
+        }
+      }
+    }
+    const fields = input({
+      fromDate: "2026-11-10",
+      toDate: "2026-12-10",
+      durationMinutes: 25,
+      slotStepMinutes: 5,
+      barbers,
+      appointments,
+      blocks: [{ barberId: null, ...interval("2026-11-20", "14:00", "18:00") }],
+    });
+    availableSlots(fields);
+    const started = performance.now();
+    const days = availableSlots(fields);
+    const elapsed = performance.now() - started;
+    expect(days.length).toBe(31);
+    expect(elapsed).toBeLessThan(1000);
   });
 });
