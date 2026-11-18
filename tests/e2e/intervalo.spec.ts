@@ -91,3 +91,28 @@ test("an owner changes every how many minutes customers are offered times", asyn
   // already sees the new interval, never the old grid.
   expect(await offeredMinutes(browser, shop.slug)).toEqual(["00"]);
 });
+
+// Task 8.15: the interval also takes 10 and 5 minutes.
+test("an owner offers every 10 minutes, or every 5", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(240_000);
+  const shop = await createBookableShop("intervalo-corto");
+  await signInOwner(page, shop.owner);
+
+  await saveInterval(page, "10");
+  expect((await offeredMinutes(browser, shop.slug)).sort()).toEqual([
+    "00",
+    "10",
+    "20",
+    "30",
+    "40",
+    "50",
+  ]);
+
+  await saveInterval(page, "5");
+  const fives = await offeredMinutes(browser, shop.slug);
+  expect(fives.every((minute) => Number(minute) % 5 === 0)).toBe(true);
+  expect(fives).toContain("05");
+});

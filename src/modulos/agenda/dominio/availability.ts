@@ -31,13 +31,13 @@ import { MAX_BOOKING_MINUTES } from "./booking";
 // constraint: an appointment ending at 10:00 leaves 10:00 free.
 //
 // Slots start every 15 minutes of the Bogotá wall clock (:00, :15, :30, :45),
-// or every 30 or 60 when the barbershop chose it (task 7.11), counted from the
-// hour; at or after now + the minimum notice, on days from today to today +
+// or every 5, 10, 30 or 60 when the barbershop chose it (tasks 7.11 and 8.15),
+// counted from the hour; at or after now + the minimum notice, on days from today to today +
 // 30 in Bogotá, both included (decision 1 of docs/tareas/3.1, provisional).
 
 export const SLOT_STEP_MINUTES = 15;
-// barbershops.booking_interval_minutes (task 7.11).
-export const SLOT_STEPS = [15, 30, 60] as const;
+// barbershops.booking_interval_minutes (tasks 7.11 and 8.15).
+export const SLOT_STEPS = [5, 10, 15, 30, 60] as const;
 export type SlotStep = (typeof SLOT_STEPS)[number];
 // barbershops.min_booking_notice_minutes, between 0 and 10080 in the database.
 export const MAX_NOTICE_MINUTES = 10_080;

@@ -83,7 +83,7 @@ describe("PoliciesForm", () => {
     ]);
   });
 
-  it("offers the three intervals and shows the saved one", () => {
+  it("offers the five intervals and shows the saved one", () => {
     render(
       <PoliciesForm
         action={idle}
@@ -96,7 +96,13 @@ describe("PoliciesForm", () => {
       within(interval)
         .getAllByRole("option")
         .map((option) => option.textContent),
-    ).toEqual(["Cada 15 minutos", "Cada 30 minutos", "Cada hora"]);
+    ).toEqual([
+      "Cada 5 minutos",
+      "Cada 10 minutos",
+      "Cada 15 minutos",
+      "Cada 30 minutos",
+      "Cada hora",
+    ]);
   });
 
   it("shows a saved value that is not one of the options", () => {
