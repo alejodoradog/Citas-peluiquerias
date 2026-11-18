@@ -31,7 +31,6 @@ const kevin: EditableBarber = {
   id: "00000000-0000-0000-0000-000000000001",
   displayName: "Kevin",
   email: "kevin@correo.com",
-  emailNotifications: true,
   photoUrl: null,
   serviceIds: [BARBA],
   active: true,
@@ -51,8 +50,6 @@ function answer(
     build({
       displayName: String(formData.get("displayName")),
       email: String(formData.get("email")),
-      emailNotifications:
-        formData.get("emailNotifications") === "on" ? "on" : "",
       serviceIds: formData.getAll("serviceIds").join(","),
       photoPath: String(formData.get("photoPath") ?? ""),
     });
@@ -98,13 +95,13 @@ describe("BarberEditor", () => {
       screen.getByRole("link", { name: textos.ui.cerrar }),
     ).toHaveAttribute("href", "/panel/profesionales");
 
-    // Email notices need an email first.
-    const notices = screen.getByRole("switch", { name: t.avisos });
-    expect(notices).toBeDisabled();
-    expect(notices).toHaveAccessibleDescription(t.avisosSinCorreo);
+    // Task 8.12: no switch for the notices; the email's help says where they go.
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Correo/)).toHaveAccessibleDescription(
+      t.ayudas.correo,
+    );
     await user.type(screen.getByLabelText(/Correo/), "kevin@correo.com");
-    expect(notices).toBeEnabled();
-    expect(notices).toHaveAccessibleDescription(t.avisosAyuda);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 
   it("shows a saved barber, with their services and no link", () => {
@@ -124,7 +121,7 @@ describe("BarberEditor", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText(t.campos.nombre)).toHaveValue("Kevin");
     expect(screen.getByLabelText(/Correo/)).toHaveValue("kevin@correo.com");
-    expect(screen.getByRole("switch", { name: t.avisos })).toBeChecked();
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: "Corte" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Barba" })).toBeChecked();
     expect(
@@ -305,13 +302,11 @@ describe("BarberEditor", () => {
 
   it("shows the database's refusal, and lets a half-done deletion be tried again", async () => {
     const user = userEvent.setup();
-    const remove = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: false,
-        error: "has_upcoming_appointments",
-        upcoming: 1,
-      });
+    const remove = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      error: "has_upcoming_appointments",
+      upcoming: 1,
+    });
     const { unmount } = render(
       <BarberEditor
         action={answer(() => ({ status: "idle" }))}
@@ -327,9 +322,7 @@ describe("BarberEditor", () => {
       screen.getByRole("button", { name: t.eliminar.boton("Kevin") }),
     );
     await user.click(screen.getByRole("button", { name: t.eliminar.si }));
-    expect(
-      await screen.findByText(t.eliminar.conCitas(1)),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(t.eliminar.conCitas(1))).toBeInTheDocument();
     unmount();
 
     const retry = vi
@@ -373,35 +366,6 @@ describe("BarberEditor", () => {
     expect(
       screen.queryByRole("button", { name: /Eliminar/ }),
     ).not.toBeInTheDocument();
-  });
-
-  it("focuses the email when the notices have nowhere to go", async () => {
-    const user = userEvent.setup();
-    render(
-      <BarberEditor
-        action={answer((values) => ({
-          status: "invalid",
-          fieldErrors: { email: "notifications_need_email" },
-          values,
-        }))}
-        barber={kevin}
-        services={services}
-        hoursSummary={t.horarioBarberia}
-        requestUpload={requestUpload}
-        discardUpload={discardUpload}
-      />,
-    );
-    await user.clear(screen.getByLabelText(/Correo/));
-    // Already on: it stays usable so the owner can turn it off.
-    expect(screen.getByRole("switch", { name: t.avisos })).toBeEnabled();
-    await user.click(screen.getByRole("button", { name: t.guardar }));
-
-    const email = await screen.findByLabelText(/Correo/);
-    await waitFor(() => expect(email).toHaveAttribute("aria-invalid", "true"));
-    expect(email).toHaveAccessibleDescription(
-      t.errores.notifications_need_email,
-    );
-    await waitFor(() => expect(email).toHaveFocus());
   });
 
   it("explains a missing service next to the checkboxes", async () => {
