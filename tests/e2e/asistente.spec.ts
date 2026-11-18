@@ -8,6 +8,7 @@ import {
 import { fillSetupServices, passLocationStep } from "./helpers/asistente";
 import {
   createConfirmedOwner,
+  latestEmailLink,
   setupSnapshot,
   uniqueEmail,
 } from "./helpers/supabase";
@@ -50,6 +51,9 @@ test("an owner sets up services and team, and gets the link to share", async ({
   // A long flow, and the dev server compiles each page on first use.
   test.setTimeout(180_000);
   const { slug } = await signInNewOwner(page, "asistente");
+  // Task 8.17: the team's invitation really goes out at the end, so the
+  // email is unique per run.
+  const kevinEmail = uniqueEmail("kevin");
 
   // D-10 (task 7.3): two services to fill in, that name no trade. The
   // wizard does not go on with them as they come.
@@ -147,7 +151,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
   await checkScreen(page);
   await page
     .getByRole("textbox", { name: new RegExp(t.barbero.campos.correo) })
-    .fill("Kevin@Correo.com");
+    .fill(kevinEmail.toUpperCase());
   await page.getByRole("checkbox", { name: "Barba" }).uncheck({ force: true });
   await page.getByRole("button", { name: t.barbero.guardar }).click();
   await expect(page).toHaveURL(/\/panel\/configurar\/equipo$/);
@@ -188,6 +192,17 @@ test("an owner sets up services and team, and gets the link to share", async ({
     page.getByRole("heading", { level: 1, name: t.listo.titulo }),
   ).toBeVisible();
   await expect(page.getByText(`yapoin.com/${slug}`)).toBeVisible();
+  // Task 8.17: the invitation to Kevin went out, and the screen says so
+  // from the database. The owner who attends is not invited.
+  await expect(
+    page.getByText(
+      t.listo.invitaciones.enviadas(`a Kevin (${kevinEmail})`, false),
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByText(t.listo.invitaciones.noSalio("Kevin")),
+  ).toHaveCount(0);
+  expect(await latestEmailLink(kevinEmail, "invite")).toMatch(/^https?:/);
   // Task 7.9: the poster instead of the QR alone.
   await expect(
     page.getByRole("img", {
@@ -221,7 +236,7 @@ test("an owner sets up services and team, and gets the link to share", async ({
     ],
     barbers: [
       { name: "Carlos Pérez", email: null, isOwner: true, services: 3 },
-      { name: "Kevin", email: "kevin@correo.com", isOwner: false, services: 2 },
+      { name: "Kevin", email: kevinEmail, isOwner: false, services: 2 },
     ],
     hourRows: 6,
   });

@@ -31,6 +31,7 @@ import { qrMatrix } from "@/ui/qr-code";
 import { LoadingState } from "@/ui/states";
 import { textos } from "@/ui/textos";
 import { ClearSetupDraft } from "./clear-setup-draft";
+import { SetupInvitations } from "./invitations";
 
 const t = textos.asistente.listo;
 
@@ -88,6 +89,10 @@ async function SetupDone() {
         </p>
       </div>
       {hasBarbers ? null : <Notice tone="warning" title={t.sinBarberos} />}
+      {/* Task 8.17: how the invitations to the team went, from the database. */}
+      <Suspense fallback={null}>
+        <SetupInvitations barbershopId={barbershop.id} />
+      </Suspense>
       <BookingLinkCard
         slug={barbershop.slug}
         name={barbershop.name}

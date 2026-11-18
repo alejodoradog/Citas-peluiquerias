@@ -3,7 +3,10 @@
 import { redirect } from "next/navigation";
 import type { FormState } from "@/lib/formularios/form-state";
 import { routes } from "@/lib/routes";
+import { inviteAfterSaving } from "@/modulos/cuentas/acciones/invite-after-saving";
+import { shouldInviteOnSave } from "@/modulos/cuentas/dominio/professional-access";
 import { requireOwner } from "@/modulos/cuentas/guards";
+import { listBarbers } from "../datos/barbers";
 import { completeBarbershopSetup } from "../datos/setup";
 import { getShopProfile, saveShopLocation } from "../datos/shop-profile";
 import { DEFAULT_BARBERSHOP_HOURS } from "../dominio/hours";
@@ -87,5 +90,41 @@ export async function completeSetup(
   if (result === "failed") {
     return { status: "failed", error: "unknown", values: {} };
   }
+  // Task 8.17: the wizard is saved, so each professional with an email gets
+  // their invitation now. Only here, on "saved": a second tap or tab finds
+  // "already_done" and invites nobody again.
+  if (result === "saved") await inviteTeamAfterSetup(barbershop.id);
   redirect(routes.setupDone);
+}
+
+// One by one, with the same function as saving a professional (task 8.16):
+// the owner who attends, an inactive one and one without email are left out
+// by shouldInviteOnSave. The establishment is set up either way, so no
+// failure (of one invitation or of reading the team) stops the others or the
+// redirect; the last screen reads from the database who got theirs.
+async function inviteTeamAfterSetup(barbershopId: string): Promise<void> {
+  let team: Awaited<ReturnType<typeof listBarbers>>;
+  try {
+    team = await listBarbers(barbershopId);
+  } catch {
+    return;
+  }
+  for (const barber of team) {
+    if (
+      !shouldInviteOnSave({
+        isOwner: barber.is_owner,
+        active: barber.active,
+        previousEmail: null,
+        email: barber.email,
+        state: "none",
+      })
+    ) {
+      continue;
+    }
+    try {
+      await inviteAfterSaving(barber.id);
+    } catch {
+      // Nothing to do: the last screen says who did not get theirs.
+    }
+  }
 }
