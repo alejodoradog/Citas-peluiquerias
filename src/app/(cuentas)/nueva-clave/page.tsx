@@ -69,8 +69,8 @@ async function NewPasswordOrExpired() {
     return (
       <>
         <AuthHeading
-          title={w.titulo}
-          intro={w.bajada(access.name, access.barbershop.name)}
+          title={w.invita(access.barbershop.name)}
+          intro={w.bajada(access.name)}
         />
         <NewPasswordForm welcome />
       </>

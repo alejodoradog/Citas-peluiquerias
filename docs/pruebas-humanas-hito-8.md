@@ -33,4 +33,12 @@ Con la cuenta de un profesional (invitado por el dueño) y un segundo celular o 
 Pendiente.
 
 ## Tarea 8.11: invitación del profesional
-Pendiente.
+Antes: la plantilla "Invite user" pegada en Supabase (`docs/tareas/8.11-invitacion.md`). Con una cuenta de dueño y un correo que puedas abrir y que nunca haya tenido cuenta en Yapoin.
+
+- [ ] **1. El correo es el nuestro.** Invitar a un profesional desde su ficha. El correo llega en español, con el botón "Crear mi contraseña" y el encabezado de Yapoin.
+- [ ] **2. No lleva a la landing.** Al tocar el botón del correo se abre "Te invitaron a ser parte de un equipo", con un solo botón: "Crear mi contraseña".
+- [ ] **3. Dice quién invita.** Al tocarlo, la pantalla dice "{tu establecimiento} te ha invitado a ser parte de su equipo" y pide la contraseña y aceptar los términos.
+- [ ] **4. Queda como profesional.** Al guardar entra a "Mi agenda" de ese establecimiento. En la ficha del dueño, su acceso aparece activo.
+- [ ] **5. El link ya usado.** Abrir de nuevo el link del correo: dice que la invitación venció o ya se usó, y cómo entrar.
+- [ ] **6. Un correo que ya tiene cuenta.** Invitar a un correo que ya es dueño en Yapoin: el dueño ve "Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente", y a ese correo no le llega nada.
+- [ ] **7. Solo por invitación.** Registrarse en `/registro` con un correo nuevo crea un establecimiento propio, nunca un profesional de otro.
