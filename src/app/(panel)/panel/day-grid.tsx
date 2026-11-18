@@ -39,8 +39,11 @@ export function servicesLabel(names: readonly string[]): string {
   return names.join(" + ");
 }
 
+// A closure of the whole establishment always reads "Cerrado" (task 8.14),
+// a block of one professional its reason or "Bloqueado".
 export function blockLabel(item: Extract<AgendaItem, { kind: "block" }>) {
-  return item.reason ?? (item.wholeShop ? t.cierre : t.bloqueo);
+  if (item.wholeShop) return item.reason ? t.cierreCon(item.reason) : t.cierre;
+  return item.reason ?? t.bloqueo;
 }
 
 // The sheet of a block (task 4.2): "Kevin · 1:00 – 2:00 p. m.", or the

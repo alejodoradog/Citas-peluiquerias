@@ -372,6 +372,24 @@ export function createOwnerBlock(
   );
 }
 
+// The owner who attends (task 8.14): their row of barbers (is_owner, one per
+// establishment at most, never inactive nor deleted). Null when the owner
+// does not attend, so they have no agenda of their own.
+export async function findOwnerBarber(
+  barbershopId: string,
+): Promise<{ id: string; name: string } | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("barbers")
+    .select("id, display_name")
+    .eq("barbershop_id", barbershopId)
+    .eq("is_owner", true)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { id: data.id, name: data.display_name } : null;
+}
+
 export function deleteOwnerBlock(id: string): Promise<OwnerWrite> {
   return write<undefined>((supabase) =>
     supabase.rpc("delete_time_block", { p_block_id: id }),

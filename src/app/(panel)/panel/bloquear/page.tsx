@@ -11,7 +11,12 @@ import {
 } from "@/lib/fechas/fechas";
 import { routes } from "@/lib/routes";
 import { loadOwnerAgenda } from "@/modulos/agenda/datos/owner-agenda";
+import { findOwnerBarber } from "@/modulos/agenda/datos/owner-appointment";
 import { shortCustomerName } from "@/modulos/agenda/dominio/owner-agenda";
+import {
+  ownerClosedBlockDays,
+  type BlockTargetKind,
+} from "@/modulos/agenda/dominio/owner-block";
 import {
   blockDayOptions,
   blockTimeOptions,
@@ -33,8 +38,9 @@ function first(value: string | string[] | undefined): string {
   return typeof value === "string" ? value : "";
 }
 
-// D-39 (task 4.2): one barber or the whole barbershop, a day up to 30 days
-// ahead, from and until (quarter hours) and the reason. D-38 brings
+// D-39 (task 4.2) and task 8.14: the owner's own agenda, another
+// professional or the whole establishment, a day up to 30 days ahead, the
+// whole day or from and until (quarter hours), and the reason. D-38 brings
 // ?barbero, ?dia and ?desde from what it had chosen.
 export default function BlockPage({
   searchParams,
@@ -72,24 +78,62 @@ async function Block({
   await connection();
   const instant = now();
   const today = toBogotaDate(instant);
-  const agenda = await loadOwnerAgenda(
-    barbershop.id,
-    today,
-    addDays(today, DAYS_AHEAD),
+  const dates = blockDayOptions(today);
+  const [agenda, ownerRow] = await Promise.all([
+    loadOwnerAgenda(barbershop.id, today, addDays(today, DAYS_AHEAD)),
+    findOwnerBarber(barbershop.id),
+  ]);
+  // Task 8.14: the owner who attends blocks "Mi agenda"; the others are the
+  // active professionals but them.
+  const owner =
+    agenda.barbers.find((barber) => barber.id === ownerRow?.id) ?? null;
+  const barbers = agenda.barbers.filter(
+    (barber) => barber.active && barber.id !== owner?.id,
   );
-  const barbers = agenda.barbers.filter((barber) => barber.active);
   const times = blockTimeOptions();
 
   // From what D-38 had, or from the next quarter hour, for an hour.
   const quarter = 15 * 60_000;
   const next = new Date(Math.ceil(instant.getTime() / quarter) * quarter);
   const wantedDay = first(query.dia);
-  const dia =
+  const wanted =
     isBogotaDate(wantedDay) &&
     wantedDay >= today &&
     wantedDay <= addDays(today, DAYS_AHEAD)
       ? wantedDay
       : today;
+  const wantedBarber = first(query.barbero);
+  // "Mi agenda" first; D-38 may bring another professional.
+  const otherWanted = barbers.find((b) => b.id === wantedBarber);
+  const para: BlockTargetKind = otherWanted
+    ? "barber"
+    : owner
+      ? "mine"
+      : barbers.length > 0
+        ? "barber"
+        : "shop";
+  const profesional = otherWanted?.id ?? barbers[0]?.id ?? "";
+  const closed = {
+    mine: owner ? ownerClosedBlockDays(agenda, owner, dates) : [],
+    barbers: Object.fromEntries(
+      barbers.map((barber) => [
+        barber.id,
+        ownerClosedBlockDays(agenda, barber, dates),
+      ]),
+    ),
+    shop: ownerClosedBlockDays(agenda, null, dates),
+  };
+  // The day wanted, or the first one with something to block.
+  const shut = new Set<string>(
+    para === "mine"
+      ? closed.mine
+      : para === "barber"
+        ? (closed.barbers[profesional] ?? [])
+        : closed.shop,
+  );
+  const dia = shut.has(wanted)
+    ? (dates.find((date) => !shut.has(date)) ?? wanted)
+    : wanted;
   const wantedTime = first(query.desde);
   const nextTime = toBogotaDate(next) === dia ? toBogotaTime(next) : null;
   const fromIndex = times.includes(wantedTime)
@@ -98,15 +142,16 @@ async function Block({
       ? times.indexOf(nextTime)
       : 36;
   const start = fromIndex >= 0 && fromIndex < times.length - 1 ? fromIndex : 36;
-  const wantedBarber = first(query.barbero);
 
   return (
     <OwnerBlockForm
+      owner={owner ? { id: owner.id, name: owner.name } : null}
       barbers={barbers.map((barber) => ({ id: barber.id, name: barber.name }))}
-      days={blockDayOptions(today).map((date) => ({
+      days={dates.map((date) => ({
         value: date,
         label: dayTitle(date, today),
       }))}
+      closed={closed}
       times={times.map((time) => ({
         value: time,
         label: formatWallClock(time),
@@ -118,11 +163,11 @@ async function Block({
         // The warning shows "Mateo R.": the short name is all that leaves.
         customerName: shortCustomerName(a.customerName),
       }))}
+      today={today}
+      now={instant}
       defaults={{
-        // A barber by default: closing the whole barbershop is a choice.
-        quien: barbers.some((b) => b.id === wantedBarber)
-          ? wantedBarber
-          : (barbers[0]?.id ?? ""),
+        para,
+        profesional,
         dia,
         desde: times[start]!,
         hasta: times[Math.min(start + 4, times.length - 1)]!,

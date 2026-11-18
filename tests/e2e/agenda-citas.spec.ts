@@ -223,7 +223,7 @@ test("the owner blocks hours around appointments and removes the block", async (
     ),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: t.bloquear.enviar }),
+    page.getByRole("button", { name: t.bloquear.enviarA("Beto") }),
   ).toBeDisabled();
   await checkScreen(page);
 
@@ -238,7 +238,7 @@ test("the owner blocks hours around appointments and removes the block", async (
     0,
   );
   await page.getByRole("radio", { name: "Almuerzo" }).check({ force: true });
-  await page.getByRole("button", { name: t.bloquear.enviar }).click();
+  await page.getByRole("button", { name: t.bloquear.enviarA("Beto") }).click();
   await expect(page).toHaveURL(
     new RegExp(`${agendaHref({ dia: tomorrow }).replace("?", "\\?")}$`),
     FIRST_VISIT,
