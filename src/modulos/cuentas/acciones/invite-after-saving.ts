@@ -1,3 +1,4 @@
+import "server-only";
 import {
   toSaveInviteNotice,
   type SaveInviteNotice,
