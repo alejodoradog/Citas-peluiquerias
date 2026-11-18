@@ -25,7 +25,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(53);
+select plan(66);
 
 -- Helpers ----------------------------------------------------------------------------------------
 
@@ -81,8 +81,18 @@ as $$
     'aaaaaaaa-0000-0000-0000-000000008601', barber, starts_at, ends_at))
 $$;
 
+-- The owner's block in any establishment, by the session's role.
+create function pg_temp.block_in(shop uuid, barber uuid, starts_at timestamptz, ends_at timestamptz)
+returns text
+language sql
+as $$
+  select pg_temp.hint_of(format(
+    'select public.create_time_block(%L, %L, %L, %L, null)', shop, barber, starts_at, ends_at))
+$$;
+
 grant execute on function pg_temp.h(text), pg_temp.d(integer), pg_temp.at(integer, text),
-  pg_temp.hint_of(text), pg_temp.block(uuid, timestamptz, timestamptz)
+  pg_temp.hint_of(text), pg_temp.block(uuid, timestamptz, timestamptz),
+  pg_temp.block_in(uuid, uuid, timestamptz, timestamptz)
   to anon, authenticated, service_role;
 
 -- As 84: only the app server books; anon books here, inside this transaction.
@@ -95,21 +105,33 @@ select ok(
    from pg_proc p where p.oid = 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)'::regprocedure),
   'create_time_block stays security definer with an empty search_path'
 );
-select ok(
-  has_function_privilege('authenticated', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE')
-    and not has_function_privilege('anon', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE'),
-  'authenticated calls create_time_block and anon does not'
+-- Who may call it, each role on its own (review of 8.14, B2). The server
+-- key keeps the grant every function of public has in Supabase; without an
+-- owner in the session it only ever gets not_found (section 4).
+select is(
+  array[
+    has_function_privilege('public', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE'),
+    has_function_privilege('anon', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE'),
+    has_function_privilege('authenticated', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE'),
+    has_function_privilege('service_role', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE')
+  ],
+  array[false, false, true, true],
+  'create_time_block: not public, not anon; authenticated and the server key'
 );
 select ok(
   (select not p.prosecdef and p.proconfig @> array['search_path=""']
    from pg_proc p where p.oid = 'private.block_has_open_time(uuid, uuid, timestamptz, timestamptz)'::regprocedure),
   'the shared rule is security invoker with an empty search_path'
 );
-select ok(
-  not has_function_privilege('anon', 'private.block_has_open_time(uuid, uuid, timestamptz, timestamptz)', 'EXECUTE')
-    and not has_function_privilege('authenticated', 'private.block_has_open_time(uuid, uuid, timestamptz, timestamptz)', 'EXECUTE')
-    and not has_function_privilege('service_role', 'private.block_has_open_time(uuid, uuid, timestamptz, timestamptz)', 'EXECUTE'),
-  'nobody calls the shared rule directly'
+select is(
+  (select array_agg(has_function_privilege(r, f, 'EXECUTE') order by f, r)
+   from unnest(array['public', 'anon', 'authenticated', 'service_role']) r,
+        unnest(array[
+          'private.block_has_open_time(uuid, uuid, timestamptz, timestamptz)',
+          'private.create_time_block_of(private.barber_access, timestamptz, timestamptz, text)'
+        ]) f),
+  array_fill(false, array[8]),
+  'nobody calls the two private functions directly'
 );
 
 -- Fixtures, inserted as the table owner --------------------------------------------------------------
@@ -139,10 +161,18 @@ insert into public.barbershops (id, name, slug, whatsapp_phone, trial_ends_on, e
   ('aaaaaaaa-0000-0000-0000-000000008603', 'Sede P', 'sede-p-8614', '+573001112255',
    private.today_bogota() + 40, private.today_bogota() + 40, now() - interval '3 days'),
   ('aaaaaaaa-0000-0000-0000-000000008604', 'Sede S', 'sede-s-8614', '+573001112266',
-   private.today_bogota() + 40, private.today_bogota() + 40, now() - interval '3 days');
+   private.today_bogota() + 40, private.today_bogota() + 40, now() - interval '3 days'),
+  -- Deleted once its fixtures are in.
+  ('aaaaaaaa-0000-0000-0000-000000008605', 'Sede D', 'sede-d-8614', '+573001112277',
+   private.today_bogota() + 40, private.today_bogota() + 40, now() - interval '3 days'),
+  -- Awaiting its first payment, as Sede Tres of 50: still writable (decision S5).
+  ('aaaaaaaa-0000-0000-0000-000000008606', 'Sede W', 'sede-w-8614', '+573001112288',
+   private.today_bogota() - 1, private.today_bogota() - 1, now());
 insert into public.memberships (user_id, barbershop_id, role) values
   ('00000000-0000-0000-0000-00000000860a', 'aaaaaaaa-0000-0000-0000-000000008601', 'owner'),
   ('00000000-0000-0000-0000-00000000860a', 'aaaaaaaa-0000-0000-0000-000000008603', 'owner'),
+  ('00000000-0000-0000-0000-00000000860a', 'aaaaaaaa-0000-0000-0000-000000008605', 'owner'),
+  ('00000000-0000-0000-0000-00000000860a', 'aaaaaaaa-0000-0000-0000-000000008606', 'owner'),
   ('00000000-0000-0000-0000-00000000860b', 'aaaaaaaa-0000-0000-0000-000000008602', 'owner');
 
 insert into public.barbershop_hours (barbershop_id, weekday, start_time, end_time)
@@ -165,7 +195,20 @@ insert into public.barbers (id, barbershop_id, display_name, sort_order, active,
   ('ba000000-0000-0000-0000-000000008604', 'aaaaaaaa-0000-0000-0000-000000008601', 'Inactivo', 4, false, false, true),
   ('ba000000-0000-0000-0000-000000008605', 'aaaaaaaa-0000-0000-0000-000000008601', 'Borrado', 5, false, false, true),
   ('ba000000-0000-0000-0000-000000008606', 'aaaaaaaa-0000-0000-0000-000000008602', 'Tres', 1, true, false, true),
-  ('ba000000-0000-0000-0000-000000008607', 'aaaaaaaa-0000-0000-0000-000000008603', 'Pausado', 1, true, true, true);
+  ('ba000000-0000-0000-0000-000000008607', 'aaaaaaaa-0000-0000-0000-000000008603', 'Pausado', 1, true, true, true),
+  ('ba000000-0000-0000-0000-000000008608', 'aaaaaaaa-0000-0000-0000-000000008601', 'Partido', 6, true, false, false),
+  ('ba000000-0000-0000-0000-000000008609', 'aaaaaaaa-0000-0000-0000-000000008605', 'Uno D', 1, true, false, true),
+  ('ba000000-0000-0000-0000-000000008610', 'aaaaaaaa-0000-0000-0000-000000008606', 'Uno W', 1, true, false, true);
+-- Partido has a split shift: 08:00 to 12:00 and 14:00 to 18:00, every day.
+insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
+select 'aaaaaaaa-0000-0000-0000-000000008601', 'ba000000-0000-0000-0000-000000008608', wd, s::time, e::time
+from generate_series(0, 6) wd, (values ('08:00', '12:00'), ('14:00', '18:00')) shift(s, e);
+-- Sede B opens in two spans on the weekday of d(2): 08:00 to 12:00 and 14:00 to 18:00.
+delete from public.barbershop_hours
+where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000008602' and weekday = extract(dow from pg_temp.d(2));
+insert into public.barbershop_hours (barbershop_id, weekday, start_time, end_time) values
+  ('aaaaaaaa-0000-0000-0000-000000008602', extract(dow from pg_temp.d(2)), '08:00', '12:00'),
+  ('aaaaaaaa-0000-0000-0000-000000008602', extract(dow from pg_temp.d(2)), '14:00', '18:00');
 insert into public.barber_schedules (barbershop_id, barber_id, weekday, start_time, end_time)
 select 'aaaaaaaa-0000-0000-0000-000000008601', 'ba000000-0000-0000-0000-000000008601', wd, '08:00', '12:00'
 from generate_series(0, 6) wd
@@ -187,10 +230,13 @@ insert into public.appointments (barbershop_id, customer_id, barber_id, starts_a
   ('aaaaaaaa-0000-0000-0000-000000008601', 'c0000000-0000-0000-0000-000000008601', 'ba000000-0000-0000-0000-000000008602',
    pg_temp.at(1, '10:00'), pg_temp.at(1, '10:30'), 25000, 'manual', 'confirmed');
 insert into public.time_blocks (barbershop_id, barber_id, starts_at, ends_at, reason) values
-  ('aaaaaaaa-0000-0000-0000-000000008601', null, pg_temp.at(4, '08:00'), pg_temp.at(4, '12:00'), 'Inventario');
+  ('aaaaaaaa-0000-0000-0000-000000008601', null, pg_temp.at(4, '08:00'), pg_temp.at(4, '12:00'), 'Inventario'),
+  -- A closure of several days: from d(9) at 20:00 to d(10) at 12:00.
+  ('aaaaaaaa-0000-0000-0000-000000008601', null, pg_temp.at(9, '20:00'), pg_temp.at(10, '12:00'), 'Viaje');
 
--- Sede P is paused once its fixtures are in.
+-- Sede P is paused and Sede D deleted once their fixtures are in.
 update public.barbershops set subscription_status = 'suspended' where id = 'aaaaaaaa-0000-0000-0000-000000008603';
+update public.barbershops set deleted_at = now() where id = 'aaaaaaaa-0000-0000-0000-000000008605';
 
 -- 1. The shared rule, as the table owner (no window, so fixed dates) -----------------------------------
 
@@ -280,6 +326,16 @@ select is(pg_temp.block('ba000000-0000-0000-0000-000000008605', pg_temp.at(2, '1
   'barber_inactive', 'nor a deleted one');
 select is(pg_temp.block('ba000000-0000-0000-0000-000000008606', pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00')),
   'barber_not_found', 'nor one of another establishment');
+-- A split shift (review of 8.14, B2).
+select is(pg_temp.block('ba000000-0000-0000-0000-000000008608', pg_temp.at(1, '12:00'), pg_temp.at(1, '14:00')),
+  'already_closed', 'not the gap of a split shift');
+select is(pg_temp.block('ba000000-0000-0000-0000-000000008608', pg_temp.at(1, '11:00'), pg_temp.at(1, '15:00')),
+  'no error', 'but a block over the gap that reaches both shifts is taken');
+-- A closure of several days that started the day before (review of 8.14, B2).
+select is(pg_temp.block('ba000000-0000-0000-0000-000000008602', pg_temp.at(10, '09:00'), pg_temp.at(10, '11:00')),
+  'already_closed', 'not inside a closure that began the day before');
+select is(pg_temp.block('ba000000-0000-0000-0000-000000008602', pg_temp.at(10, '11:00'), pg_temp.at(10, '13:00')),
+  'no error', 'but past its end it is taken');
 
 -- The whole establishment
 select is(pg_temp.block(null, pg_temp.at(4, '09:00'), pg_temp.at(4, '11:00')),
@@ -296,6 +352,8 @@ select is(pg_temp.block(null, pg_temp.at(5, '21:00'), pg_temp.at(5, '23:00')),
   'no error', 'a closure that reaches open hours is taken');
 select is(pg_temp.block(null, pg_temp.at(7, '05:00'), pg_temp.at(7, '07:00')),
   'no error', 'also when only one hour of it is open');
+select is(pg_temp.block(null, pg_temp.at(10, '00:00'), pg_temp.at(10, '12:00')),
+  'already_closed', 'a closure inside one that began the day before is refused');
 
 -- What already held
 select is(pg_temp.block('ba000000-0000-0000-0000-000000008601', pg_temp.at(-1, '09:00'), pg_temp.at(-1, '10:00')),
@@ -307,6 +365,22 @@ select is(
     'aaaaaaaa-0000-0000-0000-000000008603', 'ba000000-0000-0000-0000-000000008607',
     pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00'))),
   'barbershop_read_only', 'a paused establishment takes no blocks, not even of the owner');
+-- Review of 8.14, B1: being paused is said first, before the time rules.
+select is(
+  pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008603', 'ba000000-0000-0000-0000-000000008607',
+    pg_temp.at(2, '22:00'), pg_temp.at(2, '24:00')),
+  'barbershop_read_only', 'paused, even on hours already closed');
+select is(
+  pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008603', null, pg_temp.at(-1, '10:00'), pg_temp.at(-1, '11:00')),
+  'barbershop_read_only', 'and even in the past');
+select is(
+  pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008606', 'ba000000-0000-0000-0000-000000008610',
+    pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00')),
+  'no error', 'an establishment awaiting its first payment still takes blocks (decision S5)');
+select is(
+  pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008605', 'ba000000-0000-0000-0000-000000008609',
+    pg_temp.at(2, '10:00'), pg_temp.at(2, '11:00')),
+  'not_found', 'a deleted establishment is not found, not even by its owner');
 
 -- 3. The others stay bookable (anon, the public booking) --------------------------------------------------
 
@@ -336,10 +410,16 @@ select is(
   'no error',
   'while the rest of the team is booked at that hour'
 );
-select is(
-  pg_temp.hint_of(format('select public.create_time_block(%L, null, %L, %L, null)',
-    'aaaaaaaa-0000-0000-0000-000000008601', pg_temp.at(8, '10:00'), pg_temp.at(8, '11:00'))),
-  '42501', 'anon cannot block'
+-- Review of 8.14, B3: refused for lack of EXECUTE on this function, not
+-- for any other permission.
+select ok(
+  not has_function_privilege('anon', 'public.create_time_block(uuid, uuid, timestamptz, timestamptz, text)', 'EXECUTE'),
+  'anon has no EXECUTE on create_time_block'
+);
+select throws_ok(
+  format('select public.create_time_block(%L, null, %L, %L, null)',
+    'aaaaaaaa-0000-0000-0000-000000008601', pg_temp.at(8, '10:00'), pg_temp.at(8, '11:00')),
+  '42501', 'permission denied for function create_time_block', 'anon cannot block'
 );
 
 -- 4. Who cannot ----------------------------------------------------------------------------------------------
@@ -351,6 +431,14 @@ select is(pg_temp.block('ba000000-0000-0000-0000-000000008601', pg_temp.at(8, '0
   'not_found', 'the owner of another establishment cannot block the agenda of A''s owner');
 select is(pg_temp.block(null, pg_temp.at(8, '09:00'), pg_temp.at(8, '10:00')),
   'not_found', 'nor close A');
+-- Two spans of the establishment on one day, for the whole establishment
+-- (review of 8.14, B2): Sede B, 08:00 to 12:00 and 14:00 to 18:00 on d(2).
+select is(pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008602', null, pg_temp.at(2, '12:00'), pg_temp.at(2, '14:00')),
+  'already_closed', 'a closure of the gap between two spans is refused');
+select is(pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008602', null, pg_temp.at(2, '11:00'), pg_temp.at(2, '15:00')),
+  'no error', 'a closure that reaches both spans is taken');
+select is(pg_temp.block_in('aaaaaaaa-0000-0000-0000-000000008602', null, pg_temp.at(2, '18:00'), pg_temp.at(2, '24:00')),
+  'already_closed', 'and after the second span it is refused');
 select is(
   pg_temp.hint_of(format('select public.create_time_block(%L, %L, %L, %L, null)',
     'aaaaaaaa-0000-0000-0000-000000008602', 'ba000000-0000-0000-0000-000000008601',

@@ -30,6 +30,9 @@
 --      closures. Its hours, not the shifts of its professionals: a shift can
 --      change tomorrow and the closure must still hold (decision 2 of 8.14).
 --      It still clashes with another closure (overlaps_block), as before.
+--    - a paused establishment is refused right after owner_reaches, with the
+--      hint and criterion of the read-only trigger (barbershop_read_only),
+--      before any rule of the time can answer first;
 --    Everything else stays: the owner's barbershop (owner_reaches), the
 --    professional of that barbershop and active, the reasons, the current
 --    quarter hour, one Bogotá day in quarter hours, 30 days ahead, the lock
@@ -220,6 +223,15 @@ begin
   if not private.owner_reaches(p_barbershop_id) then
     raise exception 'unknown barbershop'
       using errcode = 'P0002', hint = 'not_found';
+  end if;
+  -- Paused first, as the professional's block does (review of 8.14, B1): a
+  -- paused establishment hears it is paused, not that the day is closed.
+  -- The criterion of private.require_writable_block (read_only_when_suspended)
+  -- for the owner's writes: active, or awaiting its first payment (decision
+  -- S5). The trigger stays, for every other path.
+  if coalesce(private.phase_of(p_barbershop_id), '') not in ('active', 'awaiting_first_payment') then
+    raise exception 'barbershop is read only'
+      using errcode = 'insufficient_privilege', hint = 'barbershop_read_only';
   end if;
   if p_barber_id is not null then
     select br.active into is_active
