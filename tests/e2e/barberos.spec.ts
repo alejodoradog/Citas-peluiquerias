@@ -81,7 +81,8 @@ async function openBarber(page: Page, name: string) {
 
 async function save(page: Page) {
   await page.getByRole("button", { name: t.guardar }).click();
-  await expect(page).toHaveURL(/\/panel\/profesionales$/, FIRST_VISIT);
+  // With an email the address also carries how the invitation went (8.16).
+  await expect(page).toHaveURL(/\/panel\/profesionales(\?.*)?$/, FIRST_VISIT);
 }
 
 test("an owner adds a barber with a photo, replaces it, removes it and deactivates them", async ({
@@ -124,9 +125,12 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await checkScreen(page);
 
   await page.getByRole("textbox", { name: t.campos.nombre }).fill("Kevin");
+  // The invitation goes out when saving (task 8.16): the email must be one
+  // Auth has never seen, so the test can run again.
+  const kevinEmail = uniqueEmail("kevin");
   await page
     .getByRole("textbox", { name: new RegExp(t.campos.correo) })
-    .fill("kevin@correo.com");
+    .fill(kevinEmail);
   await page
     .getByLabel(t.foto.agregar)
     .filter({ visible: true })
@@ -137,8 +141,15 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   const kevin = barberRow(page, "Kevin");
   await expect(kevin).toContainText(t.horarioBarberia);
   await expect(kevin).toContainText(t.conteoServicios(3));
-  // A new professional with an email is not invited yet (task 7.6c).
-  await expect(kevin).toContainText(t.accesoLista.not_invited);
+  // A new professional with an email is invited when saved (task 8.16), and
+  // the list says so with the email read from the database.
+  await expect(page).toHaveURL(/invitacion=sent/);
+  await expect(
+    page
+      .getByText(t.acceso.alGuardar.enviada(kevinEmail))
+      .filter({ visible: true }),
+  ).toBeVisible();
+  await expect(kevin).toContainText(t.accesoLista.invited);
   await expect(kevin.locator("img")).toHaveAttribute("src", storagePhoto);
   const first = await barberPhotos(slug, "Kevin");
   expect(first.objects).toEqual([first.photoPath]);
@@ -151,7 +162,7 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   ).toHaveAttribute("src", storagePhoto);
   await expect(
     page.getByRole("textbox", { name: new RegExp(t.campos.correo) }),
-  ).toHaveValue("kevin@correo.com");
+  ).toHaveValue(kevinEmail);
   await checkScreen(page);
   await page
     .getByLabel(t.foto.cambiar)
@@ -208,8 +219,9 @@ test("an owner adds a barber with a photo, replaces it, removes it and deactivat
   await expect(
     page.getByRole("heading", { level: 2, name: t.inactivos }),
   ).toHaveCount(0);
-  // Their email was cleared above: nowhere to invite them (task 7.6c).
-  await expect(barberRow(page, "Kevin")).toContainText(t.accesoLista.no_email);
+  // Their email was cleared above, but the invitation sent when they were
+  // saved is still pending (task 8.16), and the list shows it.
+  await expect(barberRow(page, "Kevin")).toContainText(t.accesoLista.invited);
 
   // Más counts both active barbers.
   await page.getByRole("link", { name: textos.ui.volver }).click();
