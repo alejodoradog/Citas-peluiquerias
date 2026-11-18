@@ -5,7 +5,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(74);
+select plan(75);
 
 -- 1. Tables ------------------------------------------------------------------
 
@@ -296,11 +296,18 @@ select throws_ok(
   'barber link hashes are unique'
 );
 
-select throws_ok(
+-- (tarea 8.12: los avisos siguen al correo) Asking for notices without an
+-- email no longer raises: the trigger leaves them off, so the check
+-- barbers_notifications_need_email always holds.
+select lives_ok(
   $$insert into public.barbers (barbershop_id, display_name, link_token_hash, email_notifications)
     values ('aaaaaaaa-0000-0000-0000-000000000000', 'Sin correo', repeat('c', 64), true)$$,
-  '23514', null,
-  'email notices to a barber need the barber email'
+  'asking for notices without an email is accepted'
+);
+select is(
+  (select email_notifications from public.barbers where link_token_hash = repeat('c', 64)),
+  false,
+  'email notices to a barber without email stay off'
 );
 
 select lives_ok(

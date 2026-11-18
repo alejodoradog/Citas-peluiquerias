@@ -35,31 +35,17 @@ export function parseBarberForm(
 
 // Más › Barberos (D-54) ----------------------------------------------------------
 
-// - notifications_need_email: email notices need an email to go to (the
-//   database checks the same, barbers_notifications_need_email).
-export type TeamBarberErrorCode = BarberErrorCode | "notifications_need_email";
+// The barber form of D-54 as typed: name and optional email. The notices
+// follow the email (task 8.12): the database turns them on with an email.
+export type TeamBarberErrorCode = BarberErrorCode;
 
-const teamBarberFormSchema = z
-  .object({
-    displayName: barberFormSchema.shape.displayName,
-    email: barberFormSchema.shape.email,
-    // A checkbox: "on" when checked, absent (here "") when not.
-    emailNotifications: z.string().transform((value) => value === "on"),
-  })
-  .superRefine((form, ctx) => {
-    if (form.emailNotifications && form.email === null) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["email"],
-        message: "notifications_need_email",
-      });
-    }
-  });
+const teamBarberFormSchema = z.object({
+  displayName: barberFormSchema.shape.displayName,
+  email: barberFormSchema.shape.email,
+});
 
 export type TeamBarberForm = z.output<typeof teamBarberFormSchema>;
 
-// The barber form of D-54 as typed: name, optional email and the email
-// notices switch, which needs an email.
 export function parseTeamBarberForm(
   input: unknown,
 ): ParseResult<TeamBarberForm, TeamBarberErrorCode> {

@@ -48,11 +48,10 @@ export type BarberActionErrorCode =
   | "plan_limit"
   | "unknown";
 
-// serviceIds, emailNotifications and photoPath are echoed too, so the
-// checkboxes, the switch and a photo already uploaded survive an error.
+// serviceIds and photoPath are echoed too, so the checkboxes and a photo
+// already uploaded survive an error.
 // photoPath comes back empty when the photo was refused or deleted.
-export type BarberField =
-  "displayName" | "email" | "emailNotifications" | "serviceIds" | "photoPath";
+export type BarberField = "displayName" | "email" | "serviceIds" | "photoPath";
 
 export type BarberState = FormState<BarberField, BarberActionErrorCode>;
 
@@ -64,7 +63,7 @@ export type BarberCommandResult =
 // The upload itself is requested from ./images (requestImageUpload).
 export type ImageUploadTicket = UploadTicket;
 
-const TEXT_FIELDS = ["displayName", "email", "emailNotifications"] as const;
+const TEXT_FIELDS = ["displayName", "email"] as const;
 
 type Values = Partial<Record<BarberField, string>>;
 
@@ -74,7 +73,6 @@ type ReadResult =
       data: {
         displayName: string;
         email: string | null;
-        emailNotifications: boolean;
       };
       serviceIds: string[];
       // The new photo, or null to keep the one there is.
@@ -97,7 +95,6 @@ async function readBarberForm(
     typeof sentPhoto === "string" && sentPhoto !== "" ? sentPhoto : null;
   const echoed: Values = {
     serviceIds: choices.filter((v) => typeof v === "string").join(","),
-    emailNotifications: formData.get("emailNotifications") === "on" ? "on" : "",
     photoPath: photo ?? "",
   };
 
@@ -318,8 +315,7 @@ export type DeleteBarberRefusal =
   | "unknown";
 
 export type DeleteBarberResult =
-  | { ok: true }
-  | { ok: false; error: DeleteBarberRefusal; upcoming?: number };
+  { ok: true } | { ok: false; error: DeleteBarberRefusal; upcoming?: number };
 
 // At most the accounts a professional can leave in Auth: the joined one, a
 // revoked one and the orphan of an invitation.

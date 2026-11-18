@@ -13,14 +13,13 @@ import { toBarberFieldError, type BarberFormField } from "./barber-errors";
 // appointments, so the team's lists and the card leave it out.
 
 const BARBER_COLUMNS =
-  "id, display_name, photo_path, email, email_notifications, active, deactivated_at, is_owner, uses_barbershop_hours, sort_order";
+  "id, display_name, photo_path, email, active, deactivated_at, is_owner, uses_barbershop_hours, sort_order";
 
 export type BarberRow = {
   id: string;
   display_name: string;
   photo_path: string | null;
   email: string | null;
-  email_notifications: boolean;
   active: boolean;
   deactivated_at: string | null;
   is_owner: boolean;
@@ -41,7 +40,6 @@ export type ServiceOption = { id: string; name: string };
 type BarberValues = {
   displayName: string;
   email: string | null;
-  emailNotifications: boolean;
 };
 
 export type BarberWriteResult =
@@ -247,7 +245,6 @@ export async function insertBarber(
       barbershop_id: barbershopId,
       display_name: values.displayName,
       email: values.email,
-      email_notifications: values.emailNotifications,
       photo_path: values.photoPath,
       sort_order: nextSortOrder(orders.data.map((row) => row.sort_order)),
     })
@@ -270,7 +267,6 @@ export async function updateBarberRow(
     .update({
       display_name: values.displayName,
       email: values.email,
-      email_notifications: values.emailNotifications,
       ...(values.photoPath !== undefined
         ? { photo_path: values.photoPath }
         : {}),
