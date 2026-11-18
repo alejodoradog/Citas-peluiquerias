@@ -55,6 +55,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 8.13 Compartir el link de reservas desde el panel del profesional (`docs/tareas/8.13-compartir-profesional.md`) | Fundador (la pasó el socio el 2026-11-17) | Fusionada (#117). El botón ya existía desde la 7.6b (#106); se agregó la prueba de punta a punta. Sin migración |
 | 8.14 El dueño bloquea solo su propia agenda ("Bloquear mi agenda") (`docs/tareas/8.14-bloquear-mi-agenda.md`) | Fundador (la pasó el socio el 2026-11-17) | Fusionada (#119). Volvió a definir `public.create_time_block` y `private.create_time_block_of`; la regla `already_closed` vive ahora en `private.block_has_open_time` |
 | 8.15 Más opciones de intervalo: 5, 10, 15, 30 y 60 minutos | Socio | Fusionada (#115) |
+| 8.16 La invitación al profesional sale sola al guardarlo | Socio | Fusionada (#121) |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`). **En la fase 8: Next.js → 8.15 → 8.12 → 8.13 → 8.14 → 8.11**, una rama y un PR por tarea; las migraciones se fusionan en ese orden. pgTAP de la fase 8: 84 (8.15), 85 (8.12), 86 (8.14) y 87 (8.11).
 

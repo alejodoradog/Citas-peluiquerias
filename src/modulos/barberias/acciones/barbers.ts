@@ -8,11 +8,18 @@ import {
   type ImageUploadTicket as UploadTicket,
 } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
+import { inviteProfessional } from "@/modulos/cuentas/acciones/professional-access";
 import {
   accountToDelete,
   barberOfShop,
   deleteAuthAccount,
+  readAccountStatus,
 } from "@/modulos/cuentas/datos/professional-access";
+import {
+  shouldInviteOnSave,
+  toSaveInviteNotice,
+  type SaveInviteNotice,
+} from "@/modulos/cuentas/dominio/professional-access";
 import { requireOwner } from "@/modulos/cuentas/guards";
 import {
   clearBarberPhoto,
@@ -184,9 +191,26 @@ function revalidateTeam(barberId?: string) {
   // it again after any of the calls above (src/lib/cache-tags.ts).
 }
 
-function afterSave(barberId: string): never {
+function afterSave(barberId: string, invitation?: SaveInviteNotice): never {
   revalidateTeam(barberId);
-  redirect(routes.panelBarbers);
+  redirect(
+    invitation
+      ? routes.panelBarbersInvited(invitation, barberId)
+      : routes.panelBarbers,
+  );
+}
+
+// Task 8.16: once the professional is saved, the invitation goes out by the
+// same action as "Invitar" (owner, barber of the shop by RLS, invite_barber
+// in the database, the service key only on what it answers). However it
+// ends, the professional stays saved: the list says how it went.
+async function inviteAfterSaving(barberId: string): Promise<SaveInviteNotice> {
+  try {
+    const result = await inviteProfessional(barberId);
+    return result.ok ? "sent" : toSaveInviteNotice(result.error);
+  } catch {
+    return "unknown";
+  }
 }
 
 // D-54, a new barber. The barbershop is always the owner's own, never one
@@ -208,7 +232,20 @@ export async function createBarber(
   // Two steps, not one transaction, as with services: if this one fails, the
   // barber exists doing nothing, nobody can book them, and the owner fixes it
   // by opening them and saving again, which the error says.
-  if (!(await setBarberServices(saved.id, read.serviceIds))) {
+  const servicesSaved = await setBarberServices(saved.id, read.serviceIds);
+  // The barber and their email are saved either way, so the invitation goes
+  // either way too: saving again would not send it, the email being the same
+  // (review of task 8.16).
+  const invitation = shouldInviteOnSave({
+    isOwner: false,
+    active: true,
+    previousEmail: null,
+    email: read.data.email,
+    state: "none",
+  })
+    ? await inviteAfterSaving(saved.id)
+    : undefined;
+  if (!servicesSaved) {
     revalidateTeam(saved.id);
     return {
       status: "failed",
@@ -216,7 +253,7 @@ export async function createBarber(
       values: { ...read.values, photoPath: "" },
     };
   }
-  afterSave(saved.id);
+  afterSave(saved.id, invitation);
 }
 
 // D-54, an existing barber. Its id comes from the form; RLS and the
@@ -247,7 +284,27 @@ export async function updateBarber(
     await removeImages([current.photo_path]);
   }
 
-  if (!(await setBarberServices(current.id, read.serviceIds))) {
+  const servicesSaved = await setBarberServices(current.id, read.serviceIds);
+  // Task 8.16: only a new or changed email asks for the state of the access
+  // (one question to the database); the rest of the rules are in
+  // shouldInviteOnSave.
+  const rules = {
+    isOwner: current.is_owner,
+    active: current.active,
+    previousEmail: current.email,
+    email: read.data.email,
+  };
+  let invitation: SaveInviteNotice | undefined;
+  if (shouldInviteOnSave({ ...rules, state: "none" })) {
+    // If the database cannot answer, nothing is sent.
+    const status = await readAccountStatus(current.id);
+    if (status && shouldInviteOnSave({ ...rules, state: status.state })) {
+      invitation = await inviteAfterSaving(current.id);
+    }
+  }
+  // The row and its email are saved even if the services were not: the
+  // invitation above already went (review of task 8.16).
+  if (!servicesSaved) {
     revalidateTeam(current.id);
     return {
       status: "failed",
@@ -255,7 +312,7 @@ export async function updateBarber(
       values: { ...read.values, photoPath: "" },
     };
   }
-  afterSave(current.id);
+  afterSave(current.id, invitation);
 }
 
 // D-54, "Desactivar a …" (after its confirmation) and "Volver a activar a …".

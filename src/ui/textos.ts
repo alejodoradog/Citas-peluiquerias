@@ -1164,7 +1164,7 @@ export const textos = {
     ayudas: {
       nombre: "Así lo ven tus clientes al reservar.",
       correo:
-        "A este correo le llegan los avisos de las citas del profesional y la invitación para ver su agenda en el establecimiento.",
+        "A este correo le llegan los avisos de las citas del profesional. Al guardar, también le enviamos la invitación para ver su agenda en el establecimiento.",
     },
     horario: "Horario",
     servicios: "Servicios que hace",
@@ -1234,7 +1234,7 @@ export const textos = {
       },
       detalle: {
         sinCorreo:
-          "Escribe su correo y guarda para invitarlo a ver su agenda con su propia cuenta.",
+          "Escribe su correo y guarda: le enviamos la invitación para que vea su agenda con su propia cuenta.",
         inactivo: "Actívalo para invitarlo a ver su agenda.",
         sinInvitar:
           "Invítalo: le llega un correo para crear su contraseña y ver su agenda desde su celular.",
@@ -1252,6 +1252,13 @@ export const textos = {
       reenviar: "Reenviar invitación",
       enviando: "Enviando…",
       enviada: "Listo, le enviamos la invitación a su correo.",
+      // Task 8.16: what the team list says after saving a professional, who
+      // is always saved. `correo` is read from the database.
+      alGuardar: {
+        enviada: (correo: string) => `Le enviamos la invitación a ${correo}`,
+        noSalio: (nombre: string) =>
+          `Guardamos a ${nombre}, pero no pudimos enviarle la invitación.`,
+      },
       guardaPrimero:
         "Guarda los cambios del correo antes de invitarlo: la invitación va al correo guardado.",
       quitar: "Quitar acceso",

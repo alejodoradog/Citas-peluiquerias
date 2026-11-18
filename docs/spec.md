@@ -55,7 +55,7 @@ Son 24 funciones: P1 es imprescindible para lanzar. Las P2 se construyen dentro 
 | 6 | Ver "mis citas" con un link que llega al correo, sin código | Cliente | P2 |  |
 | 7 | Registro de la barbería en 3 pasos, eligiendo el plan; el plan 1 con prueba gratis de 30 días (una por cuenta: las sedes que se creen después la comparten) y el plan 2 sin prueba (tarea 7.8) | Dueño | P1 |  |
 | 8 | Crear servicios: nombre, precio en COP, duración | Dueño | P1 |  |
-| 9 | Crear barberos, asignarles servicios y horario, e invitarlos a su cuenta (decisión 0010; antes, enviarles su link privado) | Dueño | P1 |  |
+| 9 | Crear barberos, asignarles servicios y horario, e invitarlos a su cuenta (decisión 0010; la invitación sale sola al guardar al profesional con correo, tarea 8.16; antes, enviarles su link privado) | Dueño | P1 |  |
 | 10 | Horario de la barbería, días festivos de Colombia y cierres especiales | Dueño | P1 |  |
 | 11 | Agenda del día y de la semana, por barbero o todos | Dueño; barbero por link | P1 |  |
 | 12 | Crear cita manual (cliente que llamó o llegó sin cita); para quien llega sin reserva, la "cita al momento" empieza ahora y también la crea el profesional (tarea 7.7, `docs/tareas/7.7-cita-inmediata.md`) | Dueño; profesional con su cuenta | P1 |  |
@@ -223,7 +223,7 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 | Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque, más agregar al calendario y el link para gestionar la cita | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día). Es el único correo de la cita para el cliente: no hay correo de confirmación al reservar (decisión del fundador, 2026-11-14) |
 | Cita cancelada o reprogramada | Cliente con correo | Cuando la barbería cambia la cita |
 | Nueva reserva o cancelación | Barbero con correo (siempre que tenga correo) | Al instante |
-| Invitación a su cuenta (decisión 0010; reemplaza el link privado) | Barbero con correo | Cuando el dueño lo invita |
+| Invitación a su cuenta (decisión 0010; reemplaza el link privado) | Barbero con correo | Al guardarlo con correo nuevo o cambiado (tarea 8.16), o cuando el dueño lo invita o reenvía desde su ficha |
 | Confirmación de correo y recuperación de contraseña | Dueño | Al registrarse o al pedirla |
 | Suscripción por vencer, vencida, suspendida, pago registrado | Dueño | Según el ciclo de suscripción |
 

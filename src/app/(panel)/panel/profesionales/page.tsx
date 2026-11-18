@@ -5,9 +5,11 @@ import { publicImageUrl } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
 import { listBarbers, type BarberRow } from "@/modulos/barberias/datos/barbers";
 import { splitBarbers } from "@/modulos/barberias/dominio/barber";
+import { isId } from "@/modulos/barberias/dominio/service";
 import { readAccountStates } from "@/modulos/cuentas/datos/professional-access";
 import {
   accessView,
+  parseSaveInviteNotice,
   type AccessView,
 } from "@/modulos/cuentas/dominio/professional-access";
 import { Avatar } from "@/ui/avatar";
@@ -21,6 +23,7 @@ import { textos } from "@/ui/textos";
 import { TopBar, TopBarAction } from "@/ui/top-bar";
 import { requireReadyOwner } from "../ready-owner";
 import { summarizeBarber } from "./barber-summary";
+import { InvitationNotice } from "./invitation-notice";
 
 const t = textos.barberos;
 
@@ -30,7 +33,9 @@ export const metadata: Metadata = { title: t.titulo };
 // access to their agenda (task 7.6c). A deleted professional (decision 0010,
 // point 7) is no longer listed; the others are deactivated, not deleted
 // (decision 1 of task 2.2).
-export default function BarbersPage() {
+export default function BarbersPage({
+  searchParams,
+}: PageProps<"/panel/profesionales">) {
   return (
     <FlowShell
       header={
@@ -49,7 +54,7 @@ export default function BarbersPage() {
       }
     >
       <Suspense fallback={<LoadingState label={t.cargando} />}>
-        <Barbers />
+        <Barbers searchParams={searchParams} />
       </Suspense>
     </FlowShell>
   );
@@ -91,8 +96,15 @@ function BarberListRow({
   );
 }
 
-async function Barbers() {
-  const { barbershop } = await requireReadyOwner();
+async function Barbers({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [query, { barbershop }] = await Promise.all([
+    searchParams,
+    requireReadyOwner(),
+  ]);
   // Two reads at once, never one per professional.
   const [barbers, states] = await Promise.all([
     listBarbers(barbershop.id),
@@ -111,6 +123,23 @@ async function Barbers() {
     }).kind;
   };
 
+  const code = query.invitacion;
+  const noticeCode = parseSaveInviteNotice(Array.isArray(code) ? null : code);
+  const barberId = query.profesional;
+  const noticeBarber =
+    noticeCode && typeof barberId === "string" && isId(barberId)
+      ? barbers.find((barber) => barber.id === barberId && !barber.is_owner)
+      : undefined;
+  const notice =
+    noticeCode && noticeBarber ? (
+      <InvitationNotice
+        notice={noticeCode}
+        name={noticeBarber.display_name}
+        email={noticeBarber.email}
+        pending={sentJustNow(states.get(noticeBarber.id), instant)}
+      />
+    ) : null;
+
   if (active.length === 0 && inactive.length === 0) {
     return (
       <EmptyState title={t.vacio.titulo} action={addButton}>
@@ -121,6 +150,7 @@ async function Barbers() {
 
   return (
     <>
+      {notice}
       {active.length > 0 ? (
         <List>
           {active.map((barber) => (
@@ -138,15 +168,32 @@ async function Barbers() {
           <List>
             {inactive.map((barber) => (
               <BarberListRow
-              key={barber.id}
-              barber={barber}
-              access={accessOf(barber)}
-            />
+                key={barber.id}
+                barber={barber}
+                access={accessOf(barber)}
+              />
             ))}
           </List>
         </section>
       ) : null}
       {addButton}
     </>
+  );
+}
+
+// Task 8.16: "Le enviamos la invitación" only for an invitation that is
+// pending and went out a moment ago, so an old address opened again does not
+// claim a sending that did not happen now (review of task 8.16).
+const JUST_NOW_MS = 2 * 60_000;
+function sentJustNow(
+  status: { state: string; sentAt: Date | null } | undefined,
+  instant: Date,
+): boolean {
+  const sent = status?.sentAt?.getTime();
+  return (
+    status?.state === "invited" &&
+    sent !== undefined &&
+    instant.getTime() - sent >= 0 &&
+    instant.getTime() - sent <= JUST_NOW_MS
   );
 }

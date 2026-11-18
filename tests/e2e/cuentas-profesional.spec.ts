@@ -21,8 +21,9 @@ import {
   uniqueEmail,
 } from "./helpers/supabase";
 
-// Task 7.6b (decision 0010): the owner invites a professional from their
-// card, the professional opens the email, creates their password accepting
+// Task 7.6b (decision 0010), changed by task 8.16: the invitation goes out
+// when the owner saves the professional's email (no "Invitar" tap); the
+// professional opens the email, creates their password accepting
 // the terms, and uses "Mi agenda" with their own session; then the owner
 // takes the access away and the professional no longer gets in. A
 // professional never opens the panel, nor an owner "Mi agenda".
@@ -47,7 +48,7 @@ async function checkScreen(page: Page) {
   await expectNoZoomOnFocus(page);
 }
 
-test("the owner invites a professional, who uses Mi agenda until the owner takes the access away", async ({
+test("saving a professional's email invites them, and they use Mi agenda until the owner takes the access away", async ({
   page,
   browser,
 }) => {
@@ -55,7 +56,6 @@ test("the owner invites a professional, who uses Mi agenda until the owner takes
   const shop = await createBookableShop("profesional");
   const email = uniqueEmail("ana-profesional");
   const password = "clave-de-ana-1";
-  await setBarberEmail(shop.barbers.ana, email);
   const customer = await insertCustomer(shop.id, {
     name: "Felipe Ramírez",
     phone: "+573001234567",
@@ -68,16 +68,28 @@ test("the owner invites a professional, who uses Mi agenda until the owner takes
     serviceIds: [shop.services.corte],
   });
 
-  // The owner's card: "Acceso a su agenda", not invited yet.
+  // The owner's card: "Acceso a su agenda", with no email yet.
   await signInOwner(page, shop.owner);
   await page.goto(`/panel/profesionales/${shop.barbers.ana}`);
   const section = page.getByRole("region", { name: acceso.titulo });
   await expect(section).toBeVisible(FIRST_VISIT);
-  await expect(section.getByText(acceso.chips.sinInvitar)).toBeVisible();
+  await expect(section.getByText(acceso.chips.sinCorreo)).toBeVisible();
   await checkScreen(page);
-  await section.getByRole("button", { name: acceso.invitar }).click();
-  await expect(section.getByText(acceso.enviada)).toBeVisible();
-  // The card reads the database again (router.refresh).
+  // Writing the email and saving is all it takes: the invitation goes out.
+  await page
+    .getByRole("textbox", { name: new RegExp(textos.barberos.campos.correo) })
+    .fill(email);
+  await page.getByRole("button", { name: textos.barberos.guardar }).click();
+  await expect(page).toHaveURL(
+    /\/panel\/profesionales\?invitacion=sent/,
+    FIRST_VISIT,
+  );
+  await expect(
+    page.getByText(acceso.alGuardar.enviada(email)).filter({ visible: true }),
+  ).toBeVisible();
+  await checkScreen(page);
+  // Back to the card: the invitation is pending.
+  await page.goto(`/panel/profesionales/${shop.barbers.ana}`);
   await expect(section.getByText(acceso.chips.invitado)).toBeVisible(
     FIRST_VISIT,
   );

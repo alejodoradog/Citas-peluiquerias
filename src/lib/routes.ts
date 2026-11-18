@@ -46,6 +46,10 @@ export const routes = {
   panelServiceNew: "/panel/servicios/nuevo",
   panelServiceEdit: (id: string) => `/panel/servicios/${id}`,
   panelBarbers: "/panel/profesionales",
+  // Task 8.16: the team after saving, with how the invitation went. The code
+  // is one of a closed list; the email is never in the address.
+  panelBarbersInvited: (code: string, barberId: string) =>
+    `/panel/profesionales?invitacion=${code}&profesional=${barberId}`,
   panelBarberNew: "/panel/profesionales/nuevo",
   panelBarberEdit: (id: string) => `/panel/profesionales/${id}`,
   panelBarberSchedule: (id: string) => `/panel/profesionales/${id}/horario`,

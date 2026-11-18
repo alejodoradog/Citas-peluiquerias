@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   accessActions,
   accessView,
+  parseSaveInviteNotice,
+  shouldInviteOnSave,
   toAccessRefusal,
   toAuthInviteRefusal,
+  toSaveInviteNotice,
   type AccountStatus,
 } from "./professional-access";
 
@@ -98,5 +101,57 @@ describe("toAccessRefusal", () => {
       "auth_rate_limited",
     );
     expect(toAuthInviteRefusal({ status: 500 })).toBe("auth_failed");
+  });
+});
+
+describe("shouldInviteOnSave (task 8.16)", () => {
+  const base = {
+    isOwner: false,
+    active: true,
+    previousEmail: null as string | null,
+    email: "kevin@correo.com" as string | null,
+    state: "none" as AccountStatus["state"],
+  };
+
+  it("invites a new professional with an email", () => {
+    expect(shouldInviteOnSave(base)).toBe(true);
+  });
+
+  it("does not invite without an email", () => {
+    expect(shouldInviteOnSave({ ...base, email: null })).toBe(false);
+    expect(shouldInviteOnSave({ ...base, email: "  " })).toBe(false);
+  });
+
+  it("invites when an email is put or changed, ignoring case and spaces", () => {
+    expect(shouldInviteOnSave({ ...base, previousEmail: "a@x.co" })).toBe(true);
+    expect(
+      shouldInviteOnSave({ ...base, previousEmail: " Kevin@Correo.com " }),
+    ).toBe(false);
+  });
+
+  it("never invites the owner who attends nor an inactive professional", () => {
+    expect(shouldInviteOnSave({ ...base, isOwner: true })).toBe(false);
+    expect(shouldInviteOnSave({ ...base, active: false })).toBe(false);
+  });
+
+  it("sends nothing when there is an invitation pending or an account", () => {
+    expect(shouldInviteOnSave({ ...base, state: "invited" })).toBe(false);
+    expect(shouldInviteOnSave({ ...base, state: "active" })).toBe(false);
+    expect(shouldInviteOnSave({ ...base, state: "revoked" })).toBe(true);
+  });
+});
+
+describe("the notice after saving (task 8.16)", () => {
+  it("accepts only the closed list of codes", () => {
+    expect(parseSaveInviteNotice("sent")).toBe("sent");
+    expect(parseSaveInviteNotice("email_taken")).toBe("email_taken");
+    expect(parseSaveInviteNotice("kevin@correo.com")).toBeNull();
+    expect(parseSaveInviteNotice("barber_is_owner")).toBeNull();
+    expect(parseSaveInviteNotice(undefined)).toBeNull();
+  });
+
+  it("reads any other refusal as unknown", () => {
+    expect(toSaveInviteNotice("invitation_limit")).toBe("invitation_limit");
+    expect(toSaveInviteNotice("barber_inactive")).toBe("unknown");
   });
 });

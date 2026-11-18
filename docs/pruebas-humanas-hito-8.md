@@ -52,3 +52,12 @@ Antes: la plantilla "Invite user" pegada en Supabase (`docs/tareas/8.11-invitaci
 - [ ] **5. El link ya usado.** Abrir de nuevo el link del correo: dice que la invitación venció o ya se usó, y cómo entrar.
 - [ ] **6. Un correo que ya tiene cuenta.** Invitar a un correo que ya es dueño en Yapoin: el dueño ve "Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente", y a ese correo no le llega nada.
 - [ ] **7. Solo por invitación.** Registrarse en `/registro` con un correo nuevo crea un establecimiento propio, nunca un profesional de otro.
+
+## Tarea 8.16: la invitación sale al guardar
+Con una cuenta de dueño y dos correos que puedas abrir y que nunca hayan tenido cuenta en Yapoin.
+
+- [ ] **1. Nuevo con correo.** Más › Profesionales › Agregar profesional, con nombre, servicios y el primer correo. Al guardar, la lista muestra arriba "Le enviamos la invitación a {ese correo}" y el profesional sale como "invitado". El correo llega con "Crear mi contraseña", sin tocar "Invitar".
+- [ ] **2. Sin correo, no se envía.** Agregar otro profesional sin correo: se guarda y no sale ningún aviso de invitación.
+- [ ] **3. Ponerle correo después.** Abrir ese profesional, escribir el segundo correo y guardar: sale el mismo aviso y le llega el correo. Guardar de nuevo sin cambiar el correo no envía nada más.
+- [ ] **4. Un correo que ya tiene cuenta.** Agregar un profesional con el correo del dueño: se guarda y la lista dice "Guardamos a {nombre}, pero no pudimos enviarle la invitación. Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente. Usa otro correo." Sin decir de quién es.
+- [ ] **5. Lo de siempre sigue.** En la ficha del profesional invitado, "Reenviar invitación" y "Quitar acceso" funcionan como antes, y el texto bajo "Correo" dice que la invitación sale al guardar.

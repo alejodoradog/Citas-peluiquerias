@@ -126,3 +126,57 @@ export function toAuthInviteRefusal(error: {
   }
   return "auth_failed";
 }
+
+// Task 8.16: the invitation that goes out when the owner saves a
+// professional. It follows the same rules as "Invitar" (the database checks
+// them again); this only decides whether to ask at all, so saving never
+// resends anything nor invites someone who cannot be invited.
+export function shouldInviteOnSave(input: {
+  isOwner: boolean;
+  active: boolean;
+  // What was saved before: null for a new professional.
+  previousEmail: string | null;
+  email: string | null;
+  // The state of the access before saving: "none" for a new professional.
+  state: AccountState;
+}): boolean {
+  const email = (input.email ?? "").trim().toLowerCase();
+  if (input.isOwner || !input.active || email === "") return false;
+  // An invitation pending or an account already there: "Reenviar
+  // invitación" and "Quitar acceso" are the way, not saving.
+  if (input.state === "invited" || input.state === "active") return false;
+  return email !== (input.previousEmail ?? "").trim().toLowerCase();
+}
+
+// What the list says after saving, passed in the address as one of these
+// short codes (never the email: it is read from the database): "sent", or
+// why not.
+export const SAVE_INVITE_REFUSALS = [
+  "email_taken",
+  "barbershop_read_only",
+  "already_linked",
+  "invitation_pending_other_email",
+  "invitation_limit",
+  "auth_rate_limited",
+  "auth_failed",
+  "unknown",
+] as const satisfies readonly AccessRefusal[];
+
+export type SaveInviteNotice = "sent" | (typeof SAVE_INVITE_REFUSALS)[number];
+
+const SAVE_INVITE_NOTICES: ReadonlySet<string> = new Set([
+  "sent",
+  ...SAVE_INVITE_REFUSALS,
+]);
+
+export function parseSaveInviteNotice(value: unknown): SaveInviteNotice | null {
+  return typeof value === "string" && SAVE_INVITE_NOTICES.has(value)
+    ? (value as SaveInviteNotice)
+    : null;
+}
+
+// Any other refusal (the ones the checks before asking keep from happening)
+// reads as "unknown".
+export function toSaveInviteNotice(error: AccessRefusal): SaveInviteNotice {
+  return parseSaveInviteNotice(error) ?? "unknown";
+}
