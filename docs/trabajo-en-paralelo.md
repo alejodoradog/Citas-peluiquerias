@@ -48,8 +48,15 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 7.10 Servicios tocables en la página pública | Socio | Fusionada (#91) |
 | 7.11 Intervalo de reserva configurable (15, 30 o 60 minutos) | Socio | Fusionada (#112). D8 tomada como provisional |
 | 7.12 Panel de plataforma para computador, con métricas | Socio | Fusionada (#102) |
+| **Fase 8: tareas 11 a 15 que pasó el socio el 2026-11-17** (las fichas en `docs/tareas/8.N-<tema>.md`; las pruebas humanas en `docs/pruebas-humanas-hito-8.md`) | — | — |
+| Actualización de seguridad de Next.js (`ci-next-seguridad`) | Socio | Pendiente |
+| 8.11 Invitación del profesional: directo a crear la contraseña, con el nombre del establecimiento | Socio | Pendiente |
+| 8.12 Sin casilla de avisos: todo profesional con correo recibe los avisos de sus citas | Socio | Pendiente |
+| 8.13 Compartir el link de reservas desde el panel del profesional | Socio | Pendiente |
+| 8.14 El dueño bloquea solo su propia agenda ("Bloquear mi agenda") | Socio | Pendiente |
+| 8.15 Más opciones de intervalo: 5, 10, 15, 30 y 60 minutos | Socio | Pendiente |
 
-**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`).
+**Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`). **En la fase 8: Next.js → 8.15 → 8.12 → 8.13 → 8.14 → 8.11**, una rama y un PR por tarea; las migraciones se fusionan en ese orden. pgTAP de la fase 8: 84 (8.15), 85 (8.12), 86 (8.14) y 87 (8.11).
 
 > [!important] Respuestas del fundador (2026-11-14)
 > Lee la sección "Respuestas del fundador", al final de la sección 2: trae los datos de pago, los precios por barberos y lo que ya quedó decidido.
