@@ -79,6 +79,6 @@ Respondió "sí a todo": cada pregunta queda como dice su recomendación.
 | 2 | ¿Se puede invitar un correo que ya tiene cuenta? | No por ahora (punto 3). |
 | 3 | ¿El profesional ve el celular del cliente en su agenda? | Sí, solo de sus citas (punto 6). |
 | 4 | ¿Su link para compartir lo trae ya elegido? | Sí. |
-| 5 | ¿Qué pasa con el aviso de cada reserva? | Queda activado desde que acepta la invitación; el dueño lo puede apagar. |
+| 5 | ¿Qué pasa con el aviso de cada reserva? | Queda activado desde que acepta la invitación; el dueño lo puede apagar. **Reemplazada por la tarea 8.12 (2026-11-17):** todo profesional con correo recibe siempre los avisos de sus citas y el dueño ya no los apaga (`docs/tareas/8.12-avisos-siempre.md`). |
 | 6 | ¿Un profesional sin correo? | No tiene acceso. El dueño sigue viendo y manejando su agenda desde el panel. |
 | 7 | ¿Cuántas invitaciones al día por establecimiento? | 20. |

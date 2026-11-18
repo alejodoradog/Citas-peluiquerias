@@ -13,7 +13,8 @@
 create function private.barber_notices_follow_email()
 returns trigger
 language plpgsql
-security definer
+-- It only sets NEW: it needs no rights of its owner.
+security invoker
 set search_path = ''
 as $$
 begin
