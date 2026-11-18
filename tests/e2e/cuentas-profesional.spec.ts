@@ -29,6 +29,8 @@ import {
 const acceso = textos.barberos.acceso;
 const b = textos.barbero;
 const m = textos.miAgenda;
+// The name createBookableShop gives the establishment.
+const SHOP_NAME = "Barbería La Esquina";
 
 // The start of the quarter hour `minutes` ago: an appointment that already
 // started, so it can be marked.
@@ -92,13 +94,24 @@ test("the owner invites a professional, who uses Mi agenda until the owner takes
   const pro = await phone.newPage();
   const link = await latestEmailLink(email, "invite");
   await pro.goto(link);
-  // A tap first, so an email scanner does not spend the link.
+  // A tap first, so an email scanner does not spend the link. The screen
+  // says it is an invitation (task 8.11), not yet from whom.
+  await expect(
+    pro.getByRole("heading", {
+      name: textos.cuentas.invitacion.abrir.titulo,
+    }),
+  ).toBeVisible(FIRST_VISIT);
+  await expect(pro.getByText(SHOP_NAME)).toHaveCount(0);
+  await checkScreen(pro);
   await pro
-    .getByRole("button", { name: textos.cuentas.confirmar.continuar })
+    .getByRole("button", { name: textos.cuentas.invitacion.abrir.continuar })
     .click(FIRST_VISIT);
   await expect(pro).toHaveURL(/\/nueva-clave$/, FIRST_VISIT);
+  // Who invites, read from the database with the session just opened.
   await expect(
-    pro.getByRole("heading", { name: textos.cuentas.invitacion.titulo }),
+    pro.getByRole("heading", {
+      name: textos.cuentas.invitacion.invita(SHOP_NAME),
+    }),
   ).toBeVisible();
   await checkScreen(pro);
   // The passwords are never sent back, so they are written each time.
@@ -235,7 +248,7 @@ test("an invitation link that does not work says to ask the owner again", async 
 }) => {
   await page.goto("/auth/confirm?token_hash=no-sirve&type=invite");
   await page
-    .getByRole("button", { name: textos.cuentas.confirmar.continuar })
+    .getByRole("button", { name: textos.cuentas.invitacion.abrir.continuar })
     .click(FIRST_VISIT);
   await expect(page).toHaveURL(/invitacion=vencida/, FIRST_VISIT);
   await expect(
@@ -259,7 +272,7 @@ test("a professional who opened the invitation but never set a password gets in 
   // Opens the invitation and leaves without creating the password.
   await page.goto(await latestEmailLink(email, "invite"));
   await page
-    .getByRole("button", { name: textos.cuentas.confirmar.continuar })
+    .getByRole("button", { name: textos.cuentas.invitacion.abrir.continuar })
     .click(FIRST_VISIT);
   await expect(page).toHaveURL(/\/nueva-clave$/, FIRST_VISIT);
   // The email is confirmed now: the owner cannot resend it.
@@ -284,7 +297,9 @@ test("a professional who opened the invitation but never set a password gets in 
 
   // The same welcome: password and terms, then their agenda.
   await expect(
-    page.getByRole("heading", { name: textos.cuentas.invitacion.titulo }),
+    page.getByRole("heading", {
+      name: textos.cuentas.invitacion.invita(SHOP_NAME),
+    }),
   ).toBeVisible();
   await page
     .getByRole("textbox", {

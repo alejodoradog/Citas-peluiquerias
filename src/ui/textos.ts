@@ -782,8 +782,18 @@ export const textos = {
     // password, accepting the terms.
     invitacion: {
       titulo: "Crea tu contraseña",
-      bajada: (nombre: string, establecimiento: string) =>
-        `Hola, ${nombre}. Con tu correo y esta contraseña entras a tu agenda de ${establecimiento}.`,
+      // Task 8.11: the welcome says who invites. The name comes from the
+      // database, read with the session the invitation opened.
+      invita: (establecimiento: string) =>
+        `${establecimiento} te ha invitado a ser parte de su equipo`,
+      bajada: (nombre: string) =>
+        `Hola, ${nombre}. Crea tu contraseña: con ella y tu correo entras a tu agenda.`,
+      // The first screen of the link, before the tap that spends it.
+      abrir: {
+        titulo: "Te invitaron a ser parte de un equipo",
+        bajada: "Toca el botón para crear tu contraseña y entrar a tu agenda.",
+        continuar: "Crear mi contraseña",
+      },
       campos: { password: "Contraseña" },
       enviar: "Crear contraseña y entrar",
       vencida: {
