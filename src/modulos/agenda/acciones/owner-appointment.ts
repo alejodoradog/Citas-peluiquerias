@@ -14,6 +14,7 @@ import {
   createOwnerBlock,
   deleteOwnerBlock,
   findCustomers,
+  findOwnerBarber,
   rescheduleOwnerAppointment,
   setOwnerAppointmentStatus,
   type CustomerMatch,
@@ -31,6 +32,7 @@ import {
   type CustomerField,
   type SlotField,
 } from "../dominio/owner-forms";
+import { parseBlockTarget } from "../dominio/owner-block";
 import { DONE_PARAM, type DoneCode } from "../dominio/owner-slots";
 
 // Task 4.2: what the owner does from D-34 to D-39. They act on the owner's
@@ -219,35 +221,55 @@ export async function searchCustomers(
 }
 
 export type BlockState = FormState<
-  BlockField | "quien",
+  BlockField | "para" | "profesional",
   OwnerRefusal | BlockFormCode
 >;
 
-// D-39: one barber or the whole barbershop, then the agenda of that day.
+// D-39 and task 8.14: the owner's own agenda, another professional or the
+// whole establishment, then the agenda of that day. The establishment is the
+// session's; "Mi agenda" is the owner's row as the server finds it, never an
+// id from the browser; another professional is checked by the database
+// against that establishment.
 export async function createOwnerBlockAction(
   _previous: BlockState,
   formData: FormData,
 ): Promise<BlockState> {
   const barbershop = await readyBarbershop();
-  const who = text(formData, "quien");
-  const barberId = who === "" ? null : who;
-  if (barberId !== null && !isId(barberId)) {
+  const kind = text(formData, "para");
+  const chosen = text(formData, "profesional");
+  const echo = { para: kind, profesional: chosen };
+  const target = parseBlockTarget(kind, chosen);
+  if (!target) {
     return {
       status: "invalid",
-      fieldErrors: { quien: "barber_not_found" },
-      values: { quien: "" },
+      fieldErrors:
+        kind === "barber" ? { profesional: "barber_not_found" } : { para: "invalid" },
+      values: echo,
     };
   }
   const instant = now();
   const form = readForm(formData, {
-    fields: ["dia", "desde", "hasta", "motivo"],
+    fields: ["dia", "desde", "hasta", "motivo", "todoElDia"],
     parse: (input) => parseBlockForm(input, toBogotaDate(instant), instant),
   });
   if (!form.valid) {
     return form.state.status === "invalid"
-      ? { ...form.state, values: { ...form.state.values, quien: who } }
+      ? { ...form.state, values: { ...form.state.values, ...echo } }
       : form.state;
   }
+  const values = { ...form.values, ...echo };
+
+  let barberId: string | null = null;
+  if (target.kind === "barber") barberId = target.barberId;
+  if (target.kind === "mine") {
+    const owner = await findOwnerBarber(barbershop.id);
+    // An owner who does not attend has no agenda of their own.
+    if (!owner) {
+      return { status: "invalid", fieldErrors: { para: "barber_not_found" }, values };
+    }
+    barberId = owner.id;
+  }
+
   const { start, end, reason } = form.data;
   const result = await createOwnerBlock(barbershop.id, {
     barberId,
@@ -257,7 +279,6 @@ export async function createOwnerBlockAction(
     // "Otro" as none.
     reason: reason === "other" ? null : textos.barbero.bloquear.motivos[reason],
   });
-  const values = { ...form.values, quien: who };
   if (result.ok) {
     revalidatePath(routes.panel);
     redirect(agendaHref({ dia: form.values.dia }));

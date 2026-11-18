@@ -30,7 +30,17 @@ Con la cuenta de un profesional (invitado por el dueño) y un segundo celular o 
 - [ ] **4. Un profesional que ya no atiende.** El dueño desactiva al profesional. El link viejo deja elegir a otra persona, sin error.
 
 ## Tarea 8.14: bloquear mi agenda
-Pendiente.
+Con una cuenta de dueño que también atiende (en el asistente, "Yo también atiendo"), un profesional más (Ana) y el celular de un cliente, sin sesión.
+
+- [ ] **1. Las tres opciones.** En la agenda, "Bloquear horas": arriba "¿Qué quieres bloquear?" con Mi agenda (marcada), Un profesional y Todo el establecimiento, cada una con su línea de ayuda. El botón dice "Bloquear mi agenda".
+- [ ] **2. Cambia el botón.** Tocar "Un profesional": aparece el selector con Ana y el botón dice "Bloquear a Ana". Tocar "Todo el establecimiento": el selector se va y el botón dice "Bloquear el establecimiento".
+- [ ] **3. Mi agenda, todo el día.** Volver a Mi agenda, elegir mañana, marcar "Todo el día" (Desde y Hasta desaparecen), motivo Diligencia y "Bloquear mi agenda". Vuelve a la agenda de mañana con el bloqueo solo en la columna del dueño.
+- [ ] **4. La página pública.** Desde el celular del cliente: con el dueño, mañana sale "sin horas libres"; con Ana, mañana ofrece horas.
+- [ ] **5. Lo ya cerrado.** En Horario › Festivos y cierres, agregar un cierre de un día entero (pasado mañana). En "Bloquear horas", ese día sale apagado con "· cerrado" en las tres opciones.
+- [ ] **6. Fuera de horario.** Con Mi agenda, elegir una hora en que el dueño no trabaja (por ejemplo, las 11:00 p. m.) y bloquear: sale "Ese horario ya está cerrado: no hace falta bloquearlo."
+- [ ] **7. Todo el establecimiento.** Elegir "Todo el establecimiento", un día abierto, de 1:00 a 2:00 p. m., y "Bloquear el establecimiento". En la agenda el bloqueo sale en todas las columnas; con motivo, se lee "Cerrado · motivo".
+- [ ] **8. Con una cita en medio.** Crear una cita con Ana y luego, con "Un profesional" y Ana, intentar bloquear esa hora: sale el aviso con el nombre del cliente y el botón queda apagado.
+- [ ] **9. Un dueño que no atiende.** En una cuenta de dueño que no atiende, "Bloquear horas" no trae "Mi agenda": empieza en "Un profesional".
 
 ## Tarea 8.11: invitación del profesional
 Antes: la plantilla "Invite user" pegada en Supabase (`docs/tareas/8.11-invitacion.md`). Con una cuenta de dueño y un correo que puedas abrir y que nunca haya tenido cuenta en Yapoin.

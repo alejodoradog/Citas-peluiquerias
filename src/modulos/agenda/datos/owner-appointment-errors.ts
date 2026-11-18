@@ -17,6 +17,9 @@
 //   appointment changed state in the meantime, or has not started;
 // - overlaps_appointment / overlaps_block / range_invalid / block_ended: a
 //   block that does not fit;
+// - already_closed: a block with nothing open in it (task 8.14): the
+//   professional does not work then, or the establishment is closed;
+// - barbershop_read_only: the establishment is paused (task 5.5);
 // - unknown: anything else (the network).
 
 export const OWNER_REFUSALS = [
@@ -48,6 +51,8 @@ export const OWNER_REFUSALS = [
   "overlaps_block",
   "range_invalid",
   "block_ended",
+  "already_closed",
+  "barbershop_read_only",
 ] as const;
 
 export type OwnerRefusal = (typeof OWNER_REFUSALS)[number] | "unknown";

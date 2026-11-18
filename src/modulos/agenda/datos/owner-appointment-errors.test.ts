@@ -27,6 +27,10 @@ describe("toOwnerRefusal", () => {
       "outside_hours",
       "blocked",
       "slot_taken",
+      // Task 8.14 (owner_blocks_own_agenda) and the triggers of task 5.5,
+      // which also guard the panel's writes.
+      "already_closed",
+      "barbershop_read_only",
     ]) {
       hints.add(hint);
     }

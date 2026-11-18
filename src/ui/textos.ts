@@ -420,6 +420,9 @@ export const textos = {
     cita: (hora: string, estado: string) => `${hora}, ${estado}`,
     bloqueo: "Bloqueado",
     cierre: "Cerrado",
+    // Task 8.14: a closure of the whole establishment says so, also with a
+    // reason, so the owner tells it from a block of their own agenda.
+    cierreCon: (motivo: string) => `Cerrado · ${motivo}`,
     libre: (hasta: string) => `Libre hasta las ${hasta}`,
     libreDesde: (hora: string, barbero: string) =>
       `Crear cita a las ${hora} con ${barbero}`,
@@ -579,18 +582,47 @@ export const textos = {
     },
     bloquear: {
       titulo: "Bloquear horas",
-      quien: "¿A quién?",
       todaLaBarberia: "Todo el establecimiento",
-      ayudaQuien: "Elige “Todo el establecimiento” para cerrar por unas horas.",
+      // Task 8.14: what is blocked, each with what happens.
+      para: "¿Qué quieres bloquear?",
+      opciones: {
+        mine: {
+          titulo: "Mi agenda",
+          ayuda:
+            "Solo tú dejas de recibir reservas en ese horario; tu equipo sigue atendiendo.",
+        },
+        barber: {
+          titulo: "Un profesional",
+          ayuda:
+            "Solo esa persona deja de recibir reservas; los demás siguen atendiendo.",
+        },
+        shop: {
+          titulo: "Todo el establecimiento",
+          ayuda:
+            "Nadie recibe reservas en ese horario, como si cerraras el local.",
+        },
+      },
+      profesional: "Profesional",
       dia: "Día",
+      // "Todo el día", as in the professional's form (task 7.4).
+      todoElDia: "Todo el día",
+      todoElDiaAyuda: {
+        mine: "No atiendes ese día.",
+        barber: "No atiende ese día.",
+        shop: "El establecimiento no abre ese día.",
+      },
       desde: "Desde",
       hasta: "Hasta",
       motivo: "Motivo",
-      enviar: "Bloquear",
+      enviarMia: "Bloquear mi agenda",
+      enviarA: (nombre: string) => `Bloquear a ${nombre}`,
+      enviarEstablecimiento: "Bloquear el establecimiento",
       enviando: "Bloqueando…",
       // The warning of D-39: who has appointments in the way.
       conCitas: (quien: string, cantidad: number) =>
         `${quien} tiene ${cantidad === 1 ? "1 cita" : `${cantidad} citas`} en ese horario`,
+      conCitasMia: (cantidad: number) =>
+        `Tienes ${cantidad === 1 ? "1 cita" : `${cantidad} citas`} en ese horario`,
       conCitasTodos: (cantidad: number) =>
         `Hay ${cantidad === 1 ? "1 cita" : `${cantidad} citas`} en ese horario`,
       unaEnMedio: (cita: string) =>
@@ -646,6 +678,9 @@ export const textos = {
       overlaps_block: "Ya hay un bloqueo en ese horario.",
       range_invalid: "Revisa el día y las horas del bloqueo.",
       block_ended: "Este bloqueo ya terminó.",
+      already_closed: "Ese horario ya está cerrado: no hace falta bloquearlo.",
+      barbershop_read_only:
+        "El establecimiento está pausado: no se pueden hacer cambios.",
       unknown: "No pudimos guardar el cambio. Intenta de nuevo.",
       invalid: "Revisa los datos marcados.",
       end_before_start: "La hora final va después de la inicial.",

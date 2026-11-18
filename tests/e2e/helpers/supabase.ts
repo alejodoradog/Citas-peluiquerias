@@ -264,6 +264,63 @@ export async function insertBarber(
   return data.id as string;
 }
 
+// Task 8.14: the owner who also attends ("Yo también atiendo" of the
+// wizard), as complete_barbershop_setup leaves it: a row of barbers with
+// is_owner, doing the given services.
+export async function addAttendingOwner(
+  barbershopId: string,
+  name: string,
+  serviceIds: readonly string[],
+): Promise<string> {
+  const admin = adminClient();
+  const { data, error } = await admin
+    .from("barbers")
+    .insert({
+      barbershop_id: barbershopId,
+      display_name: name,
+      is_owner: true,
+      sort_order: 1,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  const { error: linesError } = await admin.from("barber_services").insert(
+    serviceIds.map((service_id) => ({
+      barbershop_id: barbershopId,
+      barber_id: data.id,
+      service_id,
+    })),
+  );
+  if (linesError) throw linesError;
+  return data.id as string;
+}
+
+// A closure of the whole establishment (D-59), past the app.
+export async function addClosure(
+  barbershopId: string,
+  startsAt: Date,
+  endsAt: Date,
+) {
+  const { error } = await adminClient().from("time_blocks").insert({
+    barbershop_id: barbershopId,
+    barber_id: null,
+    starts_at: startsAt.toISOString(),
+    ends_at: endsAt.toISOString(),
+  });
+  if (error) throw error;
+}
+
+// The blocks of an establishment, read past RLS.
+export async function shopBlocks(barbershopId: string) {
+  const { data, error } = await adminClient()
+    .from("time_blocks")
+    .select("barber_id, starts_at, ends_at, reason")
+    .eq("barbershop_id", barbershopId)
+    .order("starts_at");
+  if (error) throw error;
+  return data;
+}
+
 // Deactivates or brings back a barber past the app; the trigger stamps when.
 export async function setBarberActive(
   slug: string,

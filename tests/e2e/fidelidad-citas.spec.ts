@@ -375,7 +375,7 @@ test("D-34 to D-39 match the design", async ({ page }) => {
   );
   await compare(
     "Bloquear",
-    page.getByRole("button", { name: t.bloquear.enviar }),
+    page.getByRole("button", { name: t.bloquear.enviarA("Beto") }),
     design.getByRole("link", { name: "Bloquear" }),
     ["height", "border-radius", "font-size", "font-weight"],
   );
