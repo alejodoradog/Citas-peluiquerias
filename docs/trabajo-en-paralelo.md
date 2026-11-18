@@ -52,7 +52,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | Actualización de seguridad de Next.js (`ci-next-seguridad`) | Socio | Fusionada (#114): 16.4.4 → 16.4.6 |
 | 8.11 Invitación del profesional: directo a crear la contraseña, con el nombre del establecimiento | Socio | Pendiente |
 | 8.12 Sin casilla de avisos: todo profesional con correo recibe los avisos de sus citas | Socio | Pendiente |
-| 8.13 Compartir el link de reservas desde el panel del profesional | Socio | Pendiente |
+| 8.13 Compartir el link de reservas desde el panel del profesional (`docs/tareas/8.13-compartir-profesional.md`) | Fundador (la pasó el socio el 2026-11-17) | En revisión. El botón ya existía desde la 7.6b (#106); se agrega la prueba de punta a punta `compartir-profesional.spec.ts`. Sin migración |
 | 8.14 El dueño bloquea solo su propia agenda ("Bloquear mi agenda") | Socio | Pendiente |
 | 8.15 Más opciones de intervalo: 5, 10, 15, 30 y 60 minutos | Socio | Fusionada (#115) |
 

@@ -16,7 +16,12 @@ Con una cuenta de dueño y el celular de un cliente, sin sesión.
 Pendiente.
 
 ## Tarea 8.13: compartir desde el panel del profesional
-Pendiente.
+Con la cuenta de un profesional (invitado por el dueño) y un segundo celular o una ventana de incógnito.
+
+- [ ] **1. El botón.** En "Mi agenda" aparece "Compartir mi link de reservas". Al tocarlo, el celular abre la hoja de compartir (WhatsApp, Instagram…), con el texto "Reserva tu cita conmigo en …".
+- [ ] **2. El link reserva con ese profesional.** Abrir el link en el otro celular, sin sesión: pide los servicios y pasa directo a la hora, sin preguntar "¿Con quién?". Al confirmar, la cita queda con ese profesional y le aparece en "Mi agenda".
+- [ ] **3. En el computador copia el link.** Desde un computador, el botón dice que copió el link, y al pegarlo es el mismo.
+- [ ] **4. Un profesional que ya no atiende.** El dueño desactiva al profesional. El link viejo deja elegir a otra persona, sin error.
 
 ## Tarea 8.14: bloquear mi agenda
 Pendiente.
