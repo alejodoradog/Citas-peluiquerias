@@ -92,7 +92,6 @@ async function EditBarber({ params }: { params: Promise<{ id: string }> }) {
         id: barber.id,
         displayName: barber.display_name,
         email: barber.email,
-        emailNotifications: barber.email_notifications,
         photoUrl: barber.photo_path ? publicImageUrl(barber.photo_path) : null,
         serviceIds: barber.service_ids,
         active: barber.active,

@@ -35,7 +35,7 @@ Cada barbería (sede) tiene un solo dueño, que entra con su cuenta; un mismo du
 
 **Link privado del barbero** (reemplazado por la decisión 0010: el barbero entra con su cuenta, por invitación del dueño, y el link se quitó en la tarea 7.6c; lo que ve y hace en "Mi agenda" es lo mismo, y el dueño puede además eliminarlo; queda aquí como historia): el sistema lo genera al crear al barbero; el dueño lo copia para pasárselo como prefiera o, si el barbero tiene correo registrado, se lo envía por correo. Con él, el barbero ve solo su agenda del día y la semana, marca citas como atendidas o no asistió y bloquea sus horas. No ve precios totales, reportes, otros barberos ni la configuración. El dueño puede desactivar el link y deja de funcionar al instante. Si el barbero se va, el dueño **desactiva al barbero** (no se borra): no recibe citas nuevas, movidas ni bloqueos nuevos, pero con su link sigue gestionando las citas que ya tenía (marcarlas o cancelarlas), y el dueño puede reasignarlas o cancelarlas. Desactivar al barbero no desactiva su link. Por seguridad el link no se guarda: cada vez que el dueño lo copia o lo envía, el sistema genera uno nuevo y el anterior deja de servir.
 
-**Avisos al barbero (opcional):** si el dueño registra el correo del barbero y activa los avisos, este recibe por correo cada nueva reserva o cancelación, sin entrar a ninguna parte.
+**Avisos al barbero:** si el dueño registra el correo del barbero, este recibe por correo cada nueva reserva o cancelación, sin entrar a ninguna parte. No hay casilla para apagarlos: los avisos siguen al correo (tarea 8.12, que reemplaza la respuesta 5 de la decisión 0010).
 
 **Fase 2:** cuentas propias por barbero con roles (administrador, recepcionista), para barberías establecidas que necesitan que otra persona maneje la agenda de todos. En el MVP solo existen el dueño y el super admin.
 
@@ -80,7 +80,7 @@ Hay tres flujos que deben funcionar perfecto el día del lanzamiento: la reserva
 
 &#91;embedded content: flujo de reserva del cliente · 5 pasos, 1 validación\]
 
-La hora se vuelve a validar al confirmar, porque dos clientes pueden estar mirando el mismo espacio; si tiene los avisos activos, el barbero recibe por correo cada reserva y cancelación.
+La hora se vuelve a validar al confirmar, porque dos clientes pueden estar mirando el mismo espacio; si tiene correo registrado, el barbero recibe por correo cada reserva y cancelación.
 
 **2. Registro de la barbería (meta: menos de 10 minutos)**
 
@@ -222,7 +222,7 @@ El correo es el único canal de mensajes automáticos, y no se usan códigos OTP
 | --- | --- | --- |
 | Recordatorio con links "Confirmo" / "Cancelar", que abren una pantalla y piden un toque, más agregar al calendario y el link para gestionar la cita | Cliente con correo | 24 h antes (o 3 h si la cita es para el mismo día). Es el único correo de la cita para el cliente: no hay correo de confirmación al reservar (decisión del fundador, 2026-11-14) |
 | Cita cancelada o reprogramada | Cliente con correo | Cuando la barbería cambia la cita |
-| Nueva reserva o cancelación (opcional) | Barbero con correo | Al instante |
+| Nueva reserva o cancelación | Barbero con correo (siempre que tenga correo) | Al instante |
 | Invitación a su cuenta (decisión 0010; reemplaza el link privado) | Barbero con correo | Cuando el dueño lo invita |
 | Confirmación de correo y recuperación de contraseña | Dueño | Al registrarse o al pedirla |
 | Suscripción por vencer, vencida, suspendida, pago registrado | Dueño | Según el ciclo de suscripción |
@@ -245,7 +245,7 @@ Son 17 tablas. Todas las de negocio llevan `barbershop_id` para separar los dato
 | barberías (`barbershops`) | nombre, slug (para el link), logo, foto, dirección, lat/lng, WhatsApp, anticipación mín., horas para cancelar, datos de abono, estado de suscripción (en prueba, activa o suspendida), plan, fin de la prueba, vence el | Raíz de cada sede |
 | usuarios (`profiles`) | nombre, celular, super admin (sí o no), activo; el correo vive en la cuenta de acceso | Una persona; se une a sus sedes por `memberships` |
 | membresías (`memberships`) | cuenta, barbería, rol (`owner` en el MVP) | Un dueño por barbería; un dueño puede tener varias sedes |
-| barberos (`barbers`) | nombre visible, foto, correo opcional, su cuenta (decisión 0010), avisos por correo, orden, activo, eliminado | Pertenece a una barbería |
+| barberos (`barbers`) | nombre visible, foto, correo opcional, su cuenta (decisión 0010), avisos por correo (siempre activos si tiene correo), orden, activo, eliminado | Pertenece a una barbería |
 | horarios del barbero (`barber_schedules`) | barbero, día de la semana, hora de inicio y de fin | Varios por barbero; admiten jornada partida |
 | horario de la barbería (`barbershop_hours`) | día de la semana, hora de inicio y de fin | Varios por barbería; admiten jornada partida |
 | festivos que abre (`holiday_openings`) | fecha | Los festivos están cerrados por defecto; cada fila es uno en que la barbería abre |

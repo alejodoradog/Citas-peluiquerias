@@ -13,10 +13,21 @@ Con una cuenta de dueño y el celular de un cliente, sin sesión.
 - [ ] **5. Cambiar mi cita.** Desde el link del correo de esa cita, "Cambiar" ofrece las horas de 5 en 5.
 
 ## Tarea 8.12: avisos siempre encendidos
-Pendiente.
+Con una cuenta de dueño y el correo de un profesional que puedas abrir.
+
+- [ ] **1. Sin casilla.** En Más › Profesionales y horarios › "Agregar profesional", el formulario ya no tiene la casilla "Avisos por correo". La ayuda del correo dice que a ese correo le llegan los avisos de sus citas y la invitación.
+- [ ] **2. Le llegan los avisos.** Agregar un profesional con correo, sin tocar nada más. Reservar una cita con él desde la página de reservas: a su correo llega el aviso de la reserva.
+- [ ] **3. Y los de cancelación.** Cancelar esa cita desde el link del cliente: al profesional le llega el aviso.
+- [ ] **4. Sin correo no hay avisos.** Quitarle el correo y guardar: se guarda sin error, y una reserva nueva con él no le manda nada.
+- [ ] **5. Los que ya existían.** Un profesional que antes tenía los avisos apagados y tiene correo ahora los recibe.
 
 ## Tarea 8.13: compartir desde el panel del profesional
-Pendiente.
+Con la cuenta de un profesional (invitado por el dueño) y un segundo celular o una ventana de incógnito.
+
+- [ ] **1. El botón.** En "Mi agenda" aparece "Compartir mi link de reservas". Al tocarlo, el celular abre la hoja de compartir (WhatsApp, Instagram…), con el texto "Reserva tu cita conmigo en …".
+- [ ] **2. El link reserva con ese profesional.** Abrir el link en el otro celular, sin sesión: pide los servicios y pasa directo a la hora, sin preguntar "¿Con quién?". Al confirmar, la cita queda con ese profesional y le aparece en "Mi agenda".
+- [ ] **3. En el computador copia el link.** Desde un computador, el botón dice que copió el link, y al pegarlo es el mismo.
+- [ ] **4. Un profesional que ya no atiende.** El dueño desactiva al profesional. El link viejo deja elegir a otra persona, sin error.
 
 ## Tarea 8.14: bloquear mi agenda
 Con una cuenta de dueño que también atiende (en el asistente, "Yo también atiendo"), un profesional más (Ana) y el celular de un cliente, sin sesión.
@@ -32,4 +43,12 @@ Con una cuenta de dueño que también atiende (en el asistente, "Yo también ati
 - [ ] **9. Un dueño que no atiende.** En una cuenta de dueño que no atiende, "Bloquear horas" no trae "Mi agenda": empieza en "Un profesional".
 
 ## Tarea 8.11: invitación del profesional
-Pendiente.
+Antes: la plantilla "Invite user" pegada en Supabase (`docs/tareas/8.11-invitacion.md`). Con una cuenta de dueño y un correo que puedas abrir y que nunca haya tenido cuenta en Yapoin.
+
+- [ ] **1. El correo es el nuestro.** Invitar a un profesional desde su ficha. El correo llega en español, con el botón "Crear mi contraseña" y el encabezado de Yapoin.
+- [ ] **2. No lleva a la landing.** Al tocar el botón del correo se abre "Te invitaron a ser parte de un equipo", con un solo botón: "Crear mi contraseña".
+- [ ] **3. Dice quién invita.** Al tocarlo, la pantalla dice "{tu establecimiento} te ha invitado a ser parte de su equipo" y pide la contraseña y aceptar los términos.
+- [ ] **4. Queda como profesional.** Al guardar entra a "Mi agenda" de ese establecimiento. En la ficha del dueño, su acceso aparece activo.
+- [ ] **5. El link ya usado.** Abrir de nuevo el link del correo: dice que la invitación venció o ya se usó, y cómo entrar.
+- [ ] **6. Un correo que ya tiene cuenta.** Invitar a un correo que ya es dueño en Yapoin: el dueño ve "Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente", y a ese correo no le llega nada.
+- [ ] **7. Solo por invitación.** Registrarse en `/registro` con un correo nuevo crea un establecimiento propio, nunca un profesional de otro.

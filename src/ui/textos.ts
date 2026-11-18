@@ -817,8 +817,18 @@ export const textos = {
     // password, accepting the terms.
     invitacion: {
       titulo: "Crea tu contraseña",
-      bajada: (nombre: string, establecimiento: string) =>
-        `Hola, ${nombre}. Con tu correo y esta contraseña entras a tu agenda de ${establecimiento}.`,
+      // Task 8.11: the welcome says who invites. The name comes from the
+      // database, read with the session the invitation opened.
+      invita: (establecimiento: string) =>
+        `${establecimiento} te ha invitado a ser parte de su equipo`,
+      bajada: (nombre: string) =>
+        `Hola, ${nombre}. Crea tu contraseña: con ella y tu correo entras a tu agenda.`,
+      // The first screen of the link, before the tap that spends it.
+      abrir: {
+        titulo: "Te invitaron a ser parte de un equipo",
+        bajada: "Toca el botón para crear tu contraseña y entrar a tu agenda.",
+        continuar: "Crear mi contraseña",
+      },
       campos: { password: "Contraseña" },
       enviar: "Crear contraseña y entrar",
       vencida: {
@@ -955,7 +965,7 @@ export const textos = {
       ayudas: {
         nombre: "Así lo ven tus clientes al reservar.",
         correo:
-          "Para invitarlo a ver su agenda desde su cuenta y, si quieres, avisarle de cada reserva.",
+          "A este correo le llegan los avisos de las citas del profesional y la invitación para ver su agenda en el establecimiento.",
       },
       servicios: "Servicios que hace",
       horario: "Horario",
@@ -1154,12 +1164,8 @@ export const textos = {
     ayudas: {
       nombre: "Así lo ven tus clientes al reservar.",
       correo:
-        "Para invitarlo a ver su agenda desde su cuenta y, si quieres, avisarle de cada reserva.",
+        "A este correo le llegan los avisos de las citas del profesional y la invitación para ver su agenda en el establecimiento.",
     },
-    avisos: "Avisos por correo",
-    avisosAyuda:
-      "Le llega un correo con cada nueva reserva o cancelación. El de la reserva trae el celular del cliente, para escribirle.",
-    avisosSinCorreo: "Escribe su correo arriba para poder activarlos.",
     horario: "Horario",
     servicios: "Servicios que hace",
     sinServicios:
@@ -1287,8 +1293,6 @@ export const textos = {
       barber_name_too_long: "El nombre es muy largo. Usa máximo 60 caracteres.",
       barber_services_required: "Marca al menos un servicio.",
       email_invalid: "Revisa el correo. Debe verse como nombre@correo.com.",
-      notifications_need_email:
-        "Escribe su correo para enviarle avisos, o apaga los avisos.",
       photo_invalid: "No pudimos guardar la foto. Elígela de nuevo.",
       services_not_saved:
         "Guardamos al profesional, pero no sus servicios. Ábrelo en Profesionales y guárdalo de nuevo.",
