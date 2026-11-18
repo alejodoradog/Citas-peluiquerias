@@ -53,7 +53,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 8.11 Invitación del profesional: directo a crear la contraseña, con el nombre del establecimiento | Socio | Pendiente |
 | 8.12 Sin casilla de avisos: todo profesional con correo recibe los avisos de sus citas | Socio | Pendiente |
 | 8.13 Compartir el link de reservas desde el panel del profesional | Socio | Pendiente |
-| 8.14 El dueño bloquea solo su propia agenda ("Bloquear mi agenda") | Socio | Pendiente |
+| 8.14 El dueño bloquea solo su propia agenda ("Bloquear mi agenda") | Fundador | En revisión (`hito-8-bloquear-mi-agenda`, `docs/tareas/8.14-bloquear-mi-agenda.md`). Migración `20261118034850_owner_blocks_own_agenda` y pgTAP 86 |
 | 8.15 Más opciones de intervalo: 5, 10, 15, 30 y 60 minutos | Socio | Fusionada (#115) |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`). **En la fase 8: Next.js → 8.15 → 8.12 → 8.13 → 8.14 → 8.11**, una rama y un PR por tarea; las migraciones se fusionan en ese orden. pgTAP de la fase 8: 84 (8.15), 85 (8.12), 86 (8.14) y 87 (8.11).
