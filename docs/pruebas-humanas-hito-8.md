@@ -61,3 +61,11 @@ Con una cuenta de dueño y dos correos que puedas abrir y que nunca hayan tenido
 - [ ] **3. Ponerle correo después.** Abrir ese profesional, escribir el segundo correo y guardar: sale el mismo aviso y le llega el correo. Guardar de nuevo sin cambiar el correo no envía nada más.
 - [ ] **4. Un correo que ya tiene cuenta.** Agregar un profesional con el correo del dueño: se guarda y la lista dice "Guardamos a {nombre}, pero no pudimos enviarle la invitación. Ese correo ya tiene una cuenta en Yapoin o una invitación pendiente. Usa otro correo." Sin decir de quién es.
 - [ ] **5. Lo de siempre sigue.** En la ficha del profesional invitado, "Reenviar invitación" y "Quitar acceso" funcionan como antes, y el texto bajo "Correo" dice que la invitación sale al guardar.
+
+## Tarea 8.17: invitación al terminar el asistente
+Con una cuenta de dueño nueva (en el asistente inicial) y dos correos que puedas abrir y que nunca hayan tenido cuenta en Yapoin.
+
+- [ ] **1. El paso del equipo lo explica.** En el paso "Tu equipo" y en el formulario de profesional, los textos dicen que al terminar le llega a cada profesional con correo su invitación para crear su contraseña.
+- [ ] **2. Llegan las invitaciones.** Agregar dos profesionales con correo y uno sin correo, y tocar "Terminar". En "listo", arriba del link, sale "Les enviamos la invitación a {nombre} ({correo}) y a {nombre} ({correo})…". A cada correo le llega "Crear mi contraseña"; al sin correo y al dueño que atiende no les llega nada.
+- [ ] **3. Entran a su agenda.** Abrir el correo de uno, crear la contraseña y entrar: ve "Mi agenda" del establecimiento. En Más › Profesionales, ese profesional sale como "invitado" o con acceso.
+- [ ] **4. Si una no sale.** Terminar el asistente con un profesional cuyo correo ya tiene cuenta en Yapoin (por ejemplo, el del dueño): el establecimiento queda configurado igual, y "listo" dice "No pudimos invitar a {nombre}" con un enlace a su ficha, donde se puede invitar después.

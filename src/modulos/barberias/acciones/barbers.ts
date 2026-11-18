@@ -8,7 +8,7 @@ import {
   type ImageUploadTicket as UploadTicket,
 } from "@/lib/imagenes/keys";
 import { routes } from "@/lib/routes";
-import { inviteProfessional } from "@/modulos/cuentas/acciones/professional-access";
+import { inviteAfterSaving } from "@/modulos/cuentas/acciones/invite-after-saving";
 import {
   accountToDelete,
   barberOfShop,
@@ -17,7 +17,6 @@ import {
 } from "@/modulos/cuentas/datos/professional-access";
 import {
   shouldInviteOnSave,
-  toSaveInviteNotice,
   type SaveInviteNotice,
 } from "@/modulos/cuentas/dominio/professional-access";
 import { requireOwner } from "@/modulos/cuentas/guards";
@@ -198,19 +197,6 @@ function afterSave(barberId: string, invitation?: SaveInviteNotice): never {
       ? routes.panelBarbersInvited(invitation, barberId)
       : routes.panelBarbers,
   );
-}
-
-// Task 8.16: once the professional is saved, the invitation goes out by the
-// same action as "Invitar" (owner, barber of the shop by RLS, invite_barber
-// in the database, the service key only on what it answers). However it
-// ends, the professional stays saved: the list says how it went.
-async function inviteAfterSaving(barberId: string): Promise<SaveInviteNotice> {
-  try {
-    const result = await inviteProfessional(barberId);
-    return result.ok ? "sent" : toSaveInviteNotice(result.error);
-  } catch {
-    return "unknown";
-  }
 }
 
 // D-54, a new barber. The barbershop is always the owner's own, never one

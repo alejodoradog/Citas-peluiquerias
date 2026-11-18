@@ -940,7 +940,7 @@ export const textos = {
       paso: "Paso 4 de 4",
       titulo: "¿Quiénes atienden en tu establecimiento?",
       bajada:
-        "Después, desde Más › Profesionales, invitas a cada uno a ver su agenda con su propia cuenta.",
+        "Al terminar, a cada profesional con correo le llega su invitación para crear su contraseña y ver su agenda.",
       yoCorto: "Yo también atiendo",
       yoCortoAyuda: "Tu agenda aparece junto a la de los demás.",
       tu: "Tú",
@@ -965,7 +965,7 @@ export const textos = {
       ayudas: {
         nombre: "Así lo ven tus clientes al reservar.",
         correo:
-          "A este correo le llegan los avisos de las citas del profesional y la invitación para ver su agenda en el establecimiento.",
+          "A este correo le llegan los avisos de las citas del profesional. Al terminar, también le enviamos la invitación para crear su contraseña y ver su agenda.",
       },
       servicios: "Servicios que hace",
       horario: "Horario",
@@ -986,6 +986,17 @@ export const textos = {
       // Task 7.9: the poster instead of the QR alone.
       descargarAfiche: "Descargar afiche para imprimir",
       agenda: "Ir a mi agenda",
+      // Task 8.17: how the invitations at the end of the wizard went. The
+      // list already carries each "a Nombre (correo)".
+      invitaciones: {
+        enviadas: (lista: string, varios: boolean) =>
+          varios
+            ? `Les enviamos la invitación ${lista}. Con ella crean su contraseña y ven su agenda.`
+            : `Le enviamos la invitación ${lista}. Con ella crea su contraseña y ve su agenda.`,
+        noSalio: (nombre: string) => `No pudimos invitar a ${nombre}.`,
+        invitalo: "Invítalo desde Más › Profesionales.",
+        abrirFicha: (nombre: string) => `Abrir la ficha de ${nombre}`,
+      },
     },
     horario: {
       dias: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],

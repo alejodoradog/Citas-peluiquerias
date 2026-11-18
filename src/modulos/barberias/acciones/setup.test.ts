@@ -32,9 +32,26 @@ vi.mock("../datos/shop-profile", () => ({ getShopProfile, saveShopLocation }));
 const completeBarbershopSetup = vi.fn<
   (
     ...args: unknown[]
-  ) => Promise<"saved" | "location_required" | "plan_limit" | "failed">
+  ) => Promise<
+    "saved" | "already_done" | "location_required" | "plan_limit" | "failed"
+  >
 >(async () => "saved");
 vi.mock("../datos/setup", () => ({ completeBarbershopSetup }));
+
+type Member = {
+  id: string;
+  email: string | null;
+  active: boolean;
+  is_owner: boolean;
+};
+const team: Member[] = [];
+const listBarbers = vi.fn(async (_shop: string) => team);
+vi.mock("../datos/barbers", () => ({ listBarbers }));
+
+const inviteAfterSaving = vi.fn(async (_id: string) => "sent" as string);
+vi.mock("@/modulos/cuentas/acciones/invite-after-saving", () => ({
+  inviteAfterSaving,
+}));
 
 const { completeSetup, saveSetupLocation } = await import("./setup");
 
@@ -74,6 +91,7 @@ const SETUP = JSON.stringify({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  team.splice(0, team.length);
 });
 
 // Task 7.3: the location is required, and only the phone's GPS gives it.
@@ -188,5 +206,68 @@ describe("completeSetup", () => {
         completeSetup({ status: "idle" }, form({ setup: SETUP })),
       ),
     ).toMatchObject({ status: "failed", error: "plan_limit" });
+  });
+
+  // Task 8.17: the invitations go out once the wizard is saved.
+  describe("invitations at the end", () => {
+    const finish = () =>
+      run(() => completeSetup({ status: "idle" }, form({ setup: SETUP })));
+
+    beforeEach(() => {
+      team.push(
+        { id: "owner", email: "carlos@x.co", active: true, is_owner: true },
+        { id: "ana", email: "ana@x.co", active: true, is_owner: false },
+        { id: "sin", email: null, active: true, is_owner: false },
+        { id: "off", email: "off@x.co", active: false, is_owner: false },
+        { id: "beto", email: "beto@x.co", active: true, is_owner: false },
+      );
+    });
+
+    it("invites each active professional with an email, in order, and not the owner who attends", async () => {
+      expect(await finish()).toEqual({
+        redirectedTo: "/panel/configurar/listo",
+      });
+      expect(listBarbers).toHaveBeenCalledWith(SHOP);
+      expect(inviteAfterSaving.mock.calls.map(([id]) => id)).toEqual([
+        "ana",
+        "beto",
+      ]);
+    });
+
+    it("goes on when an invitation fails or throws", async () => {
+      inviteAfterSaving.mockResolvedValueOnce("email_taken");
+      inviteAfterSaving.mockRejectedValueOnce(new Error("auth down"));
+      expect(await finish()).toEqual({
+        redirectedTo: "/panel/configurar/listo",
+      });
+      expect(inviteAfterSaving).toHaveBeenCalledTimes(2);
+    });
+
+    it("still goes to the end when the team cannot be read", async () => {
+      listBarbers.mockRejectedValueOnce(new Error("down"));
+      expect(await finish()).toEqual({
+        redirectedTo: "/panel/configurar/listo",
+      });
+      expect(inviteAfterSaving).not.toHaveBeenCalled();
+    });
+
+    it.each(["plan_limit", "failed", "location_required"] as const)(
+      "invites nobody when the transaction answers %s",
+      async (answer) => {
+        completeBarbershopSetup.mockResolvedValueOnce(answer);
+        await finish();
+        expect(listBarbers).not.toHaveBeenCalled();
+        expect(inviteAfterSaving).not.toHaveBeenCalled();
+      },
+    );
+
+    it("does not invite again on a second tap (already_done)", async () => {
+      completeBarbershopSetup.mockResolvedValueOnce("already_done");
+      expect(await finish()).toEqual({
+        redirectedTo: "/panel/configurar/listo",
+      });
+      expect(listBarbers).not.toHaveBeenCalled();
+      expect(inviteAfterSaving).not.toHaveBeenCalled();
+    });
   });
 });
