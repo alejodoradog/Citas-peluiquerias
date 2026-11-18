@@ -115,7 +115,7 @@ describe("savePolicies", () => {
   });
 
   it("saves each interval the owner can choose", async () => {
-    for (const interval of ["15", "30", "60"]) {
+    for (const interval of ["5", "10", "15", "30", "60"]) {
       updatePolicies.mockClear();
       await run(
         form({

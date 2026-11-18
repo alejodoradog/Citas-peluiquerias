@@ -10,6 +10,7 @@ import {
   firstAvailableBarber,
   type AvailabilityInput,
   type DayAvailability,
+  type SlotStep,
 } from "./availability";
 
 // Properties of the gate of phase 3 (docs/plan.md): no slot offered clashes
@@ -112,8 +113,8 @@ const inputArb: fc.Arbitrary<AvailabilityInput> = fc
     ),
     openAll: fc.boolean(),
     openSome: fc.integer({ min: 0, max: 2 ** 20 }),
-    // Task 7.11: the barbershop's interval, or none (15).
-    step: fc.constantFrom(undefined, 15, 30, 60),
+    // Task 7.11 and 8.15: the barbershop's interval, or none (15).
+    step: fc.constantFrom(undefined, 5, 10, 15, 30, 60),
   })
   .map((raw) => {
     const today = bogotaDate(raw.now.getTime());
@@ -133,7 +134,7 @@ const inputArb: fc.Arbitrary<AvailabilityInput> = fc
       minNoticeMinutes: raw.minNoticeMinutes,
       ...(raw.step === undefined
         ? {}
-        : { slotStepMinutes: raw.step as 15 | 30 | 60 }),
+        : { slotStepMinutes: raw.step as SlotStep }),
       shopHours: raw.shopHours,
       holidayOpenings: holidays.filter(
         (_, i) => raw.openAll || (raw.openSome >> (i % 20)) & 1,

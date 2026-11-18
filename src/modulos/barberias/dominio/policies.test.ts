@@ -38,8 +38,8 @@ describe("booking and cancellation policies", () => {
     expect(CANCELLATION_NOTICE_OPTIONS).toEqual([0, 1, 2, 3, 4, 6, 12, 24, 48]);
   });
 
-  it("offers times every 15, 30 or 60 minutes, 15 by default", () => {
-    expect(BOOKING_INTERVAL_OPTIONS).toEqual([15, 30, 60]);
+  it("offers times every 5, 10, 15, 30 or 60 minutes, 15 by default", () => {
+    expect(BOOKING_INTERVAL_OPTIONS).toEqual([5, 10, 15, 30, 60]);
     expect(DEFAULT_POLICIES.bookingIntervalMinutes).toBe(15);
     expect(BOOKING_INTERVAL_OPTIONS).toContain(
       DEFAULT_POLICIES.bookingIntervalMinutes,
@@ -191,8 +191,8 @@ describe("parsePoliciesForm", () => {
     }
   });
 
-  it("accepts 15, 30 and 60 minutes as the interval", () => {
-    for (const interval of [15, 30, 60]) {
+  it("accepts 5, 10, 15, 30 and 60 minutes as the interval", () => {
+    for (const interval of [5, 10, 15, 30, 60]) {
       expect(
         parsePoliciesForm(
           {
@@ -214,7 +214,16 @@ describe("parsePoliciesForm", () => {
   });
 
   it("refuses any other interval, with booking_interval_invalid", () => {
-    for (const bookingInterval of ["45", "0", "", "90", "-15", "15.5", " 15"]) {
+    for (const bookingInterval of [
+      "20",
+      "45",
+      "0",
+      "",
+      "90",
+      "-15",
+      "15.5",
+      " 15",
+    ]) {
       expect(
         parsePoliciesForm(
           { minBookingNotice: "60", cancellationNotice: "2", bookingInterval },

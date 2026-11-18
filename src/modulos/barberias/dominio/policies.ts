@@ -8,8 +8,8 @@ import { parseWith, type ParseResult } from "@/lib/validacion/parse";
 // - until how many hours before customers may cancel or move their
 //   appointment from the email link (barbershops.cancellation_notice_hours,
 //   0 to 168). The barbershop can always cancel;
-// - every how many minutes customers are offered times: 15, 30 or 60
-//   (barbershops.booking_interval_minutes, task 7.11).
+// - every how many minutes customers are offered times: 5, 10, 15, 30 or 60
+//   (barbershops.booking_interval_minutes, tasks 7.11 and 8.15).
 
 // How far ahead customers may book. Fixed for every barbershop; the
 // availability engine (task 3.1) uses it.
@@ -37,8 +37,8 @@ export const MIN_BOOKING_NOTICE_OPTIONS: readonly number[] = [
 export const CANCELLATION_NOTICE_OPTIONS: readonly number[] = [
   0, 1, 2, 3, 4, 6, 12, 24, 48,
 ];
-// Task 7.11: 15, 30 or 60 minutes, as the database allows.
-export const BOOKING_INTERVAL_OPTIONS: readonly number[] = [15, 30, 60];
+// Tasks 7.11 and 8.15: 5, 10, 15, 30 or 60 minutes, as the database allows.
+export const BOOKING_INTERVAL_OPTIONS: readonly number[] = [5, 10, 15, 30, 60];
 
 export type PolicyErrorCode =
   | "min_booking_notice_invalid"
@@ -85,7 +85,7 @@ export function parsePoliciesForm(
         optionsWith(CANCELLATION_NOTICE_OPTIONS, saved.cancellationNoticeHours),
         "cancellation_notice_invalid",
       ),
-      // Only the three the database keeps, never another saved value.
+      // Only the five the database keeps, never another saved value.
       bookingInterval: choice(
         BOOKING_INTERVAL_OPTIONS,
         "booking_interval_invalid",
