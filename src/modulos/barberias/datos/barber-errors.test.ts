@@ -10,7 +10,6 @@ describe("toBarberFieldError", () => {
   it.each([
     ["barbers_display_name_check", "displayName", "invalid"],
     ["barbers_email_check", "email", "email_invalid"],
-    ["barbers_notifications_need_email", "email", "notifications_need_email"],
     ["barbers_photo_in_own_folder", "photo", "photo_invalid"],
   ])("maps %s to its field", (constraint, field, code) => {
     expect(toBarberFieldError(check(constraint))).toEqual({ field, code });

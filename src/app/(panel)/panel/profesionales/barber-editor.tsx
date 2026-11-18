@@ -18,7 +18,6 @@ import { ClockIcon, WarningIcon } from "@/ui/icons";
 import { List, ListRow } from "@/ui/list";
 import { Notice } from "@/ui/notice";
 import { Sheet } from "@/ui/sheet";
-import { Switch } from "@/ui/switch";
 import { textos } from "@/ui/textos";
 import { TopBar } from "@/ui/top-bar";
 import type { AccessResult } from "@/modulos/cuentas/acciones/professional-access";
@@ -33,7 +32,6 @@ export type EditableBarber = {
   id: string;
   displayName: string;
   email: string | null;
-  emailNotifications: boolean;
   photoUrl: string | null;
   serviceIds: string[];
   active: boolean;
@@ -101,8 +99,6 @@ export function BarberEditor({
   const [typedEmail, setTypedEmail] = useState(
     () => form.value("email") ?? barber?.email ?? "",
   );
-  const hasEmail = typedEmail.trim() !== "";
-  const [notify, setNotify] = useState(barber?.emailNotifications ?? false);
 
   // After an error the form shows again what the owner chose; before that, a
   // new barber does every active service (decision 4 of task 2.2).
@@ -198,18 +194,6 @@ export function BarberEditor({
             error={form.fieldError("email")}
             autoComplete="off"
           />
-          <div className="rounded-card border-line border bg-white px-4 py-3">
-            <Switch
-              label={t.avisos}
-              description={hasEmail ? t.avisosAyuda : t.avisosSinCorreo}
-              name="emailNotifications"
-              checked={notify}
-              onChange={(event) => setNotify(event.currentTarget.checked)}
-              // Without an email there is nowhere to send them. A switch
-              // already on stays usable, so the owner can turn it off.
-              disabled={!hasEmail && !notify}
-            />
-          </div>
           <List>
             {/* D-55 needs a saved barber; a new one gets the barbershop's. */}
             <ListRow
@@ -341,4 +325,3 @@ export function BarberEditor({
     </>
   );
 }
-

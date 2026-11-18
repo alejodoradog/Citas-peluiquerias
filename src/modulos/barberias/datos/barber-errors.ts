@@ -24,11 +24,6 @@ const CHECKS: ReadonlyArray<{ constraint: string } & BarberFieldError> = [
   },
   { constraint: "barbers_email_check", field: "email", code: "email_invalid" },
   {
-    constraint: "barbers_notifications_need_email",
-    field: "email",
-    code: "notifications_need_email",
-  },
-  {
     constraint: "barbers_photo_in_own_folder",
     field: "photo",
     code: "photo_invalid",

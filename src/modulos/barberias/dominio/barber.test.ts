@@ -35,41 +35,32 @@ describe("parseTeamBarberForm (D-54)", () => {
   const valid = {
     displayName: "Kevin",
     email: " Kevin.M@Correo.com ",
-    emailNotifications: "on",
   };
 
-  it("reads the name, the email in lowercase and the notices", () => {
+  it("reads the name and the email in lowercase", () => {
     expect(parseTeamBarberForm(valid)).toEqual({
       success: true,
-      data: {
-        displayName: "Kevin",
-        email: "kevin.m@correo.com",
-        emailNotifications: true,
-      },
+      data: { displayName: "Kevin", email: "kevin.m@correo.com" },
     });
   });
 
-  it("takes an empty email as none and an unchecked switch as off", () => {
-    expect(
-      parseTeamBarberForm({
-        displayName: "Kevin",
-        email: "  ",
-        emailNotifications: "",
-      }),
-    ).toEqual({
+  it("takes an empty email as none, with no error (task 8.12)", () => {
+    expect(parseTeamBarberForm({ displayName: "Kevin", email: "  " })).toEqual({
       success: true,
-      data: { displayName: "Kevin", email: null, emailNotifications: false },
+      data: { displayName: "Kevin", email: null },
     });
   });
 
-  it("needs an email for the notices", () => {
-    expect(parseTeamBarberForm({ ...valid, email: "" })).toEqual({
-      success: false,
-      errors: { email: "notifications_need_email" },
-    });
+  it("ignores a notices field: the database decides them", () => {
+    expect(parseTeamBarberForm({ ...valid, emailNotifications: "on" })).toEqual(
+      {
+        success: true,
+        data: { displayName: "Kevin", email: "kevin.m@correo.com" },
+      },
+    );
   });
 
-  it("explains a bad email before the notices", () => {
+  it("rejects a bad email", () => {
     expect(parseTeamBarberForm({ ...valid, email: "kevin@" })).toEqual({
       success: false,
       errors: { email: "email_invalid" },
