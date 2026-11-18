@@ -57,7 +57,8 @@ test("the owner deletes a professional once they have no appointment to come", a
     name: "Felipe Ramírez",
     phone: "+573001234567",
   });
-  // One that already ended today, and one tomorrow.
+  // One that already ended (90 minutes ago: yesterday's, in the first hours
+  // of the day), and one tomorrow.
   const quarter = 15 * 60_000;
   const past = new Date(
     Math.floor((Date.now() - 90 * 60_000) / quarter) * quarter,
@@ -141,12 +142,13 @@ test("the owner deletes a professional once they have no appointment to come", a
   expect(row.deleted_at).not.toBeNull();
   expect(await authAccountExists(ana.email)).toBe(false);
 
-  // Her card is gone; today's agenda still names the past appointment.
+  // Her card is gone; the agenda of that day still names the past
+  // appointment. By its own day, not "today": this failed in CI at 00:20.
   await page.goto(`/panel/profesionales/${shop.barbers.ana}`);
   await expect(
     page.getByRole("heading", { level: 1, name: "Ana" }),
   ).toHaveCount(0);
-  await page.goto("/panel");
+  await page.goto(`/panel?dia=${toBogotaDate(past)}`);
   await expect(
     page.getByText("Profesional eliminado").filter({ visible: true }).first(),
   ).toBeVisible(FIRST_VISIT);
