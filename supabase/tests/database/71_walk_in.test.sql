@@ -870,9 +870,13 @@ select lives_ok(
   'and a customer straight into the table, as before'
 );
 reset role;
+-- By their exact start, not "from tomorrow on": in the last minutes of the
+-- day the control appointment of the fixtures (ten minutes from now) is
+-- tomorrow's too, and this failed in CI at 23:57 (2026-11-17).
 select is(
   (select array_agg(source::text order by source::text) from public.appointments
-   where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000007101' and starts_at >= pg_temp.at(1, '00:00')),
+   where barbershop_id = 'aaaaaaaa-0000-0000-0000-000000007101'
+     and starts_at in (pg_temp.at(1, '10:00'), pg_temp.at(1, '11:00'))),
   array['manual', 'web'],
   'both appointments of tomorrow are there, with their usual origin'
 );
