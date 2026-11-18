@@ -232,14 +232,10 @@ export async function createBarber(
   // Two steps, not one transaction, as with services: if this one fails, the
   // barber exists doing nothing, nobody can book them, and the owner fixes it
   // by opening them and saving again, which the error says.
-  if (!(await setBarberServices(saved.id, read.serviceIds))) {
-    revalidateTeam(saved.id);
-    return {
-      status: "failed",
-      error: "services_not_saved",
-      values: { ...read.values, photoPath: "" },
-    };
-  }
+  const servicesSaved = await setBarberServices(saved.id, read.serviceIds);
+  // The barber and their email are saved either way, so the invitation goes
+  // either way too: saving again would not send it, the email being the same
+  // (review of task 8.16).
   const invitation = shouldInviteOnSave({
     isOwner: false,
     active: true,
@@ -249,6 +245,14 @@ export async function createBarber(
   })
     ? await inviteAfterSaving(saved.id)
     : undefined;
+  if (!servicesSaved) {
+    revalidateTeam(saved.id);
+    return {
+      status: "failed",
+      error: "services_not_saved",
+      values: { ...read.values, photoPath: "" },
+    };
+  }
   afterSave(saved.id, invitation);
 }
 
@@ -280,14 +284,7 @@ export async function updateBarber(
     await removeImages([current.photo_path]);
   }
 
-  if (!(await setBarberServices(current.id, read.serviceIds))) {
-    revalidateTeam(current.id);
-    return {
-      status: "failed",
-      error: "unknown",
-      values: { ...read.values, photoPath: "" },
-    };
-  }
+  const servicesSaved = await setBarberServices(current.id, read.serviceIds);
   // Task 8.16: only a new or changed email asks for the state of the access
   // (one question to the database); the rest of the rules are in
   // shouldInviteOnSave.
@@ -304,6 +301,16 @@ export async function updateBarber(
     if (status && shouldInviteOnSave({ ...rules, state: status.state })) {
       invitation = await inviteAfterSaving(current.id);
     }
+  }
+  // The row and its email are saved even if the services were not: the
+  // invitation above already went (review of task 8.16).
+  if (!servicesSaved) {
+    revalidateTeam(current.id);
+    return {
+      status: "failed",
+      error: "unknown",
+      values: { ...read.values, photoPath: "" },
+    };
   }
   afterSave(current.id, invitation);
 }

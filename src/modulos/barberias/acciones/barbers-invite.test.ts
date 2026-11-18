@@ -132,6 +132,15 @@ describe("createBarber", () => {
     expect(inviteProfessional).not.toHaveBeenCalled();
   });
 
+  // Review of task 8.16: saving again would not send it (same email).
+  it("still invites when the services could not be saved", async () => {
+    setBarberServices.mockResolvedValueOnce(false);
+    expect(
+      await createBarber({ status: "idle" }, form("kevin@correo.com")),
+    ).toMatchObject({ status: "failed", error: "services_not_saved" });
+    expect(inviteProfessional).toHaveBeenCalledExactlyOnceWith(BARBER);
+  });
+
   it("keeps the professional and says why when the invitation does not go out", async () => {
     invitation = { ok: false, error: "email_taken" };
     expect(await create("kevin@correo.com")).toBe(
@@ -174,6 +183,17 @@ describe("updateBarber", () => {
     access = { state: "revoked", sentAt: null, expiresAt: null };
     await update("nuevo@correo.com");
     expect(inviteProfessional).toHaveBeenCalledOnce();
+  });
+
+  it("still invites when the services could not be saved", async () => {
+    setBarberServices.mockResolvedValueOnce(false);
+    expect(
+      await updateBarber(
+        { status: "idle" },
+        form("kevin@correo.com", { barberId: BARBER }),
+      ),
+    ).toMatchObject({ status: "failed", error: "unknown" });
+    expect(inviteProfessional).toHaveBeenCalledExactlyOnceWith(BARBER);
   });
 
   it("does not invite when the email does not change", async () => {

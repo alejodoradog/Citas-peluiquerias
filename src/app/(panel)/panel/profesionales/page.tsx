@@ -136,7 +136,7 @@ async function Barbers({
         notice={noticeCode}
         name={noticeBarber.display_name}
         email={noticeBarber.email}
-        pending={states.get(noticeBarber.id)?.state === "invited"}
+        pending={sentJustNow(states.get(noticeBarber.id), instant)}
       />
     ) : null;
 
@@ -178,5 +178,22 @@ async function Barbers({
       ) : null}
       {addButton}
     </>
+  );
+}
+
+// Task 8.16: "Le enviamos la invitación" only for an invitation that is
+// pending and went out a moment ago, so an old address opened again does not
+// claim a sending that did not happen now (review of task 8.16).
+const JUST_NOW_MS = 2 * 60_000;
+function sentJustNow(
+  status: { state: string; sentAt: Date | null } | undefined,
+  instant: Date,
+): boolean {
+  const sent = status?.sentAt?.getTime();
+  return (
+    status?.state === "invited" &&
+    sent !== undefined &&
+    instant.getTime() - sent >= 0 &&
+    instant.getTime() - sent <= JUST_NOW_MS
   );
 }
