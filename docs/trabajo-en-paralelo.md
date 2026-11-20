@@ -57,6 +57,7 @@ Se actualiza en el mismo PR que toma o termina una tarea: cambia "Pendiente" por
 | 8.15 Más opciones de intervalo: 5, 10, 15, 30 y 60 minutos | Socio | Fusionada (#115) |
 | 8.16 La invitación al profesional sale sola al guardarlo | Socio | Fusionada (#121) |
 | 8.17 Invitar a los profesionales al terminar el asistente | Socio | Fusionada (#122) |
+| **Fase 9: módulo de productos e inventario** (el plan, las decisiones P1 a P16 y el prompt para empezar, en `docs/plan-modulo-productos.md`) | Fundador | Pendiente. Empieza por la 9.0: las decisiones del fundador |
 
 **Orden del socio:** **5.4 → 4.6 → 5.2 → 5.5** (la 5.6 la tomó el fundador) (la 6.3 se eliminó: solo web). **En la fase 7: 7.10 → 7.12 → 7.8 → 7.9 → 7.11** (`docs/reparto-mejoras.md`). **En la fase 8: Next.js → 8.15 → 8.12 → 8.13 → 8.14 → 8.11**, una rama y un PR por tarea; las migraciones se fusionan en ese orden. pgTAP de la fase 8: 84 (8.15), 85 (8.12), 86 (8.14) y 87 (8.11).
 
